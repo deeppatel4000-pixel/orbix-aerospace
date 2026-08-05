@@ -10,7 +10,7 @@ export const metadata: Metadata = {
   alternates: {
     canonical: "/",
   },
-  applicationName: siteConfig.name,
+  applicationName: siteConfig.wordmark,
   category: "education",
   description: siteConfig.description,
   keywords: [
@@ -26,19 +26,19 @@ export const metadata: Metadata = {
   openGraph: {
     description: siteConfig.description,
     locale: "en_US",
-    siteName: siteConfig.name,
-    title: `${siteConfig.name} | ${siteConfig.tagline}`,
+    siteName: siteConfig.wordmark,
+    title: `${siteConfig.wordmark} | ${siteConfig.tagline}`,
     type: "website",
     url: "/",
   },
   title: {
-    default: `${siteConfig.name} | ${siteConfig.tagline}`,
-    template: `%s | ${siteConfig.name}`,
+    default: `${siteConfig.wordmark} | ${siteConfig.tagline}`,
+    template: `%s | ${siteConfig.wordmark}`,
   },
   twitter: {
     card: "summary",
     description: siteConfig.description,
-    title: `${siteConfig.name} | ${siteConfig.tagline}`,
+    title: `${siteConfig.wordmark} | ${siteConfig.tagline}`,
   },
 };
 
