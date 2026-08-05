@@ -1,13 +1,9 @@
 # ORBIX portfolio assets
 
-This directory is reserved for authentic application screenshots used by the portfolio README.
+This directory contains portfolio-supporting documentation and authentic application media.
 
-Planned files:
-
-- `mission-control.png` — Mission Control Center overview
-- `orbital-analysis.png` — orbital transfer and delta-v workspace
-- `reentry-thermal.png` — reentry and thermal-protection analysis
-- `mission-showcase.png` — mission visualization and presentation workspace
+Screenshot requirements, naming conventions, and capture guidance live in
+[`screenshots/README.md`](screenshots/README.md).
 
 Screenshots should be captured from a verified local or deployed ORBIX build. Do not add mockups or
 generated images that could be mistaken for working product functionality.
@@ -16,5 +12,6 @@ Recommended capture guidelines:
 
 - Use a consistent desktop viewport and the default dark mission-control theme.
 - Avoid displaying personal information, local filesystem paths, or browser account details.
-- Prefer PNG format and descriptive alternative text in README references.
+- Store screenshots under `docs/assets/screenshots/` in PNG format and use descriptive alternative
+  text in README references.
 - Re-run `npm run validate` before documenting a release state.

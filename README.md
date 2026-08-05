@@ -20,36 +20,88 @@ The codebase is organized so that equations remain independent of React. Pure Ty
 own physics, analysis modules compose those calculators into workflows, and the presentation layer
 only collects inputs or renders completed engineering results.
 
-## Showcase
+## Why ORBIX Exists
 
-Real product screenshots will be added to [`docs/assets`](docs/assets/README.md) for the public
-portfolio. The following placeholders identify the planned captures without presenting fabricated
-application imagery.
+Most aerospace learning tools isolate one equation or discipline at a time. ORBIX was created to show
+how those pieces connect inside an integrated engineering environment: a mission concept can be
+configured, analyzed, visualized, reviewed, and presented without hiding the assumptions between
+each stage.
+
+The educational goal is not to imitate certified flight software. It is to make engineering reasoning
+visible—units, models, tradeoffs, limitations, and presentation all live beside the results they
+produce.
+
+## Project Showcase
+
+ORBIX is an aerospace engineering laboratory for exploring orbital mechanics, spacecraft mission
+design, atmospheric reentry systems, thermal-protection concepts, and engineering visualization.
+
+Authentic product screenshots will be added to
+[`docs/assets/screenshots`](docs/assets/screenshots/README.md). The following placeholders identify
+the planned captures without presenting fabricated application imagery.
 
 ### Mission Control Center
 
-> Screenshot placeholder: `docs/assets/mission-control.png`
+> Screenshot placeholder: `docs/assets/screenshots/mission-control-dashboard.png`
 
 Interactive aerospace command interface displaying mission telemetry, visualization, analysis, and
 presentation systems.
 
 ### Orbital Analysis
 
-> Screenshot placeholder: `docs/assets/orbital-analysis.png`
+> Screenshot placeholder: `docs/assets/screenshots/orbital-visualization.png`
 
 Orbital transfer, delta-v budgeting, plane-change analysis, and spacecraft trajectory concepts.
 
 ### Reentry & Thermal Systems
 
-> Screenshot placeholder: `docs/assets/reentry-thermal.png`
+> Screenshot placeholder: `docs/assets/screenshots/reentry-visualization.png`
 
 Vehicle reentry evaluation, trajectory history, stagnation heating, and thermal-protection analysis.
 
 ### Mission Visualization
 
-> Screenshot placeholder: `docs/assets/mission-showcase.png`
+> Screenshot placeholder: `docs/assets/screenshots/mission-showcase.png`
 
 Interactive orbital, planetary, replay, ground-track, and mission-storytelling visualizations.
+
+### Trade Study
+
+> Screenshot placeholder: `docs/assets/screenshots/trade-study.png`
+
+Side-by-side mission architecture review using completed analysis and report outputs.
+
+### Demo Mode
+
+> Screenshot placeholder: `docs/assets/screenshots/demo-mode.png`
+
+Guided platform walkthrough designed for students, educators, mentors, and portfolio reviewers.
+
+## Featured Systems
+
+### Mission Control
+
+- Command-center interface for navigating completed mission workspaces.
+- Telemetry-style presentation of supplied engineering outputs.
+- Mission replay, status, review, briefing, and demonstration experiences.
+
+### Orbital Engineering
+
+- Circular-orbit and Hohmann transfer analysis.
+- Delta-v mission budgeting with source-analysis preservation.
+- Inclination changes and sequential transfer/plane-change workflows.
+
+### Spacecraft Systems
+
+- Reentry trajectory, deceleration, and thermal-history evaluation.
+- Educational thermal-protection sizing and material comparison.
+- Vehicle-level evaluation and side-by-side configuration comparison.
+
+### Presentation Layer
+
+- Structured mission reports with JSON and Markdown export.
+- Engineering briefings, design reviews, trade studies, and mission showcases.
+- Accessible visualization and guided demonstration interfaces.
 
 ## Features
 

@@ -30,6 +30,7 @@ Desktop.ini
 /.idea/
 /.vscode/
 /.cache/
+/.playwright-cli/
 .eslintcache
 
 # debug
