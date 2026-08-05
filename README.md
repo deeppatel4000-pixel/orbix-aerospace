@@ -140,7 +140,7 @@ Requirements:
 - npm 10 or newer
 
 ```bash
-git clone https://github.com/<YOUR_GITHUB_USERNAME>/orbix-aerospace.git
+git clone https://github.com/deeppatel4000-pixel/orbix-aerospace.git
 cd orbix-aerospace
 npm install
 npm run dev
