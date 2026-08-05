@@ -2,58 +2,85 @@
 
 **Advanced Aerospace Engineering Laboratory**
 
-ORBIX is a professional educational aerospace engineering platform for mission design, orbital
-analysis, spacecraft evaluation, atmospheric reentry studies, thermal protection trade studies,
-engineering visualization, and mission-systems communication.
+ORBIX is an educational aerospace engineering platform that brings orbital mechanics, spacecraft
+design, mission architecture, atmospheric reentry, thermal analysis, engineering visualization, and
+technical presentation into one coherent application.
 
-The project turns typed mission inputs into reproducible engineering analyses and presents the
-results through an aerospace mission-control interface. It is designed for students, educators,
-engineering learners, and portfolio reviewers who want to explore how multiple aerospace
-disciplines connect in one system.
-
-> ORBIX is an educational engineering application. Its simplified models and material data are not
-> suitable for flight certification, operational mission planning, or safety-critical decisions.
+> ORBIX uses simplified educational models. It is not intended for operational mission planning,
+> flight certification, or safety-critical engineering decisions.
 
 ## Overview
 
-ORBIX brings mission planning, vehicle evaluation, and technical presentation into a single Next.js
-application. Its domain architecture keeps equations in pure TypeScript calculators, composes those
-calculators through analysis workflows, and keeps React focused on accessible interaction and
-presentation.
+ORBIX demonstrates how an aerospace mission can move from configuration to analysis and then into a
+professional engineering review experience. Users can explore aircraft and launch vehicles, build
+mission scenarios, evaluate orbital maneuvers, study reentry and thermal-protection behavior, compare
+designs, and communicate the results through reports and mission-control visualizations.
 
-Users can explore aerospace vehicles, compare configurations, assemble educational mission
-scenarios, evaluate orbital maneuvers and atmospheric entry, study thermal-protection options, and
-review the completed mission through reports and visual mission-control workspaces.
+The codebase is organized so that equations remain independent of React. Pure TypeScript calculators
+own physics, analysis modules compose those calculators into workflows, and the presentation layer
+only collects inputs or renders completed engineering results.
+
+## Showcase
+
+Real product screenshots will be added to [`docs/assets`](docs/assets/README.md) for the public
+portfolio. The following placeholders identify the planned captures without presenting fabricated
+application imagery.
+
+### Mission Control Center
+
+> Screenshot placeholder: `docs/assets/mission-control.png`
+
+Interactive aerospace command interface displaying mission telemetry, visualization, analysis, and
+presentation systems.
+
+### Orbital Analysis
+
+> Screenshot placeholder: `docs/assets/orbital-analysis.png`
+
+Orbital transfer, delta-v budgeting, plane-change analysis, and spacecraft trajectory concepts.
+
+### Reentry & Thermal Systems
+
+> Screenshot placeholder: `docs/assets/reentry-thermal.png`
+
+Vehicle reentry evaluation, trajectory history, stagnation heating, and thermal-protection analysis.
+
+### Mission Visualization
+
+> Screenshot placeholder: `docs/assets/mission-showcase.png`
+
+Interactive orbital, planetary, replay, ground-track, and mission-storytelling visualizations.
 
 ## Features
 
-- **Mission Control Center** — unified aerospace workspace with telemetry, status, review, briefing,
-  showcase, and guided-demo views.
-- **Orbital Transfer Analysis** — circular-orbit properties, Vis-Viva, escape velocity, Hohmann
-  transfers, plane changes, and combined mission workflows.
-- **Delta-V Budgeting** — ordered maneuver budgets with source-analysis preservation and contribution
-  summaries.
-- **Spacecraft Reentry Analysis** — atmosphere, aerodynamics, Mach, shock, deceleration, trajectory,
-  and thermal-history workflows.
+- **Mission Control** — unified aerospace workspace for telemetry, visualization, briefings, reviews,
+  and guided demonstrations.
+- **Orbital Transfer Analysis** — circular-orbit properties, Vis-Viva, escape velocity, and Hohmann
+  transfer workflows.
+- **Delta-V Budgeting** — ordered maneuver budgets with contribution summaries and preserved source
+  analyses.
+- **Plane Change Analysis** — inclination-change studies and sequential transfer/plane-change mission
+  analysis.
+- **Reentry Analysis** — atmosphere, aerodynamics, Mach, shock, deceleration, trajectory, and thermal
+  history workflows.
 - **Thermal Protection Evaluation** — educational TPS sizing, material selection, material comparison,
   and vehicle-level integration.
-- **Mission Reports** — structured engineering reports with JSON and Markdown export support.
-- **Mission Visualization** — accessible SVG and CSS-based orbit, reentry, ground-track, and mission
-  presentation views.
-- **Mission Replay** — presentation-only phase playback using completed mission results.
-- **Design Review** — structured mission architecture, orbital, vehicle, thermal, assumption, and
-  limitation review.
-- **Trade Studies** — side-by-side presentation of completed mission scenarios without inventing
-  feasibility scores.
-- **Demo Mode** — guided walkthrough for students, educators, recruiters, and portfolio reviewers.
-- **Scenario Library** — typed mission presets and reusable custom educational scenarios.
+- **Mission Reports** — structured engineering reports with JSON and Markdown export.
+- **Mission Replay** — presentation-only mission-phase playback based on completed analysis results.
+- **Ground Track Visualization** — clearly labeled illustrative mapping of orbital concepts onto a
+  planetary view.
+- **Design Review** — structured review of mission architecture, vehicle, thermal, assumptions, and
+  limitations.
+- **Trade Studies** — side-by-side presentation of completed mission scenarios without artificial
+  feasibility scoring.
+- **Scenario Library** — typed presets and reusable custom educational mission configurations.
+- **Demo Mode** — guided experience for students, educators, recruiters, and portfolio reviewers.
+- **Mission Showcase** — cinematic, presentation-only mission storytelling using supplied results.
 
-Additional explorer experiences provide type-safe U.S. aircraft and launch-vehicle profiles and
-same-category vehicle comparisons.
+Aircraft and rocket explorers provide type-safe U.S. vehicle profiles and same-category comparison
+tools alongside the mission systems.
 
-## Engineering Architecture
-
-ORBIX uses explicit layers so that engineering behavior remains testable and independent of the UI:
+## Architecture
 
 ```text
 Mission Inputs
@@ -67,19 +94,16 @@ Visualization Systems
 Presentation Layer
 ```
 
-- `src/features/engineering-lab/calculators` contains pure, reusable physics equations.
-- `src/features/engineering-lab/analysis` composes calculators into higher-level workflows.
+- `src/features/engineering-lab/calculators` contains pure, reusable engineering equations.
+- `src/features/engineering-lab/analysis` orchestrates calculators into higher-level workflows.
 - `src/features/engineering-lab/materials`, `missions`, and `reports` contain typed domain data and
   transformations.
-- `src/features/engineering-lab/components` renders accessible interactive tools and completed
-  results.
-- `src/features/vehicles` owns shared vehicle types and repository data; aircraft and rocket features
-  consume those contracts without duplicating records.
-- `src/app` keeps App Router routes thin and delegates implementation to feature modules.
+- `src/features/engineering-lab/components` owns accessible interaction and presentation.
+- `src/features/vehicles` owns shared vehicle contracts and repository data.
+- `src/app` contains thin App Router composition and metadata.
 
-React Server Components remain the default. Client boundaries are limited to interactive forms,
-controls, and presentation state. See [the architecture guide](docs/architecture.md) for repository
-conventions.
+React Server Components remain the default. Client boundaries are limited to interactive forms and
+presentation state. See the [architecture guide](docs/architecture.md) for detailed conventions.
 
 ## Technology Stack
 
@@ -89,37 +113,46 @@ conventions.
 - Tailwind CSS 4
 - Lucide React
 - Vitest
-- ESLint and `eslint-config-next`
+- ESLint with `eslint-config-next`
 - Prettier with Tailwind class sorting
-- GitHub Actions validation
+- GitHub Actions
 
-No external visualization or 3D runtime is currently required; the mission visualizations use native
-web technologies and existing analysis outputs.
+The current visualizations use native SVG, CSS, and React presentation state; no external 3D or
+charting dependency is required.
+
+## Engineering Principles
+
+- **Modular architecture** — domain-focused feature boundaries keep systems independently evolvable.
+- **Separation of physics and presentation** — React components do not own or duplicate engineering
+  equations.
+- **Typed engineering contracts** — explicit TypeScript inputs, outputs, and SI units make data flow
+  inspectable.
+- **Automated testing** — calculators, analyses, domain modules, and presentation components have
+  regression coverage.
+- **Educational modeling boundaries** — assumptions and limitations are stated wherever simplified
+  models are presented.
 
 ## Getting Started
 
 Requirements:
 
-- Node.js 20.9 or newer (Node.js 22 LTS recommended)
+- Node.js 20.9 or newer; Node.js 22 LTS is recommended
 - npm 10 or newer
 
 ```bash
-git clone https://github.com/<YOUR_GITHUB_USERNAME>/orbix.git
-cd orbix
+git clone https://github.com/<YOUR_GITHUB_USERNAME>/orbix-aerospace.git
+cd orbix-aerospace
 npm install
 npm run dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000).
 
-Replace `<YOUR_GITHUB_USERNAME>` with the repository owner's GitHub username after cloning or sharing
-the project.
-
 ## Testing
 
-The project uses Vitest for calculator, analysis, domain, and presentation-component coverage. The
-validation pipeline also enforces formatting, linting, TypeScript correctness, and a production
-Next.js build.
+The current release is verified by **65 test files** containing **854 passing tests**. The full
+validation pipeline also enforces Prettier formatting, zero-warning ESLint, TypeScript correctness,
+and a successful production Next.js build.
 
 ```bash
 npm test
@@ -129,31 +162,54 @@ npm run typecheck
 npm run build
 ```
 
-Run the complete local CI-equivalent pipeline with:
+Run the complete CI-equivalent pipeline with:
 
 ```bash
 npm run validate
 ```
 
-GitHub Actions runs the same `npm run validate` command for repository changes.
+GitHub Actions runs the same validation command for pushes and pull requests.
 
 ## Project Status
 
-ORBIX is an actively developed educational aerospace engineering simulation and visualization
-platform. The current release includes the end-to-end path from typed mission configuration through
-engineering analysis, reports, design review, and mission presentation.
+ORBIX is an active educational aerospace engineering and visualization project. The portfolio release
+includes the complete path from typed mission inputs through engineering analysis, reporting, design
+review, and mission presentation.
 
-The models intentionally favor clarity, composability, and education over operational fidelity.
-Assumptions and limitations are surfaced throughout the interface so results are interpreted in the
-proper context.
+The platform intentionally prioritizes traceable architecture, engineering communication, and
+learning value over operational fidelity. It does not claim certified vehicle performance or mission
+feasibility.
 
 ## Roadmap
 
-- Extend the standard-atmosphere and reentry models beyond the current educational range.
-- Add richer orbital propagation and ground-track analysis backed by validated engineering modules.
-- Introduce reusable charting for time-history and trade-study data.
-- Add optional WebGL-based 3D vehicle and mission visualization behind isolated client boundaries.
-- Expand aircraft, launch-vehicle, mission-preset, and TPS educational datasets with source metadata.
-- Add browser-level accessibility and critical-journey tests.
-- Add shareable, printable mission reports and optional PDF export.
-- Develop educator-focused lesson plans, guided exercises, and classroom scenario packs.
+### Phase 1 — Portfolio Release
+
+- Publish the verified ORBIX repository and CI workflow.
+- Add real product screenshots and concise portfolio walkthroughs.
+- Document the engineering architecture and educational boundaries.
+
+### Phase 2 — Improved Visualization
+
+- Add reusable time-history plots for trajectory and thermal data.
+- Improve orbital and ground-track rendering with validated source data.
+- Evaluate an isolated WebGL workspace for richer 3D presentation.
+
+### Phase 3 — Additional Spacecraft Systems
+
+- Extend sourced spacecraft, aircraft, launch-vehicle, and TPS educational data.
+- Add propulsion, power, communications, and subsystem learning modules.
+- Expand instructor-ready mission presets and guided exercises.
+
+### Phase 4 — Advanced Simulation Capabilities
+
+- Extend atmosphere and trajectory models behind new tested calculator modules.
+- Explore validated orbital propagation and mission-event sequencing.
+- Add browser-level accessibility and end-to-end tests for critical workflows.
+
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for local setup, architectural boundaries, and quality checks.
+
+## License
+
+This project is available under the [MIT License](LICENSE).
