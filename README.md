@@ -184,7 +184,14 @@ charting dependency is required.
 - **Educational modeling boundaries** — assumptions and limitations are stated wherever simplified
   models are presented.
 
-## Getting Started
+## Live Demo
+
+Live application: [https://orbix-aerospace.vercel.app](https://orbix-aerospace.vercel.app)
+
+The deployment is the public portfolio edition of ORBIX. It requires no account, API keys, or local
+data services.
+
+## Running ORBIX Locally
 
 Requirements:
 
@@ -199,6 +206,16 @@ npm run dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000).
+
+Create and run a production build with:
+
+```bash
+npm run build
+npm start
+```
+
+ORBIX currently requires no environment variables. If deployment configuration is introduced later,
+document public variable names in `.env.example` and keep all secrets out of source control.
 
 ## Testing
 

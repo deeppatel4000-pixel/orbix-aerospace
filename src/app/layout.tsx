@@ -4,7 +4,12 @@ import { siteConfig } from "@/config/site";
 
 import "./globals.css";
 
+const productionUrl = "https://orbix-aerospace.vercel.app";
+
 export const metadata: Metadata = {
+  alternates: {
+    canonical: "/",
+  },
   applicationName: siteConfig.name,
   category: "education",
   description: siteConfig.description,
@@ -12,14 +17,19 @@ export const metadata: Metadata = {
     "aerospace engineering",
     "aircraft education",
     "rocket science",
+    "orbital mechanics",
+    "spacecraft mission design",
     "engineering learning",
     "STEM",
   ],
+  metadataBase: new URL(productionUrl),
   openGraph: {
     description: siteConfig.description,
+    locale: "en_US",
     siteName: siteConfig.name,
     title: `${siteConfig.name} | ${siteConfig.tagline}`,
     type: "website",
+    url: "/",
   },
   title: {
     default: `${siteConfig.name} | ${siteConfig.tagline}`,
