@@ -13,8 +13,8 @@ export function SiteLogo() {
       <span className="flex h-9 w-9 items-center justify-center rounded-xl border border-accent/25 bg-accent/10 text-accent">
         <Orbit aria-hidden="true" size={20} strokeWidth={1.8} />
       </span>
-      <span className="text-lg font-semibold tracking-[-0.03em]">
-        {siteConfig.name}
+      <span className="text-lg font-semibold tracking-[0.08em]">
+        {siteConfig.wordmark}
       </span>
     </Link>
   );

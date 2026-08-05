@@ -15,9 +15,20 @@ export const metadata: Metadata = {
     "engineering learning",
     "STEM",
   ],
+  openGraph: {
+    description: siteConfig.description,
+    siteName: siteConfig.name,
+    title: `${siteConfig.name} | ${siteConfig.tagline}`,
+    type: "website",
+  },
   title: {
-    default: `${siteConfig.name} | Aerospace Engineering, Made Explorable`,
+    default: `${siteConfig.name} | ${siteConfig.tagline}`,
     template: `%s | ${siteConfig.name}`,
+  },
+  twitter: {
+    card: "summary",
+    description: siteConfig.description,
+    title: `${siteConfig.name} | ${siteConfig.tagline}`,
   },
 };
 

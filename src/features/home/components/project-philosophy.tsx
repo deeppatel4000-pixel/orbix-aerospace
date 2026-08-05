@@ -40,7 +40,7 @@ export function ProjectPhilosophy() {
       <Container>
         <div className="grid gap-12 lg:grid-cols-[0.72fr_1.28fr] lg:items-start lg:gap-20">
           <SectionHeading
-            description="AeroLab is being built as a transparent learning environment: serious enough for engineering students, approachable enough for a first encounter with the field."
+            description="Orbix is a transparent learning environment: serious enough for engineering students, approachable enough for a first encounter with the field."
             eyebrow="Project philosophy"
             title="Make the reasoning visible."
             titleId="project-philosophy-title"
@@ -49,7 +49,7 @@ export function ProjectPhilosophy() {
           <div className="overflow-hidden rounded-2xl border border-border bg-surface/85 shadow-2xl shadow-black/20">
             <div className="flex items-center justify-between border-b border-border bg-background/40 px-5 py-3.5">
               <span className="font-mono text-[0.65rem] tracking-[0.16em] text-muted uppercase">
-                Learning protocol // AL-PHI-01
+                Learning protocol // ORBIX-PHI-01
               </span>
               <span className="font-mono text-[0.62rem] text-accent">
                 ACTIVE

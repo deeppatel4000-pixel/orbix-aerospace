@@ -11,6 +11,7 @@ import {
 
 import { Container } from "@/components/layout/container";
 import { ButtonLink } from "@/components/ui/button-link";
+import { siteConfig } from "@/config/site";
 
 const consoleSystems = [
   { icon: Plane, label: "Flight systems", status: "READY" },
@@ -42,7 +43,7 @@ export function Hero() {
         <div className="max-w-3xl">
           <div className="inline-flex items-center gap-3 border-l-2 border-accent pl-3 font-mono text-xs tracking-[0.18em] text-accent uppercase">
             <Orbit aria-hidden="true" size={15} strokeWidth={1.8} />
-            AeroLab // Engineering learning environment
+            {siteConfig.wordmark} {"//"} {siteConfig.tagline}
           </div>
 
           <h1 className="mt-7 text-5xl leading-[0.96] font-semibold tracking-[-0.055em] text-balance sm:text-6xl lg:text-7xl xl:text-[5rem]">
@@ -51,10 +52,7 @@ export function Hero() {
           </h1>
 
           <p className="mt-7 max-w-2xl text-lg leading-8 text-muted sm:text-xl">
-            AeroLab turns complex aerospace systems into structured, explorable
-            learning environments. Examine vehicles, trace design tradeoffs, and
-            build an engineer&apos;s understanding of how missions become
-            machines.
+            {siteConfig.description}
           </p>
 
           <div className="mt-9 flex flex-col gap-3 sm:flex-row">
@@ -90,7 +88,7 @@ export function Hero() {
               <div className="flex items-center gap-2">
                 <span className="h-2 w-2 rounded-full bg-accent shadow-[0_0_10px_rgb(87_215_255/0.8)]" />
                 <p className="font-mono text-[0.68rem] tracking-[0.18em] text-muted uppercase">
-                  Systems console // AL-01
+                  Systems console // ORBIX-01
                 </p>
               </div>
               <span className="font-mono text-[0.65rem] text-accent">
@@ -176,7 +174,7 @@ export function Hero() {
       <div className="border-t border-border/70 bg-background/45">
         <Container>
           <ul
-            aria-label="AeroLab engineering disciplines"
+            aria-label={`${siteConfig.name} engineering disciplines`}
             className="grid grid-cols-2 divide-x divide-y divide-border/70 sm:grid-cols-4 sm:divide-y-0"
           >
             {missionDisciplines.map((discipline, index) => (

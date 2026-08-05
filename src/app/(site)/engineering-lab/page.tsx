@@ -1,25 +1,13 @@
 import type { Metadata } from "next";
-import { FlaskConical } from "lucide-react";
 
-import { FeaturePlaceholder } from "@/components/layout/feature-placeholder";
+import { EngineeringDashboard } from "@/features/engineering-lab";
 
 export const metadata: Metadata = {
-  title: "Engineering Lab",
-  description: "Apply aerospace engineering principles in guided tools.",
+  title: "Engineering Laboratory",
+  description:
+    "Apply aerospace engineering equations with validated, transparent calculators.",
 };
 
 export default function EngineeringLabPage() {
-  return (
-    <FeaturePlaceholder
-      description="A future hands-on workspace for applying equations, testing assumptions, and seeing how inputs affect aerospace engineering outcomes."
-      eyebrow="Applied engineering"
-      icon={FlaskConical}
-      plannedItems={[
-        "Guided engineering calculators",
-        "Transparent formulas and assumptions",
-        "Educational interactive simulations",
-      ]}
-      title="Engineering Lab"
-    />
-  );
+  return <EngineeringDashboard />;
 }

@@ -1,25 +1,31 @@
 import type { Metadata } from "next";
-import { Scale } from "lucide-react";
 
-import { FeaturePlaceholder } from "@/components/layout/feature-placeholder";
+import {
+  ComparePage,
+  getComparisonResult,
+  listComparisonOptions,
+  parseComparisonQuery,
+  type ComparisonSearchParams,
+} from "@/features/compare";
+
+interface CompareRouteProps {
+  searchParams: Promise<ComparisonSearchParams>;
+}
 
 export const metadata: Metadata = {
-  title: "Compare",
-  description: "Compare aerospace vehicles through an engineering lens.",
+  title: "Comparison Engine",
+  description:
+    "Compare aircraft or launch vehicles through a structured engineering matrix.",
 };
 
-export default function ComparePage() {
+export default async function CompareRoute({
+  searchParams,
+}: CompareRouteProps) {
+  const query = parseComparisonQuery(await searchParams);
+  const options = listComparisonOptions();
+  const result = getComparisonResult(query.category, query.vehicleIds);
+
   return (
-    <FeaturePlaceholder
-      description="A future analysis workspace for placing vehicles side by side and understanding the engineering tradeoffs behind their differences."
-      eyebrow="Tradeoff analysis"
-      icon={Scale}
-      plannedItems={[
-        "Side-by-side technical characteristics",
-        "Normalized engineering units",
-        "Clear explanations of design tradeoffs",
-      ]}
-      title="Compare"
-    />
+    <ComparePage category={query.category} options={options} result={result} />
   );
 }

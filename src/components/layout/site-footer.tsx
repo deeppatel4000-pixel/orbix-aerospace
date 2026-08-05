@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Container } from "@/components/layout/container";
 import { SiteLogo } from "@/components/layout/site-logo";
 import { navigationItems } from "@/config/navigation";
+import { siteConfig } from "@/config/site";
 
 export function SiteFooter() {
   return (
@@ -11,8 +12,8 @@ export function SiteFooter() {
         <div>
           <SiteLogo />
           <p className="mt-4 max-w-md text-sm leading-6 text-muted">
-            Aerospace engineering education through exploration, analysis, and
-            guided practice.
+            {siteConfig.tagline}. Aerospace education through exploration,
+            analysis, and guided practice.
           </p>
         </div>
         <div className="sm:text-right">
