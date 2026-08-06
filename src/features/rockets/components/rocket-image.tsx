@@ -58,6 +58,7 @@ export function RocketImage({
         fill
         fetchPriority={priority ? "high" : undefined}
         priority={priority}
+        quality={90}
         sizes={sizes}
         src={visual.src}
         style={{ objectPosition: visual.objectPosition }}

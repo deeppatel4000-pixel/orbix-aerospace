@@ -41,8 +41,12 @@ export function OrbixMissionArray() {
             className="absolute h-72 w-40 rotate-[28deg] rounded-[50%] border border-accent/12"
             aria-hidden="true"
           />
-          <div className="relative flex h-32 w-32 items-center justify-center rounded-[2rem] border border-accent/25 bg-orbital/75 shadow-[0_0_64px_rgb(108_230_255/0.14)]">
-            <OrbixMark className="h-24 w-24" />
+          <div className="relative flex h-36 w-36 items-center justify-center">
+            <OrbixMark
+              className="h-32 w-32 drop-shadow-[0_0_44px_rgb(108_230_255/0.2)]"
+              priority
+              sizes="128px"
+            />
           </div>
           <span
             className="absolute top-[18%] right-[8%] h-2.5 w-2.5 rounded-full bg-plasma shadow-[0_0_18px_var(--plasma-violet)]"

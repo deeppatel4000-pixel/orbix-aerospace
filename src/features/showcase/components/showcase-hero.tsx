@@ -35,7 +35,11 @@ export function ShowcaseHero() {
             ORBIX // Portfolio showcase
           </div>
 
-          <OrbixWordmark className="mt-5 w-full max-w-[30rem]" priority />
+          <OrbixWordmark
+            className="mt-5 w-full max-w-[30rem]"
+            priority
+            sizes="(max-width: 640px) calc(100vw - 2.5rem), 480px"
+          />
 
           <h1 className="font-display mt-3 text-5xl leading-[0.94] font-semibold tracking-[-0.055em] text-balance sm:text-6xl lg:text-7xl xl:text-[5rem]">
             Mission archive.

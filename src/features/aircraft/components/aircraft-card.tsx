@@ -21,6 +21,7 @@ import { cn } from "@/lib/cn";
 interface AircraftCardProps {
   aircraft: Aircraft;
   className?: string;
+  sizes?: string;
   treatment?: AircraftCardTreatment;
 }
 
@@ -33,6 +34,7 @@ const imageTreatmentClasses: Record<AircraftCardTreatment, string> = {
 export function AircraftCard({
   aircraft,
   className,
+  sizes,
   treatment = "standard",
 }: AircraftCardProps) {
   const titleId = `aircraft-card-${aircraft.id}`;
@@ -53,9 +55,10 @@ export function AircraftCard({
           className={imageTreatmentClasses[treatment]}
           imageClassName="saturate-[0.9] contrast-[1.04]"
           sizes={
-            treatment === "flagship"
+            sizes ??
+            (treatment === "flagship"
               ? "(max-width: 1023px) 100vw, 66vw"
-              : "(max-width: 767px) 100vw, (max-width: 1023px) 50vw, 42vw"
+              : "(max-width: 767px) 100vw, (max-width: 1023px) 50vw, 42vw")
           }
         />
         <div

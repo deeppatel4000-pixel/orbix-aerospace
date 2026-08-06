@@ -1,5 +1,3 @@
-import { Plane, Rocket } from "lucide-react";
-
 import { Container } from "@/components/layout/container";
 import { SectionHeading } from "@/features/home/components/section-heading";
 import { VehicleCard } from "@/features/home/components/vehicle-card";
@@ -7,32 +5,43 @@ import { VehicleCard } from "@/features/home/components/vehicle-card";
 const featuredVehicles = [
   {
     code: "AV-01",
-    href: "/aircraft",
-    icon: Plane,
+    href: "/aircraft/f-22-raptor",
+    id: "f-22-raptor",
+    kind: "aircraft",
     name: "F-22 Raptor",
     type: "Aircraft",
   },
   {
     code: "AV-02",
-    href: "/aircraft",
-    icon: Plane,
+    href: "/aircraft/sr-71-blackbird",
+    id: "sr-71-blackbird",
+    kind: "aircraft",
     name: "SR-71 Blackbird",
     type: "Aircraft",
   },
   {
     code: "LV-01",
-    href: "/rockets",
-    icon: Rocket,
+    href: "/rockets/falcon-9",
+    id: "falcon-9",
+    kind: "rocket",
     name: "Falcon 9",
     type: "Launch vehicle",
   },
   {
     code: "LV-02",
-    href: "/rockets",
-    icon: Rocket,
+    href: "/rockets/saturn-v",
+    id: "saturn-v",
+    kind: "rocket",
     name: "Saturn V",
     type: "Launch vehicle",
   },
+] as const;
+
+const featuredVehiclePlacement = [
+  "xl:col-span-7",
+  "xl:col-span-5",
+  "xl:col-span-5",
+  "xl:col-span-7",
 ] as const;
 
 export function FeaturedVehicles() {
@@ -56,9 +65,13 @@ export function FeaturedVehicles() {
           </div>
         </div>
 
-        <div className="mt-14 grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
-          {featuredVehicles.map((vehicle) => (
-            <VehicleCard key={vehicle.name} {...vehicle} />
+        <div className="mt-14 grid gap-5 md:grid-cols-2 xl:grid-cols-12">
+          {featuredVehicles.map((vehicle, index) => (
+            <VehicleCard
+              className={featuredVehiclePlacement[index]}
+              key={vehicle.id}
+              {...vehicle}
+            />
           ))}
         </div>
       </Container>

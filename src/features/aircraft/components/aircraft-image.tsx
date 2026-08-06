@@ -52,11 +52,12 @@ export function AircraftImage({
       <Image
         alt={visual.alt}
         className={cn(
-          "object-cover transition-transform duration-700 ease-out motion-safe:group-hover:scale-[1.025]",
+          "object-cover transition-transform duration-700 ease-out motion-safe:group-hover:scale-[1.025] motion-reduce:transition-none",
           imageClassName,
         )}
         fill
         priority={priority}
+        quality={90}
         sizes={sizes}
         src={visual.src}
         style={{ objectPosition: visual.objectPosition }}

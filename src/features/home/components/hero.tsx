@@ -29,7 +29,11 @@ export function Hero() {
 
           <div className="mt-6 flex items-end gap-4">
             <h1 aria-label="ORBIX" className="w-full max-w-[42rem]">
-              <OrbixWordmark className="w-full" priority />
+              <OrbixWordmark
+                className="w-full"
+                priority
+                sizes="(max-width: 640px) calc(100vw - 2.5rem), 672px"
+              />
             </h1>
             <span
               className="mb-1 hidden h-2 w-2 rounded-full bg-telemetry shadow-[0_0_16px_var(--telemetry-green)] sm:block"

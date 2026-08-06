@@ -39,7 +39,7 @@ const aircraftVisuals = {
     objectPosition: "50% 48%",
     sourceUrl:
       "https://upload.wikimedia.org/wikipedia/commons/thumb/6/61/F-35A_flight_%28cropped%29.jpg/1280px-F-35A_flight_%28cropped%29.jpg",
-    src: "/images/aircraft/f-35-lightning-ii.png",
+    src: "/images/aircraft/f-35-lightning-ii.jpg",
   },
   "sr-71-blackbird": {
     alt: "SR-71 Blackbird in high-altitude flight above the Earth",

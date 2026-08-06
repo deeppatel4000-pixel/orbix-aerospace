@@ -78,6 +78,7 @@ export function OrbixEnvironmentBackdrop({
         )}
         fill
         priority={priority}
+        quality={90}
         sizes={sizes}
         src={environment.image}
       />

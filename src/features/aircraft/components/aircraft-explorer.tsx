@@ -207,6 +207,9 @@ export function AircraftExplorer({ aircraft }: AircraftExplorerProps) {
                   aircraft={item}
                   className={cardPlacementClasses[index] ?? "lg:col-span-6"}
                   key={item.id}
+                  sizes={
+                    index === 4 ? "(max-width: 1023px) 100vw, 100vw" : undefined
+                  }
                   treatment={visual?.cardTreatment}
                 />
               );
