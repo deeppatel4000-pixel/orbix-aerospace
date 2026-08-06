@@ -20,19 +20,19 @@ export function OrbixMark({
       aria-hidden={title ? undefined : true}
       aria-label={title}
       className={cn(
-        "orbix-official-emblem relative block shrink-0 overflow-hidden rounded-[22%] drop-shadow-[0_0_18px_var(--plasma-violet)]",
+        "orbix-official-emblem relative block aspect-square shrink-0 drop-shadow-[0_0_18px_var(--plasma-violet)]",
         className,
       )}
       role={title ? "img" : undefined}
     >
       <Image
         alt=""
-        className="scale-[1.16] object-contain mix-blend-screen"
+        className="object-contain"
         fill
         priority={priority}
         quality={90}
         sizes={sizes}
-        src="/brand/orbix-app-mark.png"
+        src="/brand/orbix-mark-transparent.png"
       />
     </span>
   );

@@ -20,25 +20,19 @@ export function OrbixWordmark({
       aria-hidden={title ? undefined : true}
       aria-label={title}
       className={cn(
-        "orbix-official-wordmark relative block aspect-[2.64/1] shrink-0 overflow-hidden",
+        "orbix-official-wordmark relative block aspect-[1055/400] shrink-0",
         className,
       )}
       role={title ? "img" : undefined}
     >
       <Image
         alt=""
-        className="object-contain mix-blend-screen brightness-[1.08] contrast-[1.55]"
+        className="object-contain"
         fill
         priority={priority}
         quality={90}
         sizes={sizes}
-        src="/brand/orbix-wordmark.png"
-        style={{
-          WebkitMaskImage:
-            "radial-gradient(ellipse 106% 98% at center, black 68%, transparent 100%)",
-          maskImage:
-            "radial-gradient(ellipse 106% 98% at center, black 68%, transparent 100%)",
-        }}
+        src="/brand/orbix-wordmark-transparent.png"
       />
     </span>
   );
