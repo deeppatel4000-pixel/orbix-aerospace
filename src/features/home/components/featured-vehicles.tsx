@@ -39,24 +39,24 @@ export function FeaturedVehicles() {
   return (
     <section
       aria-labelledby="featured-vehicles-title"
-      className="scroll-mt-24 py-24 sm:py-32"
+      className="orbix-section scroll-mt-24"
       id="featured-vehicles"
     >
       <Container>
         <div className="flex flex-col gap-7 lg:flex-row lg:items-end lg:justify-between">
           <SectionHeading
-            description="Four landmark aerospace vehicles establish the first reference set. Their full engineering profiles will arrive in a later development phase."
-            eyebrow="Vehicle registry // Initial set"
+            description="Inspect landmark aircraft and launch vehicles through typed performance, propulsion, dimensional, and engineering data."
+            eyebrow="Vehicle registry // Active reference set"
             title="Featured vehicles"
             titleId="featured-vehicles-title"
           />
           <div className="max-w-sm border-l border-border pl-4 font-mono text-[0.65rem] leading-5 tracking-[0.12em] text-muted uppercase">
-            <p>Registry status: placeholders active</p>
-            <p>Technical datasets: not yet connected</p>
+            <p>Registry status: engineering records active</p>
+            <p>Domains: aircraft + launch vehicles</p>
           </div>
         </div>
 
-        <div className="mt-12 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <div className="mt-14 grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
           {featuredVehicles.map((vehicle) => (
             <VehicleCard key={vehicle.name} {...vehicle} />
           ))}

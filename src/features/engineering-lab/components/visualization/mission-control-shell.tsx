@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 
+import { OrbixEnvironmentBackdrop } from "@/components/brand/orbix-environment";
 import type {
   MissionPresetCategory,
   MissionProfileAnalysis,
@@ -42,9 +43,10 @@ export function MissionControlShell({
   return (
     <article
       aria-labelledby="mission-control-dashboard-title"
-      className="technical-grid overflow-hidden rounded-2xl border border-white/12 bg-[#030a0e] text-[#e3ebec] shadow-[0_30px_90px_rgba(0,0,0,0.3)]"
+      className="relative isolate overflow-hidden rounded-2xl border border-accent/18 bg-[#030a0e] text-[#e3ebec] shadow-[0_30px_90px_rgba(0,0,0,0.38)]"
       data-active-workspace={activeWorkspace}
     >
+      <OrbixEnvironmentBackdrop className="z-0 opacity-28" theme="orbital" />
       <MissionControlHeader
         currentWorkspace={currentWorkspace?.label ?? "Overview"}
         missionCategory={missionCategory}
@@ -52,7 +54,7 @@ export function MissionControlShell({
         missionReport={missionReport}
       />
 
-      <div className="grid min-w-0 xl:grid-cols-[15.5rem_minmax(0,1fr)]">
+      <div className="relative z-10 grid min-w-0 xl:grid-cols-[15.5rem_minmax(0,1fr)]">
         <MissionControlSidebar
           activeWorkspace={activeWorkspace}
           onWorkspaceChange={onWorkspaceChange}

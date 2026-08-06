@@ -1,5 +1,6 @@
 export { AircraftCard } from "./aircraft-card";
 export { AircraftExplorer } from "./aircraft-explorer";
+export { AircraftImage } from "./aircraft-image";
 export { AircraftProfile } from "./aircraft-profile";
 export { DimensionsPanel } from "./dimensions-panel";
 export { EngineeringNotesPanel } from "./engineering-notes-panel";

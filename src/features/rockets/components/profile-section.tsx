@@ -20,7 +20,7 @@ export function ProfileSection({
   return (
     <section
       aria-labelledby={titleId}
-      className="scroll-mt-28 border-t border-border py-16 sm:py-20"
+      className="scroll-mt-40 border-t border-atmosphere/20 py-16 sm:py-20"
       id={id}
     >
       <div className="grid gap-10 lg:grid-cols-[18rem_minmax(0,1fr)] lg:gap-16">
@@ -29,7 +29,7 @@ export function ProfileSection({
             {eyebrow}
           </p>
           <h2
-            className="mt-3 text-3xl font-semibold tracking-[-0.035em]"
+            className="font-display mt-3 text-3xl font-semibold tracking-[-0.035em] sm:text-4xl"
             id={titleId}
           >
             {title}

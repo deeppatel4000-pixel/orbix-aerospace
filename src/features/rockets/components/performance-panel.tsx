@@ -51,15 +51,17 @@ export function PerformancePanel({
         ]}
       />
 
-      <div className="mt-6 overflow-hidden rounded-2xl border border-border bg-surface/65">
-        <div className="flex items-center gap-3 border-b border-border bg-background/35 p-5 sm:p-6">
+      <div className="orbix-frame mt-6 overflow-hidden border-atmosphere/20 bg-surface/70">
+        <div className="flex items-center gap-3 border-b border-atmosphere/20 bg-[#080d17] p-5 sm:p-6">
           <PackageOpen
             aria-hidden="true"
             className="text-accent"
             size={19}
             strokeWidth={1.7}
           />
-          <h3 className="text-lg font-semibold">Payload capability</h3>
+          <h3 className="font-display text-xl font-semibold">
+            Payload capability
+          </h3>
         </div>
         <dl className="divide-y divide-border">
           {performance.payloadCapabilities.map((capability) => {
@@ -74,12 +76,12 @@ export function PerformancePanel({
                   <dt className="font-semibold">
                     {formatOrbitType(capability.orbit)}
                   </dt>
-                  <p className="mt-1 text-xs text-muted">
+                  <dd className="mt-1 text-xs text-muted">
                     {formatLaunchConfiguration(capability.configuration)}
                     configuration // {payload.note}
-                  </p>
+                  </dd>
                 </div>
-                <dd className="font-mono text-xl text-accent">
+                <dd className="orbix-telemetry-value text-xl text-signal">
                   {payload.value}
                 </dd>
               </div>
@@ -88,7 +90,7 @@ export function PerformancePanel({
         </dl>
       </div>
 
-      <div className="mt-6 rounded-2xl border border-border bg-surface/65 p-5 sm:p-6">
+      <div className="orbix-frame mt-6 border-atmosphere/20 bg-surface/70 p-5 sm:p-6">
         <p className="flex items-center gap-2 font-mono text-[0.62rem] tracking-[0.14em] text-muted uppercase">
           <Orbit aria-hidden="true" className="text-accent" size={15} />
           Supported mission regimes
@@ -96,7 +98,7 @@ export function PerformancePanel({
         <ul className="mt-4 flex flex-wrap gap-2">
           {performance.supportedOrbits.map((orbit) => (
             <li
-              className="rounded-full border border-accent/20 bg-accent/8 px-3 py-1.5 text-xs text-accent"
+              className="border border-accent/20 bg-accent/8 px-3 py-1.5 text-xs text-accent"
               key={orbit}
             >
               {formatOrbitType(orbit)} ({orbit})

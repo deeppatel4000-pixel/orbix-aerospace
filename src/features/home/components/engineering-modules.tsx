@@ -43,18 +43,18 @@ export function EngineeringModules() {
   return (
     <section
       aria-labelledby="engineering-modules-title"
-      className="scroll-mt-24 border-y border-border/70 bg-surface/35 py-24 sm:py-32"
+      className="orbix-section orbix-brand-glow scroll-mt-24 border-y border-border/70 bg-surface/25"
       id="engineering-modules"
     >
       <Container>
         <SectionHeading
-          description="Purpose-built workspaces will connect vehicle exploration to the physics and systems thinking used by aerospace engineers."
+          description="Purpose-built workspaces connect vehicle exploration to tested physics, mission analysis, and systems thinking."
           eyebrow="Engineering workstations"
           title="Engineering modules"
           titleId="engineering-modules-title"
         />
 
-        <div className="mt-12 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+        <div className="mt-14 grid gap-5 md:grid-cols-2 xl:grid-cols-4">
           {engineeringModules.map((module) => (
             <ModuleCard key={module.title} {...module} />
           ))}

@@ -17,21 +17,21 @@ export function VehicleCard({
   type,
 }: VehicleCardProps) {
   return (
-    <article className="group relative overflow-hidden rounded-2xl border border-border bg-surface/65 transition-colors hover:border-accent/45 hover:bg-surface-elevated/70">
+    <article className="orbix-premium-card orbix-premium-card--interactive group relative">
       <Link
-        aria-label={"Open the " + name + " placeholder profile"}
-        className="block rounded-2xl"
+        aria-label={"Open the " + name + " profile"}
+        className="block"
         href={href}
       >
         <div className="flex items-center justify-between border-b border-border/80 px-4 py-3">
           <span className="font-mono text-[0.62rem] tracking-[0.16em] text-muted uppercase">
             {code}
-            {" // Reference queued"}
+            {" // Engineering record"}
           </span>
           <span className="h-1.5 w-1.5 rounded-full bg-signal shadow-[0_0_9px_rgb(255_184_77/0.55)]" />
         </div>
 
-        <div className="technical-grid relative flex aspect-[16/10] items-center justify-center overflow-hidden border-b border-border/80 bg-background/45">
+        <div className="technical-grid relative flex aspect-[16/10] items-center justify-center overflow-hidden border-b border-border/80 bg-background/55">
           <div
             aria-hidden="true"
             className="absolute h-40 w-40 rounded-full border border-accent/10 transition-transform duration-500 motion-safe:group-hover:scale-110"
@@ -47,7 +47,7 @@ export function VehicleCard({
             strokeWidth={1.1}
           />
           <span className="absolute right-3 bottom-3 font-mono text-[0.58rem] tracking-[0.12em] text-muted uppercase">
-            Visual pending
+            Profile available
           </span>
         </div>
 

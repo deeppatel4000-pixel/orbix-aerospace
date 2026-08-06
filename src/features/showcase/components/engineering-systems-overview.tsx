@@ -56,7 +56,7 @@ export function EngineeringSystemsOverview() {
         <div className="mt-12 grid gap-4 md:grid-cols-2">
           {featuredSystems.map((system) => (
             <article
-              className="group relative overflow-hidden rounded-2xl border border-border bg-surface/65 p-6 transition-colors hover:border-accent/35 sm:p-7"
+              className="orbix-premium-card orbix-premium-card--interactive group p-6 sm:p-7"
               key={system.code}
             >
               <div

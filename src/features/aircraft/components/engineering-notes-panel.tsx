@@ -22,12 +22,12 @@ export function EngineeringNotesPanel({ notes }: EngineeringNotesPanelProps) {
       <div className="grid gap-4">
         {notes.map((note, index) => (
           <article
-            className="rounded-2xl border border-border bg-surface/65 p-5 sm:p-6"
+            className="orbix-frame border-tactical/25 bg-[#080d0c]/90 p-5 transition-colors hover:border-tactical-amber/35 sm:p-6"
             key={note.id}
           >
             <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
               <div className="flex items-center gap-3">
-                <span className="flex h-10 w-10 items-center justify-center rounded-xl border border-border bg-background/45 text-accent">
+                <span className="flex h-10 w-10 items-center justify-center border border-tactical-amber/25 bg-tactical-amber/8 text-tactical-amber">
                   <FileText aria-hidden="true" size={18} strokeWidth={1.7} />
                 </span>
                 <div>
@@ -39,7 +39,7 @@ export function EngineeringNotesPanel({ notes }: EngineeringNotesPanelProps) {
                   </h3>
                 </div>
               </div>
-              <span className="self-start rounded-full border border-signal/30 bg-signal/8 px-3 py-1 font-mono text-[0.62rem] tracking-[0.12em] text-signal uppercase">
+              <span className="self-start border border-signal/30 bg-signal/8 px-3 py-1 font-mono text-[0.62rem] tracking-[0.12em] text-signal uppercase">
                 {formatEngineeringNoteStatus(note.status)}
               </span>
             </div>

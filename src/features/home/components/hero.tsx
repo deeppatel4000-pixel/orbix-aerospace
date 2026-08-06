@@ -1,196 +1,97 @@
-import {
-  ArrowDownRight,
-  ArrowRight,
-  Binary,
-  Orbit,
-  Plane,
-  Radar,
-  Rocket,
-  Sigma,
-} from "lucide-react";
+import { Command, FlaskConical, Orbit } from "lucide-react";
 
+import { OrbixBackground } from "@/components/brand/orbix-background";
+import { OrbixEnvironmentBackdrop } from "@/components/brand/orbix-environment";
+import { OrbixMissionArray } from "@/components/brand/orbix-mission-array";
+import { OrbixWordmark } from "@/components/brand/orbix-wordmark";
 import { Container } from "@/components/layout/container";
 import { ButtonLink } from "@/components/ui/button-link";
-import { siteConfig } from "@/config/site";
 
-const consoleSystems = [
-  { icon: Plane, label: "Flight systems", status: "READY" },
-  { icon: Rocket, label: "Launch systems", status: "READY" },
-  { icon: Sigma, label: "Engineering methods", status: "STAGED" },
-  { icon: Binary, label: "Learning modules", status: "STAGED" },
-] as const;
-
-const missionDisciplines = [
-  "Aerodynamics",
-  "Propulsion",
-  "Orbital mechanics",
-  "Systems engineering",
+const disciplines = [
+  ["01", "Orbital mechanics"],
+  ["02", "Mission systems"],
+  ["03", "Atmospheric entry"],
+  ["04", "Thermal protection"],
 ] as const;
 
 export function Hero() {
   return (
-    <section className="relative isolate overflow-hidden border-b border-border/70">
-      <div
-        aria-hidden="true"
-        className="technical-grid absolute inset-0 -z-20 [mask-image:linear-gradient(to_bottom,black,transparent_92%)] opacity-60"
-      />
-      <div
-        aria-hidden="true"
-        className="absolute -top-40 left-[62%] -z-10 h-[42rem] w-[42rem] rounded-full border border-accent/10 shadow-[0_0_160px_rgb(87_215_255/0.08)]"
-      />
+    <section className="orbix-brand-glow relative isolate overflow-hidden border-b border-accent/15">
+      <OrbixEnvironmentBackdrop priority theme="orbital" />
+      <OrbixBackground className="-z-10 opacity-75" />
 
-      <Container className="grid min-h-[calc(100svh-4.5rem)] items-center gap-14 py-16 lg:grid-cols-[minmax(0,1.05fr)_minmax(24rem,0.75fr)] lg:gap-20 lg:py-20">
-        <div className="max-w-3xl">
-          <div className="inline-flex items-center gap-3 border-l-2 border-accent pl-3 font-mono text-xs tracking-[0.18em] text-accent uppercase">
-            <Orbit aria-hidden="true" size={15} strokeWidth={1.8} />
-            {siteConfig.wordmark} {"//"} {siteConfig.tagline}
+      <Container className="grid min-h-[calc(100svh-5.5rem)] items-center gap-16 py-20 lg:grid-cols-[minmax(0,1.12fr)_minmax(24rem,0.68fr)] lg:gap-24 lg:py-24">
+        <div className="relative max-w-4xl">
+          <div className="orbix-kicker flex items-center gap-3">
+            <Orbit aria-hidden="true" size={15} strokeWidth={1.6} />
+            Mission design // Engineering analysis // Visualization
           </div>
 
-          <h1 className="mt-7 text-5xl leading-[0.96] font-semibold tracking-[-0.055em] text-balance sm:text-6xl lg:text-7xl xl:text-[5rem]">
-            Read the engineering behind
-            <span className="block text-accent">flight and launch.</span>
-          </h1>
+          <div className="mt-6 flex items-end gap-4">
+            <h1 aria-label="ORBIX" className="w-full max-w-[42rem]">
+              <OrbixWordmark className="w-full" priority />
+            </h1>
+            <span
+              className="mb-1 hidden h-2 w-2 rounded-full bg-telemetry shadow-[0_0_16px_var(--telemetry-green)] sm:block"
+              aria-hidden="true"
+            />
+          </div>
 
-          <p className="mt-7 max-w-2xl text-lg leading-8 text-muted sm:text-xl">
-            {siteConfig.description}
+          <p className="font-display mt-4 max-w-3xl text-2xl leading-tight font-medium tracking-[-0.025em] text-foreground sm:text-3xl lg:text-[2.65rem]">
+            Advanced Aerospace Engineering Laboratory
           </p>
 
-          <div className="mt-9 flex flex-col gap-3 sm:flex-row">
-            <ButtonLink className="w-full sm:w-auto" href="#featured-vehicles">
-              Explore featured vehicles
-              <ArrowDownRight aria-hidden="true" size={17} />
+          <p className="mt-7 max-w-[42rem] text-lg leading-8 text-muted sm:text-xl">
+            <span className="font-medium text-foreground">
+              Design missions.
+            </span>{" "}
+            Analyze spacecraft. Explore orbital systems through transparent,
+            educational engineering workflows built for serious technical
+            learning.
+          </p>
+
+          <div className="mt-10 flex flex-col gap-3 sm:flex-row">
+            <ButtonLink
+              className="w-full sm:w-auto"
+              href="/engineering-lab#mission-control-dashboard"
+            >
+              <Command aria-hidden="true" size={17} />
+              Launch Mission Control
             </ButtonLink>
             <ButtonLink
               className="w-full sm:w-auto"
-              href="#engineering-modules"
+              href="/engineering-lab"
               variant="secondary"
             >
-              View engineering modules
-              <ArrowRight aria-hidden="true" size={17} />
+              <FlaskConical aria-hidden="true" size={17} />
+              Explore Engineering Lab
             </ButtonLink>
           </div>
 
-          <div className="mt-10 flex flex-wrap gap-x-6 gap-y-3 border-t border-border/70 pt-5">
-            <span className="font-mono text-[0.68rem] tracking-[0.18em] text-muted uppercase">
-              Mission scope
-            </span>
-            <span className="text-sm text-foreground">Aircraft</span>
-            <span className="text-sm text-foreground">Launch vehicles</span>
-            <span className="text-sm text-foreground">
-              Engineering fundamentals
-            </span>
+          <div className="mt-14 grid max-w-[42rem] grid-cols-2 gap-px overflow-hidden rounded-[var(--radius-card)] border border-border/75 bg-border/70 sm:grid-cols-4">
+            {disciplines.map(([code, label]) => (
+              <div className="bg-background/88 px-4 py-4" key={code}>
+                <span className="font-mono text-[0.58rem] tracking-[0.14em] text-accent">
+                  {code}
+                </span>
+                <p className="mt-1.5 text-xs leading-5 text-muted">{label}</p>
+              </div>
+            ))}
           </div>
         </div>
 
-        <div className="relative mx-auto w-full max-w-lg lg:mx-0 lg:justify-self-end">
-          <div className="overflow-hidden rounded-2xl border border-border bg-surface/90 shadow-2xl shadow-black/35 backdrop-blur">
-            <div className="flex items-center justify-between border-b border-border bg-background/45 px-5 py-3.5">
-              <div className="flex items-center gap-2">
-                <span className="h-2 w-2 rounded-full bg-accent shadow-[0_0_10px_rgb(87_215_255/0.8)]" />
-                <p className="font-mono text-[0.68rem] tracking-[0.18em] text-muted uppercase">
-                  Systems console // ORBIX-01
-                </p>
-              </div>
-              <span className="font-mono text-[0.65rem] text-accent">
-                ONLINE
-              </span>
-            </div>
-
-            <div className="grid gap-5 p-5 sm:grid-cols-[0.82fr_1.18fr] sm:p-6">
-              <div className="technical-grid relative flex min-h-48 items-center justify-center overflow-hidden rounded-xl border border-border bg-background/55 sm:min-h-full">
-                <div
-                  aria-hidden="true"
-                  className="absolute h-40 w-40 rounded-full border border-accent/20"
-                />
-                <div
-                  aria-hidden="true"
-                  className="absolute h-24 w-24 rotate-45 border border-dashed border-accent/25"
-                />
-                <div
-                  aria-hidden="true"
-                  className="absolute inset-x-5 top-1/2 h-px bg-accent/15"
-                />
-                <div
-                  aria-hidden="true"
-                  className="absolute inset-y-5 left-1/2 w-px bg-accent/15"
-                />
-                <Radar
-                  aria-hidden="true"
-                  className="relative text-accent drop-shadow-[0_0_16px_rgb(87_215_255/0.28)]"
-                  size={56}
-                  strokeWidth={1.25}
-                />
-                <span className="absolute bottom-3 left-3 font-mono text-[0.6rem] tracking-[0.14em] text-muted uppercase">
-                  Learning space
-                </span>
-              </div>
-
-              <div>
-                <p className="font-mono text-[0.65rem] tracking-[0.16em] text-muted uppercase">
-                  Curriculum systems
-                </p>
-                <ul className="mt-3 space-y-2">
-                  {consoleSystems.map((system) => (
-                    <li
-                      className="flex items-center gap-3 rounded-lg border border-border/80 bg-background/40 px-3 py-3"
-                      key={system.label}
-                    >
-                      <system.icon
-                        aria-hidden="true"
-                        className="shrink-0 text-accent"
-                        size={16}
-                        strokeWidth={1.7}
-                      />
-                      <span className="min-w-0 flex-1 text-xs font-medium text-foreground">
-                        {system.label}
-                      </span>
-                      <span className="font-mono text-[0.58rem] tracking-wider text-muted">
-                        {system.status}
-                      </span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </div>
-
-            <dl className="grid grid-cols-2 border-t border-border bg-background/35">
-              <div className="border-r border-border px-5 py-4">
-                <dt className="font-mono text-[0.6rem] tracking-[0.16em] text-muted uppercase">
-                  Operating mode
-                </dt>
-                <dd className="mt-1.5 text-sm font-medium">Education</dd>
-              </div>
-              <div className="px-5 py-4">
-                <dt className="font-mono text-[0.6rem] tracking-[0.16em] text-muted uppercase">
-                  Platform phase
-                </dt>
-                <dd className="mt-1.5 text-sm font-medium">Foundation</dd>
-              </div>
-            </dl>
-          </div>
+        <div className="mx-auto w-full max-w-lg lg:mx-0 lg:justify-self-end">
+          <OrbixMissionArray />
         </div>
       </Container>
 
-      <div className="border-t border-border/70 bg-background/45">
-        <Container>
-          <ul
-            aria-label={`${siteConfig.name} engineering disciplines`}
-            className="grid grid-cols-2 divide-x divide-y divide-border/70 sm:grid-cols-4 sm:divide-y-0"
-          >
-            {missionDisciplines.map((discipline, index) => (
-              <li
-                className="flex items-center gap-3 px-3 py-4 first:pl-0 sm:px-5"
-                key={discipline}
-              >
-                <span className="font-mono text-[0.6rem] text-accent">
-                  0{index + 1}
-                </span>
-                <span className="text-xs text-muted sm:text-sm">
-                  {discipline}
-                </span>
-              </li>
-            ))}
-          </ul>
+      <div className="border-t border-border/70 bg-surface/45">
+        <Container className="flex flex-col gap-2 py-3 font-mono text-[0.6rem] tracking-[0.14em] text-muted uppercase sm:flex-row sm:items-center sm:justify-between">
+          <span>Platform status // Public educational release</span>
+          <span className="inline-flex items-center gap-2 text-telemetry">
+            <span className="h-1.5 w-1.5 rounded-full bg-telemetry" />
+            Systems available
+          </span>
         </Container>
       </div>
     </section>

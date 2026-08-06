@@ -5,5 +5,6 @@ export { ProfileSection } from "./profile-section";
 export { PropulsionPanel } from "./propulsion-panel";
 export { RocketCard } from "./rocket-card";
 export { RocketExplorer } from "./rocket-explorer";
+export { RocketImage } from "./rocket-image";
 export { RocketProfile } from "./rocket-profile";
 export { SpecificationGrid } from "./specification-grid";

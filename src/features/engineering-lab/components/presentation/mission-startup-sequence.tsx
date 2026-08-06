@@ -17,6 +17,7 @@ import {
   SkipForward,
 } from "lucide-react";
 
+import { OrbixWordmark } from "@/components/brand/orbix-wordmark";
 import type {
   MissionPresetCategory,
   MissionProfileAnalysis,
@@ -237,13 +238,14 @@ export function MissionStartupSequence({
           <div className="w-full max-w-4xl rounded-2xl border border-white/10 bg-[#061116]/95 p-5 shadow-[0_24px_70px_rgba(0,0,0,0.35)] sm:p-8">
             <header className="flex flex-col gap-5 border-b border-white/10 pb-6 sm:flex-row sm:items-start sm:justify-between">
               <div>
+                <OrbixWordmark className="mb-3 h-10 w-40" title="ORBIX" />
                 <p className="flex items-center gap-2 font-mono text-[0.62rem] tracking-[0.22em] text-accent uppercase">
                   <Activity
                     aria-hidden="true"
                     className="motion-safe:animate-pulse motion-reduce:animate-none"
                     size={15}
                   />
-                  ORBIX
+                  Mission systems online
                 </p>
                 <h2 className="mt-2 text-2xl font-semibold tracking-[-0.035em] sm:text-3xl">
                   Mission Control Initialization

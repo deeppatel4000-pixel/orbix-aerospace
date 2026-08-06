@@ -17,6 +17,8 @@ import {
 } from "lucide-react";
 
 import { Container } from "@/components/layout/container";
+import { OrbixEnvironmentBackdrop } from "@/components/brand/orbix-environment";
+import { OrbixWordmark } from "@/components/brand/orbix-wordmark";
 import { analyzeMissionProfile } from "@/features/engineering-lab/analysis";
 import { AtmosphereCalculator } from "@/features/engineering-lab/components/atmosphere-calculator";
 import { CalculatorCard } from "@/features/engineering-lab/components/calculator-card";
@@ -147,19 +149,17 @@ const missionArchiveReports = [
 export function EngineeringDashboard() {
   return (
     <>
-      <header className="relative isolate overflow-hidden border-b border-border/70 py-20 sm:py-28">
-        <div
-          aria-hidden="true"
-          className="technical-grid absolute inset-0 -z-10 [mask-image:linear-gradient(to_bottom,black,transparent_92%)] opacity-60"
-        />
+      <header className="orbix-brand-glow relative isolate overflow-hidden border-b border-laboratory/20 py-20 sm:py-28">
+        <OrbixEnvironmentBackdrop priority theme="laboratory" />
         <Container>
           <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_22rem] lg:items-end">
             <div className="max-w-4xl">
+              <OrbixWordmark className="mb-7 h-10 w-40" priority />
               <p className="flex items-center gap-3 font-mono text-xs tracking-[0.2em] text-accent uppercase">
                 <FlaskConical aria-hidden="true" size={16} strokeWidth={1.7} />
                 Applied engineering // Laboratory
               </p>
-              <h1 className="mt-6 text-5xl leading-[0.98] font-semibold tracking-[-0.05em] text-balance sm:text-6xl lg:text-7xl">
+              <h1 className="font-display mt-6 text-5xl leading-[0.98] font-semibold tracking-[-0.05em] text-balance sm:text-6xl lg:text-7xl">
                 Engineering Laboratory
               </h1>
               <p className="mt-6 max-w-3xl text-lg leading-8 text-muted sm:text-xl">
@@ -168,9 +168,9 @@ export function EngineeringDashboard() {
               </p>
             </div>
 
-            <aside className="rounded-2xl border border-border bg-surface/75 p-5">
+            <aside className="orbix-premium-card border-laboratory/25 p-5 backdrop-blur-md">
               <div className="flex items-center gap-3">
-                <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-accent/10 text-accent">
+                <span className="flex h-10 w-10 items-center justify-center border border-laboratory/25 bg-laboratory/10 text-laboratory">
                   <Gauge aria-hidden="true" size={19} strokeWidth={1.7} />
                 </span>
                 <div>

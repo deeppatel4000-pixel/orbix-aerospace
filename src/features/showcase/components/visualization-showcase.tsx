@@ -118,7 +118,7 @@ export function VisualizationShowcase() {
   return (
     <section
       aria-labelledby="showcase-visualization-title"
-      className="border-y border-border/70 bg-surface/25 py-24 sm:py-32"
+      className="orbix-section border-y border-border/70 bg-surface/20"
     >
       <Container>
         <ShowcaseSectionHeading
@@ -131,7 +131,7 @@ export function VisualizationShowcase() {
         <div className="mt-12 grid gap-5 lg:grid-cols-3">
           {visualizationCards.map((card) => (
             <article
-              className="rounded-2xl border border-border bg-surface/70 p-4"
+              className="orbix-premium-card orbix-premium-card--interactive p-4"
               key={card.label}
             >
               {card.visual === "orbit" ? <OrbitSchematic /> : null}
@@ -144,7 +144,9 @@ export function VisualizationShowcase() {
                     className="text-accent"
                     size={18}
                   />
-                  <h3 className="text-lg font-semibold">{card.label}</h3>
+                  <h3 className="font-display text-lg font-semibold">
+                    {card.label}
+                  </h3>
                 </div>
                 <p className="mt-3 text-sm leading-6 text-muted">
                   {card.description}

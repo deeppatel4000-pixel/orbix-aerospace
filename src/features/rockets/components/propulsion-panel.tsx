@@ -55,29 +55,29 @@ export function PropulsionPanel({ stages }: PropulsionPanelProps) {
 
             return (
               <article
-                className="overflow-hidden rounded-2xl border border-border bg-surface/65"
+                className="orbix-frame overflow-hidden border-atmosphere/20 bg-surface/70"
                 key={stage.id + "-" + engine.id}
               >
-                <div className="flex flex-col gap-5 border-b border-border bg-background/35 p-5 sm:flex-row sm:items-center sm:justify-between sm:p-6">
+                <div className="flex flex-col gap-5 border-b border-atmosphere/20 bg-[#080d17] p-5 sm:flex-row sm:items-center sm:justify-between sm:p-6">
                   <div className="flex items-center gap-4">
-                    <span className="flex h-11 w-11 items-center justify-center rounded-xl border border-accent/20 bg-accent/8 text-accent">
+                    <span className="flex h-11 w-11 items-center justify-center border border-signal/25 bg-signal/8 text-signal">
                       <Cog aria-hidden="true" size={21} strokeWidth={1.7} />
                     </span>
                     <div>
                       <p className="font-mono text-[0.62rem] tracking-[0.14em] text-muted uppercase">
                         {stage.name}
                       </p>
-                      <h3 className="mt-1 text-xl font-semibold">
+                      <h3 className="font-display mt-1 text-xl font-semibold sm:text-2xl">
                         {engine.name}
                       </h3>
                     </div>
                   </div>
-                  <span className="self-start rounded-full border border-border px-3 py-1.5 font-mono text-[0.65rem] text-accent sm:self-auto">
+                  <span className="orbix-status orbix-status--info self-start sm:self-auto">
                     {engine.quantity} installed
                   </span>
                 </div>
 
-                <dl className="grid gap-px bg-border sm:grid-cols-2">
+                <dl className="grid gap-px bg-atmosphere/20 sm:grid-cols-2">
                   <div className="bg-surface px-5 py-4 sm:px-6">
                     <dt className="font-mono text-[0.62rem] tracking-[0.14em] text-muted uppercase">
                       Manufacturer
@@ -100,7 +100,7 @@ export function PropulsionPanel({ stages }: PropulsionPanelProps) {
                   <p className="flex items-center gap-2 font-mono text-[0.62rem] tracking-[0.14em] text-muted uppercase">
                     <Flame
                       aria-hidden="true"
-                      className="text-accent"
+                      className="text-signal"
                       size={15}
                     />
                     Thrust ratings per engine
@@ -113,11 +113,11 @@ export function PropulsionPanel({ stages }: PropulsionPanelProps) {
 
                       return (
                         <div
-                          className="rounded-xl border border-border bg-background/40 p-4"
+                          className="border border-atmosphere/20 bg-background/40 p-4"
                           key={rating.label}
                         >
                           <dt className="text-xs text-muted">{rating.label}</dt>
-                          <dd className="mt-2 text-lg font-semibold">
+                          <dd className="orbix-telemetry-value mt-2 text-lg text-signal">
                             {formatted.value}
                           </dd>
                           <p className="mt-1 text-xs text-muted">

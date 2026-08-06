@@ -1,0 +1,123 @@
+:root {
+  /* Space environment */
+  --orbital-black: #02040a;
+  --spacecraft-graphite: #080c14;
+  --cosmic-navy: #0c1628;
+  --nebula-blue: #172a4a;
+  --orbital-cyan: #6ce6ff;
+  --plasma-violet: #c28cff;
+  --atmospheric-blue: #629bff;
+  --telemetry-green: #72e9b5;
+  --telemetry-white: #f5f8fc;
+
+  /* Tactical environment */
+  --tactical-graphite: #0c100e;
+  --tactical-olive: #82946b;
+  --tactical-steel: #71808a;
+  --tactical-radar: #73d69b;
+  --tactical-amber: #e3ae54;
+
+  /* Laboratory environment */
+  --laboratory-white: #f5f9fc;
+  --laboratory-gray: #dce7ee;
+  --laboratory-blue: #78bdff;
+  --blueprint-blue: #2879c7;
+  --research-cyan: #68d8e8;
+
+  /* Semantic color contract retained across the application */
+  --background: var(--orbital-black);
+  --surface: var(--spacecraft-graphite);
+  --surface-elevated: var(--cosmic-navy);
+  --surface-glass: rgb(9 17 29 / 72%);
+  --foreground: var(--telemetry-white);
+  --muted: #91a3b7;
+  --muted-strong: #c1ccd7;
+  --border: #24354d;
+  --border-bright: #3d5874;
+  --accent: var(--orbital-cyan);
+  --accent-strong: #19b9e2;
+  --signal: #f2bc68;
+  --positive: var(--telemetry-green);
+  --critical: #ff7d83;
+
+  /* Typography */
+  --font-interface: "Aptos", "Inter", "Segoe UI", Arial, sans-serif;
+  --font-display: "Bahnschrift", "Arial Narrow", "Aptos Display", sans-serif;
+  --font-telemetry: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  --type-display-xl: clamp(3.5rem, 8vw, 7.5rem);
+  --type-display-lg: clamp(2.75rem, 6vw, 5.5rem);
+  --type-title: clamp(2rem, 4vw, 3.75rem);
+  --type-section: clamp(1.45rem, 2.5vw, 2.25rem);
+  --type-body-lg: clamp(1.05rem, 1.4vw, 1.22rem);
+  --tracking-display: -0.045em;
+  --tracking-technical: 0.16em;
+
+  /* Spacing and geometry */
+  --space-section: clamp(5rem, 9vw, 8.5rem);
+  --space-section-compact: clamp(3.5rem, 6vw, 5.5rem);
+  --space-panel: clamp(1.25rem, 2.5vw, 2rem);
+  --radius-control: 0.625rem;
+  --radius-card: 1rem;
+  --radius-panel: 1.35rem;
+  --radius-pill: 999px;
+
+  /* Depth and light */
+  --shadow-card: 0 24px 70px rgb(0 0 0 / 34%);
+  --shadow-panel: 0 40px 120px rgb(0 0 0 / 48%);
+  --shadow-accent: 0 18px 58px rgb(108 230 255 / 16%);
+  --ring-accent: 0 0 0 1px rgb(88 220 255 / 22%);
+  --glass-blur: 18px;
+
+  /* Motion */
+  --duration-fast: 140ms;
+  --duration-base: 220ms;
+  --duration-slow: 420ms;
+  --ease-orbix: cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+[data-orbix-theme="tactical"],
+[data-orbix-environment="tactical"] {
+  --surface: var(--tactical-graphite);
+  --surface-elevated: #151b17;
+  --surface-glass: rgb(16 22 18 / 76%);
+  --accent: var(--tactical-radar);
+  --accent-strong: #4db779;
+  --signal: var(--tactical-amber);
+  --border: #34443a;
+  --border-bright: #53665a;
+}
+
+[data-orbix-theme="laboratory"],
+[data-orbix-environment="laboratory"] {
+  --surface: #0a1420;
+  --surface-elevated: #102238;
+  --surface-glass: rgb(10 26 42 / 74%);
+  --accent: var(--research-cyan);
+  --accent-strong: var(--blueprint-blue);
+  --signal: var(--laboratory-blue);
+  --border: #29465f;
+  --border-bright: #3d6788;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-surface: var(--surface);
+  --color-surface-elevated: var(--surface-elevated);
+  --color-foreground: var(--foreground);
+  --color-muted: var(--muted);
+  --color-border: var(--border);
+  --color-accent: var(--accent);
+  --color-accent-strong: var(--accent-strong);
+  --color-signal: var(--signal);
+  --color-orbital: var(--orbital-black);
+  --color-graphite: var(--spacecraft-graphite);
+  --color-cosmic: var(--cosmic-navy);
+  --color-plasma: var(--plasma-violet);
+  --color-atmosphere: var(--atmospheric-blue);
+  --color-telemetry: var(--telemetry-green);
+  --color-tactical: var(--tactical-olive);
+  --color-tactical-amber: var(--tactical-amber);
+  --color-laboratory: var(--laboratory-blue);
+  --font-sans: var(--font-interface);
+  --font-mono: var(--font-telemetry);
+}

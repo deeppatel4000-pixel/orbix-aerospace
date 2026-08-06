@@ -8,6 +8,7 @@ import {
 } from "lucide-react";
 
 import { Container } from "@/components/layout/container";
+import { OrbixWordmark } from "@/components/brand/orbix-wordmark";
 import { ShowcaseSectionHeading } from "@/features/showcase/components/showcase-section-heading";
 
 const workspaces = [
@@ -30,7 +31,7 @@ export function MissionControlPreview() {
   return (
     <section
       aria-labelledby="showcase-mission-control-title"
-      className="border-b border-border/70 bg-surface/25 py-24 sm:py-32"
+      className="orbix-section orbix-brand-glow border-b border-border/70 bg-surface/20"
     >
       <Container>
         <ShowcaseSectionHeading
@@ -40,15 +41,18 @@ export function MissionControlPreview() {
           titleId="showcase-mission-control-title"
         />
 
-        <div className="mt-12 overflow-hidden rounded-2xl border border-border bg-background shadow-2xl shadow-black/30">
+        <div className="orbix-premium-card mt-14 bg-background">
           <div className="flex flex-col gap-3 border-b border-border bg-surface/75 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <p className="font-mono text-xs tracking-[0.18em] text-accent uppercase">
-                ORBIX // Mission Control
-              </p>
-              <p className="mt-1 text-sm text-muted">
-                Educational mission systems review
-              </p>
+            <div className="flex items-center gap-4">
+              <OrbixWordmark className="h-8 w-32" />
+              <div>
+                <p className="font-mono text-xs tracking-[0.18em] text-accent uppercase">
+                  ORBIX // Mission Control
+                </p>
+                <p className="mt-1 text-sm text-muted">
+                  Educational mission systems review
+                </p>
+              </div>
             </div>
             <span className="w-fit rounded-full border border-accent/25 bg-accent/5 px-3 py-1 font-mono text-[0.62rem] tracking-[0.14em] text-accent uppercase">
               Presentation preview

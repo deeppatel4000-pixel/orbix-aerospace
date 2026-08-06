@@ -4,9 +4,10 @@ import {
   CalendarDays,
   ChevronRight,
   Factory,
+  Flame,
   Globe2,
   Layers3,
-  Rocket as RocketIcon,
+  Orbit,
   Tags,
 } from "lucide-react";
 
@@ -17,7 +18,11 @@ import { EngineeringNotesPanel } from "@/features/rockets/components/engineering
 import { PerformancePanel } from "@/features/rockets/components/performance-panel";
 import { ProfileSection } from "@/features/rockets/components/profile-section";
 import { PropulsionPanel } from "@/features/rockets/components/propulsion-panel";
-import { formatRocketFirstFlight } from "@/features/rockets/utils";
+import { RocketImage } from "@/features/rockets/components/rocket-image";
+import {
+  formatRocketFirstFlight,
+  formatRocketMeasurement,
+} from "@/features/rockets/utils";
 import type { Rocket } from "@/features/vehicles/types";
 
 interface RocketProfileProps {
@@ -33,18 +38,43 @@ const profileNavigation = [
 ] as const;
 
 export function RocketProfile({ rocket }: RocketProfileProps) {
+  const height = formatRocketMeasurement(rocket.dimensions.height);
+  const liftoffMass = formatRocketMeasurement(rocket.mass.liftoff);
+  const liftoffThrust = formatRocketMeasurement(
+    rocket.performance.liftoffThrust,
+  );
+
   return (
-    <article>
-      <header className="relative isolate overflow-hidden border-b border-border/70 py-12 sm:py-16 lg:py-20">
+    <article className="bg-[#030711]">
+      <header className="group relative isolate min-h-[72svh] overflow-hidden border-b border-atmosphere/25 bg-[#02050a]">
+        <RocketImage
+          fillContainer
+          imageClassName="saturate-[0.86] contrast-[1.08]"
+          priority
+          rocket={rocket}
+          sizes="100vw"
+        />
         <div
           aria-hidden="true"
-          className="technical-grid absolute inset-0 -z-10 [mask-image:linear-gradient(to_bottom,black,transparent_95%)] opacity-55"
+          className="absolute inset-0 bg-[linear-gradient(180deg,rgba(2,5,10,0.3)_0%,rgba(2,5,10,0.48)_38%,rgba(2,5,10,0.98)_100%)]"
         />
-        <Container>
+        <div
+          aria-hidden="true"
+          className="technical-grid absolute inset-0 opacity-20 mix-blend-screen"
+        />
+        <div
+          aria-hidden="true"
+          className="absolute inset-x-0 bottom-0 h-56 bg-[radial-gradient(ellipse_at_bottom,rgba(242,188,104,0.15),transparent_72%)]"
+        />
+
+        <Container className="relative flex min-h-[72svh] flex-col py-8 sm:py-10">
           <nav aria-label="Breadcrumb">
-            <ol className="flex flex-wrap items-center gap-2 text-sm text-muted">
+            <ol className="flex flex-wrap items-center gap-2 text-sm text-white/65">
               <li>
-                <Link className="transition-colors hover:text-accent" href="/">
+                <Link
+                  className="rounded-sm transition-colors hover:text-accent focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent"
+                  href="/"
+                >
                   Home
                 </Link>
               </li>
@@ -53,7 +83,7 @@ export function RocketProfile({ rocket }: RocketProfileProps) {
               </li>
               <li>
                 <Link
-                  className="transition-colors hover:text-accent"
+                  className="rounded-sm transition-colors hover:text-accent focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent"
                   href="/rockets"
                 >
                   Rockets
@@ -62,70 +92,75 @@ export function RocketProfile({ rocket }: RocketProfileProps) {
               <li aria-hidden="true">
                 <ChevronRight size={14} />
               </li>
-              <li aria-current="page" className="text-foreground">
+              <li aria-current="page" className="text-white">
                 {rocket.name}
               </li>
             </ol>
           </nav>
 
-          <div className="mt-10 grid gap-12 lg:grid-cols-[minmax(0,1fr)_21rem] lg:items-end">
+          <div className="mt-auto grid gap-8 pt-28 lg:grid-cols-[minmax(0,1fr)_23rem] lg:items-end">
             <div className="max-w-4xl">
-              <p className="flex items-center gap-3 font-mono text-xs tracking-[0.18em] text-accent uppercase">
-                <RocketIcon aria-hidden="true" size={16} />
-                Rocket profile // {rocket.id}
+              <p className="flex items-center gap-3 font-mono text-xs tracking-[0.18em] text-signal uppercase">
+                <Flame aria-hidden="true" size={16} />
+                Launch vehicle profile // {rocket.id}
               </p>
-              <h1 className="mt-6 text-5xl leading-none font-semibold tracking-[-0.055em] text-balance sm:text-6xl lg:text-7xl">
+              <h1 className="font-display mt-5 text-5xl leading-[0.94] font-semibold tracking-[-0.055em] text-balance text-white sm:text-6xl lg:text-8xl">
                 {rocket.name}
               </h1>
-              <p className="mt-6 max-w-3xl text-lg leading-8 text-muted sm:text-xl">
+              <p className="mt-5 max-w-3xl text-base leading-7 text-white/70 sm:text-lg sm:leading-8">
                 {rocket.description}
               </p>
-              <div className="mt-7 flex flex-wrap gap-2">
+              <ul
+                aria-label="Supported mission regimes"
+                className="mt-6 flex flex-wrap gap-2"
+              >
                 {rocket.performance.supportedOrbits.map((orbit) => (
-                  <span
-                    className="rounded-full border border-accent/20 bg-accent/8 px-3 py-1.5 text-xs font-medium text-accent"
+                  <li
+                    className="border border-white/15 bg-black/45 px-3 py-1.5 font-mono text-[0.65rem] tracking-[0.12em] text-accent uppercase backdrop-blur-sm"
                     key={orbit}
                   >
                     {orbit}
-                  </span>
+                  </li>
                 ))}
-              </div>
+              </ul>
             </div>
 
-            <div className="technical-grid relative flex min-h-64 items-center justify-center overflow-hidden rounded-2xl border border-border bg-surface/75">
-              <div
-                aria-hidden="true"
-                className="absolute h-44 w-44 rounded-full border border-accent/15"
-              />
-              <div
-                aria-hidden="true"
-                className="absolute h-36 w-20 rounded-full border border-dashed border-accent/20"
-              />
-              <RocketIcon
-                aria-hidden="true"
-                className="relative text-accent drop-shadow-[0_0_24px_rgb(87_215_255/0.24)]"
-                size={78}
-                strokeWidth={1.05}
-              />
-              <span className="absolute right-4 bottom-4 font-mono text-[0.62rem] tracking-[0.14em] text-muted uppercase">
-                Vehicle visual pending
-              </span>
-            </div>
+            <aside className="orbix-frame border-white/15 bg-black/45 p-5 backdrop-blur-md sm:p-6">
+              <p className="font-mono text-[0.62rem] tracking-[0.16em] text-signal uppercase">
+                Pad telemetry // Recorded
+              </p>
+              <dl className="mt-4 grid gap-px bg-white/10">
+                {[
+                  ["Vehicle height", height.value],
+                  ["Liftoff mass", liftoffMass.value],
+                  ["Liftoff thrust", liftoffThrust.value],
+                ].map(([label, value]) => (
+                  <div className="bg-black/40 p-3.5" key={label}>
+                    <dt className="font-mono text-[0.58rem] tracking-[0.12em] text-white/50 uppercase">
+                      {label}
+                    </dt>
+                    <dd className="orbix-telemetry-value mt-1.5 text-base text-white">
+                      {value}
+                    </dd>
+                  </div>
+                ))}
+              </dl>
+            </aside>
           </div>
         </Container>
       </header>
 
-      <div className="sticky top-18 z-30 border-b border-border bg-background/90 backdrop-blur-xl">
+      <div className="sticky top-18 z-30 border-b border-atmosphere/20 bg-[#030711]/92 backdrop-blur-xl">
         <Container>
           <nav aria-label="Rocket profile sections" className="overflow-x-auto">
             <ul className="flex min-w-max items-center gap-1 py-3">
               {profileNavigation.map((item, index) => (
                 <li key={item.href}>
                   <a
-                    className="inline-flex min-h-10 items-center rounded-full px-3.5 text-sm text-muted transition-colors hover:bg-white/5 hover:text-accent"
+                    className="inline-flex min-h-11 items-center rounded-full px-3.5 text-sm text-muted transition-colors hover:bg-white/5 hover:text-accent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
                     href={item.href}
                   >
-                    <span className="mr-2 font-mono text-[0.6rem] text-accent">
+                    <span className="mr-2 font-mono text-[0.6rem] text-signal">
                       0{index + 1}
                     </span>
                     {item.label}
@@ -144,53 +179,54 @@ export function RocketProfile({ rocket }: RocketProfileProps) {
           id="overview"
           title="Overview"
         >
-          <div className="rounded-2xl border border-border bg-surface/65">
-            <dl className="grid sm:grid-cols-2">
-              <div className="border-b border-border p-5 sm:border-r sm:p-6">
+          <div className="orbix-frame overflow-hidden border-atmosphere/20 bg-surface/70">
+            <dl className="grid gap-px bg-atmosphere/20 sm:grid-cols-2">
+              <div className="bg-[#080d17] p-5 sm:p-6">
                 <dt className="flex items-center gap-2 font-mono text-[0.62rem] tracking-[0.14em] text-muted uppercase">
-                  <Factory aria-hidden="true" size={14} />
-                  Manufacturer
+                  <Factory aria-hidden="true" size={14} /> Manufacturer
                 </dt>
                 <dd className="mt-3 text-sm font-medium">
                   {rocket.manufacturer}
                 </dd>
               </div>
-              <div className="border-b border-border p-5 sm:p-6">
+              <div className="bg-[#080d17] p-5 sm:p-6">
                 <dt className="flex items-center gap-2 font-mono text-[0.62rem] tracking-[0.14em] text-muted uppercase">
-                  <Globe2 aria-hidden="true" size={14} />
-                  Country
+                  <Globe2 aria-hidden="true" size={14} /> Country
                 </dt>
                 <dd className="mt-3 text-sm font-medium">
                   {rocket.country.name} ({rocket.country.isoCode})
                 </dd>
               </div>
-              <div className="border-b border-border p-5 sm:border-r sm:p-6">
+              <div className="bg-[#080d17] p-5 sm:p-6">
                 <dt className="flex items-center gap-2 font-mono text-[0.62rem] tracking-[0.14em] text-muted uppercase">
-                  <CalendarDays aria-hidden="true" size={14} />
-                  First integrated flight
+                  <CalendarDays aria-hidden="true" size={14} /> First integrated
+                  flight
                 </dt>
                 <dd className="mt-3 text-sm font-medium">
                   {formatRocketFirstFlight(rocket.firstFlight)}
                 </dd>
               </div>
-              <div className="border-b border-border p-5 sm:p-6">
+              <div className="bg-[#080d17] p-5 sm:p-6">
                 <dt className="flex items-center gap-2 font-mono text-[0.62rem] tracking-[0.14em] text-muted uppercase">
-                  <Tags aria-hidden="true" size={14} />
-                  Vehicle category
+                  <Tags aria-hidden="true" size={14} /> Vehicle category
                 </dt>
                 <dd className="mt-3 text-sm font-medium">Launch vehicle</dd>
               </div>
             </dl>
 
-            <div className="p-5 sm:p-6">
+            <div className="border-t border-atmosphere/20 p-5 sm:p-6">
               <p className="flex items-center gap-2 font-mono text-[0.62rem] tracking-[0.14em] text-muted uppercase">
-                <Layers3 aria-hidden="true" size={14} />
-                Recorded architecture
+                <Layers3 aria-hidden="true" size={14} /> Recorded architecture
               </p>
               <p className="mt-3 text-sm leading-6 text-muted">
                 {rocket.stages.length} propulsion elements are represented in
                 this configuration. Parallel boosters and core stages are
                 recorded separately when they operate in the same flight phase.
+              </p>
+              <p className="mt-4 flex items-center gap-2 font-mono text-[0.62rem] tracking-[0.14em] text-accent uppercase">
+                <Orbit aria-hidden="true" size={14} />
+                {rocket.performance.supportedOrbits.length} mission regimes
+                recorded
               </p>
             </div>
           </div>
@@ -205,7 +241,7 @@ export function RocketProfile({ rocket }: RocketProfileProps) {
         />
         <EngineeringNotesPanel notes={rocket.engineeringAnalysis} />
 
-        <div className="border-t border-border py-12">
+        <div className="border-t border-atmosphere/20 py-12">
           <ButtonLink href="/rockets" variant="secondary">
             <ArrowLeft aria-hidden="true" size={16} />
             Back to Rocket Explorer

@@ -38,7 +38,7 @@ export function TechnologyAndPhilosophy() {
   return (
     <section
       aria-labelledby="showcase-philosophy-title"
-      className="relative isolate overflow-hidden py-24 sm:py-32"
+      className="orbix-section relative isolate overflow-hidden"
     >
       <div
         aria-hidden="true"
@@ -77,7 +77,7 @@ export function TechnologyAndPhilosophy() {
             </div>
           </div>
 
-          <ol className="overflow-hidden rounded-2xl border border-border bg-surface/85 shadow-2xl shadow-black/20">
+          <ol className="orbix-premium-card">
             {principles.map((principle, index) => (
               <li
                 className="grid gap-5 border-b border-border p-6 last:border-b-0 sm:grid-cols-[3rem_minmax(0,1fr)_auto] sm:items-start sm:p-7"

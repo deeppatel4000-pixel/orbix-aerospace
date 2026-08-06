@@ -19,8 +19,8 @@ export function ModuleCard({
   return (
     <article className="group h-full">
       <Link
-        aria-label={"Open the " + title + " module placeholder"}
-        className="flex h-full flex-col rounded-2xl border border-border bg-background/45 p-6 transition-all hover:border-accent/45 hover:bg-background/70 motion-safe:hover:-translate-y-1 sm:p-7"
+        aria-label={"Open the " + title + " module"}
+        className="orbix-premium-card orbix-premium-card--interactive flex h-full flex-col p-6 sm:p-7"
         href={href}
       >
         <div className="flex items-center justify-between">
@@ -29,7 +29,7 @@ export function ModuleCard({
           </span>
           <span className="font-mono text-[0.62rem] tracking-[0.16em] text-muted uppercase">
             {code}
-            {" // Planned"}
+            {" // Active"}
           </span>
         </div>
 
@@ -39,7 +39,7 @@ export function ModuleCard({
         </p>
 
         <span className="mt-7 inline-flex items-center gap-2 text-sm font-semibold text-accent">
-          Review module scope
+          Open workspace
           <ArrowRight
             aria-hidden="true"
             className="transition-transform motion-safe:group-hover:translate-x-1"

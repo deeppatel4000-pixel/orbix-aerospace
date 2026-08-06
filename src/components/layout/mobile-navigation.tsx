@@ -6,7 +6,6 @@ import { usePathname } from "next/navigation";
 import { Menu, X } from "lucide-react";
 
 import { navigationItems } from "@/config/navigation";
-import { cn } from "@/lib/cn";
 
 function isCurrentRoute(pathname: string, href: string) {
   return href === "/"
@@ -36,7 +35,7 @@ export function MobileNavigation() {
         aria-controls={menuId}
         aria-expanded={isOpen}
         aria-label={isOpen ? "Close navigation menu" : "Open navigation menu"}
-        className="flex h-10 w-10 items-center justify-center rounded-full border border-border bg-surface text-foreground transition-colors hover:border-accent/50 hover:text-accent"
+        className="orbix-icon-control"
         onClick={() => setIsOpen((open) => !open)}
         type="button"
       >
@@ -50,7 +49,7 @@ export function MobileNavigation() {
       {isOpen ? (
         <nav
           aria-label="Mobile navigation"
-          className="absolute inset-x-5 top-[calc(100%+0.5rem)] rounded-2xl border border-border bg-surface-elevated p-3 shadow-2xl shadow-black/40 sm:inset-x-8"
+          className="orbix-surface orbix-surface--mission orbix-mobile-nav absolute inset-x-5 top-[calc(100%+0.5rem)] p-3 sm:inset-x-8"
           id={menuId}
         >
           <ul className="space-y-1">
@@ -61,12 +60,7 @@ export function MobileNavigation() {
                 <li key={item.href}>
                   <Link
                     aria-current={isActive ? "page" : undefined}
-                    className={cn(
-                      "block rounded-xl px-4 py-3 text-sm font-medium transition-colors",
-                      isActive
-                        ? "bg-accent/10 text-accent"
-                        : "text-muted hover:bg-white/5 hover:text-foreground",
-                    )}
+                    className="orbix-nav-link py-3"
                     href={item.href}
                     onClick={() => setIsOpen(false)}
                   >

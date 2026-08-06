@@ -31,7 +31,7 @@ export function ProjectPhilosophy() {
   return (
     <section
       aria-labelledby="project-philosophy-title"
-      className="relative isolate overflow-hidden py-24 sm:py-32"
+      className="orbix-section relative isolate overflow-hidden"
     >
       <div
         aria-hidden="true"
@@ -46,7 +46,7 @@ export function ProjectPhilosophy() {
             titleId="project-philosophy-title"
           />
 
-          <div className="overflow-hidden rounded-2xl border border-border bg-surface/85 shadow-2xl shadow-black/20">
+          <div className="orbix-premium-card">
             <div className="flex items-center justify-between border-b border-border bg-background/40 px-5 py-3.5">
               <span className="font-mono text-[0.65rem] tracking-[0.16em] text-muted uppercase">
                 Learning protocol // ORBIX-PHI-01
@@ -84,9 +84,8 @@ export function ProjectPhilosophy() {
 
             <div className="border-t border-border bg-accent/5 px-6 py-5 sm:px-7">
               <p className="max-w-2xl text-sm leading-6 text-foreground">
-                The platform will explain the method, not only display the
-                answer. Educational clarity remains the primary design
-                constraint.
+                The platform explains the method, not only the answer.
+                Educational clarity remains the primary design constraint.
               </p>
             </div>
           </div>

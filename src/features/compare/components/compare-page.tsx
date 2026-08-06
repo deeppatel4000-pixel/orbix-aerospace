@@ -23,7 +23,7 @@ export function ComparePage({ category, options, result }: ComparePageProps) {
 
   return (
     <>
-      <header className="relative isolate overflow-hidden border-b border-border/70 py-20 sm:py-28">
+      <header className="orbix-brand-glow relative isolate overflow-hidden border-b border-border/70 py-24 sm:py-32">
         <div
           aria-hidden="true"
           className="technical-grid absolute inset-0 -z-10 [mask-image:linear-gradient(to_bottom,black,transparent_92%)] opacity-60"
@@ -35,7 +35,7 @@ export function ComparePage({ category, options, result }: ComparePageProps) {
                 <Scale aria-hidden="true" size={16} strokeWidth={1.7} />
                 Engineering workspace // Comparison
               </p>
-              <h1 className="mt-6 text-5xl leading-[0.98] font-semibold tracking-[-0.05em] text-balance sm:text-6xl lg:text-7xl">
+              <h1 className="font-display mt-6 text-5xl leading-[0.98] font-semibold tracking-[-0.05em] text-balance sm:text-6xl lg:text-7xl">
                 Comparison Engine
               </h1>
               <p className="mt-6 max-w-3xl text-lg leading-8 text-muted sm:text-xl">
@@ -45,7 +45,7 @@ export function ComparePage({ category, options, result }: ComparePageProps) {
               </p>
             </div>
 
-            <aside className="rounded-2xl border border-border bg-surface/75 p-5">
+            <aside className="orbix-premium-card p-5">
               <div className="flex items-center gap-3">
                 <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-accent/10 text-accent">
                   <Database aria-hidden="true" size={19} strokeWidth={1.7} />

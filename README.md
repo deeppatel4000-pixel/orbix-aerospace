@@ -42,38 +42,38 @@ the planned captures without presenting fabricated application imagery.
 
 ### Mission Control Center
 
-> Screenshot placeholder: `docs/assets/screenshots/mission-control-dashboard.png`
+> Authentic capture slot: `docs/assets/screenshots/mission-control/mission-control-overview.png`
 
 Interactive aerospace command interface displaying mission telemetry, visualization, analysis, and
 presentation systems.
 
 ### Orbital Analysis
 
-> Screenshot placeholder: `docs/assets/screenshots/orbital-visualization.png`
+> Authentic capture slot: `docs/assets/screenshots/orbital-analysis/orbit-workspace.png`
 
 Orbital transfer, delta-v budgeting, plane-change analysis, and spacecraft trajectory concepts.
 
 ### Reentry & Thermal Systems
 
-> Screenshot placeholder: `docs/assets/screenshots/reentry-visualization.png`
+> Authentic capture slot: `docs/assets/screenshots/reentry-analysis/reentry-workspace.png`
 
 Vehicle reentry evaluation, trajectory history, stagnation heating, and thermal-protection analysis.
 
 ### Mission Visualization
 
-> Screenshot placeholder: `docs/assets/screenshots/mission-showcase.png`
+> Authentic capture slot: `docs/assets/screenshots/showcase/mission-showcase.png`
 
 Interactive orbital, planetary, replay, ground-track, and mission-storytelling visualizations.
 
 ### Trade Study
 
-> Screenshot placeholder: `docs/assets/screenshots/trade-study.png`
+> Authentic capture slot: `docs/assets/screenshots/trade-study/trade-study.png`
 
 Side-by-side mission architecture review using completed analysis and report outputs.
 
 ### Demo Mode
 
-> Screenshot placeholder: `docs/assets/screenshots/demo-mode.png`
+> Authentic capture slot: `docs/assets/screenshots/showcase/demo-mode.png`
 
 Guided platform walkthrough designed for students, educators, mentors, and portfolio reviewers.
 
@@ -219,7 +219,7 @@ document public variable names in `.env.example` and keep all secrets out of sou
 
 ## Testing
 
-The current release is verified by **65 test files** containing **854 passing tests**. The full
+The current release is verified by **67 test files** containing **859 passing tests**. The full
 validation pipeline also enforces Prettier formatting, zero-warning ESLint, TypeScript correctness,
 and a successful production Next.js build.
 

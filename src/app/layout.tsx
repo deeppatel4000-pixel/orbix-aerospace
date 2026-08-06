@@ -25,6 +25,14 @@ export const metadata: Metadata = {
   metadataBase: new URL(productionUrl),
   openGraph: {
     description: siteConfig.description,
+    images: [
+      {
+        alt: "ORBIX official brand identity",
+        height: 1536,
+        url: "/brand/orbix-brand-suite.png",
+        width: 2816,
+      },
+    ],
     locale: "en_US",
     siteName: siteConfig.wordmark,
     title: `${siteConfig.wordmark} | ${siteConfig.tagline}`,
@@ -36,15 +44,16 @@ export const metadata: Metadata = {
     template: `%s | ${siteConfig.wordmark}`,
   },
   twitter: {
-    card: "summary",
+    card: "summary_large_image",
     description: siteConfig.description,
+    images: ["/brand/orbix-brand-suite.png"],
     title: `${siteConfig.wordmark} | ${siteConfig.tagline}`,
   },
 };
 
 export const viewport: Viewport = {
   colorScheme: "dark",
-  themeColor: "#07111f",
+  themeColor: "#02040a",
 };
 
 export default function RootLayout({

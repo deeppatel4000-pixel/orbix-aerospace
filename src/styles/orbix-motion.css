@@ -1,0 +1,60 @@
+@keyframes orbix-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(0.5rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes orbix-signal-pulse {
+  0%,
+  100% {
+    opacity: 0.55;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+@keyframes orbix-scan {
+  from {
+    transform: translateX(-120%);
+  }
+  to {
+    transform: translateX(220%);
+  }
+}
+
+@layer utilities {
+  .orbix-enter {
+    animation: orbix-fade-in var(--duration-slow) var(--ease-orbix) both;
+  }
+
+  .orbix-signal-pulse {
+    animation: orbix-signal-pulse 2.4s ease-in-out infinite;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  .orbix-button:hover,
+  .orbix-premium-card--interactive:hover,
+  .orbix-surface--interactive:hover {
+    transform: none;
+  }
+}

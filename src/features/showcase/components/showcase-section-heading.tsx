@@ -25,11 +25,9 @@ export function ShowcaseSectionHeading({
         className,
       )}
     >
-      <p className="font-mono text-xs tracking-[0.2em] text-accent uppercase">
-        {eyebrow}
-      </p>
+      <p className="orbix-kicker">{eyebrow}</p>
       <h2
-        className="mt-4 text-4xl font-semibold tracking-[-0.04em] text-balance sm:text-5xl"
+        className="font-display mt-4 text-4xl font-semibold tracking-[-0.04em] text-balance sm:text-5xl"
         id={titleId}
       >
         {title}

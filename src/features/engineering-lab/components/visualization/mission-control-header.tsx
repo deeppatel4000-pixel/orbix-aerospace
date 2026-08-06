@@ -1,5 +1,7 @@
 import { Activity, RadioTower, ShieldCheck } from "lucide-react";
 
+import { OrbixWordmark } from "@/components/brand/orbix-wordmark";
+
 import type {
   MissionPresetCategory,
   MissionProfileAnalysis,
@@ -36,13 +38,14 @@ export function MissionControlHeader({
     "Load completed mission objects to activate the command-center workspace.";
 
   return (
-    <header className="relative overflow-hidden border-b border-white/10 bg-[#061116]/95 p-5 sm:p-7">
+    <header className="relative z-10 overflow-hidden border-b border-accent/15 bg-[#030810]/92 p-5 backdrop-blur-xl sm:p-7">
       <div
         aria-hidden="true"
         className="absolute -top-24 right-0 h-72 w-72 rounded-full bg-accent/7 blur-3xl"
       />
       <div className="relative grid gap-6 2xl:grid-cols-[minmax(0,1fr)_auto] 2xl:items-end">
         <div>
+          <OrbixWordmark className="mb-4 h-9 w-36" />
           <p className="flex items-center gap-2 font-mono text-[0.64rem] tracking-[0.2em] text-accent uppercase">
             <Activity aria-hidden="true" size={15} />
             ORBIX // Mission Control

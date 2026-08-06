@@ -1,21 +1,20 @@
 import Link from "next/link";
-import { Orbit } from "lucide-react";
 
+import { OrbixWordmark } from "@/components/brand/orbix-wordmark";
 import { siteConfig } from "@/config/site";
 
 export function SiteLogo() {
   return (
     <Link
       aria-label={`${siteConfig.name} home`}
-      className="inline-flex shrink-0 items-center gap-3 rounded-md"
+      className="group relative inline-flex shrink-0 items-center rounded-md"
       href="/"
     >
-      <span className="flex h-9 w-9 items-center justify-center rounded-xl border border-accent/25 bg-accent/10 text-accent">
-        <Orbit aria-hidden="true" size={20} strokeWidth={1.8} />
-      </span>
-      <span className="text-lg font-semibold tracking-[0.08em]">
-        {siteConfig.wordmark}
-      </span>
+      <OrbixWordmark
+        className="h-10 w-36 transition-[filter,transform] duration-300 group-hover:drop-shadow-[0_0_18px_rgb(88_220_255/0.2)] motion-safe:group-hover:scale-[1.02] sm:h-11 sm:w-40"
+        priority
+      />
+      <span className="sr-only">{siteConfig.wordmark}</span>
     </Link>
   );
 }

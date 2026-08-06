@@ -7,11 +7,15 @@ import { siteConfig } from "@/config/site";
 
 export function SiteFooter() {
   return (
-    <footer className="border-t border-border/80 bg-background/70">
-      <Container className="flex flex-col gap-8 py-10 sm:flex-row sm:items-end sm:justify-between">
+    <footer className="orbix-site-footer relative overflow-hidden border-t border-accent/15">
+      <div
+        className="orbix-grid pointer-events-none absolute inset-0 opacity-35"
+        aria-hidden="true"
+      />
+      <Container className="flex flex-col gap-10 py-14 sm:flex-row sm:items-end sm:justify-between lg:py-16">
         <div>
           <SiteLogo />
-          <p className="mt-4 max-w-md text-sm leading-6 text-muted">
+          <p className="mt-5 max-w-md text-sm leading-7 text-muted">
             {siteConfig.tagline}. Aerospace education through exploration,
             analysis, and guided practice.
           </p>
@@ -22,7 +26,7 @@ export function SiteFooter() {
               {navigationItems.slice(1).map((item) => (
                 <li key={item.href}>
                   <Link
-                    className="text-sm text-muted transition-colors hover:text-accent"
+                    className="rounded-sm text-sm text-muted transition-colors hover:text-accent"
                     href={item.href}
                   >
                     {item.label}
@@ -31,8 +35,8 @@ export function SiteFooter() {
               ))}
             </ul>
           </nav>
-          <p className="mt-5 font-mono text-xs text-muted">
-            Built for learning, not operational use.
+          <p className="mt-6 font-mono text-[0.65rem] tracking-[0.11em] text-muted uppercase">
+            Educational engineering platform // Not for operational use
           </p>
         </div>
       </Container>

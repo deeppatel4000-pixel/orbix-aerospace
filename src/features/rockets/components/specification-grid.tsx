@@ -16,7 +16,7 @@ export function SpecificationGrid({ items }: SpecificationGridProps) {
     <dl className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
       {items.map((item) => (
         <div
-          className="rounded-2xl border border-border bg-surface/65 p-5"
+          className="orbix-frame border-atmosphere/20 bg-surface/70 p-5 transition-colors hover:border-signal/35"
           key={item.label}
         >
           <div className="flex items-center justify-between gap-4">
@@ -30,7 +30,7 @@ export function SpecificationGrid({ items }: SpecificationGridProps) {
               strokeWidth={1.7}
             />
           </div>
-          <dd className="mt-6 text-2xl font-semibold tracking-tight">
+          <dd className="orbix-telemetry-value mt-6 text-2xl text-signal">
             {item.value}
           </dd>
           <p className="mt-2 text-xs text-muted">{item.note}</p>

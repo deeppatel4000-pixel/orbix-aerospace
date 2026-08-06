@@ -58,12 +58,12 @@ export function PropulsionPanel({ propulsion }: PropulsionPanelProps) {
 
           return (
             <article
-              className="overflow-hidden rounded-2xl border border-border bg-surface/65"
+              className="orbix-frame overflow-hidden border-tactical/25 bg-[#080d0c]/90"
               key={engine.id}
             >
-              <div className="flex flex-col gap-5 border-b border-border bg-background/35 p-5 sm:flex-row sm:items-center sm:justify-between sm:p-6">
+              <div className="orbix-carbon flex flex-col gap-5 border-b border-tactical/25 bg-black/25 p-5 sm:flex-row sm:items-center sm:justify-between sm:p-6">
                 <div className="flex items-center gap-4">
-                  <span className="flex h-11 w-11 items-center justify-center rounded-xl border border-accent/20 bg-accent/8 text-accent">
+                  <span className="flex h-11 w-11 items-center justify-center border border-tactical-amber/25 bg-tactical-amber/8 text-tactical-amber">
                     <Cog aria-hidden="true" size={21} strokeWidth={1.7} />
                   </span>
                   <div>
@@ -75,13 +75,13 @@ export function PropulsionPanel({ propulsion }: PropulsionPanelProps) {
                     </h3>
                   </div>
                 </div>
-                <span className="self-start rounded-full border border-border px-3 py-1.5 font-mono text-[0.65rem] text-accent sm:self-auto">
+                <span className="self-start border border-tactical-amber/25 px-3 py-1.5 font-mono text-[0.62rem] tracking-[0.1em] text-tactical-amber uppercase sm:self-auto">
                   {engine.quantity} installed
                 </span>
               </div>
 
-              <dl className="grid gap-px bg-border sm:grid-cols-2">
-                <div className="bg-surface px-5 py-4 sm:px-6">
+              <dl className="grid gap-px bg-tactical/20 sm:grid-cols-2">
+                <div className="bg-[#0a100f] px-5 py-4 sm:px-6">
                   <dt className="font-mono text-[0.62rem] tracking-[0.14em] text-muted uppercase">
                     Manufacturer
                   </dt>
@@ -89,7 +89,7 @@ export function PropulsionPanel({ propulsion }: PropulsionPanelProps) {
                     {engine.manufacturer}
                   </dd>
                 </div>
-                <div className="bg-surface px-5 py-4 sm:px-6">
+                <div className="bg-[#0a100f] px-5 py-4 sm:px-6">
                   <dt className="font-mono text-[0.62rem] tracking-[0.14em] text-muted uppercase">
                     Engine type
                   </dt>
@@ -101,7 +101,11 @@ export function PropulsionPanel({ propulsion }: PropulsionPanelProps) {
 
               <div className="p-5 sm:p-6">
                 <p className="flex items-center gap-2 font-mono text-[0.62rem] tracking-[0.14em] text-muted uppercase">
-                  <Flame aria-hidden="true" className="text-accent" size={15} />
+                  <Flame
+                    aria-hidden="true"
+                    className="text-tactical-amber"
+                    size={15}
+                  />
                   Thrust ratings per engine
                 </p>
                 <dl className="mt-4 grid gap-3 sm:grid-cols-2">
@@ -112,7 +116,7 @@ export function PropulsionPanel({ propulsion }: PropulsionPanelProps) {
 
                     return (
                       <div
-                        className="rounded-xl border border-border bg-background/40 p-4"
+                        className="border border-tactical/20 bg-black/25 p-4"
                         key={rating.label}
                       >
                         <dt className="text-xs text-muted">{rating.label}</dt>
