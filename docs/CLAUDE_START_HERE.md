@@ -50,7 +50,7 @@ Current development stage:
 - Learn remains a truthful placeholder.
 - The priority order recommended by the handoff is verification, dependency security, asset licensing/optimization, browser E2E coverage, then sourced Learn/Compare work.
 
-Known issues include npm dependency advisories, large canonical images, incomplete authentic screenshots, no committed browser E2E suite, a Learn placeholder, an incomplete Compare education loop, and a small committed mojibake string. Verify all of these before acting.
+Known issues include npm dependency advisories, large canonical images, an empty authentic-screenshot gallery, no committed browser E2E suite, a Learn placeholder, and an incomplete Compare education loop. Verify all of these before acting.
 
 Begin by returning an evidence-backed takeover report. Do not start a feature until the user confirms the next scope.
 

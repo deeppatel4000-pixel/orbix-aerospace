@@ -51,12 +51,11 @@
   "knownIssues": [
     "Learn is currently a feature placeholder",
     "Compare lacks the planned educational bridge",
-    "One mojibake loading string remains in comparison-controls.tsx",
-    "npm audit reports three high-severity Next/PostCSS/Sharp dependency advisories",
+    "npm audit reports three high-severity advisories against postcss and sharp; next is flagged as their dependent",
     "Several canonical images are large source files",
     "Engineering Laboratory first-load JavaScript was measured at 232 kB",
     "No committed browser E2E or visual-regression suite",
-    "Authentic screenshot gallery is incomplete",
+    "Authentic screenshot gallery is empty; all six folders contain only a README",
     "Vehicle image licensing documentation is incomplete for some sources",
     "Day 1-17 per-day history is not fully recoverable"
   ],

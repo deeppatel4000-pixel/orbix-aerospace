@@ -18,7 +18,9 @@ ORBIX models are simplified and educational. Never present their results as cert
 
 ## 2. Current Repository State
 
-State audited on 2026-08-08 in `C:\Users\Deep\OneDrive\Documents\GitHub\aerolab`.
+State originally audited on 2026-08-08. The canonical working copy is now `C:\Users\Deep\dev\orbix`.
+
+> **Do not work inside OneDrive.** The former location `C:\Users\Deep\OneDrive\Documents\GitHub\orbix` (earlier named `aerolab`) was corrupted by OneDrive sync on 2026-08-08: `HEAD` silently reverted from the handoff checkpoint to `5bb7c05`, the checkpoint vanished from the reflog, and 23 `-Jay-Desktop` conflict copies appeared, 7 of them inside `.git`. A read-only audit was enough to trigger it. A full hash audit of that folder found no unique work, so nothing was lost. Clone outside any synced folder.
 
 - Branch: `main`
 - Upstream: `origin/main`
@@ -332,7 +334,9 @@ Last recorded Lighthouse observation for this route: 89 Performance, 100 Accessi
 - Data: existing `listAircraft()` / `listRockets()` through category adapters
 - Output: semantic horizontally scrollable table, preserved units/notes, and unavailable states; no ranking or inferred winner
 
-Current UX is a functional two-step selection and matrix. It links to vehicle profiles but does not yet provide the intended Learn/Laboratory educational bridge. Day 91 was not implemented. A committed mojibake string remains in `comparison-controls.tsx` (`Updating comparisonâ€¦`) and should be corrected in a focused future pass.
+Current UX is a functional two-step selection and matrix. It links to vehicle profiles but does not yet provide the intended Learn/Laboratory educational bridge. Day 91 was not implemented.
+
+An earlier revision of this document claimed a committed mojibake string in `comparison-controls.tsx`. That claim was wrong and was corrected on 2026-08-08. The source file holds a correctly encoded UTF-8 ellipsis (`U+2026`, bytes `E2 80 A6`). The mojibake existed only in this document, introduced when it quoted the string. No source fix is required.
 
 ## 12. Learn
 
@@ -390,7 +394,7 @@ Four ORBIX-generated 1600x900 WebP plates live in `public/images/environments`: 
 - Vercel project: `orbix-aerospace`
 - Project ID is stored locally in ignored `.vercel/project.json`; do not publish account IDs as configuration.
 - Production alias: <https://orbix-aerospace.vercel.app>
-- At audit time the alias resolved to a `Ready` production deployment created 2026-08-06 19:41 EDT, corresponding by timestamp to baseline commit `5bb7c05`.
+- At the original audit the alias resolved to a `Ready` production deployment created 2026-08-06 19:41 EDT, corresponding by timestamp to baseline commit `5bb7c05`. That mapping is historical only. Re-verified on 2026-08-08: production had since deployed the handoff checkpoint, confirmed by a content marker present in the checkpoint and absent from `5bb7c05`. Determine the deployed commit from evidence, never from this line.
 - Home, Showcase, Engineering Laboratory, Compare, and Learn returned HTTP 200 during the audit.
 - The deployment list and `git-main` alias indicate Git integration. Verify the new production deployment after every push rather than assuming completion.
 - No application environment variables are required. No `.env.example` exists because there are no required public variables.
@@ -412,7 +416,7 @@ Never pass tokens on the command line or commit `.vercel` metadata.
 - `.pem`, editor state, build output, coverage, Vercel metadata, and generated verification output are ignored.
 - A repository pattern scan found no common API-key, GitHub-token, Vercel-token, secret, or password signatures in tracked source.
 - Security headers: `nosniff`, `DENY` framing, strict-origin referrer policy, and camera/microphone/geolocation denial.
-- `npm audit` on 2026-08-08 reported **3 high-severity vulnerabilities**: direct `next`, plus transitive `postcss` and `sharp` advisories. npm proposed Next `16.3.0`, a semver-major upgrade. This was not applied during preservation because it requires a dedicated compatibility/security migration and retest.
+- `npm audit` on 2026-08-08 reported **3 high-severity vulnerabilities**. The advisories are against `postcss` (nested at `node_modules/next/node_modules/postcss`) and `sharp` (at `node_modules/sharp`); `next` is reported only because it depends on both, not because of an advisory against its own code. npm proposed Next `16.3.0`, a semver-major upgrade. This was not applied during preservation because it requires a dedicated compatibility/security migration and retest.
 - No secret values belong in this document or `project-state.json`.
 
 ## 17. Testing
@@ -434,15 +438,15 @@ Vitest tests live beside calculators, analyses, domain modules, and presentation
 
 1. **Learn is a placeholder.** No educational content architecture exists yet.
 2. **Compare education loop is incomplete.** It does not connect the matrix to Learn or relevant Laboratory modules.
-3. **Compare contains one mojibake loading string.** See `comparison-controls.tsx`.
+3. **Resolved 2026-08-08 — not an issue.** An earlier revision claimed a mojibake loading string in `comparison-controls.tsx`. Verification showed the source is correctly encoded UTF-8; the mojibake was in this document's own quotation. Retained as a numbered entry so the false lead is not rediscovered.
 4. **README validation counts were stale before handoff.** They were updated to 68/863 in the handoff checkpoint.
 5. **Dependency advisories.** Three high-severity npm advisories require a deliberate Next.js upgrade investigation.
 6. **Large canonical images.** Some source PNGs are 2-9 MB. Preserve originals; consider optimized derivatives and measurable LCP review.
 7. **Engineering Laboratory bundle size.** 232 kB first-load JS; hidden analyzers remain mounted to preserve state.
 8. **No committed browser E2E suite.** Current browser checks are manual/CLI artifacts.
-9. **Screenshot portfolio is incomplete.** Documentation exists, but authentic final captures are not all populated.
+9. **Screenshot portfolio is empty.** Verified 2026-08-08: all six folders under `docs/assets/screenshots` contain only a `README.md`. Zero authentic captures exist, not merely an incomplete set.
 10. **Asset licensing review is incomplete.** Source URLs are recorded, but not every vehicle image has a consolidated license/attribution record. Confirm redistribution terms, especially non-Wikimedia sources.
-11. **Local production prefetch observation.** A Day 90 local `next start` audit observed 404 responses for some navigation RSC prefetch requests while direct routes still loaded. Reproduce against a fresh build before changing navigation.
+11. **Local production prefetch observation — did not reproduce.** A Day 90 local `next start` audit observed 404 responses for some navigation RSC prefetch requests. As that entry instructed, this was reproduced against a fresh build on 2026-08-08: prefetch requests returned HTTP 200 on `/aircraft`, `/rockets`, `/compare`, `/engineering-lab`, `/learn`, and `/showcase`, both locally and in production. Treat the original observation as stale unless it recurs.
 12. **Visual regression automation is absent.** Presentation-heavy work currently relies on browser review and component tests.
 13. **Early milestone records are incomplete.** Exact Day 1-17 mapping is not recoverable from committed history.
 
