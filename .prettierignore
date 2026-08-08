@@ -4,3 +4,9 @@ node_modules
 out
 output
 package-lock.json
+
+# playwright generated artifacts (HTML/JS reports, test-results JSON, etc.)
+test-results
+playwright-report
+blob-report
+playwright/.cache

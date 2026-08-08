@@ -239,6 +239,11 @@ npm run validate
 
 GitHub Actions runs the same validation command for pushes and pull requests.
 
+A separate Playwright browser suite (`npm run test:e2e`) covers real-browser behavior that
+Vitest's server-rendered tests cannot — see
+[`docs/testing/browser-testing.md`](docs/testing/browser-testing.md) for what it covers and
+how to run it.
+
 ## Project Status
 
 ORBIX is an active educational aerospace engineering and visualization project. The portfolio release

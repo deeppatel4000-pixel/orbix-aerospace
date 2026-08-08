@@ -1,0 +1,111 @@
+name: Browser tests
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: browser-tests-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  e2e:
+    name: Smoke + a11y (Chromium)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      NEXT_TELEMETRY_DISABLED: 1
+      CI: true
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+
+      # `npm ci` installs @playwright/test from package-lock.json, so the
+      # Playwright version used here is pinned to the lockfile automatically
+      # — nothing extra to do to keep CI and local installs in sync.
+      - name: Install dependencies
+        run: npm ci
+
+      # `--with-deps` also installs the Ubuntu system libraries Chromium
+      # needs to launch (fonts, codecs, etc.). It has no effect on Windows
+      # and is not something local/dev machines need to run.
+      - name: Install Playwright Chromium browser
+        run: npx playwright install --with-deps chromium
+
+      # Only the smoke and a11y suites run here — visual regression is
+      # deliberately excluded (see the `visual` job below).
+      - name: Run smoke + a11y tests
+        run: npx playwright test tests/e2e/smoke tests/e2e/a11y --project=desktop --project=tablet --project=mobile
+
+      - name: Upload Playwright report
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 7
+
+  visual:
+    name: Visual regression (Chromium, manual only)
+    # Manual dispatch only — do NOT run this on push/PR. Baselines under
+    # tests/e2e/visual/__screenshots__/{platform}/{projectName}/ are
+    # platform-specific (see the `{platform}` segment in
+    # playwright.config.ts's snapshotPathTemplate). Baselines captured on a
+    # developer's Windows machine render with different font antialiasing/
+    # hinting than Ubuntu's fontconfig stack, so comparing Windows-generated
+    # baselines against Linux-rendered screenshots fails on font rendering
+    # alone, not on real regressions. Running this on every push/PR would be
+    # a permanently red, untrustworthy check.
+    #
+    # To adopt this on push/PR once Linux baselines exist:
+    #   1. Run this job manually (workflow_dispatch) with
+    #      `npm run test:visual:update` on a Linux runner (or in a
+    #      Linux container) to generate `linux` baselines.
+    #   2. Review and commit the resulting
+    #      tests/e2e/visual/__screenshots__/linux/... PNGs.
+    #   3. Move the `if: github.event_name == 'workflow_dispatch'` guard (or
+    #      the whole job) into the trigger list above.
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      NEXT_TELEMETRY_DISABLED: 1
+      CI: true
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright Chromium browser
+        run: npx playwright install --with-deps chromium
+
+      - name: Run visual regression tests
+        run: npm run test:visual
+
+      - name: Upload Playwright report
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report-visual
+          path: playwright-report/
+          retention-days: 7

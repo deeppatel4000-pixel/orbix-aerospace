@@ -14,6 +14,13 @@
 /coverage
 /output/
 
+# playwright (generated artifacts only — baselines under
+# tests/e2e/visual/__screenshots__/ are intentional and must stay tracked)
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
+
 # next.js
 /.next/
 /out/
