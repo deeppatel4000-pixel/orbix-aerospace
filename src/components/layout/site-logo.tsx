@@ -3,7 +3,11 @@ import Link from "next/link";
 import { OrbixWordmark } from "@/components/brand/orbix-wordmark";
 import { siteConfig } from "@/config/site";
 
-export function SiteLogo() {
+interface SiteLogoProps {
+  priority?: boolean;
+}
+
+export function SiteLogo({ priority = false }: SiteLogoProps) {
   return (
     <Link
       aria-label={`${siteConfig.name} home`}
@@ -12,7 +16,9 @@ export function SiteLogo() {
     >
       <OrbixWordmark
         className="h-10 w-[6.6rem] transition-[filter,transform] duration-300 group-hover:drop-shadow-[0_0_18px_rgb(88_220_255/0.2)] motion-safe:group-hover:scale-[1.02] motion-reduce:transition-none sm:h-11 sm:w-[7.25rem]"
-        priority
+        priority={priority}
+        sizes="116px"
+        source="/brand/orbix-wordmark-transparent.png?surface=site-chrome"
       />
       <span className="sr-only">{siteConfig.wordmark}</span>
     </Link>

@@ -1,0 +1,91 @@
+{
+  "project": "ORBIX",
+  "tagline": "Advanced Aerospace Engineering Laboratory",
+  "repository": "https://github.com/deeppatel4000-pixel/orbix-aerospace",
+  "branch": "main",
+  "commit": "HEAD",
+  "auditedBaselineCommit": "5bb7c054e0b2d0b49fba32c7536e4810d0501675",
+  "commitNote": "Resolve the immutable handoff checkpoint with git rev-parse HEAD after clone; a commit cannot contain its own final hash.",
+  "productionUrl": "https://orbix-aerospace.vercel.app",
+  "vercelProject": "orbix-aerospace",
+  "currentMilestone": "Codex to Claude preservation checkpoint after Engineering Laboratory 4.0",
+  "completedMilestones": [
+    "Typed aircraft and rocket architecture",
+    "Engineering calculators and analyses",
+    "Mission composition, reports, and exports",
+    "Mission Control and visualization workspaces",
+    "ORBIX Design System 2.0 and official brand integration",
+    "Aircraft Explorer and mission dossiers",
+    "Rockets Explorer launch-operations experience",
+    "Home 3.0 portfolio landing page",
+    "Engineering Laboratory 4.0 with 33 analyzers in six workflows"
+  ],
+  "completedDays": [
+    "1-80 (exact early-day mapping partially unavailable; implemented state documented in CLAUDE_HANDOFF.md)",
+    "81",
+    "82",
+    "83",
+    "84",
+    "85",
+    "86",
+    "87",
+    "88",
+    "89",
+    "90"
+  ],
+  "activeWork": [],
+  "plannedWork": [
+    "Dependency security upgrade assessment",
+    "Canonical asset licensing and optimization review",
+    "Committed browser end-to-end coverage",
+    "Sourced Learn architecture",
+    "Compare and Learn educational cross-navigation",
+    "Authentic portfolio screenshots"
+  ],
+  "deferredWork": [
+    "New physics or operational-fidelity models",
+    "WebGL visualization runtime",
+    "Authentication or database systems",
+    "External engineering APIs"
+  ],
+  "knownIssues": [
+    "Learn is currently a feature placeholder",
+    "Compare lacks the planned educational bridge",
+    "One mojibake loading string remains in comparison-controls.tsx",
+    "npm audit reports three high-severity Next/PostCSS/Sharp dependency advisories",
+    "Several canonical images are large source files",
+    "Engineering Laboratory first-load JavaScript was measured at 232 kB",
+    "No committed browser E2E or visual-regression suite",
+    "Authentic screenshot gallery is incomplete",
+    "Vehicle image licensing documentation is incomplete for some sources",
+    "Day 1-17 per-day history is not fully recoverable"
+  ],
+  "inventory": {
+    "aircraft": 5,
+    "rockets": 5,
+    "missionPresets": 5,
+    "engineeringLabAnalyzers": 33,
+    "calculatorModules": 20,
+    "analysisModules": 23,
+    "generatedBuildPageInstances": 28
+  },
+  "validation": {
+    "auditedAt": "2026-08-08",
+    "node": "22.17.0",
+    "npm": "10.9.2",
+    "tests": "68 files, 863 tests passed",
+    "format": "passed",
+    "lint": "passed with zero warnings",
+    "typecheck": "passed",
+    "build": "passed; 28 generated page instances",
+    "fullValidation": "npm run validate passed",
+    "npmAudit": "3 high, 0 critical"
+  },
+  "engineeringBoundaries": [
+    "calculators own equations and numerical validation",
+    "analysis owns orchestration",
+    "reports format completed outputs",
+    "React presentation must not duplicate physics",
+    "vehicle, TPS, mission, report, and engineering contracts are protected during presentation work"
+  ]
+}

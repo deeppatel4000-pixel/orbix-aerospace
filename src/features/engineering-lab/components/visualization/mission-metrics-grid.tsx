@@ -30,25 +30,25 @@ const metricFormatter = new Intl.NumberFormat("en-US", {
   minimumFractionDigits: 2,
 });
 
-function MissionMetricCard({ label, unit, value }: MissionMetric) {
+function MissionMetricReadout({ label, unit, value }: MissionMetric) {
   const displayValue =
     typeof value === "number" ? metricFormatter.format(value) : value;
 
   return (
-    <div className="min-h-28 rounded-xl border border-white/10 bg-[#081419] p-4 transition-colors hover:border-accent/25 motion-reduce:transition-none">
-      <dt className="font-mono text-[0.57rem] tracking-[0.12em] text-[#71878d] uppercase">
+    <div className="grid min-h-12 grid-cols-[minmax(0,1fr)_auto] items-center gap-3 border-b border-white/7 px-3 py-2.5 last:border-b-0 sm:px-4">
+      <dt className="font-mono text-[0.56rem] leading-4 tracking-[0.11em] text-[#7f9499] uppercase">
         {label}
       </dt>
-      <dd className="mt-3">
+      <dd className="min-w-0 text-right">
         <output
           className={
-            "font-mono text-base font-semibold " +
+            "block max-w-44 font-mono text-sm font-semibold break-words tabular-nums " +
             (value === undefined ? "text-[#657a80]" : "text-[#dfe9ea]")
           }
         >
           {displayValue ?? "Not reported"}
           {value !== undefined && unit ? (
-            <span className="ml-1 text-[0.68rem] font-normal text-[#83999e]">
+            <span className="ml-1 text-[0.61rem] font-normal text-[#82979c]">
               {unit}
             </span>
           ) : null}
@@ -158,8 +158,8 @@ export function MissionMetricsGrid({
   ];
 
   return (
-    <section aria-labelledby="mission-metrics-title">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+    <section aria-labelledby="mission-metrics-title" className="min-w-0">
+      <div className="flex flex-col gap-2 border-b border-white/10 pb-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <p className="flex items-center gap-2 font-mono text-[0.61rem] tracking-[0.16em] text-accent uppercase">
             <Gauge aria-hidden="true" size={14} />
@@ -175,25 +175,26 @@ export function MissionMetricsGrid({
         </p>
       </div>
 
-      <div className="mt-5 space-y-5">
+      <div className="mt-4 grid gap-3 lg:grid-cols-3">
         {metricGroups.map((group) => {
           const Icon = group.icon;
 
           return (
             <section
               aria-labelledby={`mission-metrics-${group.id}`}
+              className="overflow-hidden rounded-xl border border-white/10 bg-[#061015]/[0.78]"
               key={group.id}
             >
               <h4
-                className="flex items-center gap-2 font-mono text-[0.66rem] tracking-[0.12em] text-[#9fb2b6] uppercase"
+                className="flex min-h-10 items-center gap-2 border-b border-white/10 bg-white/[0.025] px-3 font-mono text-[0.62rem] tracking-[0.14em] text-[#a9babd] uppercase sm:px-4"
                 id={`mission-metrics-${group.id}`}
               >
                 <Icon aria-hidden="true" className="text-accent" size={15} />
                 {group.label}
               </h4>
-              <dl className="mt-3 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+              <dl>
                 {group.metrics.map((metric) => (
-                  <MissionMetricCard key={metric.label} {...metric} />
+                  <MissionMetricReadout key={metric.label} {...metric} />
                 ))}
               </dl>
             </section>

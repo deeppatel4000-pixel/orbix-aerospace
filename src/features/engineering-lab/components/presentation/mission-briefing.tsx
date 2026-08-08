@@ -118,7 +118,7 @@ export function MissionBriefing({
                 {index < architecturePhases.length - 1 ? (
                   <ArrowDown
                     aria-hidden="true"
-                    className="mt-3 text-[#60777d] motion-safe:animate-bounce motion-reduce:animate-none sm:hidden"
+                    className="mt-3 text-[#60777d] motion-safe:animate-bounce motion-reduce:animate-none motion-reduce:transition-none sm:hidden"
                     size={14}
                   />
                 ) : null}

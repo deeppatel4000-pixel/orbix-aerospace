@@ -1,8 +1,9 @@
-import { Activity, RadioTower, ShieldCheck } from "lucide-react";
+import { Activity, RadioTower, ShieldCheck, Waypoints } from "lucide-react";
 
 import { OrbixWordmark } from "@/components/brand/orbix-wordmark";
 
 import type {
+  MissionPreset,
   MissionPresetCategory,
   MissionProfileAnalysis,
   MissionReport,
@@ -11,6 +12,7 @@ import type {
 export interface MissionControlHeaderProps {
   readonly currentWorkspace: string;
   readonly missionCategory?: MissionPresetCategory;
+  readonly missionPreset?: MissionPreset;
   readonly missionProfileAnalysis?: MissionProfileAnalysis | null;
   readonly missionReport?: MissionReport | null;
 }
@@ -26,6 +28,7 @@ const categoryLabels: Readonly<Record<MissionPresetCategory, string>> = {
 export function MissionControlHeader({
   currentWorkspace,
   missionCategory,
+  missionPreset,
   missionProfileAnalysis,
   missionReport,
 }: MissionControlHeaderProps) {
@@ -38,62 +41,79 @@ export function MissionControlHeader({
     "Load completed mission objects to activate the command-center workspace.";
 
   return (
-    <header className="relative z-10 overflow-hidden border-b border-accent/15 bg-[#030810]/92 p-5 backdrop-blur-xl sm:p-7">
+    <header className="relative z-10 overflow-hidden border-b border-[#294451]/65 bg-[#02070d]/94 px-4 py-5 backdrop-blur-xl sm:px-6 sm:py-6 lg:px-8 lg:py-7">
       <div
         aria-hidden="true"
-        className="absolute -top-24 right-0 h-72 w-72 rounded-full bg-accent/7 blur-3xl"
+        className="absolute -top-28 right-[8%] h-72 w-72 rounded-full bg-accent/[0.065] blur-3xl"
       />
-      <div className="relative grid gap-6 2xl:grid-cols-[minmax(0,1fr)_auto] 2xl:items-end">
-        <div>
-          <OrbixWordmark className="mb-4 h-9 w-36" />
-          <p className="flex items-center gap-2 font-mono text-[0.64rem] tracking-[0.2em] text-accent uppercase">
-            <Activity aria-hidden="true" size={15} />
-            ORBIX // Mission Control
-          </p>
-          <p className="mt-5 font-mono text-[0.55rem] tracking-[0.14em] text-[#71878c] uppercase">
-            Mission
-          </p>
+      <div
+        aria-hidden="true"
+        className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-accent/30 to-transparent"
+      />
+      <div className="relative grid gap-7 2xl:grid-cols-[minmax(0,1fr)_minmax(32rem,36rem)] 2xl:items-end">
+        <div className="min-w-0">
+          <div className="flex flex-wrap items-center gap-x-5 gap-y-3">
+            <OrbixWordmark className="h-8 w-32 shrink-0 sm:h-9 sm:w-36" />
+            <span
+              aria-hidden="true"
+              className="hidden h-7 w-px bg-white/10 sm:block"
+            />
+            <p className="flex items-center gap-2 font-mono text-[0.61rem] tracking-[0.19em] text-accent uppercase">
+              <Activity aria-hidden="true" size={14} />
+              ORBIX // Mission Control
+            </p>
+          </div>
+          <div className="mt-6 flex items-center gap-2 font-mono text-[0.54rem] tracking-[0.16em] text-[#71878c] uppercase">
+            <Waypoints aria-hidden="true" size={12} />
+            Mission profile
+          </div>
           <h2
-            className="mt-1 max-w-4xl text-3xl font-semibold tracking-[-0.04em] sm:text-4xl"
+            className="mt-2 max-w-4xl text-[clamp(1.8rem,4vw,3.2rem)] leading-[1.02] font-semibold tracking-[-0.045em] text-[#eef6f7]"
             id="mission-control-dashboard-title"
           >
             {missionName}
           </h2>
-          <p className="mt-3 max-w-3xl text-sm leading-6 text-[#91a5aa]">
+          <p className="mt-4 max-w-[68ch] text-sm leading-6 text-[#91a5aa] sm:text-[0.95rem] sm:leading-7">
             {missionDescription}
           </p>
         </div>
 
-        <dl className="grid gap-3 sm:grid-cols-3 2xl:min-w-[35rem]">
-          <div className="rounded-xl border border-white/10 bg-[#08171c]/90 px-4 py-3">
-            <dt className="font-mono text-[0.54rem] tracking-[0.12em] text-[#71868c] uppercase">
+        <dl className="grid overflow-hidden rounded-xl border border-[#294451]/70 bg-[#061116]/82 shadow-[inset_0_1px_rgba(255,255,255,0.025)] sm:grid-cols-2">
+          <div className="min-w-0 border-b border-white/[0.07] px-4 py-4 sm:border-r">
+            <dt className="font-mono text-[0.52rem] tracking-[0.15em] text-[#71868c] uppercase">
               Category
             </dt>
-            <dd className="mt-1 text-sm font-semibold text-[#cbd8da]">
+            <dd className="mt-2 truncate text-sm font-semibold text-[#d5e0e2]">
               {missionCategory
                 ? categoryLabels[missionCategory]
                 : "Not Reported"}
             </dd>
           </div>
-          <div className="rounded-xl border border-white/10 bg-[#08171c]/90 px-4 py-3">
-            <dt className="flex items-center gap-2 font-mono text-[0.54rem] tracking-[0.12em] text-[#71868c] uppercase">
+          <div className="min-w-0 border-b border-white/[0.07] px-4 py-4">
+            <dt className="font-mono text-[0.52rem] tracking-[0.15em] text-[#71868c] uppercase">
+              Mission preset
+            </dt>
+            <dd className="mt-2 truncate text-sm font-semibold text-[#d5e0e2]">
+              {missionPreset?.name ?? "Not Reported"}
+            </dd>
+          </div>
+          <div className="min-w-0 border-b border-white/[0.07] px-4 py-4 sm:border-r sm:border-b-0">
+            <dt className="flex items-center gap-2 font-mono text-[0.52rem] tracking-[0.15em] text-[#71868c] uppercase">
               <RadioTower aria-hidden="true" size={12} />
               Workspace
             </dt>
-            <dd className="mt-1 text-sm font-semibold text-accent">
+            <dd className="mt-2 truncate text-sm font-semibold text-accent">
               {currentWorkspace}
             </dd>
           </div>
-          <div className="flex items-center gap-2 rounded-xl border border-signal/20 bg-signal/5 px-4 py-3 text-signal">
-            <ShieldCheck aria-hidden="true" size={16} />
-            <div>
-              <dt className="font-mono text-[0.52rem] tracking-[0.1em] uppercase">
-                Educational mission
-              </dt>
-              <dd className="mt-1 font-mono text-[0.59rem] tracking-[0.06em] uppercase">
-                Educational simulation
-              </dd>
-            </div>
+          <div className="min-w-0 bg-signal/[0.035] px-4 py-4 text-signal">
+            <dt className="flex items-center gap-2 font-mono text-[0.5rem] tracking-[0.13em] uppercase">
+              <ShieldCheck aria-hidden="true" className="shrink-0" size={17} />
+              Mission status
+            </dt>
+            <dd className="mt-2 truncate font-mono text-[0.59rem] tracking-[0.07em] uppercase">
+              Educational simulation
+            </dd>
           </div>
         </dl>
       </div>

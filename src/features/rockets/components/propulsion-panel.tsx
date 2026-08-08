@@ -117,12 +117,14 @@ export function PropulsionPanel({ stages }: PropulsionPanelProps) {
                           key={rating.label}
                         >
                           <dt className="text-xs text-muted">{rating.label}</dt>
-                          <dd className="orbix-telemetry-value mt-2 text-lg text-signal">
-                            {formatted.value}
+                          <dd>
+                            <span className="orbix-telemetry-value mt-2 block text-lg text-signal">
+                              {formatted.value}
+                            </span>
+                            <span className="mt-1 block text-xs text-muted">
+                              {formatted.note}
+                            </span>
                           </dd>
-                          <p className="mt-1 text-xs text-muted">
-                            {formatted.note}
-                          </p>
                         </div>
                       );
                     })}

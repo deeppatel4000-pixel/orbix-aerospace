@@ -1,0 +1,157 @@
+.card {
+  background:
+    linear-gradient(180deg, rgb(9 19 31 / 96%), rgb(4 10 17 / 98%)),
+    var(--surface);
+  border: 1px solid rgb(104 216 232 / 24%);
+  border-radius: 0.4rem;
+  box-shadow:
+    0 28px 80px rgb(0 0 0 / 28%),
+    inset 0 1px 0 rgb(245 249 252 / 3%);
+  isolation: isolate;
+  overflow: hidden;
+  position: relative;
+  scroll-margin-top: 7rem;
+}
+
+.card::before {
+  background: linear-gradient(
+    90deg,
+    var(--research-cyan),
+    var(--laboratory-blue) 46%,
+    transparent 88%
+  );
+  content: "";
+  height: 2px;
+  inset: 0 0 auto;
+  opacity: 0.78;
+  pointer-events: none;
+  position: absolute;
+  z-index: 2;
+}
+
+.header {
+  background:
+    linear-gradient(90deg, rgb(16 34 56 / 78%), rgb(5 13 22 / 64%)),
+    rgb(7 16 26 / 92%);
+  border-bottom: 1px solid rgb(104 216 232 / 20%);
+  padding: clamp(1.25rem, 3vw, 2rem);
+  position: relative;
+}
+
+.header::after {
+  background: repeating-linear-gradient(
+    90deg,
+    rgb(120 189 255 / 34%) 0,
+    rgb(120 189 255 / 34%) 1px,
+    transparent 1px,
+    transparent 2.5rem
+  );
+  bottom: 0;
+  content: "";
+  height: 0.25rem;
+  left: 0;
+  opacity: 0.55;
+  pointer-events: none;
+  position: absolute;
+  right: 0;
+}
+
+.headerLayout {
+  align-items: start;
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: auto minmax(0, 1fr);
+  position: relative;
+}
+
+.instrumentIndex {
+  color: rgb(145 163 183 / 72%);
+  font-family: var(--font-telemetry);
+  font-size: 0.56rem;
+  left: 0;
+  letter-spacing: 0.16em;
+  position: absolute;
+  top: 4.05rem;
+  writing-mode: vertical-rl;
+}
+
+.iconWell {
+  align-items: center;
+  background:
+    linear-gradient(145deg, rgb(104 216 232 / 14%), transparent 70%),
+    rgb(2 8 14 / 72%);
+  border: 1px solid rgb(104 216 232 / 34%);
+  box-shadow: inset 0 0 0 1px rgb(120 189 255 / 5%);
+  color: var(--research-cyan);
+  display: flex;
+  height: 3.5rem;
+  justify-content: center;
+  margin-left: 1.1rem;
+  position: relative;
+  width: 3.5rem;
+}
+
+.iconWell::after {
+  border-bottom: 1px solid var(--laboratory-blue);
+  border-right: 1px solid var(--laboratory-blue);
+  bottom: -1px;
+  content: "";
+  height: 0.7rem;
+  position: absolute;
+  right: -1px;
+  width: 0.7rem;
+}
+
+.eyebrow {
+  color: var(--research-cyan);
+  font-family: var(--font-telemetry);
+  font-size: 0.67rem;
+  letter-spacing: 0.18em;
+  line-height: 1.4;
+  text-transform: uppercase;
+}
+
+.workspace {
+  background:
+    linear-gradient(90deg, rgb(40 121 199 / 5%) 1px, transparent 1px),
+    linear-gradient(rgb(40 121 199 / 5%) 1px, transparent 1px),
+    linear-gradient(180deg, rgb(7 16 26 / 88%), rgb(3 9 15 / 96%));
+  background-size:
+    2.5rem 2.5rem,
+    2.5rem 2.5rem,
+    auto;
+  padding: clamp(1.25rem, 3vw, 2rem);
+  position: relative;
+}
+
+.workspace::before {
+  background: linear-gradient(
+    180deg,
+    var(--research-cyan),
+    rgb(104 216 232 / 8%) 55%,
+    transparent
+  );
+  content: "";
+  inset: 1.25rem auto 1.25rem 0;
+  opacity: 0.5;
+  pointer-events: none;
+  position: absolute;
+  width: 1px;
+}
+
+@media (max-width: 39.999rem) {
+  .headerLayout {
+    gap: 1.25rem;
+    grid-template-columns: 1fr;
+  }
+
+  .instrumentIndex {
+    left: 4.35rem;
+    top: 1.55rem;
+    writing-mode: initial;
+  }
+
+  .iconWell {
+    margin-left: 0;
+  }
+}

@@ -57,7 +57,7 @@ export function AircraftExplorer({ aircraft }: AircraftExplorerProps) {
 
   return (
     <>
-      <section className="group relative isolate flex min-h-[calc(100svh-5rem)] overflow-hidden border-b border-tactical/35 bg-[#030706]">
+      <section className="relative isolate flex min-h-[calc(100svh-5rem)] overflow-hidden border-b border-tactical/35 bg-[#030706]">
         <AircraftImage
           aircraft={featuredAircraft}
           className="-z-30"

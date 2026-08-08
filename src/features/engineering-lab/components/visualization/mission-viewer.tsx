@@ -102,7 +102,7 @@ export function MissionViewer({
             <p className="mt-1 flex items-center gap-2 font-mono text-xs text-accent uppercase">
               <span
                 aria-hidden="true"
-                className="h-2 w-2 rounded-full bg-accent motion-safe:animate-pulse"
+                className="h-2 w-2 rounded-full bg-accent motion-safe:animate-pulse motion-reduce:animate-none"
               />
               Analysis outputs loaded
             </p>
@@ -219,7 +219,7 @@ export function MissionViewer({
             >
               <span className="h-5 w-px bg-white/12" />
               <ArrowDown
-                className="mx-2 motion-safe:animate-bounce"
+                className="mx-2 motion-safe:animate-bounce motion-reduce:animate-none"
                 size={17}
               />
               <span className="h-5 w-px bg-white/12" />

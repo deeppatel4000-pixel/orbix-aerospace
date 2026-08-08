@@ -72,15 +72,15 @@ export function PerformancePanel({
                 className="grid gap-4 p-5 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center sm:p-6"
                 key={capability.orbit + "-" + capability.configuration}
               >
-                <div>
-                  <dt className="font-semibold">
+                <dt>
+                  <span className="block font-semibold">
                     {formatOrbitType(capability.orbit)}
-                  </dt>
-                  <dd className="mt-1 text-xs text-muted">
+                  </span>
+                  <span className="mt-1 block text-xs text-muted">
                     {formatLaunchConfiguration(capability.configuration)}
                     configuration // {payload.note}
-                  </dd>
-                </div>
+                  </span>
+                </dt>
                 <dd className="orbix-telemetry-value text-xl text-signal">
                   {payload.value}
                 </dd>

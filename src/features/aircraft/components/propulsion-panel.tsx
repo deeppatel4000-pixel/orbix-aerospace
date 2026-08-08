@@ -48,9 +48,9 @@ export function PropulsionPanel({ propulsion }: PropulsionPanelProps) {
   return (
     <ProfileSection
       description="Installed engine configuration and the published thrust ratings available in the dataset."
-      eyebrow="03 // Powerplant"
-      id="propulsion"
-      title="Propulsion"
+      eyebrow="06 // Powerplant"
+      id="powerplant"
+      title="Powerplant"
     >
       <div className="space-y-4">
         {propulsion.engines.map((engine) => {
@@ -70,7 +70,7 @@ export function PropulsionPanel({ propulsion }: PropulsionPanelProps) {
                     <p className="font-mono text-[0.62rem] tracking-[0.14em] text-muted uppercase">
                       Installed engine
                     </p>
-                    <h3 className="mt-1 text-xl font-semibold">
+                    <h3 className="font-display mt-1 text-xl font-semibold sm:text-2xl">
                       {engine.name}
                     </h3>
                   </div>
@@ -123,9 +123,9 @@ export function PropulsionPanel({ propulsion }: PropulsionPanelProps) {
                         <dd className="mt-2 text-lg font-semibold">
                           {formatted.value}
                         </dd>
-                        <p className="mt-1 text-xs text-muted">
+                        <dd className="mt-1 text-xs text-muted">
                           {formatted.note}
-                        </p>
+                        </dd>
                       </div>
                     );
                   })}

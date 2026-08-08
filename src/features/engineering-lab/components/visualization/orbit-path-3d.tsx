@@ -41,7 +41,7 @@ export const OrbitPath3D = memo(function OrbitPath3D({
         <div className="absolute inset-x-[12%] inset-y-[17%] [transform:rotateX(66deg)_rotateZ(-12deg)] [transform-style:preserve-3d]">
           <div className="absolute inset-0 rounded-[50%] border border-dashed border-signal/55 shadow-[0_0_20px_rgba(232,178,74,0.08)]" />
           <div
-            className="absolute inset-0 motion-safe:animate-spin motion-reduce:transform-none"
+            className="absolute inset-0 motion-safe:animate-spin motion-reduce:transform-none motion-reduce:animate-none"
             style={{ animationDuration: "18s" }}
           >
             <SpacecraftMarker

@@ -60,7 +60,7 @@ export function MissionCard({
   return (
     <article
       aria-labelledby={`mission-card-${preset.id}-title`}
-      className="group relative flex min-h-full flex-col overflow-hidden rounded-2xl border border-white/10 bg-[#071318]/88 p-5 shadow-[0_18px_45px_rgba(0,0,0,0.16)] transition-[border-color,transform] hover:-translate-y-0.5 hover:border-accent/25 motion-reduce:transform-none motion-reduce:transition-none sm:p-6"
+      className="relative flex min-h-full flex-col overflow-hidden rounded-2xl border border-white/10 bg-[#071318]/88 p-5 shadow-[0_18px_45px_rgba(0,0,0,0.16)] sm:p-6"
     >
       <div
         aria-hidden="true"

@@ -47,10 +47,7 @@ export function PortfolioHighlights() {
 
         <div className="mt-12 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
           {highlights.map((highlight, index) => (
-            <article
-              className="orbix-premium-card orbix-premium-card--interactive p-6"
-              key={highlight.label}
-            >
+            <article className="orbix-premium-card p-6" key={highlight.label}>
               <div className="flex items-center justify-between gap-4">
                 <span className="flex h-10 w-10 items-center justify-center rounded-xl border border-accent/20 bg-accent/5 text-accent">
                   <highlight.icon aria-hidden="true" size={18} />

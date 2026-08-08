@@ -266,7 +266,7 @@ export function Mission3DScene({
             </div>
 
             <div className="absolute top-[18%] right-[8%] h-[55%] w-[68%] rotate-[24deg] border-t border-dashed border-signal/45 [transform-style:preserve-3d] sm:right-[12%] sm:w-[58%]">
-              <div className="absolute -top-[4.5rem] right-[8%] motion-safe:animate-bounce">
+              <div className="absolute -top-[4.5rem] right-[8%] motion-safe:animate-bounce motion-reduce:animate-none">
                 <SpacecraftMarker
                   phaseLabel="Atmospheric descent"
                   thermalActive

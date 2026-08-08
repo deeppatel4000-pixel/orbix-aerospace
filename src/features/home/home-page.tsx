@@ -1,15 +1,19 @@
-import { EngineeringModules } from "@/features/home/components/engineering-modules";
-import { FeaturedVehicles } from "@/features/home/components/featured-vehicles";
+import { FeaturedExperiences } from "@/features/home/components/featured-experiences";
+import { FinalCta } from "@/features/home/components/final-cta";
 import { Hero } from "@/features/home/components/hero";
-import { ProjectPhilosophy } from "@/features/home/components/project-philosophy";
+import { MissionGalleryPreview } from "@/features/home/components/mission-gallery-preview";
+import { PlatformHighlights } from "@/features/home/components/platform-highlights";
+import { ShowcasePreview } from "@/features/home/components/showcase-preview";
 
 export function HomePage() {
   return (
     <>
       <Hero />
-      <FeaturedVehicles />
-      <EngineeringModules />
-      <ProjectPhilosophy />
+      <FeaturedExperiences />
+      <PlatformHighlights />
+      <MissionGalleryPreview />
+      <ShowcasePreview />
+      <FinalCta />
     </>
   );
 }

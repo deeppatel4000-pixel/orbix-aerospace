@@ -54,10 +54,7 @@ export function MissionGallery({ missions }: MissionGalleryProps) {
             );
 
             return (
-              <article
-                className="orbix-premium-card orbix-premium-card--interactive group"
-                key={mission.preset.id}
-              >
+              <article className="orbix-premium-card" key={mission.preset.id}>
                 <div className="relative isolate aspect-[16/6] min-h-44 overflow-hidden border-b border-border">
                   <OrbixEnvironmentBackdrop
                     className="z-0"

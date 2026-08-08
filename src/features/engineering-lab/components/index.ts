@@ -1,12 +1,19 @@
 export { AtmosphereCalculator } from "./atmosphere-calculator";
 export { CalculatorCard } from "./calculator-card";
 export { DragEquationCalculator } from "./drag-equation-calculator";
+export { EngineeringContextNote } from "./engineering-context-note";
 export { EngineeringDashboard } from "./engineering-dashboard";
 export { FlightConditionAnalyzer } from "./flight-condition-analyzer";
 export { HohmannTransferAnalyzer } from "./hohmann-transfer-analyzer";
 export { HypersonicHeatingAnalyzer } from "./hypersonic-heating-analyzer";
 export { InletCompressionAnalyzer } from "./inlet-compression-analyzer";
 export { LiftEquationCalculator } from "./lift-equation-calculator";
+export { LaboratoryShell } from "./laboratory-shell";
+export {
+  LaboratoryWorkflowNavigation,
+  type LaboratoryWorkflowNavigationItem,
+} from "./laboratory-workflow-navigation";
+export { LaboratoryWorkflowSection } from "./laboratory-workflow-section";
 export { MaterialTPSSizingAnalyzer } from "./material-tps-sizing-analyzer";
 export {
   MissionInsightsPanel,

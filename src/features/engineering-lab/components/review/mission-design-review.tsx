@@ -148,6 +148,13 @@ export function MissionDesignReview({
           assumptions, and known modeling limitations. No feasibility decision
           is produced.
         </p>
+        <a
+          className="mt-5 inline-flex min-h-11 items-center border-b border-accent/45 font-mono text-[0.62rem] tracking-[0.1em] text-accent uppercase transition-colors hover:border-accent hover:text-white focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent motion-reduce:transition-none"
+          href="#design-review-assumptions-title"
+          tabIndex={0}
+        >
+          Jump to modeling assumptions
+        </a>
       </header>
 
       <div className="space-y-5 p-5 sm:p-7">

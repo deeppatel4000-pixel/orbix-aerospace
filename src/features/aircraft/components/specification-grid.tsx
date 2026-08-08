@@ -16,7 +16,7 @@ export function SpecificationGrid({ items }: SpecificationGridProps) {
     <dl className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
       {items.map((item, index) => (
         <div
-          className="orbix-frame group relative min-h-44 overflow-hidden border-tactical/25 bg-[#080d0c]/90 p-5 transition-[border-color,background-color] hover:border-tactical-amber/45 hover:bg-[#0b1210] sm:p-6"
+          className="orbix-frame relative min-h-44 overflow-hidden border-tactical/25 bg-[#080d0c]/90 p-5 sm:p-6"
           key={item.label}
         >
           <div

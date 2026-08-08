@@ -2,4 +2,5 @@
 coverage
 node_modules
 out
+output
 package-lock.json

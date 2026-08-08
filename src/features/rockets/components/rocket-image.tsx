@@ -5,6 +5,7 @@ import type { Rocket } from "@/features/vehicles/types";
 import { cn } from "@/lib/cn";
 
 interface RocketImageProps {
+  animateOnHover?: boolean;
   className?: string;
   fillContainer?: boolean;
   imageClassName?: string;
@@ -14,6 +15,7 @@ interface RocketImageProps {
 }
 
 export function RocketImage({
+  animateOnHover = false,
   className,
   fillContainer = false,
   imageClassName,
@@ -52,13 +54,15 @@ export function RocketImage({
       <Image
         alt={visual.alt}
         className={cn(
-          "object-cover transition-transform duration-700 ease-out motion-safe:group-hover:scale-[1.025] motion-reduce:transition-none",
+          "object-cover",
+          animateOnHover &&
+            "transition-transform duration-700 ease-out motion-safe:group-hover:scale-[1.025] motion-reduce:transition-none",
           imageClassName,
         )}
         fill
         fetchPriority={priority ? "high" : undefined}
         priority={priority}
-        quality={90}
+        quality={priority ? 90 : 75}
         sizes={sizes}
         src={visual.src}
         style={{ objectPosition: visual.objectPosition }}

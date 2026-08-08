@@ -45,7 +45,7 @@ export function AircraftCard({
     <article
       aria-labelledby={titleId}
       className={cn(
-        "orbix-frame group relative flex h-full flex-col overflow-hidden border-tactical/30 bg-[#080d0c]/92 shadow-[0_24px_80px_rgb(0_0_0/0.32)] transition-[border-color,box-shadow,transform] duration-500 hover:border-tactical-amber/55 hover:shadow-[0_30px_90px_rgb(0_0_0/0.46)] motion-safe:hover:-translate-y-1",
+        "orbix-frame relative flex h-full flex-col overflow-hidden border-tactical/30 bg-[#080d0c]/92 shadow-[0_24px_80px_rgb(0_0_0/0.32)]",
         className,
       )}
     >

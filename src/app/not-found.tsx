@@ -1,27 +1,34 @@
-import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 
+import { OrbixBackground } from "@/components/brand/orbix-background";
 import { Container } from "@/components/layout/container";
+import { ButtonLink } from "@/components/ui/button-link";
 
 export default function NotFound() {
   return (
-    <Container className="flex min-h-[70vh] flex-col items-start justify-center py-20">
-      <p className="font-mono text-sm tracking-[0.2em] text-accent uppercase">
-        404 / Navigation error
-      </p>
-      <h1 className="mt-4 text-4xl font-semibold tracking-tight sm:text-6xl">
-        This route is off the flight plan.
-      </h1>
-      <p className="mt-5 max-w-xl text-lg leading-8 text-muted">
-        The page may have moved, or its workspace has not been established yet.
-      </p>
-      <Link
-        className="mt-8 inline-flex items-center gap-2 rounded-full border border-border px-5 py-3 text-sm font-semibold transition-colors hover:border-accent/60 hover:text-accent"
-        href="/"
-      >
-        <ArrowLeft aria-hidden="true" size={17} />
-        Return home
-      </Link>
-    </Container>
+    <section className="relative isolate flex min-h-[calc(100svh-5rem)] items-center overflow-hidden border-b border-border/70">
+      <OrbixBackground variant="technical" />
+      <Container className="relative py-[var(--space-section-compact)]">
+        <div className="max-w-4xl">
+          <p className="orbix-kicker">Navigation control // Error 404</p>
+          <h1 className="orbix-display-lg mt-[var(--space-stack-compact)]">
+            This route is off the flight plan.
+          </h1>
+          <div className="orbix-brand-rule my-[var(--space-stack)] max-w-sm" />
+          <p className="orbix-body-lead max-w-[var(--measure-copy)]">
+            The page may have moved, or its workspace has not been established
+            yet. Return to the ORBIX command index to continue exploring.
+          </p>
+          <ButtonLink
+            className="mt-[var(--space-stack)]"
+            href="/"
+            variant="secondary"
+          >
+            <ArrowLeft aria-hidden="true" size={17} />
+            Return home
+          </ButtonLink>
+        </div>
+      </Container>
+    </section>
   );
 }

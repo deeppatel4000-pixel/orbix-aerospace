@@ -1,4 +1,12 @@
-import { ArrowDown, ArrowUpRight, Database, Flame, Orbit } from "lucide-react";
+import {
+  ArrowDown,
+  ArrowUpRight,
+  Database,
+  Flame,
+  Orbit,
+  RadioTower,
+  Rocket,
+} from "lucide-react";
 
 import { Container } from "@/components/layout/container";
 import { ButtonLink } from "@/components/ui/button-link";
@@ -52,148 +60,187 @@ export function RocketExplorer({ rockets }: RocketExplorerProps) {
 
   return (
     <>
-      <section className="group relative isolate min-h-[calc(100svh-5.5rem)] overflow-hidden border-b border-atmosphere/25 bg-[#02050a]">
-        <RocketImage
-          fillContainer
-          imageClassName="saturate-[0.82] contrast-[1.08]"
-          priority
-          rocket={flagship}
-          sizes="100vw"
+      <section className="relative isolate min-h-[calc(100svh-5rem)] overflow-hidden border-b border-signal/25 bg-[#020306]">
+        <div className="absolute inset-x-0 top-0 -z-30 aspect-square w-full overflow-hidden border-b border-white/10 lg:inset-y-0 lg:right-0 lg:left-auto lg:aspect-auto lg:h-auto lg:w-[min(68vw,calc(100svh-5rem))] lg:border-b-0 lg:border-l">
+          <RocketImage
+            fillContainer
+            imageClassName="saturate-[0.88] contrast-[1.08]"
+            priority
+            rocket={flagship}
+            sizes="(max-width: 1023px) 100vw, min(68vw, calc(100svh - 5rem))"
+          />
+        </div>
+        <div
+          aria-hidden="true"
+          className="absolute inset-0 -z-20 bg-[linear-gradient(90deg,#020306_0%,rgba(2,3,6,0.98)_26%,rgba(2,3,6,0.76)_52%,rgba(2,3,6,0.16)_78%,rgba(2,3,6,0.3)_100%),linear-gradient(180deg,rgba(2,3,6,0.18)_0%,rgba(2,3,6,0.04)_42%,#020306_100%)] max-lg:bg-[linear-gradient(180deg,rgba(2,3,6,0.2)_0%,rgba(2,3,6,0.52)_38%,#020306_76%)]"
         />
         <div
           aria-hidden="true"
-          className="absolute inset-0 bg-[linear-gradient(90deg,rgba(2,5,10,0.98)_0%,rgba(2,5,10,0.9)_36%,rgba(2,5,10,0.38)_68%,rgba(2,5,10,0.35)_100%)] max-lg:bg-[linear-gradient(180deg,rgba(2,5,10,0.68)_0%,rgba(2,5,10,0.9)_62%,rgba(2,5,10,1)_100%)]"
+          className="technical-grid absolute inset-0 -z-10 opacity-20 mix-blend-screen"
         />
         <div
           aria-hidden="true"
-          className="technical-grid absolute inset-0 opacity-20 mix-blend-screen"
+          className="absolute inset-x-0 bottom-0 -z-10 h-[36%] bg-[radial-gradient(ellipse_at_70%_100%,rgba(244,147,45,0.26),transparent_58%)]"
         />
         <div
           aria-hidden="true"
-          className="absolute inset-x-0 bottom-0 h-44 bg-[radial-gradient(ellipse_at_bottom,rgba(242,188,104,0.22),transparent_70%)]"
+          className="absolute top-[18%] right-[-12rem] -z-10 h-[36rem] w-[36rem] rounded-full border border-atmosphere/20 shadow-[0_0_120px_rgba(87,215,255,0.08)]"
         />
 
-        <Container className="relative flex min-h-[calc(100svh-5.5rem)] items-end py-12 sm:py-16 lg:items-center lg:py-20">
-          <div className="w-full max-w-3xl">
-            <p className="flex items-center gap-3 font-mono text-xs tracking-[0.2em] text-signal uppercase">
-              <Flame aria-hidden="true" size={16} strokeWidth={1.7} />
-              Launch operations // Vehicle registry
+        <Container className="flex min-h-[calc(100svh-5rem)] w-full flex-col justify-between py-8 sm:py-12 lg:py-14">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <p className="flex items-center gap-3 font-mono text-[0.66rem] tracking-[0.2em] text-signal uppercase">
+              <RadioTower aria-hidden="true" size={16} strokeWidth={1.7} />
+              ORBIX launch operations // Registry 03
             </p>
-            <h1 className="font-display mt-6 text-5xl leading-[0.92] font-semibold tracking-[-0.055em] text-balance text-white sm:text-6xl lg:text-8xl">
-              Rocket
-              <span className="block text-accent">Explorer</span>
-            </h1>
-            <p className="mt-6 max-w-2xl text-base leading-7 text-white/70 sm:text-lg sm:leading-8">
-              Enter a launch-operations registry built around vehicle staging,
-              propulsion systems, payload capability, and configuration-specific
-              engineering data.
-            </p>
+            <div className="flex items-center gap-3 self-start border border-white/15 bg-black/50 px-3 py-2 backdrop-blur-md sm:self-auto">
+              <span
+                aria-hidden="true"
+                className="h-1.5 w-1.5 rounded-full bg-signal shadow-[0_0_10px_currentColor]"
+              />
+              <span className="font-mono text-[0.6rem] tracking-[0.14em] text-white/70 uppercase">
+                {rockets.length} public {profileLabel}
+              </span>
+            </div>
+          </div>
 
-            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-              <ButtonLink href="#launch-vehicle-registry">
-                Enter vehicle registry
-                <ArrowDown aria-hidden="true" size={16} />
-              </ButtonLink>
-              <ButtonLink href={`/rockets/${flagship.id}`} variant="secondary">
-                Open {flagship.name}
-                <ArrowUpRight aria-hidden="true" size={16} />
-              </ButtonLink>
+          <div className="mt-36 grid gap-10 lg:mt-24 lg:grid-cols-[minmax(0,1fr)_minmax(24rem,0.66fr)] lg:items-end lg:gap-16">
+            <div className="max-w-3xl">
+              <p className="font-mono text-[0.65rem] tracking-[0.2em] text-white/60 uppercase">
+                Vehicle archive // Propulsion and payload systems
+              </p>
+              <h1 className="font-display mt-5 text-5xl leading-[0.88] font-semibold tracking-[-0.06em] text-balance text-white sm:text-7xl lg:text-[5.9rem]">
+                Rocket
+                <span className="block text-signal">Explorer</span>
+              </h1>
+              <p className="mt-7 max-w-2xl text-lg leading-8 text-white/70 sm:text-xl">
+                Enter a launch-operations archive where propulsion, staging,
+                payload capability, and mission architecture are presented as
+                one coherent vehicle system.
+              </p>
+
+              <div className="mt-9 flex flex-col gap-3 sm:flex-row">
+                <ButtonLink href={`/rockets/${flagship.id}`}>
+                  Open {flagship.name}
+                  <ArrowUpRight aria-hidden="true" size={17} />
+                </ButtonLink>
+                <ButtonLink href="#launch-vehicle-registry" variant="secondary">
+                  Explore launch vehicles
+                  <ArrowDown aria-hidden="true" size={17} />
+                </ButtonLink>
+              </div>
             </div>
 
-            <div className="mt-10 border-y border-white/15 bg-black/20 backdrop-blur-sm">
-              <dl className="grid grid-cols-2 sm:grid-cols-4">
-                <div className="border-r border-b border-white/10 p-4 sm:border-b-0">
-                  <dt className="font-mono text-[0.58rem] tracking-[0.14em] text-white/50 uppercase">
-                    Featured vehicle
-                  </dt>
-                  <dd className="mt-2 text-sm font-semibold text-white">
+            <aside
+              aria-label={`${flagship.name} featured launch telemetry`}
+              className="orbix-frame border-white/20 bg-black/68 p-5 shadow-[0_28px_90px_rgb(0_0_0/0.48)] backdrop-blur-xl sm:p-6"
+            >
+              <div className="flex items-start justify-between gap-6 border-b border-white/15 pb-5">
+                <div>
+                  <p className="font-mono text-[0.6rem] tracking-[0.16em] text-signal uppercase">
+                    Vehicle spotlight
+                  </p>
+                  <h2 className="font-display mt-2 text-2xl font-semibold tracking-[-0.035em] text-white">
                     {flagship.name}
-                  </dd>
+                  </h2>
+                  <p className="mt-2 text-sm text-white/55">
+                    {flagship.manufacturer}
+                    {" // "}
+                    {flagship.country.name}
+                  </p>
                 </div>
-                <div className="border-b border-white/10 p-4 sm:border-r sm:border-b-0">
-                  <dt className="font-mono text-[0.58rem] tracking-[0.14em] text-white/50 uppercase">
-                    Height
+                <Rocket
+                  aria-hidden="true"
+                  className="shrink-0 text-signal"
+                  size={23}
+                  strokeWidth={1.45}
+                />
+              </div>
+
+              <dl className="mt-5 grid grid-cols-2 gap-px bg-white/15">
+                <div className="bg-black/72 p-4">
+                  <dt className="font-mono text-[0.56rem] tracking-[0.12em] text-white/46 uppercase">
+                    Vehicle height
                   </dt>
-                  <dd className="orbix-telemetry-value mt-2 text-sm text-accent">
+                  <dd className="orbix-telemetry-value mt-3 text-lg text-white sm:text-xl">
                     {height.value}
                   </dd>
                 </div>
-                <div className="border-r border-white/10 p-4">
-                  <dt className="font-mono text-[0.58rem] tracking-[0.14em] text-white/50 uppercase">
+                <div className="bg-black/72 p-4">
+                  <dt className="font-mono text-[0.56rem] tracking-[0.12em] text-white/46 uppercase">
                     Liftoff mass
                   </dt>
-                  <dd className="orbix-telemetry-value mt-2 text-sm text-accent">
+                  <dd className="orbix-telemetry-value mt-3 text-lg text-white sm:text-xl">
                     {liftoffMass.value}
                   </dd>
                 </div>
-                <div className="p-4">
-                  <dt className="font-mono text-[0.58rem] tracking-[0.14em] text-white/50 uppercase">
-                    Liftoff thrust
+                <div className="col-span-2 bg-black/72 p-4">
+                  <dt className="flex items-center gap-2 font-mono text-[0.56rem] tracking-[0.12em] text-white/46 uppercase">
+                    <Flame aria-hidden="true" size={13} /> Liftoff thrust
                   </dt>
-                  <dd className="orbix-telemetry-value mt-2 text-sm text-signal">
+                  <dd className="orbix-telemetry-value mt-3 text-2xl text-signal">
                     {thrust.value}
                   </dd>
                 </div>
               </dl>
-            </div>
+
+              <p className="mt-5 border-l border-signal/55 pl-4 text-xs leading-5 text-white/52">
+                Measurements are displayed with the qualifiers recorded in the
+                public engineering dataset.
+              </p>
+            </aside>
           </div>
         </Container>
       </section>
 
       <section
         aria-labelledby="available-rockets-title"
-        className="orbix-section-compact relative overflow-hidden bg-[#030711]"
+        className="relative overflow-hidden bg-[#03060b] py-20 sm:py-28"
         id="launch-vehicle-registry"
       >
         <div
           aria-hidden="true"
-          className="absolute inset-0 bg-[radial-gradient(circle_at_88%_12%,rgba(87,215,255,0.1),transparent_28%),radial-gradient(circle_at_10%_58%,rgba(242,188,104,0.07),transparent_24%)]"
+          className="technical-grid absolute inset-0 opacity-30"
+        />
+        <div
+          aria-hidden="true"
+          className="absolute inset-0 bg-[radial-gradient(circle_at_88%_10%,rgba(87,215,255,0.1),transparent_27%),radial-gradient(circle_at_8%_42%,rgba(244,147,45,0.08),transparent_24%)]"
         />
         <Container className="relative">
-          <div className="grid gap-8 border-b border-atmosphere/20 pb-8 lg:grid-cols-[minmax(0,1fr)_22rem] lg:items-end">
+          <div className="grid gap-8 border-b border-atmosphere/20 pb-9 lg:grid-cols-[minmax(0,1fr)_26rem] lg:items-end">
             <div>
-              <p className="font-mono text-xs tracking-[0.18em] text-signal uppercase">
-                Launch vehicle registry
+              <p className="font-mono text-[0.66rem] tracking-[0.2em] text-signal uppercase">
+                Launch vehicle registry // Public reference set
               </p>
               <h2
-                className="font-display mt-3 text-4xl font-semibold tracking-[-0.045em] sm:text-5xl"
+                className="font-display mt-4 max-w-3xl text-4xl leading-none font-semibold tracking-[-0.045em] sm:text-5xl lg:text-6xl"
                 id="available-rockets-title"
               >
                 Integrated launch systems
               </h2>
-              <p className="mt-4 max-w-2xl text-base leading-7 text-muted">
-                Compare public vehicle architectures through complete visual
-                profiles while retaining the qualifiers attached to every
-                recorded engineering value.
-              </p>
             </div>
 
-            <aside className="orbix-frame border-atmosphere/25 bg-surface/75 p-5 backdrop-blur-md">
-              <div className="flex items-center gap-3">
-                <span className="flex h-10 w-10 items-center justify-center border border-atmosphere/30 bg-atmosphere/10 text-accent">
-                  <Orbit aria-hidden="true" size={19} strokeWidth={1.7} />
-                </span>
-                <div>
-                  <p className="font-mono text-[0.62rem] tracking-[0.14em] text-muted uppercase">
-                    Registry status
-                  </p>
-                  <p className="mt-1 text-sm font-semibold">
-                    Dataset connected
-                  </p>
-                </div>
-              </div>
-              <div className="mt-5 flex items-end justify-between border-t border-border pt-4">
-                <span className="text-sm text-muted">
-                  Available {profileLabel}
-                </span>
-                <span className="font-mono text-2xl text-accent">
-                  {String(rockets.length).padStart(2, "0")}
+            <div>
+              <p className="text-sm leading-7 text-muted sm:text-base">
+                Five launch architectures, presented with the photographic scale
+                and technical context needed to understand each vehicle as a
+                complete engineering system.
+              </p>
+              <div className="mt-4 flex items-center gap-3 border-t border-atmosphere/20 pt-4">
+                <Orbit
+                  aria-hidden="true"
+                  className="text-accent"
+                  size={18}
+                  strokeWidth={1.6}
+                />
+                <span className="font-mono text-[0.62rem] tracking-[0.13em] text-muted uppercase">
+                  Propulsion // Staging // Payload // Mission
                 </span>
               </div>
-            </aside>
+            </div>
           </div>
 
-          <div className="mt-8 grid gap-6 md:grid-cols-2 lg:grid-cols-12">
+          <div className="mt-10 grid gap-6 md:grid-cols-2 lg:grid-flow-row-dense lg:grid-cols-12">
             {rockets.map((rocket, index) => {
               const visual = getRocketVisual(rocket.id);
 

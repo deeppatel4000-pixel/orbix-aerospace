@@ -69,7 +69,7 @@ export function BriefingObjectives({
 
           return (
             <li
-              className="group flex min-h-24 gap-4 rounded-xl border border-white/10 bg-black/15 p-4 transition-colors hover:border-accent/25 motion-reduce:transition-none"
+              className="flex min-h-24 gap-4 rounded-xl border border-white/10 bg-black/15 p-4"
               key={objective}
             >
               <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-accent/20 bg-accent/6 font-mono text-xs text-accent">

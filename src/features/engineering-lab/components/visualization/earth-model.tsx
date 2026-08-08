@@ -17,7 +17,7 @@ export const EarthModel = memo(function EarthModel({
     >
       <div
         aria-hidden="true"
-        className="absolute -inset-4 rounded-full bg-[#4fc5d4]/12 blur-xl motion-safe:animate-pulse"
+        className="absolute -inset-4 rounded-full bg-[#4fc5d4]/12 blur-xl motion-safe:animate-pulse motion-reduce:animate-none"
       />
       <div
         aria-hidden="true"

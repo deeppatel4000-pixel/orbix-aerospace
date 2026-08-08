@@ -39,7 +39,7 @@ function SummaryCard({
   return (
     <article
       aria-labelledby={`briefing-summary-${id}`}
-      className="rounded-2xl border border-white/10 bg-[#081419]/90 p-5 shadow-[0_18px_40px_rgba(0,0,0,0.14)] transition-transform hover:-translate-y-0.5 motion-reduce:transform-none motion-reduce:transition-none"
+      className="rounded-2xl border border-white/10 bg-[#081419]/90 p-5 shadow-[0_18px_40px_rgba(0,0,0,0.14)]"
     >
       <div className="flex items-start justify-between gap-4">
         <div>

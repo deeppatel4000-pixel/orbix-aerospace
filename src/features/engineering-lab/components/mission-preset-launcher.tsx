@@ -179,7 +179,7 @@ export function MissionPresetLauncher() {
               className={
                 selected
                   ? "rounded-2xl border border-accent/60 bg-accent/7 p-5 shadow-[0_0_0_1px_color-mix(in_srgb,var(--color-accent)_15%,transparent)]"
-                  : "rounded-2xl border border-border bg-background/35 p-5 transition-colors hover:border-accent/40"
+                  : "rounded-2xl border border-border bg-background/35 p-5"
               }
               key={preset.id}
             >

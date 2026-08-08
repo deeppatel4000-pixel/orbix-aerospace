@@ -17,14 +17,18 @@ export function ModuleCard({
   title,
 }: ModuleCardProps) {
   return (
-    <article className="group h-full">
+    <article className="group h-full border-t border-border/80">
       <Link
         aria-label={"Open the " + title + " module"}
-        className="orbix-premium-card orbix-premium-card--interactive flex h-full flex-col p-6 sm:p-7"
+        className="relative flex h-full min-h-80 flex-col overflow-hidden border-x border-b border-border/70 bg-surface/48 p-6 transition-[background-color,border-color,box-shadow,transform] duration-200 hover:-translate-y-1 hover:border-accent/40 hover:bg-surface/76 hover:shadow-[0_22px_50px_rgb(0_0_0/0.28)] focus-visible:border-accent focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent motion-reduce:transform-none motion-reduce:transition-none sm:p-7"
         href={href}
       >
-        <div className="flex items-center justify-between">
-          <span className="flex h-11 w-11 items-center justify-center rounded-xl border border-accent/20 bg-accent/8 text-accent">
+        <div
+          aria-hidden="true"
+          className="absolute top-0 right-0 h-px w-20 bg-gradient-to-l from-accent/70 to-transparent"
+        />
+        <div className="flex items-center justify-between gap-4">
+          <span className="flex h-11 w-11 items-center justify-center border border-accent/22 bg-accent/7 text-accent">
             <Icon aria-hidden="true" size={21} strokeWidth={1.7} />
           </span>
           <span className="font-mono text-[0.62rem] tracking-[0.16em] text-muted uppercase">
@@ -33,12 +37,14 @@ export function ModuleCard({
           </span>
         </div>
 
-        <h3 className="mt-8 text-xl font-semibold tracking-tight">{title}</h3>
-        <p className="mt-3 flex-1 text-sm leading-6 text-muted">
+        <h3 className="font-display mt-10 text-2xl font-semibold tracking-[-0.025em]">
+          {title}
+        </h3>
+        <p className="mt-4 flex-1 text-sm leading-7 text-muted">
           {description}
         </p>
 
-        <span className="mt-7 inline-flex items-center gap-2 text-sm font-semibold text-accent">
+        <span className="mt-8 inline-flex items-center justify-between gap-3 border-t border-border/75 pt-4 text-sm font-semibold text-accent">
           Open workspace
           <ArrowRight
             aria-hidden="true"

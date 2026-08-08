@@ -6,6 +6,7 @@ interface OrbixWordmarkProps {
   className?: string;
   priority?: boolean;
   sizes?: string;
+  source?: string;
   title?: string;
 }
 
@@ -13,6 +14,7 @@ export function OrbixWordmark({
   className,
   priority = false,
   sizes = "160px",
+  source = "/brand/orbix-wordmark-transparent.png",
   title,
 }: OrbixWordmarkProps) {
   return (
@@ -32,7 +34,7 @@ export function OrbixWordmark({
         priority={priority}
         quality={90}
         sizes={sizes}
-        src="/brand/orbix-wordmark-transparent.png"
+        src={source}
       />
     </span>
   );

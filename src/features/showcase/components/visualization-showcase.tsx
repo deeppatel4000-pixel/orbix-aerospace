@@ -130,10 +130,7 @@ export function VisualizationShowcase() {
 
         <div className="mt-12 grid gap-5 lg:grid-cols-3">
           {visualizationCards.map((card) => (
-            <article
-              className="orbix-premium-card orbix-premium-card--interactive p-4"
-              key={card.label}
-            >
+            <article className="orbix-premium-card p-4" key={card.label}>
               {card.visual === "orbit" ? <OrbitSchematic /> : null}
               {card.visual === "reentry" ? <ReentrySchematic /> : null}
               {card.visual === "review" ? <ReviewSchematic /> : null}

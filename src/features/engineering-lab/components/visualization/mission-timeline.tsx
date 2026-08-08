@@ -217,7 +217,7 @@ export function MissionTimeline(props: MissionTimelineProps) {
                   className={
                     "flex h-12 w-12 items-center justify-center rounded-full border transition-colors motion-reduce:transition-none " +
                     (isActive
-                      ? "border-accent bg-accent/15 text-accent shadow-[0_0_18px_rgba(91,205,190,0.18)] motion-safe:animate-pulse"
+                      ? "border-accent bg-accent/15 text-accent shadow-[0_0_18px_rgba(91,205,190,0.18)] motion-safe:animate-pulse motion-reduce:animate-none"
                       : phase.available
                         ? "border-white/20 bg-[#0b1a20] text-[#a8c2c8] group-hover:border-accent/45 group-hover:text-accent"
                         : "border-white/10 bg-[#0a151a] text-[#60757b]")

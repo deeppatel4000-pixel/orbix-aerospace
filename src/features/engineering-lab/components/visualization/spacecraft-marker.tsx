@@ -17,11 +17,11 @@ export const SpacecraftMarker = memo(function SpacecraftMarker({
   return (
     <div
       aria-label={`Spacecraft marker: ${phaseLabel}`}
-      className={`relative flex h-9 w-9 items-center justify-center rounded-full border border-accent/50 bg-[#07151a] text-accent shadow-[0_0_20px_rgba(91,205,190,0.42)] ${animated ? "motion-safe:animate-pulse" : ""} ${className}`}
+      className={`relative flex h-9 w-9 items-center justify-center rounded-full border border-accent/50 bg-[#07151a] text-accent shadow-[0_0_20px_rgba(91,205,190,0.42)] ${animated ? "motion-safe:animate-pulse motion-reduce:animate-none" : ""} ${className}`}
       role="img"
     >
       {thermalActive ? (
-        <span className="absolute -inset-2 rounded-full bg-signal/18 blur-md motion-safe:animate-pulse" />
+        <span className="absolute -inset-2 rounded-full bg-signal/18 blur-md motion-safe:animate-pulse motion-reduce:animate-none" />
       ) : null}
       <Rocket
         aria-hidden="true"

@@ -28,7 +28,7 @@ export function TradeStudyCard({ index, scenario }: TradeStudyCardProps) {
   return (
     <article
       aria-labelledby={`trade-study-scenario-${scenario.id}-title`}
-      className="rounded-2xl border border-white/10 bg-[#081419]/90 p-5 transition-transform hover:-translate-y-0.5 motion-reduce:transform-none motion-reduce:transition-none"
+      className="rounded-2xl border border-white/10 bg-[#081419]/90 p-5"
     >
       <div className="flex items-start justify-between gap-4">
         <div>

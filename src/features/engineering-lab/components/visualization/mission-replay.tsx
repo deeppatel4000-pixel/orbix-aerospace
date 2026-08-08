@@ -333,7 +333,9 @@ export function MissionReplay({
             aria-hidden="true"
             className={
               "h-2 w-2 rounded-full bg-accent " +
-              (state.isPlaying ? "motion-safe:animate-pulse" : "opacity-55")
+              (state.isPlaying
+                ? "motion-safe:animate-pulse motion-reduce:animate-none"
+                : "opacity-55")
             }
           />
           <div>

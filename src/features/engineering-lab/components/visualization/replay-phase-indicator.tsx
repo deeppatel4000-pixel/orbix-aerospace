@@ -97,7 +97,7 @@ export function ReplayPhaseIndicator({
                   className={
                     "flex h-10 w-10 items-center justify-center rounded-full border transition-colors motion-reduce:transition-none " +
                     (isCurrent
-                      ? "border-accent bg-accent/15 text-accent shadow-[0_0_16px_rgba(91,205,190,0.2)] motion-safe:animate-pulse"
+                      ? "border-accent bg-accent/15 text-accent shadow-[0_0_16px_rgba(91,205,190,0.2)] motion-safe:animate-pulse motion-reduce:animate-none"
                       : isComplete
                         ? "border-accent/35 bg-accent/5 text-accent"
                         : "border-white/12 bg-[#081419] text-[#6f8489] group-hover:border-accent/30 group-hover:text-accent")

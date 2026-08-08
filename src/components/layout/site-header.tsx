@@ -7,7 +7,7 @@ export function SiteHeader() {
   return (
     <header className="orbix-site-header sticky top-0 z-50">
       <Container className="relative flex h-[5.5rem] items-center justify-between gap-8">
-        <SiteLogo />
+        <SiteLogo priority />
         <DesktopNavigation />
         <MobileNavigation />
       </Container>

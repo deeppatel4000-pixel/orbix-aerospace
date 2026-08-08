@@ -1,10 +1,13 @@
 import type { ReactNode } from "react";
 import type { LucideIcon } from "lucide-react";
 
+import styles from "./calculator-card.module.css";
+
 interface CalculatorCardProps {
   children: ReactNode;
   description: string;
   eyebrow: string;
+  headingLevel?: 2 | 3;
   icon: LucideIcon;
   id: string;
   title: string;
@@ -14,40 +17,39 @@ export function CalculatorCard({
   children,
   description,
   eyebrow,
+  headingLevel = 2,
   icon: Icon,
   id,
   title,
 }: CalculatorCardProps) {
   const titleId = id + "-title";
+  const Heading = headingLevel === 3 ? "h3" : "h2";
 
   return (
-    <article
-      aria-labelledby={titleId}
-      className="overflow-hidden rounded-3xl border border-border bg-surface/65"
-      id={id}
-    >
-      <header className="technical-grid border-b border-border bg-background/35 p-6 sm:p-8">
-        <div className="flex flex-col gap-5 sm:flex-row sm:items-start">
-          <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-accent/20 bg-accent/10 text-accent">
+    <article aria-labelledby={titleId} className={styles.card} id={id}>
+      <header className={`${styles.header} technical-grid`}>
+        <div className={styles.headerLayout}>
+          <span aria-hidden="true" className={styles.instrumentIndex}>
+            LAB
+          </span>
+          <span className={styles.iconWell}>
             <Icon aria-hidden="true" size={23} strokeWidth={1.7} />
           </span>
-          <div>
-            <p className="font-mono text-[0.68rem] tracking-[0.18em] text-accent uppercase">
-              {eyebrow}
-            </p>
-            <h2
-              className="mt-2 text-3xl font-semibold tracking-[-0.035em]"
+          <div className="min-w-0">
+            <p className={styles.eyebrow}>{eyebrow}</p>
+            <Heading
+              className="font-display mt-3 text-3xl leading-tight font-semibold tracking-[-0.04em] text-balance sm:text-4xl"
               id={titleId}
             >
               {title}
-            </h2>
-            <p className="mt-3 max-w-3xl text-sm leading-6 text-muted">
+            </Heading>
+            <p className="mt-4 max-w-3xl text-sm leading-6 text-muted sm:text-[0.95rem] sm:leading-7">
               {description}
             </p>
           </div>
         </div>
       </header>
-      <div className="p-6 sm:p-8">{children}</div>
+      <div className={styles.workspace}>{children}</div>
     </article>
   );
 }

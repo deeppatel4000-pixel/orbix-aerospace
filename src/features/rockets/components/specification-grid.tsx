@@ -13,27 +13,33 @@ interface SpecificationGridProps {
 
 export function SpecificationGrid({ items }: SpecificationGridProps) {
   return (
-    <dl className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+    <dl className="grid gap-px overflow-hidden border border-atmosphere/25 bg-atmosphere/20 sm:grid-cols-2 xl:grid-cols-3">
       {items.map((item) => (
         <div
-          className="orbix-frame border-atmosphere/20 bg-surface/70 p-5 transition-colors hover:border-signal/35"
+          className="relative bg-[#080d17] p-5 sm:min-h-44 sm:p-6"
           key={item.label}
         >
-          <div className="flex items-center justify-between gap-4">
-            <dt className="font-mono text-[0.65rem] tracking-[0.14em] text-muted uppercase">
-              {item.label}
-            </dt>
+          <dt className="flex items-center justify-between gap-4 font-mono text-[0.65rem] tracking-[0.14em] text-muted uppercase">
+            {item.label}
             <item.icon
               aria-hidden="true"
               className="text-accent"
               size={18}
               strokeWidth={1.7}
             />
-          </div>
-          <dd className="orbix-telemetry-value mt-6 text-2xl text-signal">
-            {item.value}
+          </dt>
+          <dd className="mt-8">
+            <span className="orbix-telemetry-value block text-2xl text-signal sm:text-3xl">
+              {item.value}
+            </span>
+            <span className="mt-2 block max-w-xs text-xs leading-5 text-muted">
+              {item.note}
+            </span>
+            <span
+              aria-hidden="true"
+              className="absolute right-0 bottom-0 h-5 w-5 border-r border-b border-signal/35"
+            />
           </dd>
-          <p className="mt-2 text-xs text-muted">{item.note}</p>
         </div>
       ))}
     </dl>

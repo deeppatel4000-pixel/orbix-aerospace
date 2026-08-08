@@ -23,9 +23,8 @@ export function DesignConstraintCard({
   return (
     <article
       aria-label={`${label}: ${isReported ? "reported mission parameter" : "not reported"}`}
-      className="rounded-xl border border-white/10 bg-[#081419] p-4 transition-colors outline-none hover:border-accent/20 focus-visible:ring-2 focus-visible:ring-accent motion-reduce:transition-none"
+      className="rounded-xl border border-white/10 bg-[#081419] p-4"
       data-parameter-availability={isReported ? "reported" : "not-reported"}
-      tabIndex={0}
     >
       <div className="flex items-start justify-between gap-3">
         <div>

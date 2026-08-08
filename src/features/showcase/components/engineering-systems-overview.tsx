@@ -56,12 +56,12 @@ export function EngineeringSystemsOverview() {
         <div className="mt-12 grid gap-4 md:grid-cols-2">
           {featuredSystems.map((system) => (
             <article
-              className="orbix-premium-card orbix-premium-card--interactive group p-6 sm:p-7"
+              className="orbix-premium-card p-6 sm:p-7"
               key={system.code}
             >
               <div
                 aria-hidden="true"
-                className="absolute top-0 right-0 h-28 w-28 rounded-full bg-accent/5 blur-3xl transition-colors group-hover:bg-accent/10"
+                className="absolute top-0 right-0 h-28 w-28 rounded-full bg-accent/5 blur-3xl"
               />
               <div className="flex items-start justify-between gap-6">
                 <span className="flex h-11 w-11 items-center justify-center rounded-xl border border-accent/20 bg-accent/5 text-accent">

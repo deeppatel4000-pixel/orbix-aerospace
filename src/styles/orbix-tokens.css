@@ -49,13 +49,17 @@
   --type-title: clamp(2rem, 4vw, 3.75rem);
   --type-section: clamp(1.45rem, 2.5vw, 2.25rem);
   --type-body-lg: clamp(1.05rem, 1.4vw, 1.22rem);
+  --type-label: 0.6875rem;
   --tracking-display: -0.045em;
   --tracking-technical: 0.16em;
+  --measure-copy: 68ch;
 
   /* Spacing and geometry */
   --space-section: clamp(5rem, 9vw, 8.5rem);
   --space-section-compact: clamp(3.5rem, 6vw, 5.5rem);
   --space-panel: clamp(1.25rem, 2.5vw, 2rem);
+  --space-stack: clamp(1.25rem, 2.4vw, 2rem);
+  --space-stack-compact: clamp(0.75rem, 1.4vw, 1rem);
   --radius-control: 0.625rem;
   --radius-card: 1rem;
   --radius-panel: 1.35rem;

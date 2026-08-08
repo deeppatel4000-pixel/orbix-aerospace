@@ -219,7 +219,7 @@ document public variable names in `.env.example` and keep all secrets out of sou
 
 ## Testing
 
-The current release is verified by **67 test files** containing **859 passing tests**. The full
+The current release is verified by **68 test files** containing **863 passing tests**. The full
 validation pipeline also enforces Prettier formatting, zero-warning ESLint, TypeScript correctness,
 and a successful production Next.js build.
 

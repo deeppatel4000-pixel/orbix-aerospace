@@ -98,7 +98,7 @@ export function ShowcaseHero() {
             <ol className="divide-y divide-border p-2">
               {missionFlow.map((stage, index) => (
                 <li
-                  className="grid grid-cols-[2.5rem_minmax(0,1fr)_auto] items-center gap-3 rounded-lg px-3 py-4 transition-colors hover:bg-white/[0.025]"
+                  className="grid grid-cols-[2.5rem_minmax(0,1fr)_auto] items-center gap-3 rounded-lg px-3 py-4"
                   key={stage.label}
                 >
                   <span className="flex h-8 w-8 items-center justify-center border border-accent/25 bg-accent/5 font-mono text-[0.65rem] text-accent">

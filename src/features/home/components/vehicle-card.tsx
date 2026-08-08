@@ -31,23 +31,23 @@ export function VehicleCard({
     <article
       aria-labelledby={titleId}
       className={cn(
-        "orbix-premium-card orbix-premium-card--interactive group relative h-full",
+        "group relative h-full overflow-hidden border border-border/80 bg-surface/55 shadow-[0_18px_50px_rgb(0_0_0/0.24)] transition-[border-color,box-shadow,transform] duration-200 hover:-translate-y-1 hover:border-accent/40 hover:shadow-[0_26px_65px_rgb(0_0_0/0.35)] motion-reduce:transform-none motion-reduce:transition-none",
         className,
       )}
     >
       <Link
         aria-label={"Open the " + name + " profile"}
-        className="flex h-full flex-col rounded-[inherit] focus-visible:outline-offset-[-4px]"
+        className="flex h-full flex-col focus-visible:outline-2 focus-visible:outline-offset-[-4px] focus-visible:outline-accent"
         href={href}
       >
-        <div className="relative aspect-[4/3] overflow-hidden border-b border-border/80 bg-background/55 sm:aspect-[16/11]">
+        <div className="relative aspect-[4/3] overflow-hidden border-b border-border/80 bg-background/55 sm:aspect-[16/10]">
           {kind === "aircraft" ? (
             <AircraftImage
               aircraft={vehicleIdentity}
               className="absolute inset-0"
               fillContainer
               imageClassName="saturate-[0.88] contrast-[1.05] motion-reduce:transition-none"
-              sizes="(max-width: 767px) 100vw, (max-width: 1279px) 50vw, 58vw"
+              sizes="(max-width: 767px) 100vw, (max-width: 1279px) 50vw, 50vw"
             />
           ) : (
             <RocketImage
@@ -55,7 +55,7 @@ export function VehicleCard({
               fillContainer
               imageClassName="saturate-[0.9] contrast-[1.05]"
               rocket={vehicleIdentity}
-              sizes="(max-width: 767px) 100vw, (max-width: 1279px) 50vw, 58vw"
+              sizes="(max-width: 767px) 100vw, (max-width: 1279px) 50vw, 50vw"
             />
           )}
 
@@ -69,7 +69,7 @@ export function VehicleCard({
           />
 
           <div className="absolute inset-x-0 top-0 flex items-center justify-between gap-4 p-4 sm:p-5">
-            <span className="border border-white/15 bg-black/60 px-2.5 py-1 font-mono text-[0.6rem] tracking-[0.16em] text-white/80 uppercase backdrop-blur-md">
+            <span className="border border-white/15 bg-black/68 px-2.5 py-1 font-mono text-[0.58rem] tracking-[0.16em] text-white/80 uppercase backdrop-blur-md">
               {code}
               {" // Engineering record"}
             </span>
@@ -102,13 +102,13 @@ export function VehicleCard({
           </div>
         </div>
 
-        <div className="mt-auto flex items-center justify-between gap-4 p-5">
+        <div className="mt-auto flex items-center justify-between gap-4 bg-background/38 p-5">
           <span className="font-mono text-[0.62rem] tracking-[0.12em] text-muted uppercase">
             Open full engineering profile
           </span>
           <ArrowUpRight
             aria-hidden="true"
-            className="shrink-0 text-muted transition-all group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:text-accent motion-reduce:transition-none"
+            className="shrink-0 text-muted transition-[color,transform] group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:text-accent motion-reduce:transform-none motion-reduce:transition-none"
             size={18}
           />
         </div>

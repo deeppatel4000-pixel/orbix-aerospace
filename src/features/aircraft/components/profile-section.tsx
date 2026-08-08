@@ -20,11 +20,11 @@ export function ProfileSection({
   return (
     <section
       aria-labelledby={titleId}
-      className="scroll-mt-28 border-t border-tactical/25 py-16 sm:py-20 lg:py-24"
+      className="scroll-mt-40 border-t border-tactical/25 py-16 sm:py-20 lg:py-24"
       id={id}
     >
       <div className="grid gap-10 lg:grid-cols-[19rem_minmax(0,1fr)] lg:gap-16 xl:gap-20">
-        <div className="self-start lg:sticky lg:top-32">
+        <div className="self-start lg:sticky lg:top-44">
           <p className="font-mono text-[0.66rem] tracking-[0.2em] text-tactical-amber uppercase">
             {eyebrow}
           </p>

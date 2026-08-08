@@ -53,7 +53,14 @@
   }
 
   .orbix-button:hover,
+  .orbix-button:active,
+  .orbix-icon-control:active,
+  .orbix-nav-link:active,
+  .orbix-tab:active,
+  .orbix-anchor-nav a:active,
+  .orbix-premium-card--interactive:is(a, button):active,
   .orbix-premium-card--interactive:hover,
+  .orbix-surface--interactive:is(a, button):active,
   .orbix-surface--interactive:hover {
     transform: none;
   }
