@@ -35,6 +35,14 @@ export function ComparisonControls({
   const [activeIds, setActiveIds] = useState<readonly string[]>(selectedIds);
 
   useEffect(() => {
+    // Re-syncs the optimistic local selection to URL-derived props when they
+    // change for reasons other than this component's own clicks (browser
+    // back/forward, external navigation). The idiomatic alternative changes
+    // re-render timing of a live selection UI that coordinates with
+    // startTransition + router, which is out of scope for a stability-focused
+    // framework upgrade. Newly flagged by eslint-plugin-react-hooks 7; code
+    // unchanged from the Next 15 baseline. Follow-up tracked in docs/upgrades/.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setActiveCategory(category);
     setActiveIds(selectedIds);
   }, [category, selectedIds]);

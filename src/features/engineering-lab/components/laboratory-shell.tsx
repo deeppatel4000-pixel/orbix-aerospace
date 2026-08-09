@@ -57,6 +57,13 @@ export function LaboratoryShell({ children, workflows }: LaboratoryShellProps) {
   }, [firstWorkflowId, workflows]);
 
   useEffect(() => {
+    // `resolveHash` reads `window.location.hash` and queries the DOM, neither
+    // of which exists during SSR. This is the "synchronize with an external
+    // system" case that effects exist for, not derivable state. Flagged only
+    // because eslint-plugin-react-hooks 5 -> 7 (pulled in by
+    // eslint-config-next 16) added `set-state-in-effect` to its recommended
+    // set; this code is unchanged from the Next 15 baseline. See docs/upgrades/.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     resolveHash();
     window.addEventListener("hashchange", resolveHash);
 
