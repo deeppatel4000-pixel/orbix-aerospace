@@ -1,6 +1,14 @@
-import { Database, Scale, ShieldCheck } from "lucide-react";
+import {
+  BookOpenText,
+  Database,
+  FlaskConical,
+  Scale,
+  ShieldCheck,
+} from "lucide-react";
 
+import { OrbixEnvironmentBackdrop } from "@/components/brand/orbix-environment";
 import { Container } from "@/components/layout/container";
+import { ButtonLink } from "@/components/ui/button-link";
 import { ComparisonControls } from "@/features/compare/components/comparison-controls";
 import { ComparisonEmptyState } from "@/features/compare/components/comparison-empty-state";
 import { ComparisonTable } from "@/features/compare/components/comparison-table";
@@ -24,6 +32,9 @@ export function ComparePage({ category, options, result }: ComparePageProps) {
   return (
     <>
       <header className="orbix-brand-glow relative isolate overflow-hidden border-b border-border/70 py-24 sm:py-32">
+        <OrbixEnvironmentBackdrop
+          theme={category === "aircraft" ? "tactical" : "launch"}
+        />
         <div
           aria-hidden="true"
           className="technical-grid absolute inset-0 -z-10 [mask-image:linear-gradient(to_bottom,black,transparent_92%)] opacity-60"
@@ -117,17 +128,35 @@ export function ComparePage({ category, options, result }: ComparePageProps) {
                 >
                   Published characteristics
                 </h2>
-              </div>
-              <div className="flex max-w-md items-start gap-3 rounded-xl border border-border bg-surface/55 p-4">
-                <ShieldCheck
-                  aria-hidden="true"
-                  className="mt-0.5 shrink-0 text-accent"
-                  size={18}
-                />
-                <p className="text-xs leading-5 text-muted">
-                  Values are displayed without scoring or inferred winners.
-                  Unavailable data is never treated as zero.
+                <p className="mt-4 max-w-2xl text-sm leading-6 text-muted">
+                  Rows are grouped by engineering category, and each one carries
+                  an optional, collapsed explanation of the underlying aerospace
+                  concept. That context is general background, never an
+                  ORBIX-computed result.
                 </p>
+              </div>
+              <div className="flex max-w-md flex-col gap-4">
+                <div className="flex items-start gap-3 rounded-xl border border-border bg-surface/55 p-4">
+                  <ShieldCheck
+                    aria-hidden="true"
+                    className="mt-0.5 shrink-0 text-accent"
+                    size={18}
+                  />
+                  <p className="text-xs leading-5 text-muted">
+                    Values are displayed without scoring or inferred winners.
+                    Unavailable data is never treated as zero.
+                  </p>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  <ButtonLink href="/engineering-lab" variant="secondary">
+                    <FlaskConical aria-hidden="true" size={14} />
+                    Open Engineering Lab
+                  </ButtonLink>
+                  <ButtonLink href="/learn" variant="tertiary">
+                    <BookOpenText aria-hidden="true" size={14} />
+                    Learn the fundamentals
+                  </ButtonLink>
+                </div>
               </div>
             </div>
 

@@ -20,7 +20,8 @@
     "Home 3.0 portfolio landing page",
     "Engineering Laboratory 4.0 with 33 analyzers in six workflows",
     "Playwright browser and visual regression suite",
-    "Mobile navigation Escape focus restoration fix"
+    "Mobile navigation Escape focus restoration fix",
+    "Learn conceptual pathways and Compare educational comparison layer"
   ],
   "completedDays": [
     "1-80 (exact early-day mapping partially unavailable; implemented state documented in CLAUDE_HANDOFF.md)",
@@ -39,8 +40,6 @@
   "plannedWork": [
     "Dependency security upgrade assessment",
     "Canonical asset licensing and optimization review",
-    "Sourced Learn architecture",
-    "Compare and Learn educational cross-navigation",
     "Authentic portfolio screenshots"
   ],
   "deferredWork": [
@@ -50,8 +49,6 @@
     "External engineering APIs"
   ],
   "knownIssues": [
-    "Learn is currently a feature placeholder",
-    "Compare lacks the planned educational bridge",
     "npm audit reports three high-severity advisories against postcss and sharp; next is flagged as their dependent",
     "Several canonical images are large source files",
     "Engineering Laboratory first-load JavaScript was measured at 232 kB",
@@ -67,9 +64,10 @@
     "calculatorModules": 20,
     "analysisModules": 23,
     "generatedBuildPageInstances": 28,
-    "playwrightBrowserTests": 216,
+    "playwrightBrowserTests": 225,
     "playwrightSkipped": 12,
-    "visualBaselines": 17
+    "visualBaselines": 17,
+    "learningPathways": 6
   },
   "validation": {
     "auditedAt": "2026-08-08",
@@ -82,7 +80,7 @@
     "build": "passed; 28 generated page instances",
     "fullValidation": "npm run validate passed",
     "npmAudit": "3 high, 0 critical",
-    "browserSuite": "216 passed, 12 skipped, 0 failed (Chromium; desktop/tablet/mobile + visual)",
+    "browserSuite": "225 passed, 12 skipped, 0 failed (207 smoke+a11y across desktop/tablet/mobile, 18 visual)",
     "visualBaselines": "17 committed, platform-specific (win32); ~34 MB, cost measured and accepted"
   },
   "engineeringBoundaries": [

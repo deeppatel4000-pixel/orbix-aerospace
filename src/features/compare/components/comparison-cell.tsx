@@ -1,5 +1,7 @@
 import { CircleSlash2 } from "lucide-react";
 
+import { StatusBadge } from "@/components/ui/status-badge";
+import { TechnicalLabel } from "@/components/ui/technical-label";
 import type { ComparisonCellValue } from "@/features/compare/types";
 
 interface ComparisonCellProps {
@@ -10,10 +12,10 @@ export function ComparisonCell({ cell }: ComparisonCellProps) {
   if (cell.status === "unavailable") {
     return (
       <td className="border-t border-l border-border bg-surface/35 p-4 align-top sm:p-5">
-        <div className="flex items-center gap-2 text-muted">
-          <CircleSlash2 aria-hidden="true" size={16} strokeWidth={1.6} />
-          <span className="text-sm font-medium">{cell.value}</span>
-        </div>
+        <StatusBadge tone="neutral">
+          <CircleSlash2 aria-hidden="true" size={13} strokeWidth={1.8} />
+          {cell.value}
+        </StatusBadge>
         {cell.note ? (
           <p className="mt-2 text-xs leading-5 text-muted">{cell.note}</p>
         ) : null}
@@ -36,7 +38,10 @@ export function ComparisonCell({ cell }: ComparisonCellProps) {
         </ul>
       ) : null}
       {cell.note ? (
-        <p className="mt-3 text-xs leading-5 text-muted">{cell.note}</p>
+        <div className="mt-3 flex items-start gap-1.5">
+          <TechnicalLabel className="mt-0.5 shrink-0">Note</TechnicalLabel>
+          <p className="text-xs leading-5 text-muted">{cell.note}</p>
+        </div>
       ) : null}
     </td>
   );

@@ -45,12 +45,10 @@ Engineering boundaries to preserve:
 Current development stage:
 
 - The legitimate Day 84-90 visual/UX work is preserved in the handoff checkpoint.
-- Day 91 Compare/Learn redesign was cancelled before implementation.
-- Compare is functional but lacks the planned educational bridge.
-- Learn remains a truthful placeholder.
-- Browser E2E and visual regression coverage now exists (`tests/e2e/`, 216 passing). The remaining priority order is verification, dependency security, asset licensing/optimization, then sourced Learn/Compare work.
+- Compare and Learn are implemented: Learn provides six conceptual pathways, and Compare groups rows by engineering category with per-row educational context.
+- Browser E2E and visual regression coverage exists (`tests/e2e/`, 225 passing). The remaining priority order is verification, dependency security, then asset licensing/optimization.
 
-Known issues include npm dependency advisories, large canonical images, an empty authentic-screenshot gallery, a Learn placeholder, and an incomplete Compare education loop. Verify all of these before acting.
+Known issues include npm dependency advisories, large canonical images, an empty authentic-screenshot gallery, and an incomplete vehicle-image licensing record. Verify all of these before acting.
 
 Begin by returning an evidence-backed takeover report. Do not start a feature until the user confirms the next scope.
 

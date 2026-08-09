@@ -33,7 +33,7 @@ State originally audited on 2026-08-08. The canonical working copy is now `C:\Us
 - GitHub homepage: `https://orbix-aerospace.vercel.app`
 - No history was rewritten, squashed, reset, or force-pushed during handoff.
 
-The handoff checkpoint preserves the legitimate presentation work that had accumulated after the baseline commit: aircraft dossiers, interaction consistency, Mission Control 3.0, Rockets Explorer 2.0, Home 3.0, and Engineering Laboratory 4.0. Day 91 feature implementation was explicitly cancelled; Compare and Learn remain in their pre-Day-91 state.
+The handoff checkpoint preserves the legitimate presentation work that had accumulated after the baseline commit: aircraft dossiers, interaction consistency, Mission Control 3.0, Rockets Explorer 2.0, Home 3.0, and Engineering Laboratory 4.0. Learn and the Compare education layer were subsequently implemented on 2026-08-08 (sections 11 and 12).
 
 ## 3. Technology Stack
 
@@ -86,7 +86,8 @@ Feature-owned data, types, components, tests, and domain code:
 - `aircraft`: repository facade, canonical visual mapping, explorer, and profile presentation
 - `rockets`: repository facade, canonical visual mapping, explorer, and profile presentation
 - `vehicles`: shared typed aircraft/rocket contracts and immutable source data
-- `compare`: URL-driven same-category comparison adapters and presentation
+- `compare`: URL-driven same-category comparison adapters, presentation, and a presentation-side educational annotation layer
+- `learn`: conceptual learning pathways linking into the Engineering Laboratory (Server Components only)
 - `engineering-lab`: calculators, analysis, materials, missions, reports, types, validation, UI analyzers, and Mission Control
 - `home`: public landing experience
 - `showcase`: portfolio and mission showcase presentation
@@ -342,10 +343,17 @@ An earlier revision of this document claimed a committed mojibake string in `com
 ## 12. Learn
 
 - Route: `/learn`
-- Current implementation: `src/app/(site)/learn/page.tsx`
-- Architecture: a `FeaturePlaceholder`; there is not yet a learn feature directory or content model
+- Route file: `src/app/(site)/learn/page.tsx`
+- Feature: `src/features/learn` (types, data, components)
+- Architecture: entirely Server Components — zero client components
 
-The placeholder truthfully describes planned concept-first pathways, progressive engineering paths, glossary, and references. No Day 91 educational redesign was implemented. Future Learn work must reuse sourced repository content or add separately reviewed educational sources; do not invent aerospace claims merely to fill the page.
+Implemented 2026-08-08, replacing the former `FeaturePlaceholder`. Six conceptual pathways mirroring the six Engineering Laboratory workflows: Aerodynamics & Flight Fundamentals, Propulsion & Vehicle Performance, High-Speed & Compressible Flow, Atmospheric Entry & Thermal Protection, Orbital Mechanics & Mission Design, and Mission Operations & Engineering Communication.
+
+Each pathway states the concept, why it matters, and where it appears in real aerospace, then routes onward through 28 verified `/engineering-lab#<anchor>` deep links plus exploration links into the vehicle explorers, Compare, and Showcase.
+
+**Content boundary, enforced in the type system:** every content string is general aerospace theory. `LearningArea` is documented as never carrying a vehicle specification or a computed result — computed output is only ever reached by following a laboratory link. The page states this to the reader as well. Do not add specifications, measurements, or historical claims here without a reviewed source.
+
+Link integrity is enforced by `tests/e2e/smoke/learn.spec.ts`, which crawls every emitted link and fails if an anchor id no longer exists in the Engineering Laboratory.
 
 ## 13. Showcase / Portfolio
 
@@ -439,8 +447,8 @@ A committed Playwright suite covers that gap as of 2026-08-08 (`tests/e2e/`). It
 
 ## 18. Known Issues
 
-1. **Learn is a placeholder.** No educational content architecture exists yet.
-2. **Compare education loop is incomplete.** It does not connect the matrix to Learn or relevant Laboratory modules.
+1. **Resolved 2026-08-08.** Learn is implemented (`src/features/learn`, six conceptual pathways, zero client components). It is conceptual teaching only, by design — it deliberately contains no specifications or computed results.
+2. **Resolved 2026-08-08.** Compare now groups rows into six engineering categories and carries a per-row, collapsed educational explanation with links into the matching Laboratory analyzers and Learn. The validated value pipeline (adapters, repository, query parsing, types) was not modified — the education layer is a separate presentation-side annotation keyed by row id.
 3. **Resolved 2026-08-08 — not an issue.** An earlier revision claimed a mojibake loading string in `comparison-controls.tsx`. Verification showed the source is correctly encoded UTF-8; the mojibake was in this document's own quotation. Retained as a numbered entry so the false lead is not rediscovered.
 4. **README validation counts were stale before handoff.** They were updated to 68/863 in the handoff checkpoint.
 5. **Dependency advisories.** Three high-severity npm advisories require a deliberate Next.js upgrade investigation.
