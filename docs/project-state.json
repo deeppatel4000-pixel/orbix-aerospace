@@ -18,7 +18,9 @@
     "Aircraft Explorer and mission dossiers",
     "Rockets Explorer launch-operations experience",
     "Home 3.0 portfolio landing page",
-    "Engineering Laboratory 4.0 with 33 analyzers in six workflows"
+    "Engineering Laboratory 4.0 with 33 analyzers in six workflows",
+    "Playwright browser and visual regression suite",
+    "Mobile navigation Escape focus restoration fix"
   ],
   "completedDays": [
     "1-80 (exact early-day mapping partially unavailable; implemented state documented in CLAUDE_HANDOFF.md)",
@@ -37,7 +39,6 @@
   "plannedWork": [
     "Dependency security upgrade assessment",
     "Canonical asset licensing and optimization review",
-    "Committed browser end-to-end coverage",
     "Sourced Learn architecture",
     "Compare and Learn educational cross-navigation",
     "Authentic portfolio screenshots"
@@ -54,7 +55,6 @@
     "npm audit reports three high-severity advisories against postcss and sharp; next is flagged as their dependent",
     "Several canonical images are large source files",
     "Engineering Laboratory first-load JavaScript was measured at 232 kB",
-    "No committed browser E2E or visual-regression suite",
     "Authentic screenshot gallery is empty; all six folders contain only a README",
     "Vehicle image licensing documentation is incomplete for some sources",
     "Day 1-17 per-day history is not fully recoverable"
@@ -66,7 +66,10 @@
     "engineeringLabAnalyzers": 33,
     "calculatorModules": 20,
     "analysisModules": 23,
-    "generatedBuildPageInstances": 28
+    "generatedBuildPageInstances": 28,
+    "playwrightBrowserTests": 216,
+    "playwrightSkipped": 12,
+    "visualBaselines": 17
   },
   "validation": {
     "auditedAt": "2026-08-08",
@@ -78,7 +81,9 @@
     "typecheck": "passed",
     "build": "passed; 28 generated page instances",
     "fullValidation": "npm run validate passed",
-    "npmAudit": "3 high, 0 critical"
+    "npmAudit": "3 high, 0 critical",
+    "browserSuite": "216 passed, 12 skipped, 0 failed (Chromium; desktop/tablet/mobile + visual)",
+    "visualBaselines": "17 committed, platform-specific (win32); ~34 MB, cost measured and accepted"
   },
   "engineeringBoundaries": [
     "calculators own equations and numerical validation",

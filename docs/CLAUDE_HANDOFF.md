@@ -45,6 +45,7 @@ Versions come from `package.json` and the validation environment:
 - Tailwind CSS `^4` through `@tailwindcss/postcss`
 - Lucide React `^1.28.0`
 - Vitest `4.1.10`
+- Playwright `@playwright/test` `^1.62.1` (dev-only; browser suite in `tests/e2e/`)
 - ESLint `^9` with `eslint-config-next` `15.5.22`
 - Prettier `^3.9.6` with Tailwind class sorting
 - Node.js used for handoff validation: `22.17.0`
@@ -432,7 +433,9 @@ Handoff baseline results on Node 22.17.0 / npm 10.9.2:
 - Production build: 28 generated page instances
 - `git diff --check`: passed before documentation creation
 
-Vitest tests live beside calculators, analyses, domain modules, and presentation components. Browser verification is performed with Playwright CLI/local headless Chromium and stores disposable artifacts under ignored `output/playwright`. There is not yet a committed end-to-end Playwright suite.
+Vitest tests live beside calculators, analyses, domain modules, and presentation components. They run in Node and render React with `renderToStaticMarkup`, so they verify markup and logic, never browser behaviour.
+
+A committed Playwright suite covers that gap as of 2026-08-08 (`tests/e2e/`). It runs against the production build in Chromium at three viewports — desktop 1440x900, tablet 768x1024, mobile 390x844 — plus an isolated `visual` project: **216 passed, 12 skipped** (skips are viewport-conditional). It is split into `smoke/`, `a11y/`, and `visual/`, with 17 committed screenshot baselines. See `docs/testing/browser-testing.md` for how to run, debug, and update baselines.
 
 ## 18. Known Issues
 
@@ -443,12 +446,13 @@ Vitest tests live beside calculators, analyses, domain modules, and presentation
 5. **Dependency advisories.** Three high-severity npm advisories require a deliberate Next.js upgrade investigation.
 6. **Large canonical images.** Some source PNGs are 2-9 MB. Preserve originals; consider optimized derivatives and measurable LCP review.
 7. **Engineering Laboratory bundle size.** 232 kB first-load JS; hidden analyzers remain mounted to preserve state.
-8. **No committed browser E2E suite.** Current browser checks are manual/CLI artifacts.
+8. **Resolved 2026-08-08.** A committed Playwright browser suite now exists (`tests/e2e/`, 216 passing) and runs in CI via `.github/workflows/browser-tests.yml`. Retained as a numbered entry so the history stays readable.
 9. **Screenshot portfolio is empty.** Verified 2026-08-08: all six folders under `docs/assets/screenshots` contain only a `README.md`. Zero authentic captures exist, not merely an incomplete set.
 10. **Asset licensing review is incomplete.** Source URLs are recorded, but not every vehicle image has a consolidated license/attribution record. Confirm redistribution terms, especially non-Wikimedia sources.
 11. **Local production prefetch observation — did not reproduce.** A Day 90 local `next start` audit observed 404 responses for some navigation RSC prefetch requests. As that entry instructed, this was reproduced against a fresh build on 2026-08-08: prefetch requests returned HTTP 200 on `/aircraft`, `/rockets`, `/compare`, `/engineering-lab`, `/learn`, and `/showcase`, both locally and in production. Treat the original observation as stale unless it recurs.
-12. **Visual regression automation is absent.** Presentation-heavy work currently relies on browser review and component tests.
+12. **Resolved 2026-08-08.** Visual regression automation exists: 17 committed baselines across desktop/mobile/tablet (`tests/e2e/visual/`). Baselines are platform-specific, so the CI visual job is `workflow_dispatch`-only until Linux baselines are generated. The ~34 MB storage cost was measured and deliberately accepted — see `docs/testing/browser-testing.md`.
 13. **Early milestone records are incomplete.** Exact Day 1-17 mapping is not recoverable from committed history.
+14. **Fixed 2026-08-08 — mobile menu focus restoration.** Pressing Escape with the mobile navigation open closed the menu but dropped focus to `<body>`, so a keyboard user lost their place. `src/components/layout/mobile-navigation.tsx` now restores focus to the toggle button via a ref, in a post-commit effect guarded so it fires only on the Escape path — never on mount, a link click (the user is navigating away), or a plain toggle click. No focus trap was added; this is a disclosure widget, not a modal. Regression-covered in `tests/e2e/a11y/mobile-navigation.spec.ts`.
 
 ## 19. Current Work State
 

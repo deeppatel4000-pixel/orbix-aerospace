@@ -331,7 +331,7 @@ test.describe("Mission Control workspace tabs", () => {
 });
 
 test.describe("Mobile menu Escape handling", () => {
-  test("Escape closes the mobile menu; focus is NOT returned to the toggle (documented finding)", async ({
+  test("Escape closes the mobile menu and returns focus to the toggle", async ({
     page,
   }) => {
     test.skip(
@@ -358,25 +358,18 @@ test.describe("Mobile menu Escape handling", () => {
     await page.keyboard.press("Escape");
 
     await expect(mobileNav).toBeHidden();
-    await expect(
-      page.getByRole("button", { name: "Open navigation menu" }),
-    ).toHaveAttribute("aria-expanded", "false");
 
-    // FINDING (see this file's final report): mobile-navigation.tsx's
-    // Escape handler only calls `setIsOpen(false)`; it never moves focus
-    // back to the toggle button. The link that held focus is removed from
-    // the DOM the moment the <nav> unmounts, so the browser drops focus to
-    // <body> instead -- a keyboard user loses their place entirely rather
-    // than landing back on a sensible, re-operable control. This assertion
-    // documents that CURRENT behaviour (not the behaviour a well-behaved
-    // disclosure widget would have) so a future change is visible here.
+    const toggle = page.getByRole("button", { name: "Open navigation menu" });
+    await expect(toggle).toHaveAttribute("aria-expanded", "false");
+
+    // mobile-navigation.tsx now restores focus to the toggle button once the
+    // menu (and the link that held focus) has unmounted, rather than
+    // dropping the keyboard user's place to <body>.
+    await expect(toggle).toBeFocused();
+
     const activeElementTag = await page.evaluate(
       () => document.activeElement?.tagName ?? null,
     );
-    expect(activeElementTag).toBe("BODY");
-
-    await expect(
-      page.getByRole("button", { name: "Open navigation menu" }),
-    ).not.toBeFocused();
+    expect(activeElementTag).toBe("BUTTON");
   });
 });

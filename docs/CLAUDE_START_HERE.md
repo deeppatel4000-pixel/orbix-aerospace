@@ -48,9 +48,9 @@ Current development stage:
 - Day 91 Compare/Learn redesign was cancelled before implementation.
 - Compare is functional but lacks the planned educational bridge.
 - Learn remains a truthful placeholder.
-- The priority order recommended by the handoff is verification, dependency security, asset licensing/optimization, browser E2E coverage, then sourced Learn/Compare work.
+- Browser E2E and visual regression coverage now exists (`tests/e2e/`, 216 passing). The remaining priority order is verification, dependency security, asset licensing/optimization, then sourced Learn/Compare work.
 
-Known issues include npm dependency advisories, large canonical images, an empty authentic-screenshot gallery, no committed browser E2E suite, a Learn placeholder, and an incomplete Compare education loop. Verify all of these before acting.
+Known issues include npm dependency advisories, large canonical images, an empty authentic-screenshot gallery, a Learn placeholder, and an incomplete Compare education loop. Verify all of these before acting.
 
 Begin by returning an evidence-backed takeover report. Do not start a feature until the user confirms the next scope.
 

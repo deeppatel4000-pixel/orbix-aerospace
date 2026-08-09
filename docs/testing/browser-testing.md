@@ -25,8 +25,9 @@ a real production build, real interaction.
 - **Guarantees**: pages render without console errors, critical routes load and show their
   expected heading/content, images referenced on vehicle profile pages actually finish
   loading, navigation and CTAs resolve to the correct destination, keyboard navigation
-  reaches interactive controls (tab order, focus visibility), and layout does not overflow
-  horizontally at the mobile viewport.
+  reaches interactive controls (tab order, focus visibility), focus is restored to the mobile
+  menu toggle when the menu is dismissed with Escape, and layout does not overflow horizontally
+  at the mobile viewport.
 
 ## 3. How to run
 
@@ -86,14 +87,38 @@ These PNGs are **intentionally committed** to the repository (see the note in `.
 — they are the source of truth a visual test run diffs against, not build output to be
 regenerated from scratch every time.
 
-**Size tradeoff, stated plainly:** the 17 baselines total roughly 34 MB (0.5–3.3 MB each).
-Full-page captures of long, dark, image-rich pages compress poorly. That is a deliberate cost
-of full-page visual coverage, and every intentional baseline update adds another copy to git
-history. If that becomes a problem, the options in rough order of preference are: capture
-viewport-sized screenshots instead of `fullPage` for the longest pages (`/engineering-lab`,
-the explorers), drop the tablet subset, or move baselines to Git LFS. None of those are done
-today — the suite ships the coverage that was asked for, with the cost documented rather than
-quietly trimmed.
+### Size tradeoff — measured, and deliberately accepted
+
+The 17 baselines total **33.5 MB** (0.5–3.6 MB each). This was investigated properly rather
+than guessed, and the decision is to **keep them as they are**. The measurements:
+
+- **Height, not photography, drives size.** Bytes/pixel is a fairly uniform 0.14–0.48 across
+  all files. `mission-control-desktop` is the largest (3.6 MB) purely because it is 12,350 px
+  tall; `learn-desktop` has the highest bytes/pixel but is only 599 KB because it is short.
+- **Full-page capture is load-bearing.** Cropping every baseline to its top viewport slice and
+  re-encoding was measured, not estimated: it would cut the folder to 3.45 MB (a real 90%
+  saving) — but **77–95% of each file is below-fold content**. On `/engineering-lab` that is 31
+  analyzer/calculator components; on Mission Control it is the dashboard and telemetry panels;
+  elsewhere it is spec tables, comparison tables, and related-vehicle grids. A regression in
+  analyzer #25 would become structurally invisible. Rejected.
+- **Lossless recompression saves only 6.1%.** Re-encoding at maximum effort and verifying
+  pixel-identity (0 mismatches across all 17) yields 33.5 MB → 31.5 MB. Not adopted: 2 MB does
+  not justify a manual step that silently decays the next time anyone regenerates a baseline.
+- **Git LFS rejected.** It relocates bytes rather than reducing them, adds a `git-lfs install`
+  prerequisite for anyone cloning a public portfolio repo, and GitHub's free 1 GB/month LFS
+  bandwidth would be consumed by ordinary Vercel build clones — converting a cosmetic concern
+  into hard clone failures.
+- **Context.** `public/` already holds ~35 MB of source imagery, and the whole packed repo is
+  ~35 MiB. A repo in this range clones in seconds, which is negligible next to `npm install`.
+
+The one genuinely weak entry is `aircraft-tablet` (~2 MB): the aircraft components contain
+**zero** `md:` breakpoint rules, so 768 px renders the same layout branch as mobile. It is kept
+anyway, because width-driven reflow (truncation, overflow) can still break without an explicit
+breakpoint rule, and coverage should not be cut merely to save 2 MB.
+
+**The real future cost is history, not the working tree:** PNGs do not delta well, so every
+intentional baseline regeneration adds a near-full copy. That is a maintenance-discipline
+matter, not a reason to weaken coverage today.
 
 CI currently only has Linux runners, and no Linux baselines have been generated yet. Until
 they are, the `visual` job in `.github/workflows/browser-tests.yml` is manual
