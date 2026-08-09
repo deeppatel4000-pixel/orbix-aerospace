@@ -489,7 +489,11 @@ Handoff baseline results on Node 22.17.0 / npm 10.9.2:
 
 Vitest tests live beside calculators, analyses, domain modules, and presentation components. They run in Node and render React with `renderToStaticMarkup`, so they verify markup and logic, never browser behaviour.
 
-A committed Playwright suite covers that gap as of 2026-08-08 (`tests/e2e/`). It runs against the production build in Chromium at three viewports — desktop 1440x900, tablet 768x1024, mobile 390x844 — plus an isolated `visual` project: **216 passed, 12 skipped** (skips are viewport-conditional). It is split into `smoke/`, `a11y/`, and `visual/`, with 17 committed screenshot baselines. See `docs/testing/browser-testing.md` for how to run, debug, and update baselines.
+A committed Playwright suite covers that gap as of 2026-08-08, extended with a coverage-hardening pass on 2026-08-09 (`tests/e2e/`). It runs against the production build in Chromium at three viewports — desktop 1440x900, tablet 768x1024, mobile 390x844 — plus an isolated `visual` project: **287 passed, 43 skipped** (skips are viewport-conditional). It is split into `smoke/`, `a11y/`, and `visual/`, with 17 committed screenshot baselines.
+
+The 2026-08-09 hardening pass added three suites closing the gaps recorded in the Next 16 migration report: `compare-query.spec.ts` (the only dynamic route, previously never exercised with real query parameters), `engineering-lab-navigation.spec.ts` (the workflow-index click path, as distinct from hash deep links), and `showcase-capture.spec.ts` (the four generated capture pages that had no coverage). Each suite was proven able to detect a regression by deliberately breaking the code it covers and confirming the failure, then reverting.
+
+That pass also documented a pre-existing inconsistency rather than changing it: `/showcase-capture/<unknown>` returns a **soft 404** — the not-found UI with a 200 status — because that route does not set `dynamicParams = false` as `/aircraft/[id]` and `/rockets/[id]` do. See `docs/testing/browser-testing.md` for how to run, debug, and update baselines.
 
 ## 18. Known Issues
 
