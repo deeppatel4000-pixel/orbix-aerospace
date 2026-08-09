@@ -424,9 +424,53 @@ Never pass tokens on the command line or commit `.vercel` metadata.
 - `.env*` is ignored; there were no environment files in the project root at audit time.
 - `.pem`, editor state, build output, coverage, Vercel metadata, and generated verification output are ignored.
 - A repository pattern scan found no common API-key, GitHub-token, Vercel-token, secret, or password signatures in tracked source.
-- Security headers: `nosniff`, `DENY` framing, strict-origin referrer policy, and camera/microphone/geolocation denial.
-- `npm audit` on 2026-08-08 reported **3 high-severity vulnerabilities**. The advisories are against `postcss` (nested at `node_modules/next/node_modules/postcss`) and `sharp` (at `node_modules/sharp`); `next` is reported only because it depends on both, not because of an advisory against its own code. npm proposed Next `16.3.0`, a semver-major upgrade. This was not applied during preservation because it requires a dedicated compatibility/security migration and retest.
+- Security headers: `nosniff`, `DENY` framing, strict-origin referrer policy, and camera/microphone/geolocation denial. **Guarded by `tests/e2e/smoke/security-headers.spec.ts` as of 2026-08-08** — see the audit below for why that guard exists.
 - No secret values belong in this document or `project-state.json`.
+
+### Dependency audit, 2026-08-08 — investigated in depth, upgrade deliberately deferred
+
+`npm audit` reports **3 high-severity vulnerabilities**. They were investigated rather than cleared blindly, and the decision was **not to upgrade in this pass**. The full reasoning:
+
+**What is vulnerable, and why it is present**
+
+| Package   | Installed | Direct? | Reached via                                                             | Advisories                                                                                                                                                                  |
+| --------- | --------- | ------- | ----------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `postcss` | 8.4.31    | no      | `next` pins it **exactly**, at `node_modules/next/node_modules/postcss` | GHSA-qx2v-qp2m-jg93 (XSS via unescaped `</style>`), GHSA-6g55-p6wh-862q, GHSA-r28c-9q8g-f849, GHSA-fxqj-rqcc-2cmp (all `sourceMappingURL` file disclosure / path traversal) |
+| `sharp`   | 0.34.5    | no      | `next` optional dependency, range `^0.34.3`                             | GHSA-f88m-g3jw-g9cj (inherited libvips CVEs)                                                                                                                                |
+| `next`    | 15.5.22   | yes     | flagged only as the dependent of the two above                          | none against its own code                                                                                                                                                   |
+
+**No non-major fix exists.** Every candidate was checked against the registry: `next@15.5.23` (the `backport` dist-tag), `16.0.0`, `16.1.0`, and `16.2.0` all still pin `postcss@8.4.31`; `15.6.0` does not exist. Only **`next@16.3.0`** moves to `postcss@8.5.23` and `sharp@^0.35.3`. npm's "fix requires a breaking change" is accurate here, not its usual over-broad advice.
+
+**Not exploitable in ORBIX's deployment model.** Both advisory classes require attacker-controlled input, and ORBIX supplies none:
+
+- `images` in `next.config.ts` configures no `remotePatterns`, `domains`, or custom loader, so the optimizer serves only bundled first-party assets. Verified live against production: `/_next/image?url=<local>` returns 200, while `/_next/image?url=https://example.com/x.png` returns **400 `INVALID_IMAGE_OPTIMIZE_REQUEST`**.
+- Every `next/image` `src` in `src/` is a local absolute path. There is no upload, `FormData`, `multipart`, or external `fetch`.
+- No `dangerouslySetInnerHTML`, no runtime CSS injection, so no attacker-authored CSS reaches PostCSS.
+- The CI build-time surface (both workflows trigger on `pull_request` on a public repo) is neutralised by scope: `permissions: contents: read`, no `pull_request_target`, **no `process.env` application variables, no `.env*` files, and no `secrets.*` referenced in any workflow**. There is nothing for a build-time file-read bug to disclose.
+
+**Why the upgrade was deferred rather than performed.** Upgrading is feasible and the blast radius is unusually narrow — ORBIX has no middleware, no route handlers, no caching APIs, no `"use server"`, no custom webpack config, no legacy image API, and its dynamic routes already type `params`/`searchParams` as `Promise`. Risk was assessed **MEDIUM**, not low, because of four concrete items:
+
+1. Next 16 stops force-normalising `scroll-behavior` during navigation. `src/styles/orbix-foundations.css` sets `scroll-behavior: smooth` on `html` and `src/app/layout.tsx` does not set `data-scroll-behavior="smooth"`, so route transitions would begin animating — a UX change and a likely source of screenshot flakiness.
+2. `eslint.config.mjs` uses `FlatCompat` with string `extends`; the Next 16 ESLint docs document only subpath imports. This may require rewriting.
+3. All 17 visual baselines sit at a 1% pixel tolerance and would very likely trip, requiring deliberate regeneration with manual diff review.
+4. `sharp@0.35.3` has an **open upstream bug (lovell/sharp#4567)** reporting `ERR_DLOPEN_FAILED` specifically on Vercel with Next.js. This also rules out the `overrides` shortcut: forcing `sharp` outside `next`'s tested `^0.34.3` range would create an untested combination with a known platform-matching failure report.
+
+**The blocking reason.** The single highest-risk item in this upgrade — the security headers in `next.config.ts` — had **zero test coverage of any kind**. A dropped header produces no console error, no layout change, and no visual diff, so it would have passed `npm run validate`, all 237 browser tests, and shipped silently. Upgrading while blind to the worst failure mode was the wrong order of operations.
+
+That gap is now closed. `tests/e2e/smoke/security-headers.spec.ts` asserts all four headers plus the absence of `X-Powered-By` across ten routes, and the guard was verified by deliberately removing `X-Frame-Options` from `next.config.ts` and confirming **10 of 11 tests failed** before restoring it.
+
+**Engineering correctness is not at risk from this upgrade.** The calculator and analysis layer imports neither React nor Next (verified: zero files), so it sits entirely outside the Next runtime, bundler, and JSX transform. The 863 Vitest tests cannot be affected by a framework version change.
+
+**Next-step upgrade plan** (execute in this order, on a branch, from a tagged rollback point):
+
+1. Bump `next`, `react`, `react-dom` together to the 16.3.0 / React 19.2 line; bump `eslint-config-next` to match `next` exactly.
+2. Run `npm run lint` in isolation first — the most likely immediate failure. Rewrite `eslint.config.mjs` to `eslint-config-next` subpath imports if `FlatCompat` breaks.
+3. Add `data-scroll-behavior="smooth"` to `<html>` in `src/app/layout.tsx`.
+4. Run `npm run typecheck`, `npm test`, `npm run build`; confirm the build still generates 28 page instances.
+5. Run the full Playwright suite. **Run `npm run test:visual` explicitly — the visual job is `workflow_dispatch`-only and does not run on push or PR.** Inspect every baseline diff by eye before regenerating; regenerate only once each diff is confirmed cosmetic.
+6. Verify the security-header suite passes — it is now the canary for this exact upgrade.
+7. Deploy to a Vercel **preview** first and exercise image-heavy routes, since the `sharp`/optimizer runtime path cannot be validated by a local build alone.
+8. Cover the known gaps before relying on CI: `/compare` with real query parameters, the `LaboratoryShell` workflow nav click path (deep links are covered, clicks are not), and the four untested `/showcase-capture/[id]` pages.
 
 ## 17. Testing
 

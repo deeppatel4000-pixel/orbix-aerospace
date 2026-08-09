@@ -21,7 +21,8 @@
     "Engineering Laboratory 4.0 with 33 analyzers in six workflows",
     "Playwright browser and visual regression suite",
     "Mobile navigation Escape focus restoration fix",
-    "Learn conceptual pathways and Compare educational comparison layer"
+    "Learn conceptual pathways and Compare educational comparison layer",
+    "Dependency/security audit and security-header regression guard"
   ],
   "completedDays": [
     "1-80 (exact early-day mapping partially unavailable; implemented state documented in CLAUDE_HANDOFF.md)",
@@ -49,7 +50,7 @@
     "External engineering APIs"
   ],
   "knownIssues": [
-    "npm audit reports three high-severity advisories against postcss and sharp; next is flagged as their dependent",
+    "npm audit reports three high-severity advisories against postcss and sharp (both reached only via next); investigated 2026-08-08 and found NOT exploitable in ORBIX's model; only next@16.3.0 fixes them; upgrade deliberately deferred with a documented plan in CLAUDE_HANDOFF.md",
     "Several canonical images are large source files",
     "Engineering Laboratory first-load JavaScript was measured at 232 kB",
     "Authentic screenshot gallery is empty; all six folders contain only a README",
@@ -64,7 +65,7 @@
     "calculatorModules": 20,
     "analysisModules": 23,
     "generatedBuildPageInstances": 28,
-    "playwrightBrowserTests": 225,
+    "playwrightBrowserTests": 236,
     "playwrightSkipped": 12,
     "visualBaselines": 17,
     "learningPathways": 6
@@ -80,8 +81,9 @@
     "build": "passed; 28 generated page instances",
     "fullValidation": "npm run validate passed",
     "npmAudit": "3 high, 0 critical",
-    "browserSuite": "225 passed, 12 skipped, 0 failed (207 smoke+a11y across desktop/tablet/mobile, 18 visual)",
-    "visualBaselines": "17 committed, platform-specific (win32); ~34 MB, cost measured and accepted"
+    "browserSuite": "236 passed, 34 skipped (viewport/project-conditional) across desktop/tablet/mobile + visual",
+    "visualBaselines": "17 committed, platform-specific (win32); ~34 MB, cost measured and accepted",
+    "securityHeaders": "guarded by tests/e2e/smoke/security-headers.spec.ts; guard verified by deliberate header removal (10/11 failed) then restored"
   },
   "engineeringBoundaries": [
     "calculators own equations and numerical validation",
