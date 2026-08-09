@@ -867,6 +867,14 @@ export function MissionProfileAnalyzer({
 
   useEffect(() => {
     if (initialMissionProfile !== undefined) {
+      // Resets the form when a newly generated profile arrives at a call site
+      // that does not remount via `key`. Two of the three call sites already
+      // use the `key` pattern; unifying the third
+      // (mission-scenario-builder.tsx) would let this effect be deleted, but
+      // that touches a second component and is deliberately out of scope for
+      // this upgrade. Newly flagged by eslint-plugin-react-hooks 7; code
+      // unchanged from the Next 15 baseline. Follow-up in docs/upgrades/.
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setValues(createFormValues(initialMissionProfile));
     }
   }, [initialMissionProfile]);

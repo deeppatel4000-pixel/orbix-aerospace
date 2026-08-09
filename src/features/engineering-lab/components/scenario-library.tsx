@@ -89,6 +89,12 @@ export function ScenarioLibraryIntegration({
       const persistentLibrary = createScenarioLibrary({
         storage: window.localStorage,
       });
+      // Swaps the SSR-safe in-memory library for the localStorage-backed one
+      // after mount. `window.localStorage` cannot be read during SSR, so this
+      // is the standard hydration-safe pattern, not derivable state. Newly
+      // flagged by eslint-plugin-react-hooks 7; code unchanged from the
+      // Next 15 baseline. See docs/upgrades/.
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setLibrary(persistentLibrary);
       setScenarios(listScenarios(persistentLibrary));
     } catch (error) {

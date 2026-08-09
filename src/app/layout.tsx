@@ -62,7 +62,17 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    // `data-scroll-behavior="smooth"` is required from Next.js 16 onward.
+    // `src/styles/orbix-foundations.css` sets `scroll-behavior: smooth` on
+    // `html`. Next 15 silently forced `scroll-behavior: auto` for the duration
+    // of a route transition so navigation snapped to the top instantly; Next 16
+    // only does that when this attribute is present. Without it, every route
+    // change would animate-scroll instead of snapping — a UX regression, and a
+    // source of screenshot flakiness for the visual suite, which could capture
+    // a page mid-scroll. Reduced-motion behaviour is unaffected: the
+    // `prefers-reduced-motion` rule in `orbix-motion.css` still overrides
+    // `scroll-behavior` to `auto`.
+    <html lang="en" data-scroll-behavior="smooth">
       <body>{children}</body>
     </html>
   );
