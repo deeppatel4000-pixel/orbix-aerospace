@@ -39,20 +39,20 @@ The handoff checkpoint preserves the legitimate presentation work that had accum
 
 Versions come from `package.json` and the validation environment:
 
-- Next.js `15.5.22`, App Router
-- React and React DOM `19.1.0`
+- Next.js `16.3.0`, App Router (upgraded from `15.5.22` on 2026-08-09)
+- React and React DOM `19.2.0`
 - TypeScript `^5`
 - Tailwind CSS `^4` through `@tailwindcss/postcss`
 - Lucide React `^1.28.0`
 - Vitest `4.1.10`
 - Playwright `@playwright/test` `^1.62.1` (dev-only; browser suite in `tests/e2e/`)
-- ESLint `^9` with `eslint-config-next` `15.5.22`
+- ESLint `^9` with `eslint-config-next` `16.3.0`
 - Prettier `^3.9.6` with Tailwind class sorting
 - Node.js used for handoff validation: `22.17.0`
 - npm used for handoff validation: `10.9.2`
 - Lockfile version: 3
 - Deployment: Vercel
-- CI: GitHub Actions, Node 22, `npm ci`, then `npm run validate`
+- CI: GitHub Actions, Node 22, `npm ci`, then `npm run validate`; plus a separate browser-test workflow
 
 There is no charting, WebGL, database, authentication, analytics, or external API dependency. Current diagrams and 3D-like scenes are native React, SVG, and CSS presentation.
 
@@ -427,7 +427,9 @@ Never pass tokens on the command line or commit `.vercel` metadata.
 - Security headers: `nosniff`, `DENY` framing, strict-origin referrer policy, and camera/microphone/geolocation denial. **Guarded by `tests/e2e/smoke/security-headers.spec.ts` as of 2026-08-08** — see the audit below for why that guard exists.
 - No secret values belong in this document or `project-state.json`.
 
-### Dependency audit, 2026-08-08 — investigated in depth, upgrade deliberately deferred
+### Dependency audit, 2026-08-08 — RESOLVED 2026-08-09 by the Next.js 16.3.0 upgrade
+
+> **Status: closed.** The upgrade described at the end of this section was executed and deployed to production as merge commit `ac1aebce55e487245c25879e9fad9c3d929ad8be` (PR #1). `npm audit` now reports **0 vulnerabilities**: `postcss` 8.4.31 -> 8.5.23 and `sharp` 0.34.5 -> 0.35.3, both via Next's own supported tree with no `overrides`. Rollback tag `orbix-pre-next16-2026-08-08` -> `37ccb79` remains valid. Full record: `docs/upgrades/2026-08-08-next-16-3-0.md`. The investigation below is retained as the historical record of why the upgrade was deferred at the time.
 
 `npm audit` reports **3 high-severity vulnerabilities**. They were investigated rather than cleared blindly, and the decision was **not to upgrade in this pass**. The full reasoning:
 

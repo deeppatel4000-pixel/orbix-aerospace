@@ -22,7 +22,8 @@
     "Playwright browser and visual regression suite",
     "Mobile navigation Escape focus restoration fix",
     "Learn conceptual pathways and Compare educational comparison layer",
-    "Dependency/security audit and security-header regression guard"
+    "Dependency/security audit and security-header regression guard",
+    "Next.js 16.3.0 security upgrade (advisories resolved, deployed to production)"
   ],
   "completedDays": [
     "1-80 (exact early-day mapping partially unavailable; implemented state documented in CLAUDE_HANDOFF.md)",
@@ -50,7 +51,6 @@
     "External engineering APIs"
   ],
   "knownIssues": [
-    "npm audit reports three high-severity advisories against postcss and sharp (both reached only via next); investigated 2026-08-08 and found NOT exploitable in ORBIX's model; only next@16.3.0 fixes them; upgrade deliberately deferred with a documented plan in CLAUDE_HANDOFF.md",
     "Several canonical images are large source files",
     "Engineering Laboratory first-load JavaScript was measured at 232 kB",
     "Authentic screenshot gallery is empty; all six folders contain only a README",
@@ -80,10 +80,13 @@
     "typecheck": "passed",
     "build": "passed; 28 generated page instances",
     "fullValidation": "npm run validate passed",
-    "npmAudit": "3 high, 0 critical",
+    "npmAudit": "0 vulnerabilities (was 3 high; resolved by the Next 16.3.0 upgrade)",
     "browserSuite": "236 passed, 34 skipped (viewport/project-conditional) across desktop/tablet/mobile + visual",
     "visualBaselines": "17 committed, platform-specific (win32); ~34 MB, cost measured and accepted",
-    "securityHeaders": "guarded by tests/e2e/smoke/security-headers.spec.ts; guard verified by deliberate header removal (10/11 failed) then restored"
+    "securityHeaders": "guarded by tests/e2e/smoke/security-headers.spec.ts; guard verified by deliberate header removal (10/11 failed) then restored",
+    "frameworkVersions": "next 16.3.0, react/react-dom 19.2.0, eslint-config-next 16.3.0, postcss 8.5.23, sharp 0.35.3",
+    "productionCommit": "ac1aebce55e487245c25879e9fad9c3d929ad8be",
+    "rollbackTag": "orbix-pre-next16-2026-08-08 -> 37ccb79ec4a925062e6f1d54334c70453c193b88"
   },
   "engineeringBoundaries": [
     "calculators own equations and numerical validation",

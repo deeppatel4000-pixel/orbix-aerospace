@@ -48,7 +48,7 @@ Current development stage:
 - Compare and Learn are implemented: Learn provides six conceptual pathways, and Compare groups rows by engineering category with per-row educational context.
 - Browser E2E and visual regression coverage exists (`tests/e2e/`, 225 passing). The remaining priority order is verification, dependency security, then asset licensing/optimization.
 
-Known issues include npm dependency advisories, large canonical images, an empty authentic-screenshot gallery, and an incomplete vehicle-image licensing record. Verify all of these before acting.
+Known issues include large canonical images, an empty authentic-screenshot gallery, and an incomplete vehicle-image licensing record. Verify all of these before acting.
 
 Begin by returning an evidence-backed takeover report. Do not start a feature until the user confirms the next scope.
 
