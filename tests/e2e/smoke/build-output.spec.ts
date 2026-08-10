@@ -21,19 +21,24 @@ import { AIRCRAFT_IDS, expect, ROCKET_IDS, test } from "../fixtures/orbix";
  *
  * ## What is asserted, and why it is not a raw number
  *
- * `docs/CLAUDE_HANDOFF.md` states "28 generated page instances". That figure
- * is from the Next.js 15 era and matches nothing in the current build — Next
- * 16 counts differently and adds `/_global-error`. Asserting 28 would encode
- * a number that is simply wrong today, so this test derives the real
- * invariant from the build instead.
+ * The project documentation historically recorded "28 generated page
+ * instances". That was a Next.js 15-era figure and does not describe the
+ * current build: Next 16 reports differently and adds `/_global-error`. The
+ * docs have since been corrected to the structured counts below, and
+ * `.next/prerender-manifest.json` is the source of truth — so this test
+ * derives its invariant from the manifest rather than from any number
+ * written in prose.
  *
- * Measured on the current build (`.next/prerender-manifest.json`):
+ * Measured from `.next/prerender-manifest.json`:
  *
  *   26 prerendered routes total
- *    5 framework internals: /_global-error, /_not-found, /favicon.ico,
+ *    5 framework outputs: /_global-error, /_not-found, /favicon.ico,
  *      /icon.png, /manifest.webmanifest
  *   21 user-facing pages  <- the meaningful invariant
  *    3 dynamic templates: /aircraft/[id], /rockets/[id], /showcase-capture/[id]
+ *
+ * `/compare` is intentionally dynamic — it reads `searchParams` — and is
+ * therefore not part of the prerendered set at all.
  *
  * The framework internals are deliberately EXCLUDED. They are Next's own
  * output, they already changed once across a major version, and asserting
