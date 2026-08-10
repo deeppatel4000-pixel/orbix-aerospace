@@ -73,7 +73,11 @@ Current public routes include:
 - `/showcase`
 - `/showcase-capture/[id]`
 
-The validated production build generated 28 page instances, including dynamic vehicle and showcase paths.
+The production build generates **26 prerendered routes**: **21 user-facing pages** — 6 static routes, 5 aircraft profiles, 5 rocket profiles, and 5 showcase-capture mission pages — plus 5 framework outputs (`/_global-error`, `/_not-found`, `/favicon.ico`, `/icon.png`, `/manifest.webmanifest`). It also emits **3 dynamic route templates**: `/aircraft/[id]`, `/rockets/[id]`, and `/showcase-capture/[id]`.
+
+`/compare` is server-rendered on demand and is intentionally **not** prerendered, because it reads `searchParams`.
+
+An earlier revision of this document stated "28 page instances". That was a Next.js 15-era figure and no longer matches the build: Next 16 reports differently and adds `/_global-error`. `.next/prerender-manifest.json` is now the source of truth for these counts.
 
 ### `src/components`
 
@@ -476,7 +480,7 @@ That gap is now closed. `tests/e2e/smoke/security-headers.spec.ts` asserts all f
 
 ## 17. Testing
 
-Handoff baseline results on Node 22.17.0 / npm 10.9.2:
+Handoff baseline results on Node 22.17.0 / npm 10.9.2. These are a dated snapshot from the Codex-era handoff, recorded while the project was on Next.js 15; the page-instance figure below is preserved as the historical record and is superseded by the current counts in section 4.
 
 - `npm test`: 68 test files, 863 tests passed
 - `npm run format:check`: passed
