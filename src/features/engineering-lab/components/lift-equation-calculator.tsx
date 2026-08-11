@@ -192,13 +192,13 @@ export function LiftEquationCalculator() {
         </CalculatorResultSection>
 
         <section className="rounded-2xl border border-border bg-surface/55 p-5 sm:p-6">
-          <p className="flex items-center gap-2 font-mono text-[0.65rem] tracking-[0.14em] text-accent uppercase">
+          <p className="orbix-label flex items-center gap-2 text-accent">
             <Wind aria-hidden="true" size={15} />
             Equation model
           </p>
           <p
             aria-label="Lift equals one half multiplied by air density multiplied by velocity squared multiplied by wing area multiplied by lift coefficient"
-            className="mt-4 overflow-x-auto rounded-xl border border-border bg-background/45 px-4 py-4 font-mono text-sm text-foreground"
+            className="orbix-lab-equation mt-4"
           >
             L = 0.5 × ρ × V² × S × CL
           </p>
@@ -228,8 +228,8 @@ export function LiftEquationCalculator() {
           </dl>
         </section>
 
-        <aside className="rounded-2xl border border-signal/25 bg-signal/6 p-5 sm:p-6">
-          <p className="flex items-center gap-2 text-sm font-semibold text-signal">
+        <aside className="orbix-lab-note">
+          <p className="orbix-lab-note__title">
             <AlertTriangle aria-hidden="true" size={17} />
             Engineering notes
           </p>

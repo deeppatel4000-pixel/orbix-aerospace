@@ -204,32 +204,32 @@ export function AtmosphereCalculator() {
         </CalculatorResultSection>
 
         <section className="rounded-2xl border border-border bg-surface/55 p-5 sm:p-6">
-          <p className="flex items-center gap-2 font-mono text-[0.65rem] tracking-[0.14em] text-accent uppercase">
+          <p className="orbix-label flex items-center gap-2 text-accent">
             <Sigma aria-hidden="true" size={15} />
             Equation model
           </p>
-          <div className="mt-4 grid gap-3 font-mono text-sm text-foreground">
+          <div className="mt-4 grid gap-2">
             <p
               aria-label="Temperature equals sea-level temperature minus lapse rate multiplied by altitude"
-              className="overflow-x-auto rounded-xl border border-border bg-background/45 px-4 py-4"
+              className="orbix-lab-equation"
             >
               T = T0 − Lh
             </p>
             <p
               aria-label="Pressure equals sea-level pressure multiplied by temperature divided by sea-level temperature raised to standard gravity divided by the dry-air gas constant multiplied by lapse rate"
-              className="overflow-x-auto rounded-xl border border-border bg-background/45 px-4 py-4"
+              className="orbix-lab-equation"
             >
               P = P0 × (T / T0)^(g / RL)
             </p>
             <p
               aria-label="Density equals pressure divided by the dry-air gas constant multiplied by temperature"
-              className="overflow-x-auto rounded-xl border border-border bg-background/45 px-4 py-4"
+              className="orbix-lab-equation"
             >
               ρ = P / (RT)
             </p>
             <p
               aria-label="Speed of sound equals the square root of the ratio of specific heats multiplied by the dry-air gas constant multiplied by temperature"
-              className="overflow-x-auto rounded-xl border border-border bg-background/45 px-4 py-4"
+              className="orbix-lab-equation"
             >
               a = √(γRT)
             </p>
@@ -269,8 +269,8 @@ export function AtmosphereCalculator() {
           </dl>
         </section>
 
-        <aside className="rounded-2xl border border-signal/25 bg-signal/6 p-5 sm:p-6">
-          <p className="flex items-center gap-2 text-sm font-semibold text-signal">
+        <aside className="orbix-lab-note">
+          <p className="orbix-lab-note__title">
             <AlertTriangle aria-hidden="true" size={17} />
             Engineering notes
           </p>

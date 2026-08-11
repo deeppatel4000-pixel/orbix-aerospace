@@ -203,13 +203,13 @@ export function RocketEquationCalculator() {
         </CalculatorResultSection>
 
         <section className="rounded-2xl border border-border bg-surface/55 p-5 sm:p-6">
-          <p className="flex items-center gap-2 font-mono text-[0.65rem] tracking-[0.14em] text-accent uppercase">
+          <p className="orbix-label flex items-center gap-2 text-accent">
             <Sigma aria-hidden="true" size={15} />
             Equation model
           </p>
           <p
             aria-label="Delta v equals specific impulse multiplied by standard gravity multiplied by the natural logarithm of initial mass divided by final mass"
-            className="mt-4 overflow-x-auto rounded-xl border border-border bg-background/45 px-4 py-4 font-mono text-sm text-foreground"
+            className="orbix-lab-equation mt-4"
           >
             Δv = Isp × g0 × ln(m0 / mf)
           </p>
@@ -243,8 +243,8 @@ export function RocketEquationCalculator() {
           </dl>
         </section>
 
-        <aside className="rounded-2xl border border-signal/25 bg-signal/6 p-5 sm:p-6">
-          <p className="flex items-center gap-2 text-sm font-semibold text-signal">
+        <aside className="orbix-lab-note">
+          <p className="orbix-lab-note__title">
             <AlertTriangle aria-hidden="true" size={17} />
             Engineering notes
           </p>

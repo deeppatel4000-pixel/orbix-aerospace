@@ -347,7 +347,7 @@ export function InletCompressionAnalyzer() {
       <div>
         <form noValidate onSubmit={preventSubmission}>
           <fieldset>
-            <legend className="font-mono text-[0.68rem] tracking-[0.15em] text-accent uppercase">
+            <legend className="orbix-label text-accent">
               Inlet entry conditions
             </legend>
             <div className="mt-4 grid gap-5 sm:grid-cols-2">
@@ -396,9 +396,7 @@ export function InletCompressionAnalyzer() {
           >
             <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
               <div>
-                <p className="font-mono text-[0.68rem] tracking-[0.15em] text-accent uppercase">
-                  External compression
-                </p>
+                <p className="orbix-label text-accent">External compression</p>
                 <h3
                   className="mt-1 text-lg font-semibold"
                   id="inlet-external-sequence-title"
@@ -593,7 +591,7 @@ export function InletCompressionAnalyzer() {
             <div className="space-y-6">
               <section aria-labelledby="inlet-initial-flow-title">
                 <h4
-                  className="font-mono text-[0.65rem] tracking-[0.14em] text-accent uppercase"
+                  className="orbix-label text-accent"
                   id="inlet-initial-flow-title"
                 >
                   Initial flow
@@ -629,7 +627,7 @@ export function InletCompressionAnalyzer() {
                 className="border-t border-border pt-5"
               >
                 <h4
-                  className="font-mono text-[0.65rem] tracking-[0.14em] text-accent uppercase"
+                  className="orbix-label text-accent"
                   id="inlet-external-results-title"
                 >
                   External compression
@@ -699,7 +697,7 @@ export function InletCompressionAnalyzer() {
                 className="border-t border-border pt-5"
               >
                 <h4
-                  className="font-mono text-[0.65rem] tracking-[0.14em] text-accent uppercase"
+                  className="orbix-label text-accent"
                   id="inlet-terminal-shock-title"
                 >
                   Terminal normal shock
@@ -752,7 +750,7 @@ export function InletCompressionAnalyzer() {
                 className="border-t border-border pt-5"
               >
                 <h4
-                  className="font-mono text-[0.65rem] tracking-[0.14em] text-accent uppercase"
+                  className="orbix-label text-accent"
                   id="inlet-complete-performance-title"
                 >
                   Complete inlet performance
@@ -819,8 +817,8 @@ export function InletCompressionAnalyzer() {
           )}
         </CalculatorResultSection>
 
-        <aside className="rounded-2xl border border-signal/25 bg-signal/6 p-5 sm:p-6">
-          <p className="flex items-center gap-2 text-sm font-semibold text-signal">
+        <aside className="orbix-lab-note">
+          <p className="orbix-lab-note__title">
             <AlertTriangle aria-hidden="true" size={17} />
             Engineering assumptions
           </p>

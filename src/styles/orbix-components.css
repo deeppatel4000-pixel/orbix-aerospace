@@ -937,6 +937,53 @@
     margin-top: 0.2rem;
   }
 
+  /* Engineering Laboratory model notes.
+   *
+   * Assumptions, model limits and reference caveats. These were rendered as
+   * filled amber panels with a warning triangle in 22 modules, which gave
+   * "standard gravity is fixed at 9.80665 m/s²" the same visual weight as a
+   * fault. Nothing here is a warning; it is the honest statement of what the
+   * model does and does not cover, and it should read as reference text.
+   *
+   * A marked rule and normal-size copy instead. The signal colour is kept only
+   * on the heading, so the section is still findable at a glance without the
+   * page appearing to be in an error state. `ValidationErrorSummary` keeps the
+   * signal treatment, so a real problem still looks different from a note. */
+  .orbix-lab-note {
+    border-left: 2px solid
+      color-mix(in srgb, var(--orbix-accent) 45%, transparent);
+    padding-left: 1.25rem;
+  }
+
+  .orbix-lab-note__title {
+    align-items: center;
+    color: var(--orbix-text-primary);
+    display: flex;
+    font-family: var(--font-interface);
+    font-size: var(--text-body-sm);
+    font-weight: 600;
+    gap: 0.5rem;
+  }
+
+  .orbix-lab-note__title svg {
+    color: var(--orbix-accent);
+  }
+
+  /* Equation model.
+   *
+   * The equation is the module's thesis, so it is set on the page rather than
+   * inside a nested box with its own border and background. Telemetry
+   * typography at reading size, with the variable list that follows it left as
+   * an ordinary definition list. */
+  .orbix-lab-equation {
+    color: var(--orbix-text-primary);
+    font-family: var(--font-telemetry);
+    font-size: var(--text-body-lg);
+    letter-spacing: var(--tracking-normal);
+    overflow-x: auto;
+    padding-block: 0.35rem;
+  }
+
   /* Engineering Laboratory module index.
    *
    * A horizontal-wrapping row of module buttons above the active module. Not a

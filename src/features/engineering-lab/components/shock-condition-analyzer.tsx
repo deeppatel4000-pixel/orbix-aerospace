@@ -170,7 +170,7 @@ export function ShockConditionAnalyzer() {
             <div className="space-y-6">
               <section aria-labelledby="shock-upstream-title">
                 <h4
-                  className="font-mono text-[0.65rem] tracking-[0.14em] text-accent uppercase"
+                  className="orbix-label text-accent"
                   id="shock-upstream-title"
                 >
                   Upstream conditions
@@ -237,7 +237,7 @@ export function ShockConditionAnalyzer() {
                 className="border-t border-border pt-5"
               >
                 <h4
-                  className="font-mono text-[0.65rem] tracking-[0.14em] text-accent uppercase"
+                  className="orbix-label text-accent"
                   id="shock-downstream-title"
                 >
                   Downstream conditions
@@ -303,10 +303,7 @@ export function ShockConditionAnalyzer() {
                 aria-labelledby="shock-ratios-title"
                 className="border-t border-border pt-5"
               >
-                <h4
-                  className="font-mono text-[0.65rem] tracking-[0.14em] text-accent uppercase"
-                  id="shock-ratios-title"
-                >
+                <h4 className="orbix-label text-accent" id="shock-ratios-title">
                   Shock ratios
                 </h4>
                 <dl className="mt-3 grid gap-4 sm:grid-cols-3">
@@ -348,8 +345,8 @@ export function ShockConditionAnalyzer() {
           )}
         </CalculatorResultSection>
 
-        <aside className="rounded-2xl border border-signal/25 bg-signal/6 p-5 sm:p-6">
-          <p className="flex items-center gap-2 text-sm font-semibold text-signal">
+        <aside className="orbix-lab-note">
+          <p className="orbix-lab-note__title">
             <AlertTriangle aria-hidden="true" size={17} />
             Model assumptions
           </p>

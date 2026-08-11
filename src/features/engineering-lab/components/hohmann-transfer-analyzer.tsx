@@ -173,9 +173,7 @@ export function HohmannTransferAnalyzer() {
       <div>
         <form noValidate onSubmit={preventSubmission}>
           <fieldset>
-            <legend className="font-mono text-[0.68rem] tracking-[0.15em] text-accent uppercase">
-              Initial orbit
-            </legend>
+            <legend className="orbix-label text-accent">Initial orbit</legend>
             <div className="mt-5">
               <CalculatorNumberField
                 error={errors.initialAltitudeMetres}
@@ -191,9 +189,7 @@ export function HohmannTransferAnalyzer() {
           </fieldset>
 
           <fieldset className="mt-7 border-t border-border pt-7">
-            <legend className="font-mono text-[0.68rem] tracking-[0.15em] text-accent uppercase">
-              Final orbit
-            </legend>
+            <legend className="orbix-label text-accent">Final orbit</legend>
             <div className="mt-5">
               <CalculatorNumberField
                 error={errors.finalAltitudeMetres}
@@ -209,7 +205,7 @@ export function HohmannTransferAnalyzer() {
           </fieldset>
 
           <fieldset className="mt-7 border-t border-border pt-7">
-            <legend className="font-mono text-[0.68rem] tracking-[0.15em] text-accent uppercase">
+            <legend className="orbix-label text-accent">
               Central-body constants
             </legend>
             <div className="mt-5 grid gap-5 sm:grid-cols-2">
@@ -265,9 +261,7 @@ export function HohmannTransferAnalyzer() {
           aria-labelledby="hohmann-transfer-explanation-title"
           className="mt-8 border-t border-border pt-7"
         >
-          <p className="font-mono text-[0.68rem] tracking-[0.15em] text-accent uppercase">
-            Educational context
-          </p>
+          <p className="orbix-label text-accent">Educational context</p>
           <h3
             className="mt-1 text-lg font-semibold"
             id="hohmann-transfer-explanation-title"
@@ -294,7 +288,7 @@ export function HohmannTransferAnalyzer() {
             <div className="space-y-6">
               <section aria-labelledby="hohmann-transfer-initial-title">
                 <h4
-                  className="font-mono text-[0.65rem] tracking-[0.14em] text-accent uppercase"
+                  className="orbix-label text-accent"
                   id="hohmann-transfer-initial-title"
                 >
                   Initial orbit
@@ -350,7 +344,7 @@ export function HohmannTransferAnalyzer() {
                 className="border-t border-border pt-5"
               >
                 <h4
-                  className="font-mono text-[0.65rem] tracking-[0.14em] text-accent uppercase"
+                  className="orbix-label text-accent"
                   id="hohmann-transfer-final-title"
                 >
                   Final orbit
@@ -406,7 +400,7 @@ export function HohmannTransferAnalyzer() {
                 className="border-t border-border pt-5"
               >
                 <h4
-                  className="flex items-center gap-2 font-mono text-[0.65rem] tracking-[0.14em] text-accent uppercase"
+                  className="orbix-label flex items-center gap-2 text-accent"
                   id="hohmann-transfer-orbit-title"
                 >
                   <MoveRight aria-hidden="true" size={14} />
@@ -554,8 +548,8 @@ export function HohmannTransferAnalyzer() {
           )}
         </CalculatorResultSection>
 
-        <aside className="rounded-2xl border border-signal/25 bg-signal/6 p-5 sm:p-6">
-          <p className="flex items-center gap-2 text-sm font-semibold text-signal">
+        <aside className="orbix-lab-note">
+          <p className="orbix-lab-note__title">
             <AlertTriangle aria-hidden="true" size={17} />
             Modeling assumptions
           </p>

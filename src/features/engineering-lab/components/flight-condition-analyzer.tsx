@@ -200,7 +200,7 @@ export function FlightConditionAnalyzer() {
             <div className="space-y-6">
               <section aria-labelledby="flight-atmosphere-title">
                 <h4
-                  className="font-mono text-[0.65rem] tracking-[0.14em] text-accent uppercase"
+                  className="orbix-label text-accent"
                   id="flight-atmosphere-title"
                 >
                   Atmosphere
@@ -249,10 +249,7 @@ export function FlightConditionAnalyzer() {
                 aria-labelledby="flight-state-title"
                 className="border-t border-border pt-5"
               >
-                <h4
-                  className="font-mono text-[0.65rem] tracking-[0.14em] text-accent uppercase"
-                  id="flight-state-title"
-                >
+                <h4 className="orbix-label text-accent" id="flight-state-title">
                   Flight
                 </h4>
                 <dl className="mt-3 grid gap-4 sm:grid-cols-2">
@@ -276,7 +273,7 @@ export function FlightConditionAnalyzer() {
                 className="border-t border-border pt-5"
               >
                 <h4
-                  className="font-mono text-[0.65rem] tracking-[0.14em] text-accent uppercase"
+                  className="orbix-label text-accent"
                   id="flight-aerodynamics-title"
                 >
                   Aerodynamics
@@ -317,7 +314,7 @@ export function FlightConditionAnalyzer() {
                 className="border-t border-border pt-5"
               >
                 <h4
-                  className="font-mono text-[0.65rem] tracking-[0.14em] text-accent uppercase"
+                  className="orbix-label text-accent"
                   id="flight-performance-title"
                 >
                   Performance
@@ -343,7 +340,7 @@ export function FlightConditionAnalyzer() {
         </CalculatorResultSection>
 
         <section className="rounded-2xl border border-border bg-surface/55 p-5 sm:p-6">
-          <p className="flex items-center gap-2 font-mono text-[0.65rem] tracking-[0.14em] text-accent uppercase">
+          <p className="orbix-label flex items-center gap-2 text-accent">
             <GitBranch aria-hidden="true" size={15} />
             Analysis flow
           </p>
@@ -384,8 +381,8 @@ export function FlightConditionAnalyzer() {
           </ol>
         </section>
 
-        <aside className="rounded-2xl border border-signal/25 bg-signal/6 p-5 sm:p-6">
-          <p className="flex items-center gap-2 text-sm font-semibold text-signal">
+        <aside className="orbix-lab-note">
+          <p className="orbix-lab-note__title">
             <AlertTriangle aria-hidden="true" size={17} />
             Engineering notes
           </p>

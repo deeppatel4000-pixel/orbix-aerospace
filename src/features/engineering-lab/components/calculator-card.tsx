@@ -27,18 +27,15 @@ export function CalculatorCard({
 
   return (
     <article aria-labelledby={titleId} className={styles.card} id={id}>
-      <header className={`${styles.header} technical-grid`}>
+      <header className={styles.header}>
         <div className={styles.headerLayout}>
-          <span aria-hidden="true" className={styles.instrumentIndex}>
-            LAB
-          </span>
           <span className={styles.iconWell}>
             <Icon aria-hidden="true" size={23} strokeWidth={1.7} />
           </span>
           <div className="min-w-0">
-            <p className={styles.eyebrow}>{eyebrow}</p>
+            <p className="orbix-label">{eyebrow}</p>
             <Heading
-              className="font-display mt-3 text-3xl leading-tight font-semibold tracking-[-0.04em] text-balance sm:text-4xl"
+              className="font-display mt-2.5 text-2xl leading-tight font-semibold tracking-[-0.035em] text-balance sm:text-3xl"
               id={titleId}
             >
               {title}

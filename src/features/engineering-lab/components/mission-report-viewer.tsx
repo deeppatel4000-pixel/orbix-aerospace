@@ -85,9 +85,7 @@ export function MissionReportViewer({ report }: MissionReportViewerProps) {
               <FileText aria-hidden="true" size={17} />
             </span>
             <div>
-              <p className="font-mono text-[0.64rem] tracking-[0.14em] text-accent uppercase">
-                Section 01
-              </p>
+              <p className="orbix-label text-accent">Section 01</p>
               <h4
                 className="mt-1 text-xl font-semibold"
                 id="mission-report-overview-title"
@@ -137,9 +135,7 @@ export function MissionReportViewer({ report }: MissionReportViewerProps) {
                 <Orbit aria-hidden="true" size={18} />
               </span>
               <div>
-                <p className="font-mono text-[0.64rem] tracking-[0.14em] text-accent uppercase">
-                  Section 02
-                </p>
+                <p className="orbix-label text-accent">Section 02</p>
                 <h4
                   className="mt-1 text-xl font-semibold"
                   id="mission-report-orbital-title"
@@ -338,9 +334,7 @@ export function MissionReportViewer({ report }: MissionReportViewerProps) {
                 <Plane aria-hidden="true" size={18} />
               </span>
               <div>
-                <p className="font-mono text-[0.64rem] tracking-[0.14em] text-accent uppercase">
-                  Section 03
-                </p>
+                <p className="orbix-label text-accent">Section 03</p>
                 <h4
                   className="mt-1 text-xl font-semibold"
                   id="mission-report-vehicle-title"
@@ -434,9 +428,7 @@ export function MissionReportViewer({ report }: MissionReportViewerProps) {
                 <Shield aria-hidden="true" size={18} />
               </span>
               <div>
-                <p className="font-mono text-[0.64rem] tracking-[0.14em] text-accent uppercase">
-                  Section 04
-                </p>
+                <p className="orbix-label text-accent">Section 04</p>
                 <h4
                   className="mt-1 text-xl font-semibold"
                   id="mission-report-thermal-title"
@@ -476,7 +468,7 @@ export function MissionReportViewer({ report }: MissionReportViewerProps) {
 
             {tps ? (
               <div className="mt-5 rounded-2xl border border-accent/20 bg-accent/6 p-5">
-                <p className="flex items-center gap-2 font-mono text-[0.64rem] tracking-[0.14em] text-accent uppercase">
+                <p className="orbix-label flex items-center gap-2 text-accent">
                   <Flame aria-hidden="true" size={15} />
                   Existing TPS recommendation
                 </p>
@@ -545,7 +537,7 @@ export function MissionReportViewer({ report }: MissionReportViewerProps) {
             </div>
           </div>
 
-          <div className="mt-5 rounded-2xl border border-signal/25 bg-signal/6 p-5 sm:p-6">
+          <div className="orbix-lab-note mt-5">
             <p className="flex items-start gap-2 text-sm leading-6 text-signal">
               <Gauge aria-hidden="true" className="mt-0.5 shrink-0" size={16} />
               {missionAssessment.educationalSummary}

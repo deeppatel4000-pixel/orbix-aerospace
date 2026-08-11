@@ -303,7 +303,7 @@ export function MultiShockRecoveryAnalyzer() {
       <div>
         <form noValidate onSubmit={preventSubmission}>
           <fieldset>
-            <legend className="font-mono text-[0.68rem] tracking-[0.15em] text-accent uppercase">
+            <legend className="orbix-label text-accent">
               Upstream conditions
             </legend>
             <div className="mt-4 grid gap-5 sm:grid-cols-2">
@@ -342,9 +342,7 @@ export function MultiShockRecoveryAnalyzer() {
           >
             <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
               <div>
-                <p className="font-mono text-[0.68rem] tracking-[0.15em] text-accent uppercase">
-                  Ordered workflow
-                </p>
+                <p className="orbix-label text-accent">Ordered workflow</p>
                 <h3
                   className="mt-1 text-lg font-semibold"
                   id="multi-shock-sequence-title"
@@ -527,7 +525,7 @@ export function MultiShockRecoveryAnalyzer() {
             <div className="space-y-6">
               <section aria-labelledby="multi-shock-overall-title">
                 <h4
-                  className="font-mono text-[0.65rem] tracking-[0.14em] text-accent uppercase"
+                  className="orbix-label text-accent"
                   id="multi-shock-overall-title"
                 >
                   Overall performance
@@ -603,7 +601,7 @@ export function MultiShockRecoveryAnalyzer() {
                 className="border-t border-border pt-5"
               >
                 <h4
-                  className="font-mono text-[0.65rem] tracking-[0.14em] text-accent uppercase"
+                  className="orbix-label text-accent"
                   id="multi-shock-breakdown-title"
                 >
                   Stage breakdown
@@ -744,8 +742,8 @@ export function MultiShockRecoveryAnalyzer() {
           </div>
         </section>
 
-        <aside className="rounded-2xl border border-signal/25 bg-signal/6 p-5 sm:p-6">
-          <p className="flex items-center gap-2 text-sm font-semibold text-signal">
+        <aside className="orbix-lab-note">
+          <p className="orbix-lab-note__title">
             <AlertTriangle aria-hidden="true" size={17} />
             Engineering assumptions
           </p>

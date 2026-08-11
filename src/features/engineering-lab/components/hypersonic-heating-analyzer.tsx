@@ -172,7 +172,7 @@ export function HypersonicHeatingAnalyzer() {
       <div>
         <form noValidate onSubmit={preventSubmission}>
           <fieldset>
-            <legend className="font-mono text-[0.68rem] tracking-[0.15em] text-accent uppercase">
+            <legend className="orbix-label text-accent">
               Thermal analysis inputs
             </legend>
             <div className="mt-5 grid gap-5 sm:grid-cols-2">
@@ -249,9 +249,7 @@ export function HypersonicHeatingAnalyzer() {
           aria-labelledby="hypersonic-heating-relationships-title"
           className="mt-8 border-t border-border pt-7"
         >
-          <p className="font-mono text-[0.68rem] tracking-[0.15em] text-accent uppercase">
-            Educational visualization
-          </p>
+          <p className="orbix-label text-accent">Educational visualization</p>
           <h3
             className="mt-1 text-lg font-semibold"
             id="hypersonic-heating-relationships-title"
@@ -300,7 +298,7 @@ export function HypersonicHeatingAnalyzer() {
             <div className="space-y-6">
               <section aria-labelledby="hypersonic-heating-atmosphere-title">
                 <h4
-                  className="font-mono text-[0.65rem] tracking-[0.14em] text-accent uppercase"
+                  className="orbix-label text-accent"
                   id="hypersonic-heating-atmosphere-title"
                 >
                   Atmospheric state
@@ -370,7 +368,7 @@ export function HypersonicHeatingAnalyzer() {
                 className="border-t border-border pt-5"
               >
                 <h4
-                  className="font-mono text-[0.65rem] tracking-[0.14em] text-accent uppercase"
+                  className="orbix-label text-accent"
                   id="hypersonic-heating-flow-title"
                 >
                   Flow state
@@ -420,7 +418,7 @@ export function HypersonicHeatingAnalyzer() {
                 className="border-t border-border pt-5"
               >
                 <h4
-                  className="font-mono text-[0.65rem] tracking-[0.14em] text-accent uppercase"
+                  className="orbix-label text-accent"
                   id="hypersonic-heating-thermal-title"
                 >
                   Thermal state
@@ -483,8 +481,8 @@ export function HypersonicHeatingAnalyzer() {
           )}
         </CalculatorResultSection>
 
-        <aside className="rounded-2xl border border-signal/25 bg-signal/6 p-5 sm:p-6">
-          <p className="flex items-center gap-2 text-sm font-semibold text-signal">
+        <aside className="orbix-lab-note">
+          <p className="orbix-lab-note__title">
             <AlertTriangle aria-hidden="true" size={17} />
             Engineering assumptions
           </p>

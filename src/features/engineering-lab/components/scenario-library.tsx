@@ -242,7 +242,7 @@ export function ScenarioLibrary() {
     <div className="space-y-8">
       <header className="flex flex-col gap-5 border-b border-border pb-7 md:flex-row md:items-end md:justify-between">
         <div className="max-w-3xl">
-          <p className="font-mono text-[0.68rem] tracking-[0.15em] text-accent uppercase">
+          <p className="orbix-label text-accent">
             Device library // Mission inputs only
           </p>
           <h3

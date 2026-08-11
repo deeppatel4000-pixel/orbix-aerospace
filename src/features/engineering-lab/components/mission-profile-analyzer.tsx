@@ -954,7 +954,7 @@ export function MissionProfileAnalyzer({
       <div>
         <form noValidate onSubmit={preventSubmission}>
           <fieldset>
-            <legend className="font-mono text-[0.68rem] tracking-[0.15em] text-accent uppercase">
+            <legend className="orbix-label text-accent">
               Mission identity
             </legend>
             <div className="mt-5">
@@ -1003,7 +1003,7 @@ export function MissionProfileAnalyzer({
           </fieldset>
 
           <fieldset className="mt-7 border-t border-border pt-7">
-            <legend className="font-mono text-[0.68rem] tracking-[0.15em] text-accent uppercase">
+            <legend className="orbix-label text-accent">
               Optional systems
             </legend>
             <div className="mt-5 grid gap-3 sm:grid-cols-3">
@@ -1051,7 +1051,7 @@ export function MissionProfileAnalyzer({
               className="mt-7 border-t border-border pt-7"
               id="mission-profile-delta-system"
             >
-              <legend className="font-mono text-[0.68rem] tracking-[0.15em] text-accent uppercase">
+              <legend className="orbix-label text-accent">
                 Delta-v budget
               </legend>
               <div className="mt-5 flex flex-wrap gap-3">
@@ -1175,7 +1175,7 @@ export function MissionProfileAnalyzer({
               id="mission-profile-reentry-system"
             >
               <fieldset>
-                <legend className="font-mono text-[0.68rem] tracking-[0.15em] text-accent uppercase">
+                <legend className="orbix-label text-accent">
                   Shared reentry scenario
                 </legend>
                 <div className="mt-5 grid gap-5 sm:grid-cols-2">
@@ -1284,9 +1284,7 @@ export function MissionProfileAnalyzer({
           aria-labelledby="mission-profile-explanation-title"
           className="mt-8 border-t border-border pt-7"
         >
-          <p className="font-mono text-[0.68rem] tracking-[0.15em] text-accent uppercase">
-            Educational integration
-          </p>
+          <p className="orbix-label text-accent">Educational integration</p>
           <h3
             className="mt-1 text-lg font-semibold"
             id="mission-profile-explanation-title"
@@ -1592,8 +1590,8 @@ export function MissionProfileAnalyzer({
           )}
         </CalculatorResultSection>
 
-        <aside className="rounded-2xl border border-signal/25 bg-signal/6 p-5 sm:p-6">
-          <p className="flex items-center gap-2 text-sm font-semibold text-signal">
+        <aside className="orbix-lab-note">
+          <p className="orbix-lab-note__title">
             <AlertTriangle aria-hidden="true" size={17} />
             Modeling boundary
           </p>

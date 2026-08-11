@@ -155,7 +155,7 @@ export function MissionPresetLauncher() {
   return (
     <div className="space-y-7">
       <div>
-        <p className="font-mono text-[0.68rem] tracking-[0.15em] text-accent uppercase">
+        <p className="orbix-label text-accent">
           Educational templates // Input only
         </p>
         <h3 className="mt-2 text-xl font-semibold">

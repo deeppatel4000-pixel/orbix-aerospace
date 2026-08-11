@@ -1,59 +1,38 @@
+/**
+ * The Engineering Laboratory module shell.
+ *
+ * Every one of the 33 modules renders through this, so the styling here is the
+ * laboratory's visual grammar. It was built when the laboratory rendered every
+ * module stacked and each card had to fight for attention: a coloured top rule,
+ * an inset highlight, a 28px drop shadow, a printed-circuit header gradient, a
+ * repeating tick strip under the header, a vertical "LAB" index down the left
+ * edge, a grid-lined workspace and a glowing spine. One module is now active at
+ * a time, so none of that has to distinguish it from a neighbour.
+ *
+ * What remains is a bordered workspace with a divided header. Every colour is
+ * derived from a semantic token, replacing the eighteen literal `rgb(...)`
+ * values this file used to carry — those were invisible to the raw-colour
+ * ratchet, which only scans `.ts`/`.tsx`, so they were debt no check could see.
+ */
+
 .card {
-  background:
-    linear-gradient(180deg, rgb(9 19 31 / 96%), rgb(4 10 17 / 98%)),
-    var(--surface);
-  border: 1px solid rgb(104 216 232 / 24%);
-  border-radius: 0.4rem;
-  box-shadow:
-    0 28px 80px rgb(0 0 0 / 28%),
-    inset 0 1px 0 rgb(245 249 252 / 3%);
+  background-color: color-mix(
+    in srgb,
+    var(--orbix-bg-surface) 45%,
+    transparent
+  );
+  border: 1px solid var(--orbix-border-subtle);
+  border-radius: var(--radius-sm);
   isolation: isolate;
   overflow: hidden;
   position: relative;
   scroll-margin-top: 7rem;
 }
 
-.card::before {
-  background: linear-gradient(
-    90deg,
-    var(--research-cyan),
-    var(--laboratory-blue) 46%,
-    transparent 88%
-  );
-  content: "";
-  height: 2px;
-  inset: 0 0 auto;
-  opacity: 0.78;
-  pointer-events: none;
-  position: absolute;
-  z-index: 2;
-}
-
 .header {
-  background:
-    linear-gradient(90deg, rgb(16 34 56 / 78%), rgb(5 13 22 / 64%)),
-    rgb(7 16 26 / 92%);
-  border-bottom: 1px solid rgb(104 216 232 / 20%);
+  border-bottom: 1px solid var(--orbix-border-subtle);
   padding: clamp(1.25rem, 3vw, 2rem);
   position: relative;
-}
-
-.header::after {
-  background: repeating-linear-gradient(
-    90deg,
-    rgb(120 189 255 / 34%) 0,
-    rgb(120 189 255 / 34%) 1px,
-    transparent 1px,
-    transparent 2.5rem
-  );
-  bottom: 0;
-  content: "";
-  height: 0.25rem;
-  left: 0;
-  opacity: 0.55;
-  pointer-events: none;
-  position: absolute;
-  right: 0;
 }
 
 .headerLayout {
@@ -64,94 +43,26 @@
   position: relative;
 }
 
-.instrumentIndex {
-  color: rgb(145 163 183 / 72%);
-  font-family: var(--font-telemetry);
-  font-size: 0.56rem;
-  left: 0;
-  letter-spacing: 0.16em;
-  position: absolute;
-  top: 4.05rem;
-  writing-mode: vertical-rl;
-}
-
+/* A quiet marker for the module's discipline rather than an instrument well:
+ * square, one hairline, no inner glow and no corner bracket. */
 .iconWell {
   align-items: center;
-  background:
-    linear-gradient(145deg, rgb(104 216 232 / 14%), transparent 70%),
-    rgb(2 8 14 / 72%);
-  border: 1px solid rgb(104 216 232 / 34%);
-  box-shadow: inset 0 0 0 1px rgb(120 189 255 / 5%);
-  color: var(--research-cyan);
+  border: 1px solid color-mix(in srgb, var(--orbix-accent) 30%, transparent);
+  color: var(--orbix-accent);
   display: flex;
-  height: 3.5rem;
+  height: 2.75rem;
   justify-content: center;
-  margin-left: 1.1rem;
-  position: relative;
-  width: 3.5rem;
-}
-
-.iconWell::after {
-  border-bottom: 1px solid var(--laboratory-blue);
-  border-right: 1px solid var(--laboratory-blue);
-  bottom: -1px;
-  content: "";
-  height: 0.7rem;
-  position: absolute;
-  right: -1px;
-  width: 0.7rem;
-}
-
-.eyebrow {
-  color: var(--research-cyan);
-  font-family: var(--font-telemetry);
-  font-size: 0.67rem;
-  letter-spacing: 0.18em;
-  line-height: 1.4;
-  text-transform: uppercase;
+  width: 2.75rem;
 }
 
 .workspace {
-  background:
-    linear-gradient(90deg, rgb(40 121 199 / 5%) 1px, transparent 1px),
-    linear-gradient(rgb(40 121 199 / 5%) 1px, transparent 1px),
-    linear-gradient(180deg, rgb(7 16 26 / 88%), rgb(3 9 15 / 96%));
-  background-size:
-    2.5rem 2.5rem,
-    2.5rem 2.5rem,
-    auto;
   padding: clamp(1.25rem, 3vw, 2rem);
   position: relative;
 }
 
-.workspace::before {
-  background: linear-gradient(
-    180deg,
-    var(--research-cyan),
-    rgb(104 216 232 / 8%) 55%,
-    transparent
-  );
-  content: "";
-  inset: 1.25rem auto 1.25rem 0;
-  opacity: 0.5;
-  pointer-events: none;
-  position: absolute;
-  width: 1px;
-}
-
 @media (max-width: 39.999rem) {
   .headerLayout {
-    gap: 1.25rem;
+    gap: 1rem;
     grid-template-columns: 1fr;
-  }
-
-  .instrumentIndex {
-    left: 4.35rem;
-    top: 1.55rem;
-    writing-mode: initial;
-  }
-
-  .iconWell {
-    margin-left: 0;
   }
 }
