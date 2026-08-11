@@ -308,6 +308,25 @@ test.describe("Visual regression / mobile 390x844", () => {
     );
   });
 
+  // The widest of the three repaired comparison tables: it clipped 932px at
+  // this viewport before the containment fix. One capture rather than three —
+  // the geometry tests in engineering-lab-modules.spec.ts are the real
+  // regression coverage; this exists so the scroll affordance itself is under
+  // review.
+  test("engineering laboratory / contained comparison table", async ({
+    page,
+  }) => {
+    await page.goto(
+      `${ROUTES.engineeringLab}#vehicle-reentry-comparison-analyzer`,
+      { waitUntil: "domcontentloaded" },
+    );
+    await settle(page);
+    await expect(page).toHaveScreenshot(
+      "engineering-lab-table-mobile.png",
+      SCREENSHOT_OPTIONS,
+    );
+  });
+
   test("engineering laboratory", async ({ page }) => {
     await page.goto(ROUTES.engineeringLab, { waitUntil: "domcontentloaded" });
     await settle(page);

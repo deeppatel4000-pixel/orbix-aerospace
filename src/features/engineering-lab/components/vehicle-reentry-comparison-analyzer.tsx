@@ -830,7 +830,7 @@ export function VehicleReentryComparisonAnalyzer() {
         </section>
       </div>
 
-      <div className="space-y-5">
+      <div className="min-w-0 space-y-5">
         <CalculatorResultSection
           eyebrow="Shared scenario // Ranked vehicles"
           icon={Award}
