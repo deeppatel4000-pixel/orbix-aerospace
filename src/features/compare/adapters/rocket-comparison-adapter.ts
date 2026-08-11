@@ -9,7 +9,11 @@ import type {
   ComparisonResult,
   ComparisonRow,
 } from "@/features/compare/types";
-import type { Rocket } from "@/features/vehicles/types";
+import type {
+  Measurement,
+  MeasurementUnit,
+  Rocket,
+} from "@/features/vehicles/types";
 
 const unavailableValue: ComparisonCellValue = {
   note: "Not available in the current dataset",
@@ -19,7 +23,7 @@ const unavailableValue: ComparisonCellValue = {
 
 function availableValue(
   value: string,
-  options: Pick<ComparisonCellValue, "details" | "note"> = {},
+  options: Pick<ComparisonCellValue, "details" | "magnitude" | "note"> = {},
 ): ComparisonCellValue {
   return {
     ...options,
@@ -41,6 +45,26 @@ function createRow(
     id,
     label,
   };
+}
+
+/**
+ * A cell whose displayed value is exactly one measurement.
+ *
+ * The magnitude comes off the dataset record itself, so it is the published
+ * number and the published unit. Payload capability deliberately does not use
+ * this: that cell renders a mass bound to an orbit and a launch configuration,
+ * with further orbits in its details, so one track could not say what it
+ * encodes.
+ */
+function measurementValue<TUnit extends MeasurementUnit>(
+  measurement: Measurement<TUnit>,
+): ComparisonCellValue {
+  const formatted = formatRocketMeasurement(measurement);
+
+  return availableValue(formatted.value, {
+    magnitude: { unit: measurement.unit, value: measurement.value },
+    note: formatted.note,
+  });
 }
 
 function formatStages(rocket: Rocket): ComparisonCellValue {
@@ -120,18 +144,15 @@ export function adaptRocketComparison(
       createRow(rockets, "first-flight", "First flight", (item) =>
         availableValue(formatRocketFirstFlight(item.firstFlight)),
       ),
-      createRow(rockets, "height", "Height", (item) => {
-        const height = formatRocketMeasurement(item.dimensions.height);
-        return availableValue(height.value, { note: height.note });
-      }),
-      createRow(rockets, "mass", "Mass", (item) => {
-        const mass = formatRocketMeasurement(item.mass.liftoff);
-        return availableValue(mass.value, { note: mass.note });
-      }),
-      createRow(rockets, "thrust", "Thrust", (item) => {
-        const thrust = formatRocketMeasurement(item.performance.liftoffThrust);
-        return availableValue(thrust.value, { note: thrust.note });
-      }),
+      createRow(rockets, "height", "Height", (item) =>
+        measurementValue(item.dimensions.height),
+      ),
+      createRow(rockets, "mass", "Mass", (item) =>
+        measurementValue(item.mass.liftoff),
+      ),
+      createRow(rockets, "thrust", "Thrust", (item) =>
+        measurementValue(item.performance.liftoffThrust),
+      ),
       createRow(
         rockets,
         "stages",

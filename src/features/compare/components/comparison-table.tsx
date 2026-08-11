@@ -6,7 +6,10 @@ import { ComparisonCell } from "@/features/compare/components/comparison-cell";
 import { ComparisonLegend } from "@/features/compare/components/comparison-legend";
 import { ComparisonRowEducation } from "@/features/compare/components/comparison-row-education";
 import type { ComparisonResult } from "@/features/compare/types";
-import { groupComparisonRows } from "@/features/compare/utils";
+import {
+  groupComparisonRows,
+  normalizeRowMagnitudes,
+} from "@/features/compare/utils";
 
 interface ComparisonTableProps {
   result: ComparisonResult;
@@ -103,31 +106,42 @@ export function ComparisonTable({ result }: ComparisonTableProps) {
                   </span>
                 </th>
               </tr>
-              {group.rows.map((row) => (
-                <tr key={row.id}>
-                  <th
-                    className="sticky left-0 z-10 border-t border-border bg-surface-elevated p-4 text-left align-top sm:p-5"
-                    scope="row"
-                  >
-                    <span className="text-sm font-semibold">{row.label}</span>
-                    {row.description ? (
-                      <p className="mt-2 text-xs leading-5 font-normal text-muted">
-                        {row.description}
-                      </p>
-                    ) : null}
-                    <ComparisonRowEducation
-                      category={result.category}
-                      rowId={row.id}
-                    />
-                  </th>
-                  {row.cells.map((cell, index) => (
-                    <ComparisonCell
-                      cell={cell}
-                      key={result.vehicles[index]?.id ?? row.id + "-" + index}
-                    />
-                  ))}
-                </tr>
-              ))}
+              {group.rows.map((row) => {
+                // Resolved per row, because comparability is a property of the
+                // whole row: a single incompatible unit or one present value
+                // without magnitude metadata means the entire row stays text.
+                const magnitudes = normalizeRowMagnitudes(row.cells);
+
+                return (
+                  // The row id is exposed so magnitude coverage can be
+                  // asserted per row: whether a track appears is a data
+                  // decision, and a test needs to name the row it is checking.
+                  <tr data-row-id={row.id} key={row.id}>
+                    <th
+                      className="sticky left-0 z-10 border-t border-border bg-surface-elevated p-4 text-left align-top sm:p-5"
+                      scope="row"
+                    >
+                      <span className="text-sm font-semibold">{row.label}</span>
+                      {row.description ? (
+                        <p className="mt-2 text-xs leading-5 font-normal text-muted">
+                          {row.description}
+                        </p>
+                      ) : null}
+                      <ComparisonRowEducation
+                        category={result.category}
+                        rowId={row.id}
+                      />
+                    </th>
+                    {row.cells.map((cell, index) => (
+                      <ComparisonCell
+                        cell={cell}
+                        key={result.vehicles[index]?.id ?? row.id + "-" + index}
+                        magnitude={magnitudes?.[index] ?? null}
+                      />
+                    ))}
+                  </tr>
+                );
+              })}
             </tbody>
           ))}
         </table>

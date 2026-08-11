@@ -2,6 +2,7 @@ export type {
   ComparisonCategory,
   ComparisonCellStatus,
   ComparisonCellValue,
+  ComparisonMagnitude,
   ComparisonOption,
   ComparisonOptions,
   ComparisonQuery,
