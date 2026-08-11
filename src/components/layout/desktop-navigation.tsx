@@ -15,6 +15,9 @@ export function DesktopNavigation() {
   const pathname = usePathname();
 
   return (
+    // Spacing, not a bordered container, separates the nav from the logo.
+    // The previous pill-shaped panel read as an app toolbar; letting the
+    // links sit directly in the header is quieter and more precise.
     <nav aria-label="Primary navigation" className="hidden lg:block">
       <ul className="orbix-nav">
         {navigationItems.map((item) => {

@@ -73,12 +73,17 @@ export function MobileNavigation() {
       </button>
 
       {isOpen ? (
+        // `orbix-mobile-nav` now carries its own surface, so the stacked
+        // `orbix-surface`/`--mission` gradients (which added a decorative
+        // accent hairline and a blue wash) are gone. Links are full-width
+        // rows at a 3rem minimum height rather than toolbar chips reused
+        // from the desktop nav.
         <nav
           aria-label="Mobile navigation"
-          className="orbix-surface orbix-surface--mission orbix-mobile-nav absolute inset-x-5 top-[calc(100%+0.5rem)] p-3 sm:inset-x-8"
+          className="orbix-mobile-nav absolute inset-x-5 top-[calc(100%+0.5rem)] p-2 sm:inset-x-8"
           id={menuId}
         >
-          <ul className="space-y-1">
+          <ul className="flex flex-col gap-0.5">
             {navigationItems.map((item) => {
               const isActive = isCurrentRoute(pathname, item.href);
 
@@ -86,7 +91,7 @@ export function MobileNavigation() {
                 <li key={item.href}>
                   <Link
                     aria-current={isActive ? "page" : undefined}
-                    className="orbix-nav-link py-3"
+                    className="orbix-mobile-nav-link"
                     href={item.href}
                     onClick={() => setIsOpen(false)}
                   >
