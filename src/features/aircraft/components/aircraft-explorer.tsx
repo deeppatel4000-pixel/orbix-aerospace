@@ -12,7 +12,6 @@ import { Container } from "@/components/layout/container";
 import { ButtonLink } from "@/components/ui/button-link";
 import { AircraftCard } from "@/features/aircraft/components/aircraft-card";
 import { AircraftImage } from "@/features/aircraft/components/aircraft-image";
-import { getAircraftVisual } from "@/features/aircraft/data";
 import {
   formatAircraftMeasurement,
   formatAircraftRoles,
@@ -22,14 +21,6 @@ import type { Aircraft } from "@/features/vehicles/types";
 interface AircraftExplorerProps {
   aircraft: readonly Aircraft[];
 }
-
-const cardPlacementClasses = [
-  "lg:col-span-8",
-  "lg:col-span-4",
-  "lg:col-span-7",
-  "lg:col-span-5",
-  "lg:col-span-12",
-] as const;
 
 export function AircraftExplorer({ aircraft }: AircraftExplorerProps) {
   const featuredAircraft =
@@ -198,22 +189,19 @@ export function AircraftExplorer({ aircraft }: AircraftExplorerProps) {
             </p>
           </div>
 
-          <div className="mt-10 grid gap-6 lg:grid-flow-row-dense lg:grid-cols-12">
-            {aircraft.map((item, index) => {
-              const visual = getAircraftVisual(item.id);
-
-              return (
-                <AircraftCard
-                  aircraft={item}
-                  className={cardPlacementClasses[index] ?? "lg:col-span-6"}
-                  key={item.id}
-                  sizes={
-                    index === 4 ? "(max-width: 1023px) 100vw, 100vw" : undefined
-                  }
-                  treatment={visual?.cardTreatment}
-                />
-              );
-            })}
+          {/* A uniform grid. Cards previously received five different column
+              spans (8/4/7/5/12) which, multiplied by three different media
+              aspect ratios, produced a 227px spread in card height and a
+              stranded full-width card at the end. Equal columns plus one
+              media ratio make every row share a baseline. */}
+          <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {aircraft.map((item, index) => (
+              <AircraftCard
+                aircraft={item}
+                key={item.id}
+                priority={index === 0}
+              />
+            ))}
           </div>
         </Container>
       </section>

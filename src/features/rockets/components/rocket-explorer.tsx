@@ -12,21 +12,12 @@ import { Container } from "@/components/layout/container";
 import { ButtonLink } from "@/components/ui/button-link";
 import { RocketCard } from "@/features/rockets/components/rocket-card";
 import { RocketImage } from "@/features/rockets/components/rocket-image";
-import { getRocketVisual } from "@/features/rockets/data";
 import { formatRocketMeasurement } from "@/features/rockets/utils";
 import type { Rocket as RocketVehicle } from "@/features/vehicles/types";
 
 interface RocketExplorerProps {
   rockets: readonly RocketVehicle[];
 }
-
-const registryPlacement = [
-  "lg:col-span-7",
-  "lg:col-span-5",
-  "lg:col-span-5",
-  "lg:col-span-7",
-  "lg:col-span-12",
-] as const;
 
 export function RocketExplorer({ rockets }: RocketExplorerProps) {
   const flagship = rockets[0];
@@ -240,26 +231,17 @@ export function RocketExplorer({ rockets }: RocketExplorerProps) {
             </div>
           </div>
 
-          <div className="mt-10 grid gap-6 md:grid-cols-2 lg:grid-flow-row-dense lg:grid-cols-12">
-            {rockets.map((rocket, index) => {
-              const visual = getRocketVisual(rocket.id);
-
-              return (
-                <RocketCard
-                  className={registryPlacement[index] ?? "lg:col-span-6"}
-                  key={rocket.id}
-                  rocket={rocket}
-                  sizes={
-                    index === 0
-                      ? "(max-width: 1023px) 100vw, 58vw"
-                      : index === 4
-                        ? "(max-width: 767px) 100vw, (max-width: 1023px) 50vw, 100vw"
-                        : undefined
-                  }
-                  treatment={visual?.cardTreatment}
-                />
-              );
-            })}
+          {/* Same uniform grid as the aircraft registry. Launch vehicles
+              differ only in their portrait media frame, which the card
+              supplies — not in the layout system. */}
+          <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {rockets.map((rocket, index) => (
+              <RocketCard
+                key={rocket.id}
+                priority={index === 0}
+                rocket={rocket}
+              />
+            ))}
           </div>
         </Container>
       </section>

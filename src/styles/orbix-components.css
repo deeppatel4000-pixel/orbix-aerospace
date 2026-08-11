@@ -719,4 +719,103 @@
   .orbix-page-transition {
     animation: orbix-fade-in 520ms var(--ease-orbix) both;
   }
+
+  /* ==================================================================== *
+   * VEHICLE DISCOVERY CARD
+   *
+   * A curated vehicle record, not a product tile. The restraint is
+   * deliberate: one border, one radius, no glow, no gradient border, no
+   * clipped HUD corners, and the division accent used on exactly two things
+   * — the classification line and the explore affordance.
+   * ==================================================================== */
+
+  .orbix-vehicle-card {
+    background: var(--orbix-surface);
+    border: 1px solid var(--orbix-border);
+    border-radius: var(--radius-lg);
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    overflow: hidden;
+    transition:
+      border-color var(--motion-transition) var(--motion-ease),
+      background-color var(--motion-transition) var(--motion-ease);
+  }
+
+  .orbix-vehicle-card:hover {
+    background: var(--orbix-surface-raised);
+    border-color: color-mix(
+      in srgb,
+      var(--orbix-division-accent) 45%,
+      var(--orbix-border)
+    );
+  }
+
+  .orbix-vehicle-card:focus-visible {
+    outline: 2px solid var(--orbix-focus);
+    outline-offset: 3px;
+  }
+
+  .orbix-vehicle-card__classification {
+    color: var(--orbix-division-accent);
+    font-family: var(--font-interface);
+    font-size: var(--text-label);
+    font-weight: 600;
+    letter-spacing: var(--tracking-label);
+    line-height: var(--leading-tight);
+    text-transform: uppercase;
+  }
+
+  .orbix-vehicle-card__name {
+    color: var(--orbix-text-primary);
+    font-family: var(--font-display);
+    font-size: 1.75rem;
+    font-stretch: var(--font-display-stretch);
+    font-weight: 600;
+    letter-spacing: var(--tracking-tight);
+    line-height: 1.1;
+    margin-top: 0.5rem;
+  }
+
+  /* Two specs, side by side, separated by a rule rather than boxed into
+   * individual tiles. Replaces a six-cell grid of bordered micro-panels. */
+  .orbix-vehicle-card__specs {
+    border-top: 1px solid var(--orbix-border-subtle);
+    display: grid;
+    gap: 1.25rem;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    margin-top: auto;
+    padding-top: 1.25rem;
+  }
+
+  .orbix-vehicle-card__spec-label {
+    color: var(--orbix-text-muted);
+    font-family: var(--font-interface);
+    font-size: var(--text-label);
+    font-weight: 500;
+  }
+
+  .orbix-vehicle-card__spec-value {
+    color: var(--orbix-text-primary);
+    font-family: var(--font-telemetry);
+    font-size: var(--text-body-sm);
+    font-variant-numeric: tabular-nums;
+    margin-top: 0.25rem;
+  }
+
+  .orbix-vehicle-card__cta {
+    align-items: center;
+    color: var(--orbix-text-secondary);
+    display: inline-flex;
+    font-family: var(--font-interface);
+    font-size: var(--text-body-sm);
+    font-weight: 500;
+    gap: 0.4rem;
+    margin-top: 1.25rem;
+    transition: color var(--motion-transition) var(--motion-ease);
+  }
+
+  .orbix-vehicle-card:hover .orbix-vehicle-card__cta {
+    color: var(--orbix-division-accent);
+  }
 }
