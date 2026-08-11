@@ -22,7 +22,18 @@ export function Breadcrumbs({
 
           return (
             <li className="contents" key={`${item.label}-${index}`}>
-              {index > 0 ? <span aria-hidden="true">/</span> : null}
+              {/* A single slash is the conventional hierarchy separator and
+                  carries real meaning here, unlike the decorative `//` used
+                  elsewhere in the product. It stays `aria-hidden` so screen
+                  readers get the list semantics, not punctuation. */}
+              {index > 0 ? (
+                <span
+                  aria-hidden="true"
+                  className="orbix-breadcrumbs-separator"
+                >
+                  /
+                </span>
+              ) : null}
               {item.href && !isCurrent ? (
                 <Link href={item.href}>{item.label}</Link>
               ) : (
