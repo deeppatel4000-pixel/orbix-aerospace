@@ -819,6 +819,50 @@
     color: var(--orbix-division-accent);
   }
 
+  /* Profile section navigation. The numeric mono badge was dropped: it
+   * duplicated the ordering the list already communicates, and it was the
+   * last monospace in the profile chrome. */
+  .orbix-profile-nav-link {
+    align-items: center;
+    border: 1px solid transparent;
+    border-radius: var(--radius-sm);
+    color: var(--orbix-text-muted);
+    display: inline-flex;
+    font-family: var(--font-interface);
+    font-size: var(--text-body-sm);
+    min-height: 2.75rem;
+    padding-inline: 0.75rem;
+    transition: color var(--motion-transition) var(--motion-ease);
+    white-space: nowrap;
+  }
+
+  .orbix-profile-nav-link:hover {
+    color: var(--orbix-text-primary);
+  }
+
+  .orbix-profile-nav-link:focus-visible {
+    outline: 2px solid var(--orbix-focus);
+    outline-offset: 2px;
+  }
+
+  /* Compact related-vehicle card. Same primitive and same accent as the
+   * discovery index card, tightened so a profile does not end with five
+   * full-height index cards. Scoped to `[data-variant="compact"]` so the
+   * default discovery rendering is untouched. */
+  .orbix-vehicle-card[data-variant="compact"] .orbix-vehicle-card__name {
+    font-size: 1.25rem;
+  }
+
+  .orbix-vehicle-card[data-variant="compact"] .orbix-vehicle-card__specs {
+    grid-template-columns: minmax(0, 1fr);
+    margin-top: 1rem;
+    padding-top: 0.875rem;
+  }
+
+  .orbix-vehicle-card[data-variant="compact"] .orbix-vehicle-card__cta {
+    margin-top: 0.875rem;
+  }
+
   /* ==================================================================== *
    * VEHICLE PROFILE SECTION
    *

@@ -27,7 +27,8 @@ export function PerformancePanel({
   return (
     <ProfileSection
       description="Configuration-specific vehicle scale, liftoff output, and payload capability with source qualifiers retained."
-      eyebrow="04 // Mission capability"
+      eyebrow="Mission capability"
+      mode="data"
       id="performance"
       title="Performance"
     >

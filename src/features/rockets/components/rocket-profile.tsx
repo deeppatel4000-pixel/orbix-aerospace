@@ -83,15 +83,9 @@ export function RocketProfile({ rocket }: RocketProfileProps) {
             className="[scrollbar-width:thin] overflow-x-auto"
           >
             <ul className="flex min-w-max items-center gap-1 py-3">
-              {profileNavigation.map((item, index) => (
+              {profileNavigation.map((item) => (
                 <li key={item.href}>
-                  <a
-                    className="inline-flex min-h-11 items-center border border-transparent px-3.5 text-sm text-muted transition-colors hover:border-signal/25 hover:bg-signal/8 hover:text-signal focus-visible:border-signal focus-visible:text-signal focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-signal"
-                    href={item.href}
-                  >
-                    <span className="mr-2 font-mono text-[0.58rem] text-signal">
-                      {String(index + 1).padStart(2, "0")}
-                    </span>
+                  <a className="orbix-profile-nav-link" href={item.href}>
                     {item.label}
                   </a>
                 </li>

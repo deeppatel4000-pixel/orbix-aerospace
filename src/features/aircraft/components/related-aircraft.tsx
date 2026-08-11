@@ -1,67 +1,64 @@
-import Link from "next/link";
-import { ArrowUpRight } from "lucide-react";
-
 import { AircraftImage } from "@/features/aircraft/components/aircraft-image";
 import { ProfileSection } from "@/features/aircraft/components/profile-section";
-import { formatAircraftRoles } from "@/features/aircraft/utils";
+import {
+  formatAircraftMeasurement,
+  formatAircraftRoles,
+} from "@/features/aircraft/utils";
+import { VehicleMediaFrame } from "@/features/vehicles/components/vehicle-media-frame";
+import { VehicleRecordCard } from "@/features/vehicles/components/vehicle-record-card";
 import type { Aircraft } from "@/features/vehicles/types";
 
 interface RelatedAircraftProps {
   aircraft: readonly Aircraft[];
 }
 
+/**
+ * Related aircraft, rendered in the Vehicle Discovery language.
+ *
+ * Previously this duplicated index-card markup by hand — its own frame, its
+ * own media aspect, its own overlay and its own link treatment — which is why
+ * the end of a profile looked unrelated to `/aircraft`. It now uses the same
+ * `VehicleRecordCard` and `VehicleMediaFrame` primitives in their `compact`
+ * variant, so continuing from a profile into discovery is visually continuous
+ * without ending the page in five full-height index cards.
+ */
 export function RelatedAircraft({ aircraft }: RelatedAircraftProps) {
   return (
     <ProfileSection
       description="Continue into other aircraft records available in the same public engineering registry."
-      eyebrow="11 // Registry links"
+      eyebrow="Registry links"
       id="related-aircraft"
+      mode="media"
       title="Related Aircraft"
     >
-      <div className="grid gap-4 sm:grid-cols-2">
-        {aircraft.map((item) => {
-          const titleId = `related-aircraft-${item.id}`;
-
-          return (
-            <article
-              aria-labelledby={titleId}
-              className="orbix-frame overflow-hidden border-tactical/25 bg-[#080d0c]/90"
-              key={item.id}
-            >
-              <div className="relative aspect-[16/10] overflow-hidden border-b border-tactical/20">
+      <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+        {aircraft.map((item) => (
+          <VehicleRecordCard
+            classification={formatAircraftRoles(item.roles)}
+            description={item.description}
+            href={`/aircraft/${item.id}`}
+            key={item.id}
+            media={
+              <VehicleMediaFrame aspect="landscape">
                 <AircraftImage
                   aircraft={item}
                   fillContainer
-                  imageClassName="saturate-[0.86] contrast-[1.04]"
-                  sizes="(max-width: 639px) 100vw, (max-width: 1023px) 50vw, 35vw"
+                  imageClassName="saturate-[0.85]"
+                  sizes="(max-width: 639px) 100vw, (max-width: 1023px) 50vw, 24vw"
                 />
-                <div
-                  aria-hidden="true"
-                  className="absolute inset-0 bg-gradient-to-t from-black/78 via-transparent to-transparent"
-                />
-                <p className="absolute right-4 bottom-4 left-4 font-mono text-[0.58rem] tracking-[0.12em] text-tactical-amber uppercase">
-                  {formatAircraftRoles(item.roles)}
-                </p>
-              </div>
-              <div className="p-5">
-                <h3
-                  className="font-display text-2xl font-semibold"
-                  id={titleId}
-                >
-                  {item.name}
-                </h3>
-                <p className="mt-2 text-sm text-muted">{item.manufacturer}</p>
-                <Link
-                  aria-label={`Open ${item.name} engineering dossier`}
-                  className="mt-5 inline-flex min-h-11 items-center gap-2 text-sm font-medium text-accent transition-colors hover:text-tactical-amber focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-tactical-amber"
-                  href={`/aircraft/${item.id}`}
-                >
-                  Open dossier <ArrowUpRight aria-hidden="true" size={15} />
-                </Link>
-              </div>
-            </article>
-          );
-        })}
+              </VehicleMediaFrame>
+            }
+            name={item.name}
+            specs={[
+              {
+                label: "Maximum speed",
+                value: formatAircraftMeasurement(item.performance.maxSpeed)
+                  .value,
+              },
+            ]}
+            variant="compact"
+          />
+        ))}
       </div>
     </ProfileSection>
   );

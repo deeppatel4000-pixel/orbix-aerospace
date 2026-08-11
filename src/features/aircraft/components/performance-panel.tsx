@@ -17,7 +17,8 @@ export function PerformancePanel({ performance }: PerformancePanelProps) {
   return (
     <ProfileSection
       description="Published performance characteristics with their source-data qualifiers preserved."
-      eyebrow="04 // Flight envelope"
+      eyebrow="Flight envelope"
+      mode="data"
       id="performance"
       title="Performance"
     >

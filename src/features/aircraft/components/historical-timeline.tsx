@@ -15,7 +15,8 @@ export function HistoricalTimeline({ aircraft }: HistoricalTimelineProps) {
   return (
     <ProfileSection
       description="A source-bound chronology assembled from the program and variant dates recorded in the current dataset."
-      eyebrow="09 // Program chronology"
+      eyebrow="Program chronology"
+      mode="editorial"
       id="historical-timeline"
       title="Historical Timeline"
     >

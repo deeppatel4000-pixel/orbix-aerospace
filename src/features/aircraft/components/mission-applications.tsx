@@ -12,7 +12,8 @@ export function MissionApplications({ roles }: MissionApplicationsProps) {
   return (
     <ProfileSection
       description="Mission applications reflect only the role classifications attached to this aircraft record."
-      eyebrow="10 // Operational scope"
+      eyebrow="Operational scope"
+      mode="editorial"
       id="mission-applications"
       title="Mission Applications"
     >

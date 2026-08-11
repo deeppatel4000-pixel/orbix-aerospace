@@ -18,7 +18,8 @@ export function RocketMissionApplications({
   return (
     <ProfileSection
       description="Mission applications are limited to the supported orbit classes and payload records supplied with this configuration."
-      eyebrow="07 // Mission envelope"
+      eyebrow="Mission envelope"
+      mode="editorial"
       id="mission-applications"
       title="Mission Applications"
     >

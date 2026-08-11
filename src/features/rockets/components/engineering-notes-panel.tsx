@@ -15,7 +15,8 @@ export function EngineeringNotesPanel({ notes }: EngineeringNotesPanelProps) {
   return (
     <ProfileSection
       description="Educational analysis prompts reserved for future sourced engineering content."
-      eyebrow="05 // Analysis queue"
+      eyebrow="Analysis queue"
+      mode="editorial"
       id="engineering-notes"
       title="Engineering Notes"
     >

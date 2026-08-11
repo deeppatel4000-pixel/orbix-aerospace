@@ -86,11 +86,28 @@ test.describe("Vehicle profile framework", () => {
     });
   }
 
-  test("both domains exercise every section mode", async ({ page }) => {
+  test("both domains use a differentiated set of section modes", async ({
+    page,
+  }) => {
     // The point of the framework is that different information types look
-    // different. If a domain collapses back to a single mode, the repetition
-    // this phase set out to fix has returned.
-    const expected = ["configuration", "data", "editorial", "media", "record"];
+    // different. If a domain collapsed back to one mode, the repetition this
+    // work set out to fix would have returned.
+    //
+    // This asserts BREADTH, not that every domain uses all five. Phase 2A
+    // could require all five only because unmigrated sections were still
+    // sitting on the `record` default. Once every rocket section adopted the
+    // mode its content actually calls for, rockets legitimately stopped using
+    // `record` — they have no structured-record section, because the launch
+    // vehicle dataset has no dimensions or variants panels the way aircraft
+    // do. Assigning one anyway to satisfy a count would be fabricating
+    // parity between domains that genuinely differ.
+    const valid = new Set([
+      "configuration",
+      "data",
+      "editorial",
+      "media",
+      "record",
+    ]);
 
     for (const route of [
       `${ROUTES.aircraft}/f-22-raptor`,
@@ -106,9 +123,15 @@ test.describe("Vehicle profile framework", () => {
           ),
         ]);
 
-      expect(modes.sort(), `${route} should use all five modes`).toEqual(
-        expected,
-      );
+      for (const mode of modes) {
+        expect(valid.has(mode), `${route} used unknown mode "${mode}"`).toBe(
+          true,
+        );
+      }
+      expect(
+        modes.length,
+        `${route} should differentiate its sections across several modes`,
+      ).toBeGreaterThanOrEqual(4);
     }
   });
 
