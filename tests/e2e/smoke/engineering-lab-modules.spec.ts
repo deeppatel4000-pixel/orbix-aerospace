@@ -229,4 +229,120 @@ test.describe("Engineering Laboratory modules", () => {
       )
       .toBe(false);
   });
+
+  test("a known calculation still reaches the screen unchanged", async ({
+    page,
+  }) => {
+    // The shared result, field and card primitives are rendered by every
+    // module, so a presentation change there could quietly break the wiring
+    // between a computed value and the figure a reader sees. This pins one
+    // end-to-end case against the shipped defaults: 196,133 N over 10,000 kg
+    // at the module's own g0 is exactly 2.
+    await page.goto(`${ROUTES.engineeringLab}#thrust-to-weight`, {
+      waitUntil: "domcontentloaded",
+    });
+    await expect
+      .poll(async () => (await shownModuleIds(page)).join(","), {
+        timeout: 15_000,
+      })
+      .toBe("thrust-to-weight");
+
+    const tool = page.locator("#thrust-to-weight");
+    await expect(tool.getByLabel("Thrust", { exact: true })).toHaveValue(
+      "196133",
+    );
+    await expect(tool.getByLabel("Mass", { exact: true })).toHaveValue("10000");
+
+    await tool.getByRole("button", { name: /calculate ratio/i }).click();
+
+    const result = tool.locator("output");
+    await expect(result).toHaveText("2.00");
+    // The result panel must still say what was computed, not just show a number.
+    await expect(tool).toContainText("Thrust-to-weight ratio");
+    await expect(tool).toContainText("98,066.5 N");
+  });
+
+  test("every field keeps a real label, hint and unit", async ({ page }) => {
+    await page.goto(`${ROUTES.engineeringLab}#lift-equation`, {
+      waitUntil: "domcontentloaded",
+    });
+    await expect
+      .poll(async () => (await shownModuleIds(page)).join(","), {
+        timeout: 15_000,
+      })
+      .toBe("lift-equation");
+
+    const unlabelled = await page.evaluate(() => {
+      const shown = [
+        ...document.querySelectorAll("[data-laboratory-tool]"),
+      ].find((node) => !node.closest("[hidden]"));
+      return [...(shown?.querySelectorAll("input[type=number]") ?? [])].filter(
+        (input) => {
+          const id = input.getAttribute("id") ?? "";
+          const label = id
+            ? document.querySelector(`label[for="${id}"]`)
+            : null;
+          const described = input.getAttribute("aria-describedby") ?? "";
+          return (
+            label === null ||
+            (label.textContent ?? "").trim() === "" ||
+            described === ""
+          );
+        },
+      ).length;
+    });
+
+    expect(unlabelled, "every input needs a label and a description").toBe(0);
+  });
+
+  test("no module renders content wider than its own workspace", async ({
+    page,
+  }) => {
+    // Swept across all 33 rather than sampled: the card, field and result
+    // primitives are shared, so a layout defect introduced in one of them
+    // surfaces in whichever module happens to have the widest content, which
+    // is not knowable in advance.
+    //
+    // Measured against each module's own box, NOT the document. The laboratory
+    // shell sets `overflow-clip`, so content wider than the phone never makes
+    // the page scroll sideways — it is silently cut off instead, which is the
+    // worse outcome and one a body-overflow assertion cannot see.
+    await page.setViewportSize({ height: 844, width: 390 });
+
+    // Three modules render wide comparison tables that already overflowed
+    // their workspace before this phase — verified by re-running this sweep
+    // with the Phase 4B source reverted to main, where the same three fail.
+    // They are recorded rather than silently tolerated: each needs a contained
+    // horizontal scroller of the kind the Compare matrix uses, which is
+    // per-module layout work and not part of the shared visual system.
+    const KNOWN_WIDE = new Set([
+      "reentry-trajectory-analyzer",
+      "tps-material-comparison-analyzer",
+      "vehicle-reentry-comparison-analyzer",
+    ]);
+
+    const overflowing: string[] = [];
+    for (const id of MODULE_IDS) {
+      await page.goto(`${ROUTES.engineeringLab}#${id}`, {
+        waitUntil: "domcontentloaded",
+      });
+      await expect
+        .poll(async () => (await shownModuleIds(page)).join(","), {
+          timeout: 15_000,
+        })
+        .toBe(id);
+
+      const overflows = await page.evaluate((toolId) => {
+        const element = document.getElementById(toolId);
+        if (!element) return true;
+        return (
+          element.scrollWidth > element.clientWidth + 1 ||
+          document.documentElement.scrollWidth > window.innerWidth + 1
+        );
+      }, id);
+      if (overflows && !KNOWN_WIDE.has(id)) overflowing.push(id);
+    }
+
+    expect(overflowing).toEqual([]);
+  });
 });

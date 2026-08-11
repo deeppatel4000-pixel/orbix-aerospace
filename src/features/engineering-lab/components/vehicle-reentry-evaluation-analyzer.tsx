@@ -295,7 +295,7 @@ export function VehicleReentryEvaluationAnalyzer() {
       <div>
         <form noValidate onSubmit={preventSubmission}>
           <fieldset>
-            <legend className="font-mono text-[0.68rem] tracking-[0.15em] text-accent uppercase">
+            <legend className="orbix-label text-accent">
               Vehicle configuration
             </legend>
             <div className="mt-5 grid gap-5 sm:grid-cols-2">
@@ -388,7 +388,7 @@ export function VehicleReentryEvaluationAnalyzer() {
           </fieldset>
 
           <fieldset className="mt-8 border-t border-border pt-7">
-            <legend className="font-mono text-[0.68rem] tracking-[0.15em] text-accent uppercase">
+            <legend className="orbix-label text-accent">
               Reentry conditions
             </legend>
             <div className="mt-5 grid gap-5 sm:grid-cols-2">
@@ -432,7 +432,7 @@ export function VehicleReentryEvaluationAnalyzer() {
           </fieldset>
 
           <fieldset className="mt-8 border-t border-border pt-7">
-            <legend className="font-mono text-[0.68rem] tracking-[0.15em] text-accent uppercase">
+            <legend className="orbix-label text-accent">
               Analysis controls // Optional
             </legend>
             <div className="mt-5 grid gap-5 sm:grid-cols-2">
@@ -507,9 +507,7 @@ export function VehicleReentryEvaluationAnalyzer() {
           aria-labelledby="vehicle-reentry-evaluation-education-title"
           className="mt-8 border-t border-border pt-7"
         >
-          <p className="font-mono text-[0.68rem] tracking-[0.15em] text-accent uppercase">
-            Integrated engineering
-          </p>
+          <p className="orbix-label text-accent">Integrated engineering</p>
           <h3
             className="mt-1 text-lg font-semibold"
             id="vehicle-reentry-evaluation-education-title"
@@ -568,7 +566,7 @@ export function VehicleReentryEvaluationAnalyzer() {
             <div className="space-y-6">
               <section aria-labelledby="vehicle-reentry-evaluation-vehicle-title">
                 <h4
-                  className="font-mono text-[0.65rem] tracking-[0.14em] text-accent uppercase"
+                  className="orbix-label text-accent"
                   id="vehicle-reentry-evaluation-vehicle-title"
                 >
                   Vehicle
@@ -641,7 +639,7 @@ export function VehicleReentryEvaluationAnalyzer() {
                 className="border-t border-border pt-5"
               >
                 <h4
-                  className="font-mono text-[0.65rem] tracking-[0.14em] text-accent uppercase"
+                  className="orbix-label text-accent"
                   id="vehicle-reentry-evaluation-flight-title"
                 >
                   Flight summary
@@ -726,7 +724,7 @@ export function VehicleReentryEvaluationAnalyzer() {
                 className="border-t border-border pt-5"
               >
                 <h4
-                  className="font-mono text-[0.65rem] tracking-[0.14em] text-accent uppercase"
+                  className="orbix-label text-accent"
                   id="vehicle-reentry-evaluation-dynamics-title"
                 >
                   Dynamics
@@ -807,7 +805,7 @@ export function VehicleReentryEvaluationAnalyzer() {
                 className="border-t border-border pt-5"
               >
                 <h4
-                  className="font-mono text-[0.65rem] tracking-[0.14em] text-accent uppercase"
+                  className="orbix-label text-accent"
                   id="vehicle-reentry-evaluation-thermal-title"
                 >
                   Thermal
@@ -867,7 +865,7 @@ export function VehicleReentryEvaluationAnalyzer() {
                 className="border-t border-border pt-5"
               >
                 <h4
-                  className="font-mono text-[0.65rem] tracking-[0.14em] text-accent uppercase"
+                  className="orbix-label text-accent"
                   id="vehicle-reentry-evaluation-tps-title"
                 >
                   TPS recommendation
@@ -955,8 +953,8 @@ export function VehicleReentryEvaluationAnalyzer() {
           )}
         </CalculatorResultSection>
 
-        <aside className="rounded-2xl border border-signal/25 bg-signal/6 p-5 sm:p-6">
-          <p className="flex items-center gap-2 text-sm font-semibold text-signal">
+        <aside className="orbix-lab-note">
+          <p className="orbix-lab-note__title">
             <AlertTriangle aria-hidden="true" size={17} />
             Engineering assumptions
           </p>

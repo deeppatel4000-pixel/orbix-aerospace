@@ -294,7 +294,7 @@ export function ShockPressureLossAnalyzer() {
             <div className="space-y-6">
               <section aria-labelledby="shock-pressure-loss-summary-title">
                 <h4
-                  className="font-mono text-[0.65rem] tracking-[0.14em] text-accent uppercase"
+                  className="orbix-label text-accent"
                   id="shock-pressure-loss-summary-title"
                 >
                   Shock summary
@@ -333,7 +333,7 @@ export function ShockPressureLossAnalyzer() {
                   className="border-t border-border pt-5"
                 >
                   <h4
-                    className="font-mono text-[0.65rem] tracking-[0.14em] text-accent uppercase"
+                    className="orbix-label text-accent"
                     id="normal-pressure-loss-results-title"
                   >
                     Normal shock results
@@ -390,7 +390,7 @@ export function ShockPressureLossAnalyzer() {
                     className="border-t border-border pt-5"
                   >
                     <h4
-                      className="font-mono text-[0.65rem] tracking-[0.14em] text-accent uppercase"
+                      className="orbix-label text-accent"
                       id="oblique-pressure-loss-geometry-title"
                     >
                       Geometry
@@ -449,7 +449,7 @@ export function ShockPressureLossAnalyzer() {
                     className="border-t border-border pt-5"
                   >
                     <h4
-                      className="font-mono text-[0.65rem] tracking-[0.14em] text-accent uppercase"
+                      className="orbix-label text-accent"
                       id="oblique-pressure-loss-results-title"
                     >
                       Flow results
@@ -523,8 +523,8 @@ export function ShockPressureLossAnalyzer() {
           </p>
         </section>
 
-        <aside className="rounded-2xl border border-signal/25 bg-signal/6 p-5 sm:p-6">
-          <p className="flex items-center gap-2 text-sm font-semibold text-signal">
+        <aside className="orbix-lab-note">
+          <p className="orbix-lab-note__title">
             <AlertTriangle aria-hidden="true" size={17} />
             Engineering assumptions
           </p>

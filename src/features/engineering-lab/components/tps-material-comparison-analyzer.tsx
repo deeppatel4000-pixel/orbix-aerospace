@@ -230,7 +230,7 @@ export function TPSMaterialComparisonAnalyzer() {
       <div>
         <form noValidate onSubmit={preventSubmission}>
           <fieldset>
-            <legend className="font-mono text-[0.68rem] tracking-[0.15em] text-accent uppercase">
+            <legend className="orbix-label text-accent">
               Shared reentry conditions
             </legend>
             <div className="mt-5 grid gap-5 sm:grid-cols-2">
@@ -304,9 +304,7 @@ export function TPSMaterialComparisonAnalyzer() {
           </fieldset>
 
           <fieldset className="mt-8 border-t border-border pt-7">
-            <legend className="font-mono text-[0.68rem] tracking-[0.15em] text-accent uppercase">
-              TPS design
-            </legend>
+            <legend className="orbix-label text-accent">TPS design</legend>
             <div className="mt-5">
               <CalculatorNumberField
                 error={errors.safetyFactor}
@@ -335,7 +333,7 @@ export function TPSMaterialComparisonAnalyzer() {
             aria-invalid={Boolean(errors.materialSelection)}
             className="mt-8 border-t border-border pt-7"
           >
-            <legend className="font-mono text-[0.68rem] tracking-[0.15em] text-accent uppercase">
+            <legend className="orbix-label text-accent">
               Material selection
             </legend>
             <p
@@ -502,9 +500,7 @@ export function TPSMaterialComparisonAnalyzer() {
           aria-labelledby="tps-material-comparison-education-title"
           className="mt-8 border-t border-border pt-7"
         >
-          <p className="font-mono text-[0.68rem] tracking-[0.15em] text-accent uppercase">
-            Educational comparison
-          </p>
+          <p className="orbix-label text-accent">Educational comparison</p>
           <h3
             className="mt-1 text-lg font-semibold"
             id="tps-material-comparison-education-title"
@@ -555,7 +551,7 @@ export function TPSMaterialComparisonAnalyzer() {
             <div className="space-y-6">
               <section aria-labelledby="tps-material-comparison-recommended-title">
                 <h4
-                  className="font-mono text-[0.65rem] tracking-[0.14em] text-accent uppercase"
+                  className="orbix-label text-accent"
                   id="tps-material-comparison-recommended-title"
                 >
                   Recommended material
@@ -635,7 +631,7 @@ export function TPSMaterialComparisonAnalyzer() {
                 className="border-t border-border pt-5"
               >
                 <h4
-                  className="font-mono text-[0.65rem] tracking-[0.14em] text-accent uppercase"
+                  className="orbix-label text-accent"
                   id="tps-material-comparison-table-title"
                 >
                   Comparison table
@@ -734,7 +730,7 @@ export function TPSMaterialComparisonAnalyzer() {
                 className="border-t border-border pt-5"
               >
                 <h4
-                  className="font-mono text-[0.65rem] tracking-[0.14em] text-accent uppercase"
+                  className="orbix-label text-accent"
                   id="tps-material-comparison-details-title"
                 >
                   Material details
@@ -807,8 +803,8 @@ export function TPSMaterialComparisonAnalyzer() {
           )}
         </CalculatorResultSection>
 
-        <aside className="rounded-2xl border border-signal/25 bg-signal/6 p-5 sm:p-6">
-          <p className="flex items-center gap-2 text-sm font-semibold text-signal">
+        <aside className="orbix-lab-note">
+          <p className="orbix-lab-note__title">
             <AlertTriangle aria-hidden="true" size={17} />
             Engineering assumptions
           </p>

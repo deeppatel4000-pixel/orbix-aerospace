@@ -198,7 +198,7 @@ export function ObliqueShockConditionAnalyzer() {
             <div className="space-y-6">
               <section aria-labelledby="oblique-shock-upstream-title">
                 <h4
-                  className="font-mono text-[0.65rem] tracking-[0.14em] text-accent uppercase"
+                  className="orbix-label text-accent"
                   id="oblique-shock-upstream-title"
                 >
                   Upstream conditions
@@ -265,7 +265,7 @@ export function ObliqueShockConditionAnalyzer() {
                 className="border-t border-border pt-5"
               >
                 <h4
-                  className="font-mono text-[0.65rem] tracking-[0.14em] text-accent uppercase"
+                  className="orbix-label text-accent"
                   id="oblique-shock-geometry-title"
                 >
                   Shock geometry
@@ -309,7 +309,7 @@ export function ObliqueShockConditionAnalyzer() {
                 className="border-t border-border pt-5"
               >
                 <h4
-                  className="font-mono text-[0.65rem] tracking-[0.14em] text-accent uppercase"
+                  className="orbix-label text-accent"
                   id="oblique-shock-downstream-title"
                 >
                   Downstream conditions
@@ -378,7 +378,7 @@ export function ObliqueShockConditionAnalyzer() {
                 className="border-t border-border pt-5"
               >
                 <h4
-                  className="font-mono text-[0.65rem] tracking-[0.14em] text-accent uppercase"
+                  className="orbix-label text-accent"
                   id="oblique-shock-ratios-title"
                 >
                   Ratios
@@ -439,8 +439,8 @@ export function ObliqueShockConditionAnalyzer() {
           )}
         </CalculatorResultSection>
 
-        <aside className="rounded-2xl border border-signal/25 bg-signal/6 p-5 sm:p-6">
-          <p className="flex items-center gap-2 text-sm font-semibold text-signal">
+        <aside className="orbix-lab-note">
+          <p className="orbix-lab-note__title">
             <AlertTriangle aria-hidden="true" size={17} />
             Engineering assumptions
           </p>

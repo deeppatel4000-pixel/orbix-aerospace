@@ -165,7 +165,7 @@ export function StagnationConditionAnalyzer() {
             <div className="space-y-6">
               <section aria-labelledby="static-conditions-title">
                 <h4
-                  className="font-mono text-[0.65rem] tracking-[0.14em] text-accent uppercase"
+                  className="orbix-label text-accent"
                   id="static-conditions-title"
                 >
                   Static atmospheric conditions
@@ -221,7 +221,7 @@ export function StagnationConditionAnalyzer() {
                 className="border-t border-border pt-5"
               >
                 <h4
-                  className="font-mono text-[0.65rem] tracking-[0.14em] text-accent uppercase"
+                  className="orbix-label text-accent"
                   id="stagnation-conditions-title"
                 >
                   Stagnation conditions
@@ -280,7 +280,7 @@ export function StagnationConditionAnalyzer() {
                 className="border-t border-border pt-5"
               >
                 <h4
-                  className="font-mono text-[0.65rem] tracking-[0.14em] text-accent uppercase"
+                  className="orbix-label text-accent"
                   id="isentropic-ratios-title"
                 >
                   Isentropic ratios
@@ -318,8 +318,8 @@ export function StagnationConditionAnalyzer() {
           )}
         </CalculatorResultSection>
 
-        <aside className="rounded-2xl border border-signal/25 bg-signal/6 p-5 sm:p-6">
-          <p className="flex items-center gap-2 text-sm font-semibold text-signal">
+        <aside className="orbix-lab-note">
+          <p className="orbix-lab-note__title">
             <AlertTriangle aria-hidden="true" size={17} />
             Model assumptions
           </p>

@@ -42,9 +42,7 @@ export function MissionOrbitVisualization({
             <Orbit aria-hidden="true" size={19} />
           </span>
           <div>
-            <p className="font-mono text-[0.65rem] tracking-[0.14em] text-accent uppercase">
-              Orbital telemetry
-            </p>
+            <p className="orbix-label text-accent">Orbital telemetry</p>
             <h3 className="mt-1 text-lg font-semibold">
               Orbital visualization unavailable
             </h3>

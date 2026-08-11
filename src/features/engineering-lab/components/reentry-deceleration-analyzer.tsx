@@ -174,7 +174,7 @@ export function ReentryDecelerationAnalyzer() {
       <div>
         <form noValidate onSubmit={preventSubmission}>
           <fieldset>
-            <legend className="font-mono text-[0.68rem] tracking-[0.15em] text-accent uppercase">
+            <legend className="orbix-label text-accent">
               Reentry condition inputs
             </legend>
             <div className="mt-5 grid gap-5 sm:grid-cols-2">
@@ -262,9 +262,7 @@ export function ReentryDecelerationAnalyzer() {
           aria-labelledby="reentry-deceleration-relationships-title"
           className="mt-8 border-t border-border pt-7"
         >
-          <p className="font-mono text-[0.68rem] tracking-[0.15em] text-accent uppercase">
-            Educational visualization
-          </p>
+          <p className="orbix-label text-accent">Educational visualization</p>
           <h3
             className="mt-1 text-lg font-semibold"
             id="reentry-deceleration-relationships-title"
@@ -317,7 +315,7 @@ export function ReentryDecelerationAnalyzer() {
             <div className="space-y-6">
               <section aria-labelledby="reentry-deceleration-atmosphere-title">
                 <h4
-                  className="font-mono text-[0.65rem] tracking-[0.14em] text-accent uppercase"
+                  className="orbix-label text-accent"
                   id="reentry-deceleration-atmosphere-title"
                 >
                   Atmospheric state
@@ -374,7 +372,7 @@ export function ReentryDecelerationAnalyzer() {
                 className="border-t border-border pt-5"
               >
                 <h4
-                  className="font-mono text-[0.65rem] tracking-[0.14em] text-accent uppercase"
+                  className="orbix-label text-accent"
                   id="reentry-deceleration-vehicle-title"
                 >
                   Vehicle state
@@ -405,7 +403,7 @@ export function ReentryDecelerationAnalyzer() {
                 className="border-t border-border pt-5"
               >
                 <h4
-                  className="font-mono text-[0.65rem] tracking-[0.14em] text-accent uppercase"
+                  className="orbix-label text-accent"
                   id="reentry-deceleration-flight-title"
                 >
                   Flight state
@@ -476,8 +474,8 @@ export function ReentryDecelerationAnalyzer() {
           )}
         </CalculatorResultSection>
 
-        <aside className="rounded-2xl border border-signal/25 bg-signal/6 p-5 sm:p-6">
-          <p className="flex items-center gap-2 text-sm font-semibold text-signal">
+        <aside className="orbix-lab-note">
+          <p className="orbix-lab-note__title">
             <AlertTriangle aria-hidden="true" size={17} />
             Engineering assumptions
           </p>

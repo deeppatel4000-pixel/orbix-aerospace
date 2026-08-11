@@ -222,11 +222,7 @@ function OptionalNumberField({
 }
 
 function PanelHeading({ children }: { readonly children: string }) {
-  return (
-    <legend className="font-mono text-[0.68rem] tracking-[0.15em] text-accent uppercase">
-      {children}
-    </legend>
-  );
+  return <legend className="orbix-label text-accent">{children}</legend>;
 }
 
 export function MissionScenarioBuilder({
@@ -654,9 +650,7 @@ export function MissionScenarioBuilder({
         </form>
 
         <aside className="h-fit rounded-2xl border border-accent/25 bg-accent/5 p-5 sm:p-6 xl:sticky xl:top-24">
-          <p className="font-mono text-[0.68rem] tracking-[0.15em] text-accent uppercase">
-            Scenario assembly status
-          </p>
+          <p className="orbix-label text-accent">Scenario assembly status</p>
           <h3 className="mt-3 text-xl font-semibold">Mission input pipeline</h3>
           <p className="mt-3 text-sm leading-6 text-muted">
             This workstation creates the existing mission-profile input object.
@@ -711,7 +705,7 @@ export function MissionScenarioBuilder({
           className="border-t border-border pt-10"
         >
           <div className="mb-7 max-w-3xl">
-            <p className="font-mono text-[0.68rem] tracking-[0.15em] text-accent uppercase">
+            <p className="orbix-label text-accent">
               Loaded profile //{" "}
               {generatedScenario.category.replaceAll("-", " ")}
             </p>

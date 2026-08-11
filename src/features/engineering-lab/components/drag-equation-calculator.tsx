@@ -192,20 +192,20 @@ export function DragEquationCalculator() {
         </CalculatorResultSection>
 
         <section className="rounded-2xl border border-border bg-surface/55 p-5 sm:p-6">
-          <p className="flex items-center gap-2 font-mono text-[0.65rem] tracking-[0.14em] text-accent uppercase">
+          <p className="orbix-label flex items-center gap-2 text-accent">
             <MoveRight aria-hidden="true" size={15} />
             Equation model
           </p>
           <div className="mt-4 grid gap-3 font-mono text-sm text-foreground sm:grid-cols-2">
             <p
               aria-label="Drag equals dynamic pressure multiplied by reference area multiplied by drag coefficient"
-              className="overflow-x-auto rounded-xl border border-border bg-background/45 px-4 py-4"
+              className="orbix-lab-equation"
             >
               D = q × S × CD
             </p>
             <p
               aria-label="Dynamic pressure equals one half multiplied by air density multiplied by velocity squared"
-              className="overflow-x-auto rounded-xl border border-border bg-background/45 px-4 py-4"
+              className="orbix-lab-equation"
             >
               q = 0.5 × ρ × V²
             </p>
@@ -232,8 +232,8 @@ export function DragEquationCalculator() {
           </dl>
         </section>
 
-        <aside className="rounded-2xl border border-signal/25 bg-signal/6 p-5 sm:p-6">
-          <p className="flex items-center gap-2 text-sm font-semibold text-signal">
+        <aside className="orbix-lab-note">
+          <p className="orbix-lab-note__title">
             <AlertTriangle aria-hidden="true" size={17} />
             Engineering notes
           </p>
