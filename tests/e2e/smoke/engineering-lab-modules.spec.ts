@@ -309,18 +309,6 @@ test.describe("Engineering Laboratory modules", () => {
     // worse outcome and one a body-overflow assertion cannot see.
     await page.setViewportSize({ height: 844, width: 390 });
 
-    // Three modules render wide comparison tables that already overflowed
-    // their workspace before this phase — verified by re-running this sweep
-    // with the Phase 4B source reverted to main, where the same three fail.
-    // They are recorded rather than silently tolerated: each needs a contained
-    // horizontal scroller of the kind the Compare matrix uses, which is
-    // per-module layout work and not part of the shared visual system.
-    const KNOWN_WIDE = new Set([
-      "reentry-trajectory-analyzer",
-      "tps-material-comparison-analyzer",
-      "vehicle-reentry-comparison-analyzer",
-    ]);
-
     const overflowing: string[] = [];
     for (const id of MODULE_IDS) {
       await page.goto(`${ROUTES.engineeringLab}#${id}`, {
@@ -340,9 +328,82 @@ test.describe("Engineering Laboratory modules", () => {
           document.documentElement.scrollWidth > window.innerWidth + 1
         );
       }, id);
-      if (overflows && !KNOWN_WIDE.has(id)) overflowing.push(id);
+      if (overflows) overflowing.push(id);
     }
 
     expect(overflowing).toEqual([]);
   });
+
+  /**
+   * The three wide comparison tables.
+   *
+   * Each already had an `overflow-x-auto` wrapper, so the defect was never a
+   * missing scroller — it was that the wrapper could not shrink. All three sit
+   * in the second column of a grid, and a grid item defaults to
+   * `min-width: auto`, which refuses to go below the intrinsic width of its
+   * content. Below the `xl` breakpoint, where the grid collapses to one
+   * column, the wrapper therefore grew to the table's full width (992, 704 and
+   * 1216px), overflowed the module, and was silently cut off by the card's
+   * `overflow: hidden` — 365, 77 and 589px lost at 768, and 708, 420 and 932px
+   * at 390.
+   *
+   * The fix is `min-w-0` on that grid item, so these assertions are about the
+   * relationship the fix restores: the wrapper is narrower than its table, and
+   * the module is not.
+   */
+  const WIDE_TABLE_MODULES = [
+    "reentry-trajectory-analyzer",
+    "tps-material-comparison-analyzer",
+    "vehicle-reentry-comparison-analyzer",
+  ] as const;
+
+  for (const id of WIDE_TABLE_MODULES) {
+    test(`${id} scrolls its comparison table inside the module`, async ({
+      page,
+    }) => {
+      await page.setViewportSize({ height: 844, width: 390 });
+      await page.goto(`${ROUTES.engineeringLab}#${id}`, {
+        waitUntil: "domcontentloaded",
+      });
+      await expect
+        .poll(async () => (await shownModuleIds(page)).join(","), {
+          timeout: 15_000,
+        })
+        .toBe(id);
+
+      const geometry = await page.evaluate((toolId) => {
+        const element = document.getElementById(toolId);
+        const table = element?.querySelector("table");
+        const wrapper = table?.parentElement;
+        if (!element || !table || !wrapper) return null;
+
+        return {
+          bodyOverflow:
+            document.documentElement.scrollWidth -
+            document.documentElement.clientWidth,
+          headers: element.querySelectorAll("table th").length,
+          moduleClip: element.scrollWidth - element.clientWidth,
+          rows: element.querySelectorAll("table tbody tr").length,
+          wrapperClient: wrapper.clientWidth,
+          wrapperOverflowX: getComputedStyle(wrapper).overflowX,
+          wrapperScroll: wrapper.scrollWidth,
+        };
+      }, id);
+
+      expect(geometry).not.toBeNull();
+      // Relational, never pixel-exact: the table keeps its full intrinsic
+      // width and the wrapper is the thing that is narrower.
+      expect(geometry?.wrapperScroll).toBeGreaterThan(
+        geometry?.wrapperClient ?? 0,
+      );
+      expect(["auto", "scroll"]).toContain(geometry?.wrapperOverflowX);
+      expect(geometry?.moduleClip, "the module must not clip").toBe(0);
+      expect(geometry?.bodyOverflow, "the page must not scroll sideways").toBe(
+        0,
+      );
+      // Still a table: values were not dropped to make it fit.
+      expect(geometry?.headers).toBeGreaterThan(0);
+      expect(geometry?.rows).toBeGreaterThan(0);
+    });
+  }
 });
