@@ -1,4 +1,40 @@
+/**
+ * ORBIX DESIGN FOUNDATION — canonical tokens.
+ *
+ * This file is the single authority for colour, typography, spacing, geometry
+ * and motion. Components must consume these roles rather than declaring their
+ * own values; `scripts/check-raw-colors.mjs` enforces that for new code.
+ *
+ * ## How to read this file
+ *
+ * 1. RAW PALETTE      — the only place literal colours may appear.
+ * 2. CANONICAL ROLES  — `--orbix-*`. Semantic. What components should use.
+ * 3. COMPATIBILITY    — the historic short names (`--accent`, `--muted`, ...),
+ *                       now aliases onto the canonical roles.
+ * 4. DIVISIONS        — controlled per-division accent overrides.
+ * 5. @theme inline    — the Tailwind v4 bridge.
+ *
+ * ## Why the compatibility layer exists
+ *
+ * The historic names are used very heavily through Tailwind utilities —
+ * `text-muted` ~623 times, `text-accent` ~531, `border-border` ~318. Renaming
+ * them would force a whole-application migration in a phase that is meant to
+ * establish the system, not consume it. They are therefore kept, aliased, and
+ * safe to use; new work should prefer the canonical `--orbix-*` roles so the
+ * two converge over time.
+ *
+ * ## Colour values are deliberately unchanged
+ *
+ * Every value below is the value ORBIX already shipped. This phase makes the
+ * system authoritative and enforceable; it does not restyle the product. The
+ * only intended visual change from this phase is typography.
+ */
+
 :root {
+  /* ------------------------------------------------------------------ *
+   * 1. RAW PALETTE — literal values live here and nowhere else.
+   * ------------------------------------------------------------------ */
+
   /* Space environment */
   --orbital-black: #02040a;
   --spacecraft-graphite: #080c14;
@@ -24,60 +60,323 @@
   --blueprint-blue: #2879c7;
   --research-cyan: #68d8e8;
 
-  /* Semantic color contract retained across the application */
-  --background: var(--orbital-black);
-  --surface: var(--spacecraft-graphite);
-  --surface-elevated: var(--cosmic-navy);
-  --surface-glass: rgb(9 17 29 / 72%);
-  --foreground: var(--telemetry-white);
-  --muted: #91a3b7;
-  --muted-strong: #c1ccd7;
-  --border: #24354d;
-  --border-bright: #3d5874;
-  --accent: var(--orbital-cyan);
-  --accent-strong: #19b9e2;
-  --signal: #f2bc68;
-  --positive: var(--telemetry-green);
-  --critical: #ff7d83;
+  /* ------------------------------------------------------------------ *
+   * 2. CANONICAL SEMANTIC ROLES
+   * ------------------------------------------------------------------ */
 
-  /* Typography */
-  --font-interface: "Aptos", "Inter", "Segoe UI", Arial, sans-serif;
-  --font-display: "Bahnschrift", "Arial Narrow", "Aptos Display", sans-serif;
-  --font-telemetry: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
-  --type-display-xl: clamp(3.5rem, 8vw, 7.5rem);
-  --type-display-lg: clamp(2.75rem, 6vw, 5.5rem);
-  --type-title: clamp(2rem, 4vw, 3.75rem);
-  --type-section: clamp(1.45rem, 2.5vw, 2.25rem);
-  --type-body-lg: clamp(1.05rem, 1.4vw, 1.22rem);
-  --type-label: 0.6875rem;
+  /* --- Backgrounds and surfaces ---
+   * `bg-*` is the page ground; `surface-*` is content sitting on it.
+   * `recessed` is for wells that sit *below* the surface (telemetry
+   * readouts, code blocks, input tracks). */
+  --orbix-bg-page: var(--orbital-black);
+  --orbix-bg-elevated: var(--cosmic-navy);
+  --orbix-bg-recessed: #010308;
+  --orbix-surface: var(--spacecraft-graphite);
+  --orbix-surface-raised: var(--cosmic-navy);
+  --orbix-surface-interactive: #0e1a2e;
+  --orbix-surface-translucent: rgb(9 17 29 / 72%);
+
+  /* --- Borders --- */
+  --orbix-border-subtle: #16233a;
+  --orbix-border: #24354d;
+  --orbix-border-strong: #3d5874;
+
+  /* --- Text ---
+   * Every value here was measured against both `--orbix-bg-page` and
+   * `--orbix-surface` and clears WCAG AA for normal text. `disabled` is the
+   * one exception and is only ever paired with a non-interactive control,
+   * which AA exempts. */
+  --orbix-text-primary: var(--telemetry-white);
+  --orbix-text-secondary: #c1ccd7;
+  --orbix-text-muted: #91a3b7;
+  --orbix-text-disabled: #5d6c7e;
+  --orbix-text-inverse: var(--orbital-black);
+
+  /* --- Accent ---
+   * `accent` carries emphasis, `hover` is its interactive state, `muted` and
+   * `subtle` are tints for fills and rules. `contrast` is the text colour that
+   * belongs ON an accent fill. Aim for roughly one accent-coloured element per
+   * viewport: it is a highlighter, not a paint. */
+  --orbix-accent: var(--orbital-cyan);
+  --orbix-accent-hover: #19b9e2;
+  --orbix-accent-muted: color-mix(
+    in srgb,
+    var(--orbix-accent) 22%,
+    transparent
+  );
+  --orbix-accent-subtle: color-mix(
+    in srgb,
+    var(--orbix-accent) 8%,
+    transparent
+  );
+  --orbix-accent-contrast: var(--orbital-black);
+  --orbix-focus: var(--orbix-accent);
+
+  /* --- Status — engineering state only, never decoration. --- */
+  --orbix-status-success: var(--telemetry-green);
+  --orbix-status-warning: #f2bc68;
+  --orbix-status-danger: #ff7d83;
+  --orbix-status-info: var(--atmospheric-blue);
+
+  /* --- Data visualisation ---
+   * Separate from status so a falling value and a failing system never share
+   * a colour. `grid` is for chart rules and axes. */
+  --orbix-data-positive: var(--telemetry-green);
+  --orbix-data-negative: #ff7d83;
+  --orbix-data-neutral: var(--orbix-text-muted);
+  --orbix-data-highlight: var(--orbix-accent);
+  --orbix-data-grid: rgb(88 220 255 / 12%);
+
+  /* ------------------------------------------------------------------ *
+   * 3. TYPOGRAPHY
+   * ------------------------------------------------------------------ */
+
+  /* --- Families ---
+   * Two self-hosted families, loaded in `src/app/layout.tsx` via
+   * `next/font/google` (SIL OFL 1.1). The system fallbacks after them are
+   * metric companions for the swap period only; unlike before, they are not
+   * the actual identity on any platform.
+   *
+   * DISPLAY and INTERFACE are the SAME typeface. IBM Plex Sans is variable on
+   * both weight (100-700) and width (75-100%), so the condensed display voice
+   * is a width instance rather than a second font download — see
+   * `--font-display-stretch`. */
+  --font-interface:
+    var(--font-plex-sans), "Segoe UI", system-ui, -apple-system, sans-serif;
+  --font-display:
+    var(--font-plex-sans), "Segoe UI", system-ui, -apple-system, sans-serif;
+  --font-telemetry:
+    var(--font-plex-mono), ui-monospace, "Cascadia Mono", Consolas, monospace;
+
+  /* Width instance used by display type. 100% is the interface width. */
+  --font-display-stretch: 84%;
+
+  /* --- Canonical type scale ---
+   * Ten roles, deliberately. `clamp()` is used only where a size genuinely
+   * needs to respond to viewport width — headings — and never for body,
+   * label or data text, which should stay fixed and predictable.
+   *
+   * The audit found ten different ad-hoc sizes between 0.52rem and 0.68rem in
+   * use, 419+ times. This scale offers exactly ONE role below 0.75rem
+   * (`--text-data-sm`, 11px) and it is intended for dense numeric tables, not
+   * for prose, navigation or labels. */
+  --text-display: clamp(3.5rem, 8vw, 7.5rem);
+  --text-h1: clamp(2.75rem, 6vw, 5.5rem);
+  --text-h2: clamp(2rem, 4vw, 3.75rem);
+  --text-h3: clamp(1.45rem, 2.5vw, 2.25rem);
+  --text-body-lg: clamp(1.05rem, 1.4vw, 1.22rem);
+  --text-body: 1rem;
+  --text-body-sm: 0.875rem;
+  --text-caption: 0.8125rem;
+  --text-label: 0.75rem;
+  --text-data-sm: 0.6875rem;
+
+  /* --- Tracking and measure ---
+   * `--tracking-display` and `--tracking-technical` keep their shipped values
+   * so this phase introduces no letter-spacing drift on existing components.
+   * `--tracking-label` is the canonical replacement for the very wide
+   * technical tracking, for new work. */
   --tracking-display: -0.045em;
+  --tracking-tight: -0.02em;
+  --tracking-normal: 0;
   --tracking-technical: 0.16em;
+  --tracking-label: 0.08em;
   --measure-copy: 68ch;
 
-  /* Spacing and geometry */
+  /* --- Line heights --- */
+  --leading-display: 1;
+  --leading-heading: 1.15;
+  --leading-body: 1.65;
+  --leading-tight: 1.35;
+
+  /* ------------------------------------------------------------------ *
+   * 4. SPACING AND CONTENT WIDTH
+   * ------------------------------------------------------------------ */
+
   --space-section: clamp(5rem, 9vw, 8.5rem);
   --space-section-compact: clamp(3.5rem, 6vw, 5.5rem);
   --space-panel: clamp(1.25rem, 2.5vw, 2rem);
   --space-stack: clamp(1.25rem, 2.4vw, 2rem);
   --space-stack-compact: clamp(0.75rem, 1.4vw, 1rem);
-  --radius-control: 0.625rem;
-  --radius-card: 1rem;
-  --radius-panel: 1.35rem;
-  --radius-pill: 999px;
 
-  /* Depth and light */
+  /* Three content widths. Prose should not be as wide as an engineering
+   * table, and an engineering table should not be as narrow as prose. */
+  --width-reading: 68ch;
+  --width-standard: 75rem;
+  --width-wide: 90rem;
+
+  /* ------------------------------------------------------------------ *
+   * 5. GEOMETRY
+   * ------------------------------------------------------------------ */
+
+  /* Restrained radius scale. ORBIX is an instrument, not a card deck. */
+  --radius-sm: 0.375rem;
+  --radius-md: 0.625rem;
+  --radius-lg: 1rem;
+  --radius-full: 999px;
+
+  /* ------------------------------------------------------------------ *
+   * 6. ELEVATION
+   * ------------------------------------------------------------------ */
+
+  /* Recommended defaults: flat by preference, shadow only where something
+   * genuinely floats above the page. The legacy `--shadow-*` tokens below are
+   * heavier and are kept only so existing components keep rendering. */
+  --elevation-0: none;
+  --elevation-1: 0 1px 2px rgb(0 0 0 / 32%);
+  --elevation-2: 0 12px 32px rgb(0 0 0 / 34%);
+
+  /* ------------------------------------------------------------------ *
+   * 7. MOTION
+   * ------------------------------------------------------------------ */
+
+  /* Values unchanged. Semantic aliases added so future work can express
+   * intent rather than a duration. Reduced-motion handling lives in
+   * `orbix-motion.css` and is unaffected. */
+  --duration-fast: 140ms;
+  --duration-base: 220ms;
+  --duration-slow: 420ms;
+  --ease-orbix: cubic-bezier(0.2, 0.8, 0.2, 1);
+
+  --motion-feedback: var(--duration-fast);
+  --motion-transition: var(--duration-base);
+  --motion-scene: var(--duration-slow);
+  --motion-ease: var(--ease-orbix);
+
+  /* ------------------------------------------------------------------ *
+   * 8. COMPATIBILITY LAYER
+   *
+   * Historic names, now aliases. Safe to keep using; prefer the canonical
+   * roles above in new work. Values are identical to what shipped.
+   * ------------------------------------------------------------------ */
+
+  --background: var(--orbix-bg-page);
+  --surface: var(--orbix-surface);
+  --surface-elevated: var(--orbix-surface-raised);
+  --surface-glass: var(--orbix-surface-translucent);
+  --foreground: var(--orbix-text-primary);
+  --muted: var(--orbix-text-muted);
+  --muted-strong: var(--orbix-text-secondary);
+  --border: var(--orbix-border);
+  --border-bright: var(--orbix-border-strong);
+  --accent: var(--orbix-accent);
+  --accent-strong: var(--orbix-accent-hover);
+  --signal: var(--orbix-status-warning);
+  --positive: var(--orbix-status-success);
+  --critical: var(--orbix-status-danger);
+
+  /* Legacy type scale names, mapped onto the canonical scale. */
+  --type-display-xl: var(--text-display);
+  --type-display-lg: var(--text-h1);
+  --type-title: var(--text-h2);
+  --type-section: var(--text-h3);
+  --type-body-lg: var(--text-body-lg);
+  --type-label: var(--text-data-sm);
+
+  /* Legacy geometry names. `--radius-panel` intentionally keeps its original
+   * 1.35rem value so existing panels do not resize; new work should use
+   * `--radius-lg`. */
+  --radius-control: var(--radius-md);
+  --radius-card: var(--radius-lg);
+  --radius-panel: 1.35rem;
+  --radius-pill: var(--radius-full);
+
+  /* Legacy elevation. `--shadow-accent` and `--ring-accent` are coloured
+   * glows; they are preserved for compatibility but are NOT the recommended
+   * default — prefer `--elevation-1` / `--elevation-2`. */
   --shadow-card: 0 24px 70px rgb(0 0 0 / 34%);
   --shadow-panel: 0 40px 120px rgb(0 0 0 / 48%);
   --shadow-accent: 0 18px 58px rgb(108 230 255 / 16%);
   --ring-accent: 0 0 0 1px rgb(88 220 255 / 22%);
   --glass-blur: 18px;
 
-  /* Motion */
-  --duration-fast: 140ms;
-  --duration-base: 220ms;
-  --duration-slow: 420ms;
-  --ease-orbix: cubic-bezier(0.2, 0.8, 0.2, 1);
+  /* ------------------------------------------------------------------ *
+   * 9. DIVISION ACCENTS — default (Space)
+   *
+   * Consume these, not the raw division colours, so a component works under
+   * any division without knowing which one it is in.
+   * ------------------------------------------------------------------ */
+
+  --orbix-division-accent: var(--orbix-accent);
+  --orbix-division-accent-hover: var(--orbix-accent-hover);
+  --orbix-division-accent-muted: var(--orbix-accent-muted);
+  --orbix-division-accent-subtle: var(--orbix-accent-subtle);
+  --orbix-division-accent-contrast: var(--orbix-accent-contrast);
 }
+
+/* ==================================================================== *
+ * DIVISION SYSTEM
+ *
+ * Five divisions, ONE design system. A division may override the accent
+ * roles and nothing else — backgrounds, surfaces, borders, text, typography,
+ * spacing, radii and interaction all stay global. Roughly 90% of any screen
+ * is shared; the division tints about 10%.
+ *
+ * Apply with `data-orbix-division="..."` on a route-level wrapper. No
+ * component markup is changed in this phase; this establishes the contract
+ * that later route phases will opt into.
+ *
+ * Accents are muted on purpose. Saturation is not sophistication.
+ * ==================================================================== */
+
+[data-orbix-division="space"] {
+  --orbix-division-accent: var(--orbital-cyan);
+  --orbix-division-accent-hover: #19b9e2;
+  --orbix-division-accent-contrast: var(--orbital-black);
+}
+
+[data-orbix-division="defense"] {
+  --orbix-division-accent: var(--tactical-radar);
+  --orbix-division-accent-hover: #4db779;
+  --orbix-division-accent-contrast: var(--tactical-graphite);
+}
+
+[data-orbix-division="aircraft"] {
+  --orbix-division-accent: var(--tactical-amber);
+  --orbix-division-accent-hover: #c9913a;
+  --orbix-division-accent-contrast: var(--orbital-black);
+}
+
+[data-orbix-division="engineering"] {
+  --orbix-division-accent: var(--research-cyan);
+  --orbix-division-accent-hover: var(--blueprint-blue);
+  --orbix-division-accent-contrast: var(--orbital-black);
+}
+
+[data-orbix-division="research"] {
+  --orbix-division-accent: var(--laboratory-blue);
+  --orbix-division-accent-hover: var(--blueprint-blue);
+  --orbix-division-accent-contrast: var(--orbital-black);
+}
+
+/* Derived tints. Declared once, after the divisions, so every division gets
+ * them without repeating the `color-mix` five times. */
+[data-orbix-division] {
+  --orbix-division-accent-muted: color-mix(
+    in srgb,
+    var(--orbix-division-accent) 22%,
+    transparent
+  );
+  --orbix-division-accent-subtle: color-mix(
+    in srgb,
+    var(--orbix-division-accent) 8%,
+    transparent
+  );
+}
+
+/* ==================================================================== *
+ * LEGACY ENVIRONMENT THEMES
+ *
+ * Preserved exactly as they shipped. `src/components/brand/orbix-environment.tsx`
+ * sets `data-orbix-environment` on its backdrop element, so removing these
+ * would be a behavioural change — out of scope for a foundation phase.
+ *
+ * Known limitation, carried forward from the audit: that attribute currently
+ * sits on an `aria-hidden`, `-z-20` backdrop `<div>` containing only imagery,
+ * so these overrides never reach readable content. Moving the attribute to a
+ * route-level wrapper is a component change and is deliberately left to the
+ * route phases, which should adopt `data-orbix-division` instead.
+ * ==================================================================== */
 
 [data-orbix-theme="tactical"],
 [data-orbix-environment="tactical"] {
@@ -103,6 +402,14 @@
   --border-bright: #3d6788;
 }
 
+/* ==================================================================== *
+ * TAILWIND v4 BRIDGE
+ *
+ * Existing utility names are preserved verbatim — `text-muted`,
+ * `text-accent`, `border-border` and friends are used ~1,500 times across the
+ * application. Canonical roles are exposed alongside them.
+ * ==================================================================== */
+
 @theme inline {
   --color-background: var(--background);
   --color-surface: var(--surface);
@@ -122,6 +429,31 @@
   --color-tactical: var(--tactical-olive);
   --color-tactical-amber: var(--tactical-amber);
   --color-laboratory: var(--laboratory-blue);
+
+  /* Canonical roles, available as utilities for new work. */
+  --color-text-secondary: var(--orbix-text-secondary);
+  --color-text-disabled: var(--orbix-text-disabled);
+  --color-border-subtle: var(--orbix-border-subtle);
+  --color-border-strong: var(--orbix-border-strong);
+  --color-surface-interactive: var(--orbix-surface-interactive);
+  --color-recessed: var(--orbix-bg-recessed);
+  --color-status-success: var(--orbix-status-success);
+  --color-status-warning: var(--orbix-status-warning);
+  --color-status-danger: var(--orbix-status-danger);
+  --color-status-info: var(--orbix-status-info);
+  --color-division: var(--orbix-division-accent);
+  --color-division-hover: var(--orbix-division-accent-hover);
+
   --font-sans: var(--font-interface);
   --font-mono: var(--font-telemetry);
+
+  /* NOTE: `--font-display` is deliberately NOT registered here.
+   *
+   * Registering it would make Tailwind generate its own `font-display`
+   * utility, which collides with the hand-written `.font-display` class in
+   * `orbix-foundations.css` (57 usages). Tailwind's version sets only
+   * `font-family` and would drop the `font-stretch` that produces the
+   * condensed display cut — silently flattening the type hierarchy.
+   *
+   * Use the `.font-display` utility class; it carries both properties. */
 }

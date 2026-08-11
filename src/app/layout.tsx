@@ -1,8 +1,53 @@
 import type { Metadata, Viewport } from "next";
+import { IBM_Plex_Mono, IBM_Plex_Sans } from "next/font/google";
 
 import { siteConfig } from "@/config/site";
 
 import "./globals.css";
+
+/**
+ * ORBIX typography is self-hosted so the product's identity is identical on
+ * every operating system.
+ *
+ * Before this, no web font was loaded at all: `--font-interface` resolved to
+ * Aptos (Microsoft Office) and `--font-display` to Bahnschrift (Windows only).
+ * On macOS and Linux those fall through to Arial and Arial Narrow, so ORBIX
+ * rendered in a different typeface depending on who opened it.
+ *
+ * `next/font/google` downloads the files at build time and serves them from
+ * this origin — there is no runtime request to Google, no external CDN in the
+ * critical path, and no new package dependency (`next/font` ships with Next).
+ * Nothing is fetched by the browser from a third party.
+ *
+ * IBM Plex was commissioned as the corporate typeface of an engineering
+ * company, which is the register ORBIX wants: humanist and readable, but
+ * disciplined rather than friendly. It is licensed under the SIL Open Font
+ * License 1.1.
+ *
+ * Only TWO families are loaded, because the sans is variable and carries a
+ * `wdth` axis (75-100). The condensed display voice ORBIX previously borrowed
+ * from Bahnschrift is therefore the *same typeface* at a narrower width, not a
+ * second font file — see `--font-display` and `.font-display` in
+ * `src/styles/`. Weight is variable across 100-700, so headings and UI share
+ * one download.
+ */
+const plexSans = IBM_Plex_Sans({
+  axes: ["wdth"],
+  display: "swap",
+  subsets: ["latin"],
+  variable: "--font-plex-sans",
+});
+
+/**
+ * The data voice. Loaded at the three weights the interface actually uses, to
+ * keep the payload honest.
+ */
+const plexMono = IBM_Plex_Mono({
+  display: "swap",
+  subsets: ["latin"],
+  variable: "--font-plex-mono",
+  weight: ["400", "500", "600"],
+});
 
 const productionUrl = "https://orbix-aerospace.vercel.app";
 
@@ -72,7 +117,11 @@ export default function RootLayout({
     // a page mid-scroll. Reduced-motion behaviour is unaffected: the
     // `prefers-reduced-motion` rule in `orbix-motion.css` still overrides
     // `scroll-behavior` to `auto`.
-    <html lang="en" data-scroll-behavior="smooth">
+    <html
+      lang="en"
+      className={`${plexSans.variable} ${plexMono.variable}`}
+      data-scroll-behavior="smooth"
+    >
       <body>{children}</body>
     </html>
   );
