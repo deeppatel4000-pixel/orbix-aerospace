@@ -129,8 +129,17 @@ test.describe("Engineering Laboratory workflow navigation", () => {
     ).toBeVisible();
 
     // Compressible flow owns the shock analyzers; switching moves the content.
+    //
+    // The module asserted here changed with the module workspace: a workflow
+    // now opens on its FIRST module rather than rendering all of them stacked,
+    // so compressible flow shows the stagnation analyzer and the shock
+    // analyzer sits one module along. The contract this test exists for is
+    // unchanged and still checked — clicking a workflow swaps the visible
+    // content and hides the previous workflow's.
     await nav.locator('a[href="#compressible-flow-workflow"]').click();
-    await expect(page.locator('[id="shock-condition-analyzer"]')).toBeVisible();
+    await expect(
+      page.locator('[id="stagnation-condition-analyzer"]'),
+    ).toBeVisible();
     await expect(page.locator('[id="hohmann-transfer-analyzer"]')).toBeHidden();
   });
 

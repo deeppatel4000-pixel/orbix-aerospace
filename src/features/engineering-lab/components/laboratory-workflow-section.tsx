@@ -1,6 +1,9 @@
 import type { ReactNode } from "react";
 import type { LucideIcon } from "lucide-react";
 
+import { LaboratoryModuleWorkspace } from "@/features/engineering-lab/components/laboratory-module-workspace";
+import type { LaboratoryToolNavigationItem } from "@/features/engineering-lab/components/laboratory-tool-navigation";
+
 interface LaboratoryWorkflowSectionProps {
   children: ReactNode;
   code: string;
@@ -8,8 +11,22 @@ interface LaboratoryWorkflowSectionProps {
   icon: LucideIcon;
   id: string;
   title: string;
+  /** The modules in this workflow, in the same order as `children`. */
+  tools: readonly LaboratoryToolNavigationItem[];
 }
 
+/**
+ * One workflow: its heading, its module index, and the single active module.
+ *
+ * Stays a server component because it renders a `LucideIcon`, which is a
+ * component reference and cannot cross the server/client boundary. The index
+ * and the module gating live in `LaboratoryModuleWorkspace`.
+ *
+ * Before this phase every module in a workflow rendered stacked in one column,
+ * which is what made a workflow 10,745px tall on a desktop and 18,873px for
+ * atmospheric entry. Choosing one module means the page answers "which model am
+ * I using?" instead of leaving it to scrolling.
+ */
 export function LaboratoryWorkflowSection({
   children,
   code,
@@ -17,6 +34,7 @@ export function LaboratoryWorkflowSection({
   icon: Icon,
   id,
   title,
+  tools,
 }: LaboratoryWorkflowSectionProps) {
   const titleId = `${id}-title`;
 
@@ -31,9 +49,7 @@ export function LaboratoryWorkflowSection({
           <Icon aria-hidden="true" size={20} strokeWidth={1.6} />
         </span>
         <div>
-          <p className="font-mono text-[0.62rem] tracking-[0.16em] text-accent uppercase">
-            {code}
-          </p>
+          <p className="orbix-label">{code}</p>
           <h2
             className="font-display mt-2 text-3xl font-semibold tracking-[-0.035em] sm:text-4xl"
             id={titleId}
@@ -46,7 +62,9 @@ export function LaboratoryWorkflowSection({
         </div>
       </header>
 
-      <div className="space-y-8">{children}</div>
+      <LaboratoryModuleWorkspace tools={tools} workflowId={id}>
+        {children}
+      </LaboratoryModuleWorkspace>
     </section>
   );
 }
