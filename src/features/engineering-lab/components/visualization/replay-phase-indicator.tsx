@@ -45,6 +45,23 @@ const phaseIcons: Readonly<Record<ReplayPhaseId, LucideIcon>> = {
   transfer: Orbit,
 };
 
+/**
+ * The mission phase sequence.
+ *
+ * This is the product's only timeline control, and it is discrete: phases can
+ * be selected, time cannot be sought. The presentation is therefore a stepped
+ * sequence rather than a track with a position handle — nothing here is
+ * draggable, and there is no thumb to suggest otherwise.
+ *
+ * Selection behaviour, ordering and `aria-current="step"` are unchanged.
+ *
+ * Two things did change. The current phase no longer pulses: an indefinitely
+ * animating marker reads as "working" rather than "you are here", and it was
+ * the only motion in the panel. And state no longer rests on colour alone —
+ * completed phases show a check, the current phase is filled and carries a
+ * visible "Current" label, so the sequence is readable without relying on the
+ * accent hue.
+ */
 export function ReplayPhaseIndicator({
   currentPhaseIndex,
   onSelectPhase,
@@ -54,9 +71,7 @@ export function ReplayPhaseIndicator({
     <section aria-labelledby="replay-phase-indicator-title">
       <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <p className="font-mono text-[0.6rem] tracking-[0.15em] text-accent uppercase">
-            Replay timeline // Available mission outputs
-          </p>
+          <p className="orbix-label text-accent">Replay timeline</p>
           <h4
             className="mt-1 text-lg font-semibold"
             id="replay-phase-indicator-title"
@@ -64,7 +79,7 @@ export function ReplayPhaseIndicator({
             Mission Phase Sequence
           </h4>
         </div>
-        <p className="text-xs text-[#73898e]">
+        <p className="text-sm text-muted">
           Select any available phase to review it.
         </p>
       </div>
@@ -82,7 +97,7 @@ export function ReplayPhaseIndicator({
                   aria-hidden="true"
                   className={
                     "absolute top-5 right-1/2 h-px w-full " +
-                    (isComplete || isCurrent ? "bg-accent/55" : "bg-white/10")
+                    (isComplete || isCurrent ? "bg-accent/55" : "bg-border")
                   }
                 />
               ) : null}
@@ -97,21 +112,35 @@ export function ReplayPhaseIndicator({
                   className={
                     "flex h-10 w-10 items-center justify-center rounded-full border transition-colors motion-reduce:transition-none " +
                     (isCurrent
-                      ? "border-accent bg-accent/15 text-accent shadow-[0_0_16px_rgba(91,205,190,0.2)] motion-safe:animate-pulse motion-reduce:animate-none"
+                      ? "border-accent bg-accent text-background"
                       : isComplete
-                        ? "border-accent/35 bg-accent/5 text-accent"
-                        : "border-white/12 bg-[#081419] text-[#6f8489] group-hover:border-accent/30 group-hover:text-accent")
+                        ? "border-accent/35 bg-accent/8 text-accent"
+                        : "border-border bg-surface/60 text-muted group-hover:border-accent/40 group-hover:text-accent")
                   }
                 >
-                  <Icon aria-hidden="true" size={15} />
+                  {isComplete ? (
+                    <Check aria-hidden="true" size={15} />
+                  ) : (
+                    <Icon aria-hidden="true" size={15} />
+                  )}
                 </span>
                 <span
                   className={
-                    "mt-2 text-[0.68rem] leading-4 font-semibold " +
-                    (isCurrent ? "text-[#e1eaeb]" : "text-[#7d9297]")
+                    "mt-2 text-sm leading-5 font-semibold " +
+                    (isCurrent ? "text-foreground" : "text-muted")
                   }
                 >
                   {phase.label}
+                </span>
+                {/* A word, not just a colour: the active step stays identifiable
+                 * when hue is unavailable to the reader. */}
+                <span
+                  className={
+                    "orbix-label mt-1 " +
+                    (isCurrent ? "text-accent" : "sr-only")
+                  }
+                >
+                  {isCurrent ? "Current" : isComplete ? "Reviewed" : "Upcoming"}
                 </span>
               </button>
             </li>

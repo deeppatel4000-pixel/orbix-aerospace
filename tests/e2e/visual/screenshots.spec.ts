@@ -265,6 +265,25 @@ test.describe("Visual regression / desktop 1440x900", () => {
     });
   }
 
+  // Mission Replay had no visual coverage: the Mission Control captures show
+  // the default Overview workspace, so the transport and phase sequence never
+  // appeared in a baseline. Captured paused at the first phase, which is the
+  // state the reducer starts in, so the frame is deterministic.
+  test("mission control / replay workspace", async ({ page }) => {
+    await page.goto(`${ROUTES.engineeringLab}${MISSION_CONTROL_HASH}`, {
+      waitUntil: "domcontentloaded",
+    });
+    await settle(page, dismissMissionControlStartup);
+    await page.getByRole("tab", { name: "Replay" }).click();
+    await expect(
+      page.getByRole("button", { name: "Play mission replay" }),
+    ).toBeVisible();
+    await expect(page).toHaveScreenshot(
+      "mission-control-replay-desktop.png",
+      SCREENSHOT_OPTIONS,
+    );
+  });
+
   test("learn", async ({ page }) => {
     await page.goto(ROUTES.learn, { waitUntil: "domcontentloaded" });
     await settle(page);
