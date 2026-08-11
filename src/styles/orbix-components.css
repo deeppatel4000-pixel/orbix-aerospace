@@ -887,6 +887,56 @@
     color: var(--orbix-text-primary);
   }
 
+  /* ==================================================================== *
+   * COMPARE IDENTITY STRIP
+   *
+   * Column identity for the comparison matrix, sized to sit above it. One
+   * category per comparison means one media aspect per strip, so heights
+   * stay even without any cross-domain logic.
+   * ==================================================================== */
+
+  .orbix-compare-identity {
+    display: grid;
+    gap: 1.25rem;
+    grid-template-columns: repeat(auto-fit, minmax(min(11rem, 100%), 1fr));
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  @media (min-width: 768px) {
+    /* Matches the matrix, which reserves a leading label column: the
+     * identity strip is inset by the same amount so each block sits over its
+     * own value column. */
+    .orbix-compare-identity {
+      grid-template-columns: 14rem repeat(
+          var(--orbix-compare-columns, 3),
+          minmax(0, 1fr)
+        );
+    }
+
+    .orbix-compare-identity > li:first-child {
+      grid-column: 2;
+    }
+  }
+
+  .orbix-compare-identity__name {
+    color: var(--orbix-text-primary);
+    font-family: var(--font-display);
+    font-size: 1.125rem;
+    font-stretch: var(--font-display-stretch);
+    font-weight: 600;
+    letter-spacing: var(--tracking-tight);
+    margin-top: 0.75rem;
+  }
+
+  .orbix-compare-identity__meta {
+    color: var(--orbix-text-muted);
+    font-family: var(--font-interface);
+    font-size: var(--text-body-sm);
+    margin-top: 0.2rem;
+  }
+
   /* Profile section navigation. The numeric mono badge was dropped: it
    * duplicated the ordering the list already communicates, and it was the
    * last monospace in the profile chrome. */

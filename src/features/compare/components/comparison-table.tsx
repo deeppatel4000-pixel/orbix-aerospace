@@ -37,7 +37,7 @@ export function ComparisonTable({ result }: ComparisonTableProps) {
 
       <p
         aria-hidden="true"
-        className="mt-3 flex items-center justify-center gap-1.5 font-mono text-[0.62rem] tracking-[0.14em] text-muted uppercase lg:hidden"
+        className="orbix-label mt-3 flex items-center justify-center gap-1.5 lg:hidden"
       >
         <ArrowLeftRight aria-hidden="true" size={12} strokeWidth={1.8} />
         Scroll to see all vehicles
@@ -60,20 +60,17 @@ export function ComparisonTable({ result }: ComparisonTableProps) {
                 className="sticky left-0 z-20 w-56 bg-surface-elevated p-4 text-left align-bottom sm:w-64 sm:p-5"
                 scope="col"
               >
-                <span className="font-mono text-[0.62rem] tracking-[0.14em] text-muted uppercase">
+                <span className="orbix-label orbix-label--column">
                   Engineering characteristic
                 </span>
               </th>
-              {result.vehicles.map((vehicle, index) => (
+              {result.vehicles.map((vehicle) => (
                 <th
                   className="min-w-60 border-l border-border bg-surface-elevated p-4 text-left align-bottom sm:p-5"
                   key={vehicle.id}
                   scope="col"
                 >
-                  <p className="font-mono text-[0.62rem] tracking-[0.14em] text-accent uppercase">
-                    Vehicle {String(index + 1).padStart(2, "0")}
-                  </p>
-                  <p className="mt-2 text-lg font-semibold tracking-tight">
+                  <p className="text-lg font-semibold tracking-tight">
                     {vehicle.name}
                   </p>
                   <p className="mt-1 text-xs text-muted">

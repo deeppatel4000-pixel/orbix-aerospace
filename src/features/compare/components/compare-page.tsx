@@ -11,6 +11,7 @@ import { Container } from "@/components/layout/container";
 import { ButtonLink } from "@/components/ui/button-link";
 import { ComparisonControls } from "@/features/compare/components/comparison-controls";
 import { ComparisonEmptyState } from "@/features/compare/components/comparison-empty-state";
+import { ComparisonIdentityStrip } from "@/features/compare/components/comparison-identity-strip";
 import { ComparisonTable } from "@/features/compare/components/comparison-table";
 import type {
   ComparisonCategory,
@@ -31,20 +32,16 @@ export function ComparePage({ category, options, result }: ComparePageProps) {
 
   return (
     <>
-      <header className="orbix-brand-glow relative isolate overflow-hidden border-b border-border/70 py-24 sm:py-32">
+      <header className="relative isolate overflow-hidden border-b border-border-subtle py-20 sm:py-24">
         <OrbixEnvironmentBackdrop
           theme={category === "aircraft" ? "tactical" : "launch"}
-        />
-        <div
-          aria-hidden="true"
-          className="technical-grid absolute inset-0 -z-10 [mask-image:linear-gradient(to_bottom,black,transparent_92%)] opacity-60"
         />
         <Container>
           <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_22rem] lg:items-end">
             <div className="max-w-4xl">
-              <p className="flex items-center gap-3 font-mono text-xs tracking-[0.2em] text-accent uppercase">
+              <p className="orbix-profile-hero__classification flex items-center gap-3">
                 <Scale aria-hidden="true" size={16} strokeWidth={1.7} />
-                Engineering workspace // Comparison
+                Engineering workspace
               </p>
               <h1 className="font-display mt-6 text-5xl leading-[0.98] font-semibold tracking-[-0.05em] text-balance sm:text-6xl lg:text-7xl">
                 Comparison Engine
@@ -56,15 +53,13 @@ export function ComparePage({ category, options, result }: ComparePageProps) {
               </p>
             </div>
 
-            <aside className="orbix-premium-card p-5">
+            <aside className="rounded-lg border border-border-subtle p-5">
               <div className="flex items-center gap-3">
                 <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-accent/10 text-accent">
                   <Database aria-hidden="true" size={19} strokeWidth={1.7} />
                 </span>
                 <div>
-                  <p className="font-mono text-[0.62rem] tracking-[0.14em] text-muted uppercase">
-                    Active registry
-                  </p>
+                  <p className="orbix-label">Active registry</p>
                   <p className="mt-1 text-sm font-semibold capitalize">
                     {categoryLabel}
                   </p>
@@ -72,7 +67,7 @@ export function ComparePage({ category, options, result }: ComparePageProps) {
               </div>
               <div className="mt-5 flex items-end justify-between border-t border-border pt-4">
                 <span className="text-sm text-muted">Available profiles</span>
-                <span className="font-mono text-2xl text-accent">
+                <span className="orbix-data text-2xl text-accent">
                   {options[category].length}
                 </span>
               </div>
@@ -88,8 +83,8 @@ export function ComparePage({ category, options, result }: ComparePageProps) {
         >
           <Container>
             <div className="mb-8 max-w-3xl">
-              <p className="font-mono text-xs tracking-[0.18em] text-accent uppercase">
-                01 // Select profiles
+              <p className="orbix-profile-hero__classification">
+                Select profiles
               </p>
               <h2
                 className="mt-3 text-3xl font-semibold tracking-[-0.035em] sm:text-4xl"
@@ -119,8 +114,8 @@ export function ComparePage({ category, options, result }: ComparePageProps) {
           <Container>
             <div className="mb-8 flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
               <div className="max-w-3xl">
-                <p className="font-mono text-xs tracking-[0.18em] text-accent uppercase">
-                  02 // Engineering matrix
+                <p className="orbix-profile-hero__classification">
+                  Engineering matrix
                 </p>
                 <h2
                   className="mt-3 text-3xl font-semibold tracking-[-0.035em] sm:text-4xl"
@@ -161,7 +156,16 @@ export function ComparePage({ category, options, result }: ComparePageProps) {
             </div>
 
             {canCompare ? (
-              <ComparisonTable result={result} />
+              <>
+                {/* Column identity. Before this the matrix identified its
+                    columns by text alone and the page rendered no vehicle
+                    imagery at all. */}
+                <ComparisonIdentityStrip
+                  category={result.category}
+                  vehicles={result.vehicles}
+                />
+                <ComparisonTable result={result} />
+              </>
             ) : (
               <ComparisonEmptyState
                 category={category}
