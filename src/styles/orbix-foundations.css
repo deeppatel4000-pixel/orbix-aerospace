@@ -101,13 +101,27 @@ a {
 }
 
 @layer utilities {
+  /**
+   * The display voice.
+   *
+   * Display and interface are the same typeface; what separates them is the
+   * width axis. IBM Plex Sans is variable on `wdth` (75-100%), so
+   * `font-stretch` narrows it to the condensed, DIN-adjacent cut ORBIX
+   * previously borrowed from Bahnschrift — without a second font download.
+   *
+   * This declaration is what makes display type read as display type. Without
+   * it these utilities would be indistinguishable from body copy and the
+   * page's typographic hierarchy would collapse.
+   */
   .font-display {
     font-family: var(--font-display);
+    font-stretch: var(--font-display-stretch);
   }
 
   .orbix-display-xl {
     font-family: var(--font-display);
     font-size: var(--type-display-xl);
+    font-stretch: var(--font-display-stretch);
     font-weight: 650;
     letter-spacing: var(--tracking-display);
     line-height: 0.92;
@@ -117,6 +131,7 @@ a {
   .orbix-display-lg {
     font-family: var(--font-display);
     font-size: var(--type-display-lg);
+    font-stretch: var(--font-display-stretch);
     font-weight: 650;
     letter-spacing: var(--tracking-display);
     line-height: 0.96;
@@ -126,6 +141,7 @@ a {
   .orbix-section-title {
     font-family: var(--font-display);
     font-size: var(--type-section);
+    font-stretch: var(--font-display-stretch);
     font-weight: 620;
     letter-spacing: -0.025em;
     line-height: 1.05;
@@ -283,6 +299,49 @@ a {
     letter-spacing: var(--tracking-technical);
     line-height: 1.3;
     text-transform: uppercase;
+  }
+
+  /**
+   * CANONICAL LABEL ROLE — the intended replacement for `.orbix-kicker` and
+   * for the ~419 ad-hoc `text-[0.5xrem] font-mono uppercase` label treatments
+   * the audit found across ten different sizes.
+   *
+   * Set in the INTERFACE face, not monospace. Monospace exists to signal
+   * machine-produced values; using it for labels, navigation and buttons is
+   * what made it meaningless. Sentence-case by default — uppercase is
+   * reserved for true column headers via `.orbix-label--column`.
+   *
+   * Nothing consumes this yet. It is defined here so route phases have one
+   * label to adopt instead of inventing an eleventh size.
+   */
+  .orbix-label {
+    color: var(--orbix-text-muted);
+    font-family: var(--font-interface);
+    font-size: var(--text-label);
+    font-weight: 550;
+    letter-spacing: var(--tracking-normal);
+    line-height: var(--leading-tight);
+  }
+
+  .orbix-label--column {
+    letter-spacing: var(--tracking-label);
+    text-transform: uppercase;
+  }
+
+  /**
+   * CANONICAL DATA ROLE — for numeric values, units, identifiers and
+   * coordinates. This is where monospace earns its place, and `tabular-nums`
+   * stops digits reflowing as values update.
+   */
+  .orbix-data {
+    font-family: var(--font-telemetry);
+    font-size: var(--text-body-sm);
+    font-variant-numeric: tabular-nums;
+    letter-spacing: var(--tracking-normal);
+  }
+
+  .orbix-data--sm {
+    font-size: var(--text-data-sm);
   }
 
   .orbix-environment-label {
