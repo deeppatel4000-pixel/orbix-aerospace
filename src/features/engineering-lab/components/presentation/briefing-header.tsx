@@ -36,14 +36,14 @@ export function BriefingHeader({ category, missionName }: BriefingHeaderProps) {
           <h2 className="mt-4 max-w-4xl text-3xl font-semibold tracking-[-0.045em] sm:text-5xl">
             {missionName}
           </h2>
-          <p className="mt-4 font-mono text-[0.65rem] tracking-[0.15em] text-[#8ca2a7] uppercase">
+          <p className="mt-4 font-mono text-[0.65rem] tracking-[0.15em] text-muted uppercase">
             {category ? categoryLabels[category] : "Custom educational mission"}
           </p>
         </div>
 
         <div className="grid gap-3 sm:grid-cols-2">
           <div className="rounded-xl border border-accent/25 bg-accent/7 px-4 py-3">
-            <p className="font-mono text-[0.56rem] tracking-[0.14em] text-[#789097] uppercase">
+            <p className="font-mono text-[0.56rem] tracking-[0.14em] text-muted uppercase">
               Status
             </p>
             <p

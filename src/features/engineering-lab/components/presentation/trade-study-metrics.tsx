@@ -93,7 +93,7 @@ function TelemetryRail({
   return (
     <div aria-label={`${label}: ${displayMetric(value, unit)}`}>
       <div className="flex items-center justify-between gap-4 text-xs">
-        <span className="font-semibold text-[#b9c8ca]">{label}</span>
+        <span className="text-muted-strong font-semibold">{label}</span>
         <output className="font-mono text-accent">
           {displayMetric(value, unit)}
         </output>
@@ -107,7 +107,7 @@ function TelemetryRail({
             "h-full rounded-full transition-opacity motion-reduce:transition-none " +
             (value === undefined
               ? "w-0 bg-transparent"
-              : "w-full bg-[linear-gradient(90deg,rgba(73,198,190,0.35),rgba(73,198,190,0.8))]")
+              : "w-full bg-[linear-gradient(90deg,color-mix(in_srgb,var(--orbix-accent)_35%,transparent),color-mix(in_srgb,var(--orbix-accent)_80%,transparent))]")
           }
         />
       </div>
@@ -200,7 +200,7 @@ export function TradeStudyMetrics({ entries }: TradeStudyMetricsProps) {
               Existing orbital, vehicle, and thermal outputs for each mission
               scenario; no ranking or feasibility result is provided.
             </caption>
-            <thead className="bg-[#0a171c] font-mono tracking-[0.08em] text-[#8da2a7] uppercase">
+            <thead className="bg-surface font-mono tracking-[0.08em] text-muted uppercase">
               <tr>
                 <th className="px-4 py-3" scope="col">
                   Mission
@@ -237,7 +237,7 @@ export function TradeStudyMetrics({ entries }: TradeStudyMetricsProps) {
                 </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-white/8 bg-[#061116] text-[#c4d1d3]">
+            <tbody className="text-muted-strong divide-y divide-white/8 bg-surface">
               {rows.map(({ entry, metrics }) => (
                 <tr key={entry.scenario.id}>
                   <th className="px-4 py-4 font-semibold" scope="row">
@@ -291,7 +291,7 @@ export function TradeStudyMetrics({ entries }: TradeStudyMetricsProps) {
         >
           Reported Metric Availability
         </h3>
-        <p className="mt-2 max-w-3xl text-xs leading-5 text-[#758b90]">
+        <p className="mt-2 max-w-3xl text-xs leading-5 text-muted">
           Rail length indicates that a value is available, not its relative
           magnitude. Exact supplied values remain the comparison reference.
         </p>
@@ -299,7 +299,7 @@ export function TradeStudyMetrics({ entries }: TradeStudyMetricsProps) {
         <div className="mt-5 grid gap-4 xl:grid-cols-3">
           {rows.map(({ entry, metrics }) => (
             <article
-              className="rounded-xl border border-white/10 bg-[#081419]/80 p-4"
+              className="rounded-xl border border-white/10 bg-surface/80 p-4"
               key={entry.scenario.id}
             >
               <h4 className="text-sm font-semibold">{entry.scenario.name}</h4>

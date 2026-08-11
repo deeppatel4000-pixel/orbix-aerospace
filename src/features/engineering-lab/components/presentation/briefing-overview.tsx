@@ -18,7 +18,7 @@ export function BriefingOverview({
           <ClipboardList aria-hidden="true" size={17} />
         </span>
         <div>
-          <p className="font-mono text-[0.58rem] tracking-[0.16em] text-[#758c92] uppercase">
+          <p className="font-mono text-[0.58rem] tracking-[0.16em] text-muted uppercase">
             Briefing frame // Supplied scope
           </p>
           <h3
@@ -31,16 +31,16 @@ export function BriefingOverview({
       </div>
 
       <div className="mt-5 grid gap-4 lg:grid-cols-[minmax(0,1.2fr)_minmax(16rem,0.8fr)]">
-        <article className="rounded-2xl border border-white/10 bg-[#081419]/90 p-5 sm:p-6">
+        <article className="rounded-2xl border border-white/10 bg-surface/90 p-5 sm:p-6">
           <p className="font-mono text-[0.6rem] tracking-[0.14em] text-accent uppercase">
             Mission purpose
           </p>
-          <p className="mt-3 max-w-3xl text-sm leading-7 text-[#a6b8bc]">
+          <p className="text-muted-strong mt-3 max-w-3xl text-sm leading-7">
             {purpose}
           </p>
         </article>
 
-        <article className="rounded-2xl border border-white/10 bg-[#081419]/90 p-5 sm:p-6">
+        <article className="rounded-2xl border border-white/10 bg-surface/90 p-5 sm:p-6">
           <div className="flex items-center justify-between gap-4">
             <p className="flex items-center gap-2 font-mono text-[0.6rem] tracking-[0.14em] text-accent uppercase">
               <Layers3 aria-hidden="true" size={14} />
@@ -54,7 +54,7 @@ export function BriefingOverview({
             <ul className="mt-4 space-y-2.5">
               {systems.map((system) => (
                 <li
-                  className="flex items-center gap-2 text-sm text-[#c3d0d2]"
+                  className="text-muted-strong flex items-center gap-2 text-sm"
                   key={system}
                 >
                   <CheckCircle2
@@ -67,7 +67,7 @@ export function BriefingOverview({
               ))}
             </ul>
           ) : (
-            <p className="mt-4 text-sm leading-6 text-[#72878c]">
+            <p className="mt-4 text-sm leading-6 text-muted">
               Mission identity supplied; no optional analysis systems reported.
             </p>
           )}

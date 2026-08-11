@@ -104,7 +104,7 @@ export function ShowcasePhase({
           "group w-full rounded-xl border px-3 py-3 text-left transition-colors outline-none focus-visible:ring-2 focus-visible:ring-accent motion-reduce:transition-none " +
           (active
             ? "border-accent/50 bg-accent/10 text-accent"
-            : "border-white/10 bg-[#071318] text-[#80969b] hover:border-accent/25 hover:text-[#c4d2d4]")
+            : "hover:text-muted-strong border-white/10 bg-surface text-muted hover:border-accent/25")
         }
         onClick={() => onSelect(index)}
         type="button"

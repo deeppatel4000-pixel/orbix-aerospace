@@ -145,7 +145,7 @@ export function MissionShowcase({
     <article
       aria-describedby="mission-showcase-keyboard-help"
       aria-label={`Cinematic mission showcase for ${missionProfile.missionName}`}
-      className="technical-grid min-h-[80vh] overflow-hidden rounded-2xl border border-white/12 bg-[#02070b] text-[#e2eaeb] shadow-[0_30px_90px_rgba(0,0,0,0.34)] outline-none focus-visible:ring-2 focus-visible:ring-accent"
+      className="technical-grid min-h-[80vh] overflow-hidden rounded-2xl border border-white/12 bg-surface text-foreground shadow-[0_30px_90px_rgba(0,0,0,0.34)] outline-none focus-visible:ring-2 focus-visible:ring-accent"
       data-reduced-motion={reducedMotion ? "true" : "false"}
       onKeyDown={handleKeyboard}
       tabIndex={0}
@@ -164,7 +164,7 @@ export function MissionShowcase({
             <h2 className="mt-4 max-w-4xl text-3xl font-semibold tracking-[-0.045em] sm:text-5xl">
               {missionProfile.missionName}
             </h2>
-            <p className="mt-4 font-mono text-[0.65rem] tracking-[0.15em] text-[#8ca2a7] uppercase">
+            <p className="mt-4 font-mono text-[0.65rem] tracking-[0.15em] text-muted uppercase">
               Educational simulation review
             </p>
           </div>
@@ -180,7 +180,7 @@ export function MissionShowcase({
       <div className="space-y-7 p-5 sm:p-8">
         <section
           aria-label="Mission showcase controls"
-          className="rounded-2xl border border-white/10 bg-[#071318]/90 p-4"
+          className="rounded-2xl border border-white/10 bg-surface/90 p-4"
         >
           <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
             <div className="flex flex-wrap gap-2">
@@ -196,7 +196,7 @@ export function MissionShowcase({
               </button>
               <button
                 aria-label="Pause mission showcase"
-                className="inline-flex min-h-10 items-center gap-2 rounded-lg border border-white/12 bg-white/5 px-3 py-2 text-xs font-semibold text-[#c7d4d6] outline-none hover:border-accent/30 hover:text-accent focus-visible:ring-2 focus-visible:ring-accent disabled:opacity-40 motion-reduce:transition-none"
+                className="text-muted-strong inline-flex min-h-10 items-center gap-2 rounded-lg border border-white/12 bg-white/5 px-3 py-2 text-xs font-semibold outline-none hover:border-accent/30 hover:text-accent focus-visible:ring-2 focus-visible:ring-accent disabled:opacity-40 motion-reduce:transition-none"
                 disabled={!state.isPlaying}
                 onClick={() => dispatch({ type: "pause" })}
                 type="button"
@@ -206,7 +206,7 @@ export function MissionShowcase({
               </button>
               <button
                 aria-label="Previous showcase phase"
-                className="inline-flex min-h-10 items-center gap-2 rounded-lg border border-white/12 bg-white/5 px-3 py-2 text-xs font-semibold text-[#c7d4d6] outline-none hover:border-accent/30 hover:text-accent focus-visible:ring-2 focus-visible:ring-accent disabled:opacity-40 motion-reduce:transition-none"
+                className="text-muted-strong inline-flex min-h-10 items-center gap-2 rounded-lg border border-white/12 bg-white/5 px-3 py-2 text-xs font-semibold outline-none hover:border-accent/30 hover:text-accent focus-visible:ring-2 focus-visible:ring-accent disabled:opacity-40 motion-reduce:transition-none"
                 disabled={state.currentPhaseIndex === 0}
                 onClick={() => dispatch({ type: "previous" })}
                 type="button"
@@ -216,7 +216,7 @@ export function MissionShowcase({
               </button>
               <button
                 aria-label="Next showcase phase"
-                className="inline-flex min-h-10 items-center gap-2 rounded-lg border border-white/12 bg-white/5 px-3 py-2 text-xs font-semibold text-[#c7d4d6] outline-none hover:border-accent/30 hover:text-accent focus-visible:ring-2 focus-visible:ring-accent disabled:opacity-40 motion-reduce:transition-none"
+                className="text-muted-strong inline-flex min-h-10 items-center gap-2 rounded-lg border border-white/12 bg-white/5 px-3 py-2 text-xs font-semibold outline-none hover:border-accent/30 hover:text-accent focus-visible:ring-2 focus-visible:ring-accent disabled:opacity-40 motion-reduce:transition-none"
                 disabled={
                   state.currentPhaseIndex === SHOWCASE_PHASES.length - 1
                 }
@@ -228,7 +228,7 @@ export function MissionShowcase({
               </button>
               <button
                 aria-label="Restart mission showcase"
-                className="inline-flex min-h-10 items-center gap-2 rounded-lg border border-white/12 bg-white/5 px-3 py-2 text-xs font-semibold text-[#c7d4d6] outline-none hover:border-accent/30 hover:text-accent focus-visible:ring-2 focus-visible:ring-accent motion-reduce:transition-none"
+                className="text-muted-strong inline-flex min-h-10 items-center gap-2 rounded-lg border border-white/12 bg-white/5 px-3 py-2 text-xs font-semibold outline-none hover:border-accent/30 hover:text-accent focus-visible:ring-2 focus-visible:ring-accent motion-reduce:transition-none"
                 onClick={() => dispatch({ type: "restart" })}
                 type="button"
               >
@@ -238,7 +238,7 @@ export function MissionShowcase({
             </div>
 
             <div className="min-w-48">
-              <div className="mb-2 flex justify-between gap-4 font-mono text-[0.57rem] tracking-[0.1em] text-[#7e9499] uppercase">
+              <div className="mb-2 flex justify-between gap-4 font-mono text-[0.57rem] tracking-[0.1em] text-muted uppercase">
                 <span>Presentation sequence</span>
                 <span>
                   {String(state.currentPhaseIndex + 1).padStart(2, "0")} / 06
@@ -282,7 +282,7 @@ export function MissionShowcase({
         </div>
 
         {reducedMotion ? (
-          <p className="rounded-lg border border-white/10 bg-white/3 px-3 py-2 text-xs text-[#84999e]">
+          <p className="rounded-lg border border-white/10 bg-white/3 px-3 py-2 text-xs text-muted">
             Reduced motion mode is active. Decorative spacecraft and star motion
             is suppressed while phase controls remain available.
           </p>
@@ -298,7 +298,7 @@ export function MissionShowcase({
           {state.isPlaying ? " Showcase playing." : " Showcase paused."}
         </p>
 
-        <footer className="border-t border-white/10 pt-6 text-xs leading-5 text-[#71868c]">
+        <footer className="border-t border-white/10 pt-6 text-xs leading-5 text-muted">
           This cinematic sequence presents existing Orbix outputs. It is not a
           trajectory propagation, flight simulation, mission clock, or readiness
           assessment.

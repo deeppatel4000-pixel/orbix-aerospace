@@ -36,7 +36,7 @@ export function MissionTradeStudy({
   return (
     <article
       aria-label="Mission architecture trade study"
-      className="technical-grid overflow-hidden rounded-2xl border border-white/12 bg-[#03090d] text-[#e2eaeb] shadow-[0_28px_80px_rgba(0,0,0,0.28)]"
+      className="technical-grid overflow-hidden rounded-2xl border border-white/12 bg-surface text-foreground shadow-[0_28px_80px_rgba(0,0,0,0.28)]"
     >
       <header className="relative overflow-hidden border-b border-white/10 px-5 py-8 sm:px-8 sm:py-10">
         <div
@@ -52,7 +52,7 @@ export function MissionTradeStudy({
             <h2 className="mt-4 text-3xl font-semibold tracking-[-0.045em] sm:text-5xl">
               Architecture Comparison Review
             </h2>
-            <p className="mt-4 max-w-3xl text-sm leading-6 text-[#91a6ab]">
+            <p className="mt-4 max-w-3xl text-sm leading-6 text-muted">
               Compare saved mission architectures using completed, supplied
               outputs. This presentation does not score, rank, or select a
               preferred mission.
@@ -84,7 +84,7 @@ export function MissionTradeStudy({
             >
               No mission scenarios selected
             </h3>
-            <p className="mx-auto mt-2 max-w-xl text-sm leading-6 text-[#80959a]">
+            <p className="mx-auto mt-2 max-w-xl text-sm leading-6 text-muted">
               Supply saved scenarios and optional completed reports or analyses
               to open an architecture comparison review.
             </p>
@@ -132,7 +132,7 @@ export function MissionTradeStudy({
               <div className="mt-5 grid gap-3 lg:grid-cols-2">
                 {explanations.map((explanation) => (
                   <article
-                    className="rounded-xl border border-white/10 bg-[#081419]/80 p-4 text-sm leading-6 text-[#a8b9bc]"
+                    className="text-muted-strong rounded-xl border border-white/10 bg-surface/80 p-4 text-sm leading-6"
                     key={explanation}
                   >
                     {explanation}
@@ -147,7 +147,7 @@ export function MissionTradeStudy({
           Trade study contains {entries.length} supplied mission scenarios.
         </p>
 
-        <footer className="border-t border-white/10 pt-6 text-xs leading-5 text-[#71868c]">
+        <footer className="border-t border-white/10 pt-6 text-xs leading-5 text-muted">
           This educational comparison preserves supplied values and scenario
           order. It provides no feasibility assessment, optimization, ranking,
           or winner selection.

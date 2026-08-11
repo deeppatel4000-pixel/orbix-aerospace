@@ -25,13 +25,13 @@ export function DemoNavigation({
   return (
     <nav
       aria-label="Orbix demo tour navigation"
-      className="rounded-2xl border border-white/10 bg-[#071318]/95 p-4"
+      className="rounded-2xl border border-white/10 bg-surface/95 p-4"
     >
       <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
         <div className="flex flex-wrap gap-2">
           <button
             aria-label="Previous demo step"
-            className={`${navigationButtonClassName} border-white/12 bg-white/5 text-[#c7d4d6] hover:border-accent/30 hover:text-accent`}
+            className={`${navigationButtonClassName} text-muted-strong border-white/12 bg-white/5 hover:border-accent/30 hover:text-accent`}
             disabled={currentStepIndex === 0}
             onClick={onBack}
             type="button"
@@ -50,7 +50,7 @@ export function DemoNavigation({
           </button>
           <button
             aria-label="Restart demo tour"
-            className={`${navigationButtonClassName} border-white/12 bg-white/5 text-[#9cb0b4] hover:border-accent/30 hover:text-accent`}
+            className={`${navigationButtonClassName} border-white/12 bg-white/5 text-muted hover:border-accent/30 hover:text-accent`}
             onClick={onRestart}
             type="button"
           >
@@ -59,7 +59,7 @@ export function DemoNavigation({
           </button>
           <button
             aria-label="Skip Orbix demo tour"
-            className={`${navigationButtonClassName} border-white/12 bg-transparent text-[#81969b] hover:border-signal/30 hover:text-signal`}
+            className={`${navigationButtonClassName} border-white/12 bg-transparent text-muted hover:border-signal/30 hover:text-signal`}
             onClick={onSkip}
             type="button"
           >
@@ -69,7 +69,7 @@ export function DemoNavigation({
         </div>
 
         <div className="min-w-52">
-          <div className="mb-2 flex items-center justify-between gap-4 font-mono text-[0.57rem] tracking-[0.1em] text-[#7e9499] uppercase">
+          <div className="mb-2 flex items-center justify-between gap-4 font-mono text-[0.57rem] tracking-[0.1em] text-muted uppercase">
             <span>Tour progress</span>
             <span>
               {String(currentStepIndex + 1).padStart(2, "0")} /{" "}

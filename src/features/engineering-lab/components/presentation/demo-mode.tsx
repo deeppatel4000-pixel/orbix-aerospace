@@ -123,17 +123,17 @@ function DemoMetric({
   readonly value?: number | string;
 }) {
   return (
-    <div className="rounded-xl border border-white/10 bg-[#08161b] p-4">
-      <dt className="font-mono text-[0.55rem] tracking-[0.11em] text-[#71878d] uppercase">
+    <div className="rounded-xl border border-white/10 bg-surface p-4">
+      <dt className="font-mono text-[0.55rem] tracking-[0.11em] text-muted uppercase">
         {label}
       </dt>
       <dd className="mt-2">
-        <output className="font-mono text-sm font-semibold text-[#dce6e7]">
+        <output className="font-mono text-sm font-semibold text-foreground">
           {typeof value === "number"
             ? valueFormatter.format(value)
             : (value ?? "Not reported")}
           {value !== undefined && unit ? (
-            <span className="ml-1 text-[0.64rem] font-normal text-[#82979c]">
+            <span className="ml-1 text-[0.64rem] font-normal text-muted">
               {unit}
             </span>
           ) : null}
@@ -145,7 +145,7 @@ function DemoMetric({
 
 function EmptyPanel({ children }: { readonly children: ReactNode }) {
   return (
-    <div className="rounded-xl border border-dashed border-white/15 bg-black/10 px-5 py-9 text-center text-sm leading-6 text-[#80959a]">
+    <div className="rounded-xl border border-dashed border-white/15 bg-black/10 px-5 py-9 text-center text-sm leading-6 text-muted">
       {children}
     </div>
   );
@@ -235,7 +235,7 @@ export function DemoMode({
               Mission objective
             </p>
             <h4 className="mt-2 text-2xl font-semibold">{missionName}</h4>
-            <p className="mt-3 text-sm leading-6 text-[#9eb0b4]">
+            <p className="mt-3 text-sm leading-6 text-muted">
               {report?.missionAssessment.educationalSummary ??
                 missionDescription}
             </p>
@@ -265,7 +265,7 @@ export function DemoMode({
               <ul className="mt-3 flex flex-wrap gap-2">
                 {systems.map((system) => (
                   <li
-                    className="flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-2 text-xs text-[#bac9cb]"
+                    className="text-muted-strong flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-2 text-xs"
                     key={system}
                   >
                     <CheckCircle2
@@ -278,14 +278,14 @@ export function DemoMode({
                 ))}
               </ul>
             ) : (
-              <p className="mt-3 text-sm text-[#80959a]">
+              <p className="mt-3 text-sm text-muted">
                 No integrated systems were supplied.
               </p>
             )}
           </section>
 
           <div className="grid gap-4 lg:grid-cols-2">
-            <section className="rounded-xl border border-white/10 bg-[#071318] p-5">
+            <section className="rounded-xl border border-white/10 bg-surface p-5">
               <h4 className="flex items-center gap-2 text-sm font-semibold">
                 <Orbit aria-hidden="true" className="text-accent" size={16} />
                 Orbital design
@@ -303,7 +303,7 @@ export function DemoMode({
                 />
               </dl>
             </section>
-            <section className="rounded-xl border border-white/10 bg-[#071318] p-5">
+            <section className="rounded-xl border border-white/10 bg-surface p-5">
               <h4 className="flex items-center gap-2 text-sm font-semibold">
                 <Plane aria-hidden="true" className="text-accent" size={16} />
                 Vehicle configuration
@@ -396,11 +396,11 @@ export function DemoMode({
           <MissionInsightsPanel analysis={insights} />
           {report ? (
             <div className="grid gap-4 lg:grid-cols-2">
-              <section className="rounded-xl border border-white/10 bg-[#071318] p-5">
+              <section className="rounded-xl border border-white/10 bg-surface p-5">
                 <h4 className="font-mono text-[0.61rem] tracking-[0.12em] text-accent uppercase">
                   Assumptions
                 </h4>
-                <ul className="mt-3 space-y-2 text-xs leading-5 text-[#91a5aa]">
+                <ul className="mt-3 space-y-2 text-xs leading-5 text-muted">
                   {report.missionAssessment.modelAssumptions.map((item) => (
                     <li className="flex gap-2" key={item}>
                       <span aria-hidden="true" className="text-accent">
@@ -415,7 +415,7 @@ export function DemoMode({
                 <h4 className="font-mono text-[0.61rem] tracking-[0.12em] text-signal uppercase">
                   Limitations
                 </h4>
-                <ul className="mt-3 space-y-2 text-xs leading-5 text-[#91a5aa]">
+                <ul className="mt-3 space-y-2 text-xs leading-5 text-muted">
                   {report.missionAssessment.limitations.map((item) => (
                     <li className="flex gap-2" key={item}>
                       <span aria-hidden="true" className="text-signal">
@@ -457,7 +457,7 @@ export function DemoMode({
     <article
       aria-describedby="demo-mode-keyboard-help"
       aria-label={`Orbix guided demo for ${missionName}`}
-      className="technical-grid overflow-hidden rounded-2xl border border-white/12 bg-[#02080c] text-[#e2eaeb] shadow-[0_30px_90px_rgba(0,0,0,0.3)] outline-none focus-visible:ring-2 focus-visible:ring-accent"
+      className="technical-grid overflow-hidden rounded-2xl border border-white/12 bg-surface text-foreground shadow-[0_30px_90px_rgba(0,0,0,0.3)] outline-none focus-visible:ring-2 focus-visible:ring-accent"
       data-reduced-motion={reducedMotion ? "true" : "false"}
       onKeyDown={handleKeyboard}
       tabIndex={0}
@@ -476,7 +476,7 @@ export function DemoMode({
             <h2 className="mt-3 max-w-4xl text-3xl font-semibold tracking-[-0.04em] sm:text-4xl">
               Welcome to Orbix
             </h2>
-            <p className="mt-3 max-w-3xl text-sm leading-6 text-[#91a5aa]">
+            <p className="mt-3 max-w-3xl text-sm leading-6 text-muted">
               This walkthrough demonstrates how an aerospace mission moves from
               concept to analysis, visualization, engineering review, and
               presentation.
@@ -510,8 +510,8 @@ export function DemoMode({
                   (isActive
                     ? "border-accent/45 bg-accent/10 text-accent"
                     : isVisited
-                      ? "border-white/12 bg-white/5 text-[#b2c1c3]"
-                      : "border-white/8 bg-black/10 text-[#657b81]")
+                      ? "text-muted-strong border-white/12 bg-white/5"
+                      : "border-white/8 bg-black/10 text-muted")
                 }
                 key={step.id}
               >
@@ -571,7 +571,7 @@ export function DemoMode({
                 ? "Guided review complete"
                 : "Demo tour skipped"}
             </h3>
-            <p className="mx-auto mt-3 max-w-xl text-sm leading-6 text-[#91a5aa]">
+            <p className="mx-auto mt-3 max-w-xl text-sm leading-6 text-muted">
               {state.status === "complete"
                 ? "You have reviewed the complete Orbix mission workflow using supplied educational outputs."
                 : "No mission data was changed. Restart whenever you want to resume the guided experience."}
@@ -589,7 +589,7 @@ export function DemoMode({
         )}
 
         {reducedMotion ? (
-          <p className="rounded-lg border border-white/10 bg-white/3 px-3 py-2 text-xs text-[#81969b]">
+          <p className="rounded-lg border border-white/10 bg-white/3 px-3 py-2 text-xs text-muted">
             Reduced motion mode is active. Guided content changes without
             decorative motion.
           </p>
@@ -607,7 +607,7 @@ export function DemoMode({
               : "Orbix guided demo skipped."}
         </p>
 
-        <footer className="flex items-start gap-3 border-t border-white/10 pt-6 text-xs leading-5 text-[#71868c]">
+        <footer className="flex items-start gap-3 border-t border-white/10 pt-6 text-xs leading-5 text-muted">
           <Activity aria-hidden="true" className="mt-0.5 shrink-0" size={14} />
           Demo Mode navigates supplied objects only. It does not generate a
           mission, execute analysis, alter vehicle or TPS state, or assess

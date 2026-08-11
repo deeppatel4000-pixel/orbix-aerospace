@@ -89,7 +89,7 @@ export function DemoStep({
   return (
     <section
       aria-labelledby={`demo-step-${step.id}-title`}
-      className="rounded-2xl border border-white/12 bg-[#061116]/95 p-5 outline-none focus-visible:ring-2 focus-visible:ring-accent sm:p-7"
+      className="rounded-2xl border border-white/12 bg-surface/95 p-5 outline-none focus-visible:ring-2 focus-visible:ring-accent sm:p-7"
       data-demo-step={step.id}
       ref={focusRef}
       tabIndex={-1}
@@ -108,7 +108,7 @@ export function DemoStep({
           >
             {step.label}
           </h3>
-          <p className="mt-2 max-w-3xl text-sm leading-6 text-[#91a5aa]">
+          <p className="mt-2 max-w-3xl text-sm leading-6 text-muted">
             {step.description}
           </p>
         </div>

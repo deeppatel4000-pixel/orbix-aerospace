@@ -28,7 +28,7 @@ export function TradeStudyCard({ index, scenario }: TradeStudyCardProps) {
   return (
     <article
       aria-labelledby={`trade-study-scenario-${scenario.id}-title`}
-      className="rounded-2xl border border-white/10 bg-[#081419]/90 p-5"
+      className="rounded-2xl border border-white/10 bg-surface/90 p-5"
     >
       <div className="flex items-start justify-between gap-4">
         <div>
@@ -41,7 +41,7 @@ export function TradeStudyCard({ index, scenario }: TradeStudyCardProps) {
           >
             {scenario.name}
           </h3>
-          <p className="mt-2 font-mono text-[0.62rem] tracking-[0.1em] text-[#7e9499] uppercase">
+          <p className="mt-2 font-mono text-[0.62rem] tracking-[0.1em] text-muted uppercase">
             {formatCategory(scenario.category)}
           </p>
         </div>
@@ -50,19 +50,19 @@ export function TradeStudyCard({ index, scenario }: TradeStudyCardProps) {
         </span>
       </div>
 
-      <p className="mt-4 min-h-18 text-sm leading-6 text-[#9fb1b5]">
+      <p className="mt-4 min-h-18 text-sm leading-6 text-muted">
         {scenario.description}
       </p>
 
       <div className="mt-5 border-t border-white/10 pt-4">
-        <p className="font-mono text-[0.57rem] tracking-[0.13em] text-[#71878c] uppercase">
+        <p className="font-mono text-[0.57rem] tracking-[0.13em] text-muted uppercase">
           Included systems
         </p>
         {systems.length > 0 ? (
           <ul className="mt-3 space-y-2">
             {systems.map((system) => (
               <li
-                className="flex items-center gap-2 text-xs text-[#bdcbcd]"
+                className="text-muted-strong flex items-center gap-2 text-xs"
                 key={system}
               >
                 <CheckCircle2
@@ -75,7 +75,7 @@ export function TradeStudyCard({ index, scenario }: TradeStudyCardProps) {
             ))}
           </ul>
         ) : (
-          <p className="mt-3 text-xs leading-5 text-[#71878c]">
+          <p className="mt-3 text-xs leading-5 text-muted">
             Mission identity only
           </p>
         )}
