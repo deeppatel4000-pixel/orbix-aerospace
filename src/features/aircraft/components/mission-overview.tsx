@@ -12,7 +12,8 @@ export function MissionOverview({ aircraft }: MissionOverviewProps) {
   return (
     <ProfileSection
       description="The aircraft's recorded mission purpose and program context, presented without extending the source dataset."
-      eyebrow="01 // Mission dossier"
+      eyebrow="Mission dossier"
+      mode="editorial"
       id="mission-overview"
       title="Mission Overview"
     >

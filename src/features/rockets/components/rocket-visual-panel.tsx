@@ -15,7 +15,8 @@ export function RocketVisualPanel({ rocket }: RocketVisualPanelProps) {
   return (
     <ProfileSection
       description="The approved vehicle image is presented at museum scale with its source record retained."
-      eyebrow="02 // Vehicle spotlight"
+      eyebrow="Vehicle spotlight"
+      mode="media"
       id="vehicle-image"
       title="Launch Complex View"
     >

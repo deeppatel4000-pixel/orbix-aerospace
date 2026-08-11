@@ -48,7 +48,8 @@ export function TechnicalDashboard({ aircraft }: TechnicalDashboardProps) {
   return (
     <ProfileSection
       description="A compact technical dashboard of identity and configuration values already present in the aircraft record."
-      eyebrow="03 // Systems summary"
+      eyebrow="Systems summary"
+      mode="data"
       id="technical-dashboard"
       title="Technical Dashboard"
     >

@@ -27,7 +27,8 @@ export function RocketMissionOverview({ rocket }: RocketMissionOverviewProps) {
   return (
     <ProfileSection
       description="The recorded program identity, launch architecture, and mission envelope supplied by the ORBIX vehicle registry."
-      eyebrow="01 // Program record"
+      eyebrow="Program record"
+      mode="editorial"
       id="overview"
       title="Launch Vehicle Overview"
     >

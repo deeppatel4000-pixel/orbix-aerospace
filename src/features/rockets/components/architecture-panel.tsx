@@ -12,7 +12,8 @@ export function ArchitecturePanel({ stages }: ArchitecturePanelProps) {
   return (
     <ProfileSection
       description="An ordered launch timeline of propulsion elements and parallel booster assemblies represented by this vehicle configuration."
-      eyebrow="02 // Staging"
+      eyebrow="Staging"
+      mode="configuration"
       id="architecture"
       title="Launch Vehicle Architecture"
     >

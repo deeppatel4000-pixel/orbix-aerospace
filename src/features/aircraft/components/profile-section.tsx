@@ -1,49 +1,31 @@
 import type { ReactNode } from "react";
 
+import {
+  VehicleProfileSection,
+  type VehicleProfileSectionMode,
+} from "@/features/vehicles/components/vehicle-profile-section";
+
 interface ProfileSectionProps {
   children: ReactNode;
   description: string;
   eyebrow: string;
   id: string;
+  /**
+   * Optional. Omitted, the shared primitive uses `record` — the historic
+   * rail-beside-content layout — so every section that has not yet adopted a
+   * mode renders as before.
+   */
+  mode?: VehicleProfileSectionMode;
   title: string;
 }
 
-export function ProfileSection({
-  children,
-  description,
-  eyebrow,
-  id,
-  title,
-}: ProfileSectionProps) {
-  const titleId = id + "-title";
-
-  return (
-    <section
-      aria-labelledby={titleId}
-      className="scroll-mt-40 border-t border-tactical/25 py-16 sm:py-20 lg:py-24"
-      id={id}
-    >
-      <div className="grid gap-10 lg:grid-cols-[19rem_minmax(0,1fr)] lg:gap-16 xl:gap-20">
-        <div className="self-start lg:sticky lg:top-44">
-          <p className="font-mono text-[0.66rem] tracking-[0.2em] text-tactical-amber uppercase">
-            {eyebrow}
-          </p>
-          <h2
-            className="font-display mt-4 text-3xl font-semibold tracking-[-0.04em] sm:text-4xl"
-            id={titleId}
-          >
-            {title}
-          </h2>
-          <p className="mt-4 max-w-sm text-sm leading-7 text-muted">
-            {description}
-          </p>
-          <div
-            aria-hidden="true"
-            className="mt-6 hidden h-px w-20 bg-tactical-amber/55 lg:block"
-          />
-        </div>
-        <div>{children}</div>
-      </div>
-    </section>
-  );
+/**
+ * Thin adapter over the shared vehicle profile section.
+ *
+ * The prop contract is unchanged, so the existing consumers in this feature
+ * need no edits. It exists so mode adoption can proceed section by section
+ * rather than as one import rewrite across ~20 files.
+ */
+export function ProfileSection(props: ProfileSectionProps) {
+  return <VehicleProfileSection {...props} />;
 }
