@@ -77,7 +77,7 @@ export function BriefingObjectives({
               </span>
               <div>
                 <Icon aria-hidden="true" className="text-accent" size={15} />
-                <p className="mt-2 text-sm leading-6 text-[#afbec1]">
+                <p className="text-muted-strong mt-2 text-sm leading-6">
                   {objective}
                 </p>
               </div>

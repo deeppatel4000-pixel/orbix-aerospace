@@ -23,17 +23,17 @@ const telemetryFormatter = new Intl.NumberFormat("en-US", {
 
 function TelemetryCard({ label, unit, value }: TelemetryValue) {
   return (
-    <div className="rounded-xl border border-white/10 bg-[#071318]/90 p-4">
-      <dt className="font-mono text-[0.55rem] tracking-[0.12em] text-[#71878c] uppercase">
+    <div className="rounded-xl border border-white/10 bg-surface/90 p-4">
+      <dt className="font-mono text-[0.55rem] tracking-[0.12em] text-muted uppercase">
         {label}
       </dt>
       <dd className="mt-2">
-        <output className="font-mono text-sm font-semibold text-[#d9e4e5]">
+        <output className="font-mono text-sm font-semibold text-foreground">
           {typeof value === "number"
             ? telemetryFormatter.format(value)
             : (value ?? "Not reported")}
           {value !== undefined && unit ? (
-            <span className="ml-1 text-[0.65rem] font-normal text-[#81969b]">
+            <span className="ml-1 text-[0.65rem] font-normal text-muted">
               {unit}
             </span>
           ) : null}
@@ -136,7 +136,7 @@ export function ShowcaseTelemetry({
             Mission Telemetry
           </h3>
         </div>
-        <p className="flex items-center gap-2 text-xs text-[#758b90]">
+        <p className="flex items-center gap-2 text-xs text-muted">
           <Shield aria-hidden="true" size={14} />
           No values recalculated
         </p>
@@ -152,7 +152,7 @@ export function ShowcaseTelemetry({
               key={group.id}
             >
               <h4
-                className="flex items-center gap-2 font-mono text-[0.62rem] tracking-[0.12em] text-[#b9c8ca] uppercase"
+                className="text-muted-strong flex items-center gap-2 font-mono text-[0.62rem] tracking-[0.12em] uppercase"
                 id={`showcase-telemetry-${group.id}`}
               >
                 <Icon aria-hidden="true" className="text-accent" size={14} />

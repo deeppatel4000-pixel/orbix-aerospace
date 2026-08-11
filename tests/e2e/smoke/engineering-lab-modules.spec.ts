@@ -314,9 +314,15 @@ test.describe("Engineering Laboratory modules", () => {
       await page.goto(`${ROUTES.engineeringLab}#${id}`, {
         waitUntil: "domcontentloaded",
       });
+      // 30s rather than the 15s used elsewhere in this file. This test alone
+      // navigates the heaviest route 33 times in a single case, and under full
+      // parallel-suite load one of those hydrations exceeded 15 seconds once,
+      // failing before the clipping assertion below ever ran. The condition is
+      // unchanged — only the patience. In isolation each full sweep completes
+      // in roughly 11 seconds, so this is headroom, not a masked defect.
       await expect
         .poll(async () => (await shownModuleIds(page)).join(","), {
-          timeout: 15_000,
+          timeout: 30_000,
         })
         .toBe(id);
 

@@ -64,7 +64,7 @@ export function MissionBriefing({
   return (
     <article
       aria-label={`Mission briefing for ${missionProfile.missionName}`}
-      className="technical-grid overflow-hidden rounded-2xl border border-white/12 bg-[#03090d] text-[#e2eaeb] shadow-[0_28px_80px_rgba(0,0,0,0.28)]"
+      className="technical-grid overflow-hidden rounded-2xl border border-white/12 bg-surface text-foreground shadow-[0_28px_80px_rgba(0,0,0,0.28)]"
     >
       <BriefingHeader
         category={preset?.category}
@@ -106,19 +106,19 @@ export function MissionBriefing({
           <ol className="mt-5 grid gap-2 sm:grid-cols-3 xl:grid-cols-6">
             {architecturePhases.map((phase, index) => (
               <li
-                className="relative rounded-xl border border-white/10 bg-[#071318] px-4 py-4"
+                className="relative rounded-xl border border-white/10 bg-surface px-4 py-4"
                 key={phase}
               >
                 <span className="font-mono text-[0.57rem] text-accent">
                   T+{String(index).padStart(2, "0")}
                 </span>
-                <p className="mt-2 font-mono text-[0.66rem] font-semibold tracking-[0.08em] text-[#c8d5d7] uppercase">
+                <p className="text-muted-strong mt-2 font-mono text-[0.66rem] font-semibold tracking-[0.08em] uppercase">
                   {phase}
                 </p>
                 {index < architecturePhases.length - 1 ? (
                   <ArrowDown
                     aria-hidden="true"
-                    className="mt-3 text-[#60777d] motion-safe:animate-bounce motion-reduce:animate-none motion-reduce:transition-none sm:hidden"
+                    className="mt-3 text-muted motion-safe:animate-bounce motion-reduce:animate-none motion-reduce:transition-none sm:hidden"
                     size={14}
                   />
                 ) : null}
@@ -144,7 +144,7 @@ export function MissionBriefing({
             <ul className="mt-5 grid gap-3 lg:grid-cols-2">
               {insights.insights.map((insight) => (
                 <li
-                  className="rounded-xl border border-white/10 bg-black/15 p-4 text-sm leading-6 text-[#a6b8bc]"
+                  className="text-muted-strong rounded-xl border border-white/10 bg-black/15 p-4 text-sm leading-6"
                   key={insight.id}
                 >
                   {insight.summary}
@@ -154,7 +154,7 @@ export function MissionBriefing({
           </section>
         ) : null}
 
-        <footer className="border-t border-white/10 pt-6 text-xs leading-5 text-[#71868c]">
+        <footer className="border-t border-white/10 pt-6 text-xs leading-5 text-muted">
           Presentation status describes briefing availability only. It does not
           assess mission feasibility, readiness, safety, or certification.
         </footer>

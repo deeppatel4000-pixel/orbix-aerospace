@@ -39,11 +39,11 @@ function SummaryCard({
   return (
     <article
       aria-labelledby={`briefing-summary-${id}`}
-      className="rounded-2xl border border-white/10 bg-[#081419]/90 p-5 shadow-[0_18px_40px_rgba(0,0,0,0.14)]"
+      className="rounded-2xl border border-white/10 bg-surface/90 p-5 shadow-[0_18px_40px_rgba(0,0,0,0.14)]"
     >
       <div className="flex items-start justify-between gap-4">
         <div>
-          <p className="font-mono text-[0.58rem] tracking-[0.15em] text-[#789097] uppercase">
+          <p className="font-mono text-[0.58rem] tracking-[0.15em] text-muted uppercase">
             Engineering summary
           </p>
           <h4
@@ -57,7 +57,7 @@ function SummaryCard({
           <Icon aria-hidden="true" size={18} />
         </span>
       </div>
-      <p className="mt-3 min-h-12 text-xs leading-5 text-[#7f9499]">
+      <p className="mt-3 min-h-12 text-xs leading-5 text-muted">
         {description}
       </p>
       <dl className="mt-4 divide-y divide-white/8 border-t border-white/8">
@@ -66,14 +66,14 @@ function SummaryCard({
             className="flex items-start justify-between gap-4 py-3 text-sm"
             key={metric.label}
           >
-            <dt className="text-[#81969b]">{metric.label}</dt>
-            <dd className="text-right font-mono font-semibold text-[#d8e3e4]">
+            <dt className="text-muted">{metric.label}</dt>
+            <dd className="text-right font-mono font-semibold text-foreground">
               <output>
                 {typeof metric.value === "number"
                   ? numberFormatter.format(metric.value)
                   : (metric.value ?? "Not reported")}
                 {metric.value !== undefined && metric.unit ? (
-                  <span className="ml-1 text-[0.66rem] font-normal text-[#7d9297]">
+                  <span className="ml-1 text-[0.66rem] font-normal text-muted">
                     {metric.unit}
                   </span>
                 ) : null}

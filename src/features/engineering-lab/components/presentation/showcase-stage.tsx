@@ -29,21 +29,21 @@ export function ShowcaseStage({
   return (
     <section
       aria-labelledby="showcase-current-phase-title"
-      className="relative min-h-[30rem] overflow-hidden rounded-2xl border border-white/10 bg-[#02070b]"
+      className="relative min-h-[30rem] overflow-hidden rounded-2xl border border-white/10 bg-surface"
       data-showcase-phase={phase.id}
     >
       <div
         aria-hidden="true"
-        className="absolute inset-0 bg-[radial-gradient(circle_at_50%_45%,rgba(62,164,160,0.08),transparent_35%),linear-gradient(rgba(255,255,255,0.018)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.018)_1px,transparent_1px)] bg-[size:auto,34px_34px,34px_34px]"
+        className="absolute inset-0 bg-[radial-gradient(circle_at_50%_45%,color-mix(in_srgb,var(--orbix-accent)_8%,transparent),transparent_35%),linear-gradient(color-mix(in_srgb,var(--orbix-text-primary)_2%,transparent)_1px,transparent_1px),linear-gradient(90deg,color-mix(in_srgb,var(--orbix-text-primary)_2%,transparent)_1px,transparent_1px)] bg-[size:auto,34px_34px,34px_34px]"
       />
       <div
         aria-hidden="true"
-        className="absolute top-[13%] left-[16%] h-1 w-1 rounded-full bg-white/70 shadow-[8rem_3rem_0_rgba(255,255,255,0.35),19rem_-1rem_0_rgba(90,212,203,0.45),29rem_6rem_0_rgba(255,255,255,0.3),38rem_1rem_0_rgba(255,255,255,0.45),45rem_9rem_0_rgba(90,212,203,0.3)] motion-safe:animate-pulse motion-reduce:animate-none"
+        className="absolute top-[13%] left-[16%] h-1 w-1 rounded-full bg-white/70 shadow-[8rem_3rem_0_color-mix(in_srgb,var(--orbix-text-primary)_35%,transparent),19rem_-1rem_0_color-mix(in_srgb,var(--orbix-accent)_45%,transparent),29rem_6rem_0_color-mix(in_srgb,var(--orbix-text-primary)_30%,transparent),38rem_1rem_0_color-mix(in_srgb,var(--orbix-text-primary)_45%,transparent),45rem_9rem_0_color-mix(in_srgb,var(--orbix-accent)_30%,transparent)] motion-safe:animate-pulse motion-reduce:animate-none"
       />
 
       <div
         aria-hidden="true"
-        className="absolute top-1/2 left-1/2 h-44 w-44 -translate-x-1/2 -translate-y-1/2 rounded-full border border-accent/20 bg-[radial-gradient(circle_at_36%_32%,rgba(123,224,215,0.35),rgba(16,55,67,0.92)_42%,rgba(3,12,17,1)_72%)] shadow-[0_0_55px_rgba(73,198,190,0.14)] sm:h-56 sm:w-56"
+        className="absolute top-1/2 left-1/2 h-44 w-44 -translate-x-1/2 -translate-y-1/2 rounded-full border border-accent/20 bg-[radial-gradient(circle_at_36%_32%,color-mix(in_srgb,var(--orbix-accent)_35%,transparent),color-mix(in_srgb,var(--orbix-bg-elevated)_92%,transparent)_42%,var(--orbix-bg-page)_72%)] shadow-[0_0_55px_color-mix(in_srgb,var(--orbix-accent)_14%,transparent)] sm:h-56 sm:w-56"
       />
       <div
         aria-hidden="true"
@@ -57,7 +57,7 @@ export function ShowcaseStage({
       <div
         aria-hidden="true"
         className={
-          "absolute z-10 flex h-10 w-10 items-center justify-center rounded-full border border-accent/40 bg-[#071419] text-accent shadow-[0_0_24px_rgba(73,198,190,0.3)] transition-[top,left,transform] duration-700 motion-reduce:transition-none " +
+          "absolute z-10 flex h-10 w-10 items-center justify-center rounded-full border border-accent/40 bg-surface text-accent shadow-[0_0_24px_color-mix(in_srgb,var(--orbix-accent)_30%,transparent)] transition-[top,left,transform] duration-700 motion-reduce:transition-none " +
           markerPositions[phase.scene] +
           (isPlaying && !reducedMotion ? " motion-safe:animate-pulse" : "")
         }
@@ -66,7 +66,7 @@ export function ShowcaseStage({
       </div>
 
       <div className="absolute top-5 right-5 z-20 rounded-lg border border-white/10 bg-black/35 px-3 py-2 backdrop-blur-sm">
-        <p className="font-mono text-[0.52rem] tracking-[0.12em] text-[#70878c] uppercase">
+        <p className="font-mono text-[0.52rem] tracking-[0.12em] text-muted uppercase">
           Presentation clock
         </p>
         <p className="mt-1 font-mono text-xs text-accent">
@@ -74,7 +74,7 @@ export function ShowcaseStage({
         </p>
       </div>
 
-      <div className="absolute right-5 bottom-5 left-5 z-20 max-w-2xl rounded-xl border border-white/10 bg-[#041015]/90 p-5 backdrop-blur-sm">
+      <div className="absolute right-5 bottom-5 left-5 z-20 max-w-2xl rounded-xl border border-white/10 bg-surface/90 p-5 backdrop-blur-sm">
         <p className="flex items-center gap-2 font-mono text-[0.57rem] tracking-[0.14em] text-accent uppercase">
           <RadioTower aria-hidden="true" size={13} />
           Current presentation phase
@@ -85,11 +85,9 @@ export function ShowcaseStage({
         >
           {phase.label}
         </h3>
-        <p className="mt-2 text-sm leading-6 text-[#91a6ab]">
-          {phase.description}
-        </p>
+        <p className="mt-2 text-sm leading-6 text-muted">{phase.description}</p>
         {insight ? (
-          <p className="mt-3 border-t border-white/10 pt-3 text-xs leading-5 text-[#7f969b]">
+          <p className="mt-3 border-t border-white/10 pt-3 text-xs leading-5 text-muted">
             {insight}
           </p>
         ) : null}

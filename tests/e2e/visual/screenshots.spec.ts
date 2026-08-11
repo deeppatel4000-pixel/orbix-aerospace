@@ -236,6 +236,35 @@ test.describe("Visual regression / desktop 1440x900", () => {
     );
   });
 
+  /**
+   * Presentation modules.
+   *
+   * These four are the Engineering Laboratory's non-calculator surfaces —
+   * briefing, trade study, showcase and demo mode — and until now none of them
+   * appeared in any baseline. Between them they render eighteen of the
+   * laboratory's presentation components, so a colour or hierarchy change in
+   * that grammar had no visual evidence at all. They are captured at desktop
+   * because these are wide reading surfaces; the module workspace's mobile
+   * behaviour is already covered by the geometry sweep.
+   */
+  for (const { id, name } of [
+    { id: "mission-briefing", name: "mission briefing" },
+    { id: "mission-trade-study", name: "mission trade study" },
+    { id: "mission-showcase", name: "mission showcase" },
+    { id: "demo-mode", name: "demo mode" },
+  ]) {
+    test(`engineering laboratory / ${name}`, async ({ page }) => {
+      await page.goto(`${ROUTES.engineeringLab}#${id}`, {
+        waitUntil: "domcontentloaded",
+      });
+      await settle(page);
+      await expect(page).toHaveScreenshot(
+        `engineering-lab-${id}-desktop.png`,
+        SCREENSHOT_OPTIONS,
+      );
+    });
+  }
+
   test("learn", async ({ page }) => {
     await page.goto(ROUTES.learn, { waitUntil: "domcontentloaded" });
     await settle(page);
