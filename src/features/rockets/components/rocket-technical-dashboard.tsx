@@ -15,7 +15,8 @@ export function RocketTechnicalDashboard({
   return (
     <ProfileSection
       description="A dense launch-control summary assembled only from the selected registry configuration."
-      eyebrow="03 // Systems board"
+      eyebrow="Systems board"
+      mode="data"
       id="technical-dashboard"
       title="Technical Dashboard"
     >

@@ -818,4 +818,136 @@
   .orbix-vehicle-card:hover .orbix-vehicle-card__cta {
     color: var(--orbix-division-accent);
   }
+
+  /* ==================================================================== *
+   * VEHICLE PROFILE SECTION
+   *
+   * One grammar, five modes. The mode changes the header/content
+   * relationship and the vertical rhythm — not the typography, tokens or
+   * accent, which stay shared so a profile reads as one document.
+   * ==================================================================== */
+
+  .orbix-profile-section {
+    border-top: 1px solid var(--orbix-border-subtle);
+    padding-block: clamp(3.5rem, 6vw, 5.5rem);
+  }
+
+  /* Editorial passages get more air around them; they are the places a
+   * reader slows down. */
+  .orbix-profile-section[data-profile-mode="editorial"] {
+    padding-block: clamp(4.5rem, 8vw, 7rem);
+  }
+
+  /* Media sections let the imagery meet the section edge rather than sitting
+   * inside another bordered box. */
+  .orbix-profile-section[data-profile-mode="media"] {
+    padding-block: clamp(3rem, 5vw, 4.5rem);
+  }
+
+  .orbix-profile-section__eyebrow {
+    color: var(--orbix-division-accent);
+    font-family: var(--font-interface);
+    font-size: var(--text-label);
+    font-weight: 600;
+    letter-spacing: var(--tracking-label);
+    line-height: var(--leading-tight);
+    text-transform: uppercase;
+  }
+
+  .orbix-profile-section__title {
+    color: var(--orbix-text-primary);
+    font-family: var(--font-display);
+    font-size: var(--text-h3);
+    font-stretch: var(--font-display-stretch);
+    font-weight: 600;
+    letter-spacing: var(--tracking-tight);
+    line-height: var(--leading-heading);
+    margin-top: 0.75rem;
+  }
+
+  .orbix-profile-section__description {
+    color: var(--orbix-text-muted);
+    font-size: var(--text-body-sm);
+    line-height: 1.7;
+    margin-top: 1rem;
+  }
+
+  /* ==================================================================== *
+   * VEHICLE PROFILE HERO
+   * ==================================================================== */
+
+  .orbix-profile-hero {
+    border-bottom: 1px solid var(--orbix-border-subtle);
+    position: relative;
+  }
+
+  .orbix-profile-hero__classification {
+    color: var(--orbix-division-accent);
+    font-family: var(--font-interface);
+    font-size: var(--text-label);
+    font-weight: 600;
+    letter-spacing: var(--tracking-label);
+    text-transform: uppercase;
+  }
+
+  .orbix-profile-hero__name {
+    color: var(--orbix-text-primary);
+    font-family: var(--font-display);
+    font-size: var(--text-h2);
+    font-stretch: var(--font-display-stretch);
+    font-weight: 650;
+    letter-spacing: var(--tracking-display);
+    line-height: 1.02;
+    margin-top: 0.75rem;
+    text-wrap: balance;
+  }
+
+  /* The defining technical record. Rules rather than boxes: a small set of
+   * figures reads faster as a row of columns than as tiled micro-cards. */
+  .orbix-profile-hero__record {
+    border-top: 1px solid var(--orbix-border);
+    display: grid;
+    gap: 1px;
+    margin-top: 2.5rem;
+  }
+
+  @media (min-width: 640px) {
+    .orbix-profile-hero__record {
+      grid-auto-flow: column;
+      grid-auto-columns: minmax(0, 1fr);
+    }
+  }
+
+  .orbix-profile-hero__record > div {
+    border-bottom: 1px solid var(--orbix-border-subtle);
+    padding-block: 1rem;
+  }
+
+  @media (min-width: 640px) {
+    .orbix-profile-hero__record > div {
+      border-bottom: 0;
+      border-left: 1px solid var(--orbix-border-subtle);
+      padding-inline: 1.25rem;
+    }
+
+    .orbix-profile-hero__record > div:first-child {
+      border-left: 0;
+      padding-left: 0;
+    }
+  }
+
+  .orbix-profile-hero__record dt {
+    color: var(--orbix-text-muted);
+    font-family: var(--font-interface);
+    font-size: var(--text-label);
+    font-weight: 500;
+  }
+
+  .orbix-profile-hero__record dd {
+    color: var(--orbix-text-primary);
+    font-family: var(--font-telemetry);
+    font-size: 1.0625rem;
+    font-variant-numeric: tabular-nums;
+    margin-top: 0.4rem;
+  }
 }

@@ -48,7 +48,8 @@ export function PropulsionPanel({ propulsion }: PropulsionPanelProps) {
   return (
     <ProfileSection
       description="Installed engine configuration and the published thrust ratings available in the dataset."
-      eyebrow="06 // Powerplant"
+      eyebrow="Powerplant"
+      mode="configuration"
       id="powerplant"
       title="Powerplant"
     >

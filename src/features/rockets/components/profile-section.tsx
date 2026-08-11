@@ -1,43 +1,31 @@
 import type { ReactNode } from "react";
 
+import {
+  VehicleProfileSection,
+  type VehicleProfileSectionMode,
+} from "@/features/vehicles/components/vehicle-profile-section";
+
 interface ProfileSectionProps {
   children: ReactNode;
   description: string;
   eyebrow: string;
   id: string;
+  /**
+   * Optional. Omitted, the shared primitive uses `record` — the historic
+   * rail-beside-content layout — so every section that has not yet adopted a
+   * mode renders as before.
+   */
+  mode?: VehicleProfileSectionMode;
   title: string;
 }
 
-export function ProfileSection({
-  children,
-  description,
-  eyebrow,
-  id,
-  title,
-}: ProfileSectionProps) {
-  const titleId = id + "-title";
-
-  return (
-    <section
-      aria-labelledby={titleId}
-      className="scroll-mt-40 border-t border-atmosphere/20 py-16 sm:py-20"
-      id={id}
-    >
-      <div className="grid gap-10 lg:grid-cols-[18rem_minmax(0,1fr)] lg:gap-16">
-        <div>
-          <p className="font-mono text-[0.68rem] tracking-[0.18em] text-accent uppercase">
-            {eyebrow}
-          </p>
-          <h2
-            className="font-display mt-3 text-3xl font-semibold tracking-[-0.035em] sm:text-4xl"
-            id={titleId}
-          >
-            {title}
-          </h2>
-          <p className="mt-4 text-sm leading-6 text-muted">{description}</p>
-        </div>
-        <div>{children}</div>
-      </div>
-    </section>
-  );
+/**
+ * Thin adapter over the shared vehicle profile section.
+ *
+ * The prop contract is unchanged, so the existing consumers in this feature
+ * need no edits. It exists so mode adoption can proceed section by section
+ * rather than as one import rewrite across ~20 files.
+ */
+export function ProfileSection(props: ProfileSectionProps) {
+  return <VehicleProfileSection {...props} />;
 }

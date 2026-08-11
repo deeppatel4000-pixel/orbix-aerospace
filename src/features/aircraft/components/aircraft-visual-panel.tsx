@@ -12,7 +12,8 @@ export function AircraftVisualPanel({ aircraft }: AircraftVisualPanelProps) {
   return (
     <ProfileSection
       description="The approved aircraft visual is presented as mission-dossier reference imagery."
-      eyebrow="02 // Visual identification"
+      eyebrow="Visual identification"
+      mode="media"
       id="aircraft-image"
       title="Aircraft Image"
     >
