@@ -24,9 +24,15 @@ test("explorer lists all 5 aircraft by name", async ({ page }) => {
   // that heading a second time and violate Playwright's strict-locator mode.
   const registry = page.locator("#available-aircraft");
 
+  // Level 3, not 2: the registry section itself is the <h2>
+  // ("Engineering profiles" / the launch-vehicle registry heading), so an
+  // individual aircraft record nests one level below it. These names were
+  // previously <h2>, which made each card a sibling of the section it
+  // belongs to. The landmark/heading suite verifies the resulting order
+  // has no skipped levels.
   for (const id of AIRCRAFT_IDS) {
     await expect(
-      registry.getByRole("heading", { level: 2, name: AIRCRAFT_NAMES[id] }),
+      registry.getByRole("heading", { level: 3, name: AIRCRAFT_NAMES[id] }),
     ).toBeVisible();
   }
 });
