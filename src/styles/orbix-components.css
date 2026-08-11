@@ -819,6 +819,74 @@
     color: var(--orbix-division-accent);
   }
 
+  /* ==================================================================== *
+   * HOMEPAGE LINKS AND CALLS TO ACTION
+   *
+   * Two levels only. The previous homepage carried `.orbix-button` with an
+   * uppercase letter-spaced monospace label, a gradient fill, a glow shadow
+   * and a hover shimmer sweep; these are quiet by comparison and use the
+   * interface face.
+   * ==================================================================== */
+
+  .orbix-home-cta {
+    align-items: center;
+    background: var(--orbix-division-accent);
+    border: 1px solid var(--orbix-division-accent);
+    border-radius: var(--radius-md);
+    color: var(--orbix-division-accent-contrast);
+    display: inline-flex;
+    font-family: var(--font-interface);
+    font-size: var(--text-body-sm);
+    font-weight: 600;
+    gap: 0.5rem;
+    min-height: 2.875rem;
+    padding-inline: 1.25rem;
+    transition:
+      background-color var(--motion-transition) var(--motion-ease),
+      border-color var(--motion-transition) var(--motion-ease);
+  }
+
+  .orbix-home-cta:hover {
+    background: var(--orbix-division-accent-hover);
+    border-color: var(--orbix-division-accent-hover);
+  }
+
+  .orbix-home-cta--secondary {
+    background: transparent;
+    border-color: var(--orbix-border);
+    color: var(--orbix-text-primary);
+  }
+
+  .orbix-home-cta--secondary:hover {
+    background: transparent;
+    border-color: var(--orbix-division-accent);
+    color: var(--orbix-division-accent);
+  }
+
+  .orbix-home-cta:focus-visible,
+  .orbix-home-link:focus-visible {
+    outline: 2px solid var(--orbix-focus);
+    outline-offset: 3px;
+  }
+
+  /* Inline text link used for section destinations. */
+  .orbix-home-link {
+    align-items: center;
+    border-radius: var(--radius-sm);
+    color: var(--orbix-division-accent);
+    display: inline-flex;
+    font-family: var(--font-interface);
+    font-size: var(--text-body-sm);
+    font-weight: 500;
+    gap: 0.4rem;
+    min-height: 2.75rem;
+    transition: color var(--motion-transition) var(--motion-ease);
+  }
+
+  .orbix-home-link:hover {
+    color: var(--orbix-text-primary);
+  }
+
   /* Profile section navigation. The numeric mono badge was dropped: it
    * duplicated the ordering the list already communicates, and it was the
    * last monospace in the profile chrome. */
@@ -851,6 +919,23 @@
    * default discovery rendering is untouched. */
   .orbix-vehicle-card[data-variant="compact"] .orbix-vehicle-card__name {
     font-size: 1.25rem;
+  }
+
+  /* Some launch vehicles support six orbit regimes; unclamped, that
+   * classification line runs to five wrapped rows and dwarfs the vehicle
+   * name in the homepage's two-up layout.
+   *
+   * Scoped to the homepage wrapper, NOT to the compact variant itself:
+   * profile related-vehicle strips also use `compact`, and clamping there
+   * would change vehicle profile rendering, which is outside this phase.
+   * The full list remains everywhere else. */
+  .orbix-home-vehicles
+    .orbix-vehicle-card[data-variant="compact"]
+    .orbix-vehicle-card__classification {
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    display: -webkit-box;
+    overflow: hidden;
   }
 
   .orbix-vehicle-card[data-variant="compact"] .orbix-vehicle-card__specs {

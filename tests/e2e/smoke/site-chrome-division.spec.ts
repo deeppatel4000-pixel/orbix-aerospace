@@ -43,8 +43,12 @@ test.describe("Division propagation", () => {
     test(`${path} resolves to the ${division} division`, async ({ page }) => {
       await page.goto(path, { waitUntil: "domcontentloaded" });
 
-      const shell = page.locator("[data-orbix-division]");
-      await expect(shell).toHaveCount(1);
+      // Scoped to the SHELL wrapper rather than "any element with a
+      // division": routes may legitimately mark individual sections with a
+      // division accent (the homepage does, for its aircraft, launch-vehicle,
+      // engineering and research sections). The contract is that the shell
+      // carries the route's division, not that only one element does.
+      const shell = page.locator("body [data-orbix-division]").first();
       await expect(shell).toHaveAttribute("data-orbix-division", division);
     });
   }
@@ -66,10 +70,9 @@ test.describe("Division propagation", () => {
     await page.goto(`${ROUTES.aircraft}/f-22-raptor`, {
       waitUntil: "domcontentloaded",
     });
-    await expect(page.locator("[data-orbix-division]")).toHaveAttribute(
-      "data-orbix-division",
-      "aircraft",
-    );
+    await expect(
+      page.locator("body [data-orbix-division]").first(),
+    ).toHaveAttribute("data-orbix-division", "aircraft");
   });
 
   test("the division updates on client-side navigation", async ({ page }) => {
@@ -77,10 +80,9 @@ test.describe("Division propagation", () => {
     // the previous route's division after an in-app navigation, which a
     // pathname read inside an effect would produce.
     await page.goto(ROUTES.learn, { waitUntil: "domcontentloaded" });
-    await expect(page.locator("[data-orbix-division]")).toHaveAttribute(
-      "data-orbix-division",
-      "research",
-    );
+    await expect(
+      page.locator("body [data-orbix-division]").first(),
+    ).toHaveAttribute("data-orbix-division", "research");
 
     await page
       .getByRole("navigation", { name: "Primary navigation" })
@@ -88,10 +90,9 @@ test.describe("Division propagation", () => {
       .click();
 
     await expect(page).toHaveURL(ROUTES.aircraft);
-    await expect(page.locator("[data-orbix-division]")).toHaveAttribute(
-      "data-orbix-division",
-      "aircraft",
-    );
+    await expect(
+      page.locator("body [data-orbix-division]").first(),
+    ).toHaveAttribute("data-orbix-division", "aircraft");
   });
 });
 
