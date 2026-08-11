@@ -84,15 +84,9 @@ export function AircraftProfile({ aircraft }: AircraftProfileProps) {
             className="[scrollbar-width:thin] overflow-x-auto"
           >
             <ul className="flex min-w-max items-center gap-1 py-3">
-              {profileNavigation.map((item, index) => (
+              {profileNavigation.map((item) => (
                 <li key={item.href}>
-                  <a
-                    className="inline-flex min-h-11 items-center border border-transparent px-3.5 text-sm text-muted transition-colors hover:border-tactical/30 hover:bg-tactical/8 hover:text-tactical-amber focus-visible:border-tactical-amber focus-visible:text-tactical-amber"
-                    href={item.href}
-                  >
-                    <span className="mr-2 font-mono text-[0.58rem] text-tactical-amber">
-                      {String(index + 1).padStart(2, "0")}
-                    </span>
+                  <a className="orbix-profile-nav-link" href={item.href}>
                     {item.label}
                   </a>
                 </li>

@@ -17,7 +17,8 @@ export function DimensionsPanel({ dimensions, weights }: DimensionsPanelProps) {
   return (
     <ProfileSection
       description="Airframe geometry and mass properties represented with explicit source units."
-      eyebrow="05 // Airframe"
+      eyebrow="Airframe"
+      mode="record"
       id="dimensions"
       title="Dimensions"
     >

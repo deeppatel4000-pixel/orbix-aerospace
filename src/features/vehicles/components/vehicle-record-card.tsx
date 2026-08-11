@@ -35,6 +35,17 @@ export interface VehicleSpec {
   readonly label: string;
 }
 
+/**
+ * `default` is the discovery-index card. `compact` is the related-vehicle
+ * card used at the end of a profile: same primitive, same media frame, same
+ * accent — it simply drops the description and shows a single specification,
+ * so a profile does not end with five full-height index cards.
+ *
+ * Adding this variant must not alter `default` rendering; the discovery
+ * indexes are finished work.
+ */
+export type VehicleRecordCardVariant = "compact" | "default";
+
 interface VehicleRecordCardProps {
   className?: string;
   /** Short classification line, e.g. roles or supported orbits. */
@@ -45,6 +56,7 @@ interface VehicleRecordCardProps {
   media: ReactNode;
   name: string;
   specs: readonly VehicleSpec[];
+  variant?: VehicleRecordCardVariant;
 }
 
 export function VehicleRecordCard({
@@ -55,20 +67,37 @@ export function VehicleRecordCard({
   media,
   name,
   specs,
+  variant = "default",
 }: VehicleRecordCardProps) {
+  const isCompact = variant === "compact";
+  // Compact shows one specification. More than that and the card stops being
+  // compact; fewer and it carries no technical signal at all.
+  const visibleSpecs = isCompact ? specs.slice(0, 1) : specs;
+
   return (
     <article className={cn("h-full", className)}>
-      <Link className="orbix-vehicle-card group" href={href}>
+      <Link
+        className="orbix-vehicle-card group"
+        data-variant={variant}
+        href={href}
+      >
         {media}
 
-        <div className="flex flex-1 flex-col p-5 sm:p-6">
+        <div
+          className={cn(
+            "flex flex-1 flex-col",
+            isCompact ? "p-4" : "p-5 sm:p-6",
+          )}
+        >
           <p className="orbix-vehicle-card__classification">{classification}</p>
           <h3 className="orbix-vehicle-card__name">{name}</h3>
 
-          <p className="mt-3 text-sm leading-6 text-muted">{description}</p>
+          {isCompact ? null : (
+            <p className="mt-3 text-sm leading-6 text-muted">{description}</p>
+          )}
 
           <dl className="orbix-vehicle-card__specs">
-            {specs.map((spec) => (
+            {visibleSpecs.map((spec) => (
               <div key={spec.label}>
                 <dt className="orbix-vehicle-card__spec-label">{spec.label}</dt>
                 {/* Values are the one place monospace earns its keep here:

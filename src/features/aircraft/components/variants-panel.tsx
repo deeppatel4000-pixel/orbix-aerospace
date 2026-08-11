@@ -15,7 +15,8 @@ export function VariantsPanel({ variants }: VariantsPanelProps) {
   return (
     <ProfileSection
       description="Recorded aircraft variants and their available status, chronology, and configuration notes."
-      eyebrow="08 // Configuration branches"
+      eyebrow="Configuration branches"
+      mode="record"
       id="variants"
       title="Variants"
     >

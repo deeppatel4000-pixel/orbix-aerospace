@@ -44,7 +44,8 @@ export function PropulsionPanel({ stages }: PropulsionPanelProps) {
   return (
     <ProfileSection
       description="Engine families, power cycles, installed quantities, and available per-engine thrust ratings."
-      eyebrow="03 // Propulsion"
+      eyebrow="Propulsion"
+      mode="configuration"
       id="propulsion"
       title="Propulsion"
     >
