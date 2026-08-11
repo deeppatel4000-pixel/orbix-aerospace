@@ -937,6 +937,41 @@
     margin-top: 0.2rem;
   }
 
+  /* Magnitude track.
+   *
+   * Deliberately the quietest thing in the cell: a 2px hairline, one accent at
+   * reduced opacity, no gradient, no glow, no semantic red/green. The published
+   * figure above it is the value; this only makes relative scale easier to
+   * perceive at a glance, and it is never the only way a difference is
+   * communicated. Constrained in width so a full-length track reads as a
+   * measurement rule rather than a progress bar filling the column. */
+  .orbix-magnitude {
+    background-color: color-mix(
+      in srgb,
+      var(--orbix-border-subtle) 70%,
+      transparent
+    );
+    border-radius: 999px;
+    /* Width is left to normal block flow rather than set to 100%: inside an
+     * auto-layout table cell a percentage width resolves against a cell whose
+     * own width is still being computed, and collapses to zero. */
+    display: block;
+    height: 2px;
+    margin-top: 0.6rem;
+    max-width: 11rem;
+    overflow: hidden;
+  }
+
+  .orbix-magnitude__fill {
+    background-color: color-mix(in srgb, var(--orbix-accent) 55%, transparent);
+    border-radius: inherit;
+    display: block;
+    height: 100%;
+    /* Clamped so a rounding artefact can never render a negative or
+     * overlong track. The value itself is already normalized to 0..1. */
+    width: calc(clamp(0, var(--orbix-magnitude, 0), 1) * 100%);
+  }
+
   /* Profile section navigation. The numeric mono badge was dropped: it
    * duplicated the ordering the list already communicates, and it was the
    * last monospace in the profile chrome. */

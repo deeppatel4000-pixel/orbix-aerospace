@@ -9,7 +9,11 @@ import type {
   ComparisonResult,
   ComparisonRow,
 } from "@/features/compare/types";
-import type { Aircraft } from "@/features/vehicles/types";
+import type {
+  Aircraft,
+  Measurement,
+  MeasurementUnit,
+} from "@/features/vehicles/types";
 
 const unavailableValue: ComparisonCellValue = {
   note: "Not available in the current dataset",
@@ -19,7 +23,7 @@ const unavailableValue: ComparisonCellValue = {
 
 function availableValue(
   value: string,
-  options: Pick<ComparisonCellValue, "details" | "note"> = {},
+  options: Pick<ComparisonCellValue, "details" | "magnitude" | "note"> = {},
 ): ComparisonCellValue {
   return {
     ...options,
@@ -41,6 +45,26 @@ function createRow(
     id,
     label,
   };
+}
+
+/**
+ * A cell whose displayed value is exactly one measurement.
+ *
+ * The magnitude is copied straight off the dataset record — the same object the
+ * formatter reads — so the number and the unit are the published source values,
+ * never anything recovered from the formatted string. Rows whose cells mix
+ * units (speed can be Mach or mph, range can be miles or nautical miles) are
+ * filtered out downstream by unit equality, not here.
+ */
+function measurementValue<TUnit extends MeasurementUnit>(
+  measurement: Measurement<TUnit>,
+): ComparisonCellValue {
+  const formatted = formatAircraftMeasurement(measurement);
+
+  return availableValue(formatted.value, {
+    magnitude: { unit: measurement.unit, value: measurement.value },
+    note: formatted.note,
+  });
 }
 
 function formatPropulsion(aircraft: Aircraft): ComparisonCellValue {
@@ -107,22 +131,15 @@ export function adaptAircraftComparison(
         aircraft,
         "speed",
         "Speed",
-        (item) => {
-          const speed = formatAircraftMeasurement(item.performance.maxSpeed);
-          return availableValue(speed.value, { note: speed.note });
-        },
+        (item) => measurementValue(item.performance.maxSpeed),
         "Published maximum speed; source units are preserved.",
       ),
-      createRow(aircraft, "range", "Range", (item) => {
-        const range = formatAircraftMeasurement(item.performance.range);
-        return availableValue(range.value, { note: range.note });
-      }),
-      createRow(aircraft, "ceiling", "Ceiling", (item) => {
-        const ceiling = formatAircraftMeasurement(
-          item.performance.serviceCeiling,
-        );
-        return availableValue(ceiling.value, { note: ceiling.note });
-      }),
+      createRow(aircraft, "range", "Range", (item) =>
+        measurementValue(item.performance.range),
+      ),
+      createRow(aircraft, "ceiling", "Ceiling", (item) =>
+        measurementValue(item.performance.serviceCeiling),
+      ),
       createRow(aircraft, "propulsion", "Propulsion", formatPropulsion),
       createRow(aircraft, "dimensions", "Dimensions", formatDimensions),
       createRow(aircraft, "weight", "Weight", formatWeight),

@@ -4,6 +4,36 @@ import { expect, expectAllImagesLoaded, ROUTES, test } from "../fixtures/orbix";
 
 const MISSION_CONTROL_HASH = "#mission-control-dashboard";
 
+/**
+ * Populated Compare captures.
+ *
+ * The plain `/compare` captures below photograph the empty state — the route
+ * renders no matrix until at least two vehicles are selected — so for the whole
+ * of the Compare redesign the identity strip, the populated matrix and the
+ * magnitude tracks had no visual coverage at all. These two queries fill that
+ * gap, and each is chosen because it shows both halves of the magnitude
+ * contract in one frame:
+ *
+ *   aircraft  The F-15 publishes 1,875 mph while the F-22 and SR-71 publish
+ *             Mach numbers, so the speed row must appear with NO tracks, while
+ *             range and ceiling — miles and feet throughout — must have them.
+ *             A change that started encoding mixed units would be visible here
+ *             as bars appearing in the speed row.
+ *
+ *   rockets   Height is metres and liftoff mass is kilograms for all three, but
+ *             Falcon 9 and Falcon Heavy publish thrust in kN while Saturn V
+ *             publishes MN, so the thrust row must stay text-only. This also
+ *             captures the portrait media treatment the launch-vehicle identity
+ *             strip uses.
+ *
+ * Both go through the ordinary query contract; nothing here is a test-only
+ * entry point.
+ */
+const COMPARE_AIRCRAFT_QUERY =
+  "?category=aircraft&vehicles=f-15-eagle,f-22-raptor,sr-71-blackbird";
+const COMPARE_ROCKETS_QUERY =
+  "?category=rockets&vehicles=falcon-9,falcon-heavy,saturn-v";
+
 const DESKTOP_VIEWPORT = { width: 1440, height: 900 };
 const TABLET_VIEWPORT = { width: 768, height: 1024 };
 const MOBILE_VIEWPORT = { width: 390, height: 844 };
@@ -184,6 +214,28 @@ test.describe("Visual regression / desktop 1440x900", () => {
     );
   });
 
+  test("compare / populated aircraft comparison", async ({ page }) => {
+    await page.goto(ROUTES.compare + COMPARE_AIRCRAFT_QUERY, {
+      waitUntil: "domcontentloaded",
+    });
+    await settle(page);
+    await expect(page).toHaveScreenshot(
+      "compare-aircraft-desktop.png",
+      SCREENSHOT_OPTIONS,
+    );
+  });
+
+  test("compare / populated rocket comparison", async ({ page }) => {
+    await page.goto(ROUTES.compare + COMPARE_ROCKETS_QUERY, {
+      waitUntil: "domcontentloaded",
+    });
+    await settle(page);
+    await expect(page).toHaveScreenshot(
+      "compare-rockets-desktop.png",
+      SCREENSHOT_OPTIONS,
+    );
+  });
+
   test("learn", async ({ page }) => {
     await page.goto(ROUTES.learn, { waitUntil: "domcontentloaded" });
     await settle(page);
@@ -236,6 +288,22 @@ test.describe("Visual regression / mobile 390x844", () => {
     await settle(page);
     await expect(page).toHaveScreenshot(
       "compare-mobile.png",
+      SCREENSHOT_OPTIONS,
+    );
+  });
+
+  // One populated mobile capture, not two: the matrix is a contained
+  // horizontal scroller at this width, so what a screenshot can actually show
+  // is the identity strip plus the first column of the matrix. The aircraft
+  // selection is used because its leading column carries an encoded row and an
+  // intentionally unencoded one, which is the behaviour worth photographing.
+  test("compare / populated aircraft comparison", async ({ page }) => {
+    await page.goto(ROUTES.compare + COMPARE_AIRCRAFT_QUERY, {
+      waitUntil: "domcontentloaded",
+    });
+    await settle(page);
+    await expect(page).toHaveScreenshot(
+      "compare-aircraft-mobile.png",
       SCREENSHOT_OPTIONS,
     );
   });

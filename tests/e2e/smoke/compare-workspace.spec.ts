@@ -11,8 +11,8 @@ import { expect, ROUTES, test } from "../fixtures/orbix";
  * These tests cover the new UI contract only. Query semantics are unchanged
  * and remain covered by `compare-query.spec.ts`; nothing here re-tests them.
  *
- * Magnitude encoding is deliberately NOT covered — it is Phase 3B, and the
- * comparison cell carries no numeric value yet.
+ * Magnitude encoding is covered separately by `compare-magnitude.spec.ts`;
+ * nothing here asserts anything about it.
  */
 
 const IDENTITY = ".orbix-compare-identity > li";
