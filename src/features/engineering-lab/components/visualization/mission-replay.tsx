@@ -224,7 +224,7 @@ function ReplayTelemetry({
   readonly value: number | string | undefined;
 }) {
   return (
-    <div className="rounded-lg border border-white/10 bg-[#071116] px-3 py-2.5">
+    <div className="px-4 py-3">
       <dt className="font-mono text-[0.52rem] tracking-[0.1em] text-[#71878d] uppercase">
         {label}
       </dt>
@@ -352,27 +352,19 @@ export function MissionReplay({
       </header>
 
       <div className="space-y-6 p-5">
-        <ReplayControls
-          currentPhaseIndex={state.currentPhaseIndex}
-          currentPhaseLabel={activePhase.label}
-          isPlaying={state.isPlaying}
-          onPause={() => dispatch({ type: "pause" })}
-          onPlay={() => dispatch({ type: "play" })}
-          onRestart={() => dispatch({ type: "restart" })}
-          onSpeedChange={(speed) => dispatch({ speed, type: "set-speed" })}
-          speed={state.speed}
-          totalPhases={phases.length}
+        <Mission3DScene
+          initialMode={activePhase.sceneMode}
+          key={activePhase.id}
+          missionProfileAnalysis={
+            activePhase.sceneMode === "orbital" ? missionProfileAnalysis : null
+          }
+          missionReport={missionReport}
+          vehicleReentryEvaluation={
+            activePhase.sceneMode === "reentry"
+              ? vehicleReentryEvaluation
+              : null
+          }
         />
-
-        <div className="overflow-x-auto pb-2">
-          <ReplayPhaseIndicator
-            currentPhaseIndex={state.currentPhaseIndex}
-            onSelectPhase={(phaseIndex) =>
-              dispatch({ phaseIndex, type: "select-phase" })
-            }
-            phases={phases}
-          />
-        </div>
 
         <section
           aria-labelledby="replay-active-phase-title"
@@ -404,19 +396,27 @@ export function MissionReplay({
           </div>
         </section>
 
-        <Mission3DScene
-          initialMode={activePhase.sceneMode}
-          key={activePhase.id}
-          missionProfileAnalysis={
-            activePhase.sceneMode === "orbital" ? missionProfileAnalysis : null
-          }
-          missionReport={missionReport}
-          vehicleReentryEvaluation={
-            activePhase.sceneMode === "reentry"
-              ? vehicleReentryEvaluation
-              : null
-          }
+        <ReplayControls
+          currentPhaseIndex={state.currentPhaseIndex}
+          currentPhaseLabel={activePhase.label}
+          isPlaying={state.isPlaying}
+          onPause={() => dispatch({ type: "pause" })}
+          onPlay={() => dispatch({ type: "play" })}
+          onRestart={() => dispatch({ type: "restart" })}
+          onSpeedChange={(speed) => dispatch({ speed, type: "set-speed" })}
+          speed={state.speed}
+          totalPhases={phases.length}
         />
+
+        <div className="overflow-x-auto pb-2">
+          <ReplayPhaseIndicator
+            currentPhaseIndex={state.currentPhaseIndex}
+            onSelectPhase={(phaseIndex) =>
+              dispatch({ phaseIndex, type: "select-phase" })
+            }
+            phases={phases}
+          />
+        </div>
 
         <section aria-labelledby="replay-telemetry-title">
           <div className="flex items-center gap-2">
@@ -428,7 +428,7 @@ export function MissionReplay({
               Synchronized Telemetry
             </h4>
           </div>
-          <dl className="mt-3 grid gap-2 sm:grid-cols-2 xl:grid-cols-5">
+          <dl className="mt-3 grid divide-y divide-white/8 overflow-hidden rounded-xl border border-white/10 bg-[#071116] sm:grid-cols-2 sm:divide-x xl:grid-cols-5">
             <ReplayTelemetry label="Active phase" value={activePhase.label} />
             <ReplayTelemetry
               label="Total delta-v"
