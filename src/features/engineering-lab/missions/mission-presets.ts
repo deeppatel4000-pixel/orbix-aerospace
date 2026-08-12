@@ -91,7 +91,7 @@ const presetDefinitions = [
   {
     category: "orbital-deployment",
     description:
-      "Demonstrates an ideal parking-orbit-to-target-orbit transfer for deploying a satellite into circular low Earth orbit.",
+      "Two-impulse transfer from parking orbit to circular low Earth orbit.",
     id: "leo-satellite-deployment",
     missionProfileInputs: {
       deltaVBudget: {
@@ -108,7 +108,7 @@ const presetDefinitions = [
   {
     category: "orbital-logistics",
     description:
-      "Combines a low-orbit rendezvous transfer with an illustrative cargo capsule reentry and TPS material evaluation.",
+      "Low-orbit rendezvous, then a cargo capsule reentry with TPS material evaluation.",
     id: "iss-style-resupply",
     missionProfileInputs: {
       deltaVBudget: {
@@ -137,7 +137,7 @@ const presetDefinitions = [
   {
     category: "lunar-transfer",
     description:
-      "Demonstrates a simplified high-altitude transfer and separate inclination change as an Earth-to-Moon-style mission concept.",
+      "High-altitude transfer with a separate inclination change, in Earth-to-Moon geometry.",
     id: "lunar-transfer-concept",
     missionProfileInputs: {
       deltaVBudget: {
@@ -158,7 +158,7 @@ const presetDefinitions = [
   {
     category: "reentry-demonstration",
     description:
-      "Compares two illustrative reentry configurations while preserving a primary vehicle evaluation and TPS recommendation.",
+      "Two reentry configurations compared against a primary vehicle evaluation and TPS recommendation.",
     id: "reentry-demonstrator",
     missionProfileInputs: {
       missionName: "Reentry Demonstrator",
@@ -201,7 +201,7 @@ const presetDefinitions = [
   {
     category: "deep-space-concept",
     description:
-      "Demonstrates a conceptual deep-space mission budget using ordered, caller-supplied maneuver allowances without trajectory optimization.",
+      "Deep-space delta-v budget from ordered maneuver allowances. No trajectory optimization.",
     id: "mars-transfer-concept",
     missionProfileInputs: {
       deltaVBudget: {
