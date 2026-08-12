@@ -71,6 +71,8 @@ export function LearningPathwaySection({
   sequence,
 }: LearningPathwaySectionProps) {
   const titleId = `${area.id}-title`;
+  const labId = `${area.id}-lab-links`;
+  const exploreId = `${area.id}-exploration-links`;
   const presentation = accentPresentation[area.accent];
   const Icon = presentation.icon;
   const ordinal = String(sequence).padStart(2, "0");
@@ -147,31 +149,47 @@ export function LearningPathwaySection({
           className="p-6 sm:p-7"
           variant={area.surfaceVariant}
         >
-          <TechnicalLabel className="text-muted">
+          {/* A reading list, not a row of chips.
+           *
+           * Each anchor was a bordered pill in uppercase monospace at 0.66rem
+           * — twenty-eight of them across the page, which supplied most of the
+           * route's surfaces and nearly all of its microtext, and made module
+           * names that are ordinary English read as machine identifiers. They
+           * are now interface-typeface links on shared rules. Every href and
+           * every label is unchanged. */}
+          <h3 className="orbix-label text-muted" id={labId}>
             Continue in the Engineering Laboratory
-          </TechnicalLabel>
-          <ul className="mt-4 flex flex-wrap gap-2">
+          </h3>
+          <ul
+            aria-labelledby={labId}
+            className="mt-3 divide-y divide-border/70 border-y border-border/70"
+          >
             {area.labAnchors.map((anchor) => (
               <li key={anchor.anchorId}>
                 <a
-                  className="text-muted-strong inline-flex min-h-11 items-center rounded-full border border-border px-3.5 text-center font-mono text-[0.66rem] tracking-[0.05em] uppercase transition-colors hover:border-accent/50 hover:text-accent"
+                  className="group text-muted-strong flex min-h-11 items-center justify-between gap-3 py-2.5 text-sm leading-6 transition-colors hover:text-accent"
                   href={`/engineering-lab#${anchor.anchorId}`}
                 >
                   {anchor.label}
+                  <ArrowUpRight
+                    aria-hidden="true"
+                    className="shrink-0 text-muted transition-colors group-hover:text-accent"
+                    size={14}
+                  />
                 </a>
               </li>
             ))}
           </ul>
 
           {area.explorationLinks.length > 0 ? (
-            <div className="mt-6 space-y-3 border-t border-border/70 pt-6">
-              <TechnicalLabel className="text-muted">
+            <div className="mt-6 border-t border-border/70 pt-6">
+              <h3 className="orbix-label text-muted" id={exploreId}>
                 Explore in ORBIX
-              </TechnicalLabel>
-              <div className="space-y-3">
+              </h3>
+              <div className="mt-3 divide-y divide-border/70">
                 {area.explorationLinks.map((link) => (
                   <Link
-                    className="group block rounded-[var(--radius-control)] border border-border p-3.5 transition-colors hover:border-accent/50"
+                    className="group block py-3 transition-colors"
                     href={link.href}
                     key={link.href}
                   >
