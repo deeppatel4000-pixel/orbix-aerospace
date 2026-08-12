@@ -181,7 +181,20 @@ a {
       64px 64px,
       16px 16px,
       16px 16px;
-    mask-image: linear-gradient(to bottom, black 8%, transparent 94%);
+    /* Deliberately unmasked.
+     *
+     * This rule used to end with
+     * `mask-image: linear-gradient(to bottom, black 8%, transparent 94%)`.
+     * A mask applies to an element AND every descendant, and twenty-one of the
+     * thirty-six usages are content containers — the Compare empty state,
+     * Mission Control panels, the mission tiles, both explorer empty states.
+     * Their text, labels and controls faded out toward the bottom of the card,
+     * which is the readability defect this removes.
+     *
+     * The grid itself stays; it simply no longer fades. Background-only layers
+     * lose their fade too, and that is the intended trade: one consistent,
+     * fully legible treatment beats a decorative ramp that eats content.
+     * `orbix-grid-mask.test.ts` holds this rule to it. */
   }
 
   .orbix-starfield {
