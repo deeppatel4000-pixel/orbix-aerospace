@@ -4,10 +4,177 @@ import { expect, ROUTES, test } from "../fixtures/orbix";
  * Learn research layout (Phase 6A).
  *
  * The dataset itself is frozen by `learning-areas.test.ts`; this covers what
- * only a browser can see — that the redesigned pathway asides stay inside the
- * viewport, keep every destination reachable, and remain on the research
- * division.
+ * only a browser can see — that the redesigned pathway records stay inside the
+ * viewport, that the research division and heading structure survive, and that
+ * no link ends up nested inside another control.
+ *
+ * ## Why the containment check is built the way it is
+ *
+ * It took three wrong instruments to measure this honestly, and each failure is
+ * worth recording because each looked reasonable:
+ *
+ *   measured too early    The first version read geometry straight after
+ *                         `domcontentloaded`, before the stylesheet applied.
+ *                         Every section reported its unstyled block width, so a
+ *                         deliberately 960px-wide pathway looked fine. The test
+ *                         completed in 396ms.
+ *
+ *   polled a negative     `expect.poll(...).toBe(false)` reads as a wait and
+ *                         behaves as an instant pass: a poll is satisfied by its
+ *                         FIRST matching sample, and "is the document
+ *                         overflowing?" is false before layout exists.
+ *
+ *   readiness on a zero   A later readiness probe sampled the first pathway's
+ *                         `padding-top`. That pathway carries `first:pt-0`, so
+ *                         its zero padding is by design and could never signal
+ *                         that CSS had arrived. Its timeout was then mistaken
+ *                         for the geometry assertion catching a defect.
+ *
+ * So: readiness and containment are separate, separately named assertions; all
+ * geometry comes from ONE helper in ONE `page.evaluate`; and the helper is
+ * itself under test — `the containment helper detects an injected overflow`
+ * injects a real defect with `addStyleTag` and proves the same violation
+ * function that guards production actually catches it.
  */
+
+const MOBILE_WIDTHS = [390, 320] as const;
+
+interface PathwayGeometry {
+  readonly id: string;
+  readonly left: number;
+  readonly right: number;
+  readonly width: number;
+  readonly parentLeft: number;
+  readonly parentRight: number;
+  readonly display: string;
+  readonly visibility: string;
+  readonly overflowX: string;
+  readonly hidden: boolean;
+  readonly overflowLeft: number;
+  readonly overflowRight: number;
+}
+
+interface LearnGeometry {
+  readonly innerWidth: number;
+  readonly clientWidth: number;
+  readonly documentScrollWidth: number;
+  readonly bodyScrollWidth: number;
+  readonly pathways: readonly PathwayGeometry[];
+}
+
+/**
+ * Every containment number this file uses, read in one pass so the diagnostic
+ * and the assertion can never disagree about what was on screen.
+ */
+async function collectGeometry(
+  page: import("@playwright/test").Page,
+): Promise<LearnGeometry> {
+  return page.evaluate(() => {
+    const documentElement = document.documentElement;
+
+    const pathways = [...document.querySelectorAll("section[id]")].map(
+      (node) => {
+        const box = node.getBoundingClientRect();
+        const style = getComputedStyle(node);
+        const parentBox = (
+          node.parentElement ?? documentElement
+        ).getBoundingClientRect();
+
+        return {
+          display: style.display,
+          hidden: box.width <= 1 || box.height <= 1,
+          id: node.id,
+          left: Math.round(box.left),
+          overflowLeft: Math.round(0 - box.left),
+          overflowRight: Math.round(box.right - window.innerWidth),
+          overflowX: style.overflowX,
+          parentLeft: Math.round(parentBox.left),
+          parentRight: Math.round(parentBox.right),
+          right: Math.round(box.right),
+          visibility: style.visibility,
+          width: Math.round(box.width),
+        };
+      },
+    );
+
+    return {
+      bodyScrollWidth: document.body.scrollWidth,
+      clientWidth: documentElement.clientWidth,
+      documentScrollWidth: documentElement.scrollWidth,
+      innerWidth: window.innerWidth,
+      pathways,
+    };
+  });
+}
+
+/**
+ * Containment violations derived from a geometry reading. Pure, so the same
+ * function judges the production layout and the injected-defect self-test.
+ *
+ * 1px of tolerance for subpixel rounding and no more — a real overflow here is
+ * hundreds of pixels.
+ */
+function containmentViolations(geometry: LearnGeometry): string[] {
+  const violations: string[] = [];
+
+  for (const pathway of geometry.pathways) {
+    if (pathway.hidden) continue;
+
+    if (pathway.left < -1) {
+      violations.push(`${pathway.id}: left ${pathway.left} < 0`);
+    }
+    if (pathway.overflowRight > 1) {
+      violations.push(
+        `${pathway.id}: right ${pathway.right} exceeds viewport ${geometry.innerWidth} by ${pathway.overflowRight}`,
+      );
+    }
+    if (pathway.width > geometry.innerWidth + 1) {
+      violations.push(
+        `${pathway.id}: width ${pathway.width} exceeds viewport ${geometry.innerWidth}`,
+      );
+    }
+  }
+
+  if (geometry.documentScrollWidth > geometry.clientWidth + 1) {
+    violations.push(
+      `document scrolls sideways: scrollWidth ${geometry.documentScrollWidth} vs clientWidth ${geometry.clientWidth}`,
+    );
+  }
+
+  return violations;
+}
+
+/**
+ * Positive readiness: the real content is present and the stylesheet is in
+ * effect. Never a negative poll, and never a property that is legitimately
+ * zero.
+ */
+async function waitForStyledLearn(page: import("@playwright/test").Page) {
+  await page.waitForLoadState("load");
+  await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+  await expect(page.locator("section[id]")).toHaveCount(6);
+
+  await expect
+    .poll(async () =>
+      page.evaluate(() => {
+        // `.orbix-section` takes its padding from a design token, so a
+        // non-zero value proves the stylesheet arrived.
+        const wrapper = document.querySelector(".orbix-section");
+        if (!wrapper) return 0;
+        return Number.parseFloat(getComputedStyle(wrapper).paddingBlockStart);
+      }),
+    )
+    .toBeGreaterThan(0);
+
+  // Two frames, so the measurement runs after layout has settled rather than
+  // after an arbitrary delay.
+  await page.evaluate(
+    () =>
+      new Promise<void>((resolve) => {
+        requestAnimationFrame(() => requestAnimationFrame(() => resolve()));
+      }),
+  );
+}
 
 test.describe("Learn research layout", () => {
   test.skip(
@@ -15,41 +182,73 @@ test.describe("Learn research layout", () => {
     "This case sets its own viewports.",
   );
 
-  test("every pathway record stays inside a phone viewport", async ({
-    page,
-  }) => {
-    // Measured against each record's own box as well as the document: the
-    // laboratory taught us that a clipped record and an overflowing page are
-    // different failures, and only one of them scrolls.
-    await page.setViewportSize({ height: 844, width: 390 });
-    await page.goto(ROUTES.learn, { waitUntil: "domcontentloaded" });
+  for (const width of MOBILE_WIDTHS) {
+    test(`every pathway record stays inside a ${width}px viewport`, async ({
+      page,
+    }) => {
+      await page.setViewportSize({ height: 844, width });
+      await page.goto(ROUTES.learn, { waitUntil: "domcontentloaded" });
+      await waitForStyledLearn(page);
 
-    // Two distinct failures, both checked: a record whose content is clipped
-    // inside its own box, and a record that is simply wider than the phone.
-    // The second does not always make the document scroll, because an ancestor
-    // may clip it — so it is measured directly against the viewport.
-    const faults = await page.evaluate(() => {
-      const sections = [...document.querySelectorAll("section[id]")];
-      return {
-        clipping: sections.filter(
-          (node) => node.scrollWidth > node.clientWidth + 1,
-        ).length,
-        tooWide: sections.filter(
-          (node) => node.getBoundingClientRect().width > window.innerWidth + 1,
-        ).length,
-      };
+      const geometry = await collectGeometry(page);
+
+      // Attached so a failure shows exactly what was on screen, and can never
+      // again be confused with a readiness timeout.
+      await test.info().attach(`learn-geometry-${width}`, {
+        body: JSON.stringify(geometry, null, 2),
+        contentType: "application/json",
+      });
+
+      expect(geometry.pathways).toHaveLength(6);
+      expect(containmentViolations(geometry)).toEqual([]);
     });
-    expect(faults.clipping, "no pathway may clip its own content").toBe(0);
-    expect(faults.tooWide, "no pathway may exceed the viewport").toBe(0);
+  }
 
-    await expect
-      .poll(async () =>
-        page.evaluate(
-          () => document.documentElement.scrollWidth > window.innerWidth + 1,
-        ),
-      )
-      .toBe(false);
-  });
+  /**
+   * The instrument's own test.
+   *
+   * A containment assertion that has never been shown to fail is not coverage.
+   * This injects a real, unmistakable overflow into the live page with
+   * `addStyleTag` — no production edit, no rebuild — then runs the SAME helper
+   * and the SAME violation function that guard the tests above.
+   */
+  for (const width of MOBILE_WIDTHS) {
+    test(`the containment helper detects an injected overflow at ${width}px`, async ({
+      page,
+    }) => {
+      await page.setViewportSize({ height: 844, width });
+      await page.goto(ROUTES.learn, { waitUntil: "domcontentloaded" });
+      await waitForStyledLearn(page);
+
+      expect(containmentViolations(await collectGeometry(page))).toEqual([]);
+
+      await page.addStyleTag({
+        content: `.orbix-section section[id] { min-width: 60rem !important; }`,
+      });
+      await page.evaluate(
+        () =>
+          new Promise<void>((resolve) => {
+            requestAnimationFrame(() => requestAnimationFrame(() => resolve()));
+          }),
+      );
+
+      const broken = await collectGeometry(page);
+      await test.info().attach(`injected-overflow-${width}`, {
+        body: JSON.stringify(broken, null, 2),
+        contentType: "application/json",
+      });
+
+      // First prove the defect is genuinely on screen...
+      const [firstPathway] = broken.pathways;
+      expect(firstPathway?.width).toBeGreaterThan(900);
+      expect(firstPathway?.overflowRight).toBeGreaterThan(100);
+
+      // ...then prove the production assertion would have caught it.
+      const violations = containmentViolations(broken);
+      expect(violations.length).toBeGreaterThan(0);
+      expect(violations.join(" | ")).toContain("exceeds viewport");
+    });
+  }
 
   test("the research division and heading structure survive the redesign", async ({
     page,
@@ -62,8 +261,6 @@ test.describe("Learn research layout", () => {
     );
     await expect(page.getByRole("heading", { level: 1 })).toHaveCount(1);
 
-    // Six pathways, each contributing a heading, and the aside groups that
-    // previously had none now carry real headings rather than styled labels.
     const structure = await page.evaluate(() => ({
       h2: document.querySelectorAll("#main-content h2").length,
       h3: document.querySelectorAll("#main-content h3").length,
