@@ -35,14 +35,31 @@ function MissionMetricReadout({ label, unit, value }: MissionMetric) {
     typeof value === "number" ? metricFormatter.format(value) : value;
 
   return (
-    <div className="grid min-h-12 grid-cols-[minmax(0,1fr)_auto] items-center gap-3 border-b border-white/7 px-3 py-2.5 last:border-b-0 sm:px-4">
+    /* Stacked, not two competing columns.
+     *
+     * This row used `grid-cols-[minmax(0,1fr)_auto]`: a long value grew the
+     * `auto` track, squeezed the label track toward zero, and the label — a
+     * grid item, so still `min-width: auto` — painted past its own box under
+     * the value. Two attempts to rebalance those tracks each fixed one side
+     * and broke the other: giving the label `min-w-0` with `break-words` split
+     * it one character per line, and putting a floor under the label column
+     * pushed the value back over the label.
+     *
+     * There is no width at which "Peak deceleration" and "200,000.00 m" both
+     * fit side by side in a ~150px column, so the columns were removed. The
+     * label takes a line, the value takes the next, and neither can crowd the
+     * other at any viewport. Verified by
+     * `mission-telemetry-legibility.spec.ts`, which checks label fit, value
+     * fit, intersection, row containment and word-boundary wrapping together.
+     */
+    <div className="min-h-12 border-b border-white/7 px-3 py-2.5 last:border-b-0 sm:px-4">
       <dt className="font-mono text-[0.56rem] leading-4 tracking-[0.11em] text-[#7f9499] uppercase">
         {label}
       </dt>
-      <dd className="min-w-0 text-right">
+      <dd className="mt-1.5">
         <output
           className={
-            "block max-w-44 font-mono text-sm font-semibold break-words tabular-nums " +
+            "block font-mono text-sm font-semibold break-words tabular-nums " +
             (value === undefined ? "text-[#657a80]" : "text-[#dfe9ea]")
           }
         >

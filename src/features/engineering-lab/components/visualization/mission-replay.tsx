@@ -229,7 +229,9 @@ function ReplayTelemetry({
         {label}
       </dt>
       <dd className="mt-1">
-        <output className="font-mono text-xs font-semibold text-[#d8e4e5]">
+        {/* Block and wrapping: an inline output let long readings such as the
+         * active phase label paint past the card's padding. */}
+        <output className="block font-mono text-xs font-semibold break-words text-[#d8e4e5]">
           {typeof value === "number"
             ? replayFormatter.format(value)
             : (value ?? "Not reported")}
