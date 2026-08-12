@@ -19,10 +19,52 @@ describe("portfolio mission showcase", () => {
     expect(markup).toContain("Visualization coverage");
     expect(markup).toContain("Analysis available");
     expect(markup).toContain("Engineering focus");
-    expect(markup).toContain("Original ORBIX visual");
-    expect(markup).toContain("launch-complex.webp");
-    expect(markup).toContain("orbital-command.webp");
-    expect(markup).toContain("engineering-lab.webp");
+  });
+
+  it("overlays nothing on the mission photograph", () => {
+    // The card used to stamp an environment label and an "Original ORBIX
+    // visual" chip across the bottom of every image. Both were noise, and the
+    // scrim they needed was a content fade by another name.
+    const markup = renderToStaticMarkup(
+      <MissionGallery missions={SHOWCASE_MISSIONS} />,
+    );
+
+    expect(markup).not.toContain("Original ORBIX visual");
+    expect(markup).not.toContain("orbix-environment-label");
+  });
+
+  it("gives every gallery card its own mission photograph", () => {
+    // The gallery used to render three shared environment backdrops across
+    // five cards, so two pairs of missions showed the same picture. Alt text
+    // is asserted rather than `src` because `next/image` rewrites the source
+    // into an optimizer URL, and the alt text is what a reader actually gets.
+    const markup = renderToStaticMarkup(
+      <MissionGallery missions={SHOWCASE_MISSIONS} />,
+    );
+
+    for (const mission of SHOWCASE_MISSIONS) {
+      expect(markup).toContain(mission.image.alt);
+    }
+
+    // The shared backdrops belong to the capture view now, not here.
+    expect(markup).not.toContain("launch-complex.webp");
+    expect(markup).not.toContain("orbital-command.webp");
+    expect(markup).not.toContain("engineering-lab.webp");
+  });
+
+  it("still sends every card to its own capture view", () => {
+    // Imagery changed; destinations did not. Asserted on rendered markup
+    // because an href only exists once the card is rendered.
+    const markup = renderToStaticMarkup(
+      <MissionGallery missions={SHOWCASE_MISSIONS} />,
+    );
+
+    for (const mission of SHOWCASE_MISSIONS) {
+      expect(markup).toContain(`href="/showcase-capture/${mission.preset.id}"`);
+    }
+    expect(markup).toContain(
+      'href="/engineering-lab#mission-control-dashboard"',
+    );
   });
 
   it("renders an accessible capture view without computed telemetry", () => {

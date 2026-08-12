@@ -4,11 +4,30 @@ import type {
   MissionPresetCategory,
 } from "@/features/engineering-lab/types";
 
+/**
+ * One mission's own photograph.
+ *
+ * Deliberately separate from `OrbixEnvironmentTheme`. That type describes a
+ * shared *setting* — four backdrops covering every ORBIX surface — so three of
+ * them had to serve five missions and two pairs of cards showed the same
+ * picture. `getShowcaseMissionEnvironment` still drives the capture view, where
+ * a setting is the right idea; the gallery now names its image directly.
+ *
+ * `objectPosition` is a Tailwind class and is omitted unless a responsive
+ * review shows `object-cover` cropping the subject at some width.
+ */
+export interface ShowcaseMissionImage {
+  readonly alt: string;
+  readonly objectPosition?: string;
+  readonly src: string;
+}
+
 export interface ShowcaseMission {
   readonly analysisAvailability: readonly string[];
   readonly availableVisualizations: readonly string[];
   readonly categoryLabel: string;
   readonly engineeringFocus: readonly string[];
+  readonly image: ShowcaseMissionImage;
   readonly includedSystems: readonly string[];
   readonly preset: MissionPreset;
 }
@@ -111,6 +130,38 @@ const showcaseMissionDetails = {
   },
 } as const satisfies Record<string, ShowcaseMissionDetails>;
 
+/**
+ * Every mission's image, written out by hand.
+ *
+ * There is no rule deriving a filename from a mission id, and there must not
+ * be: a convention would silently hand a mission the wrong photograph the
+ * moment an id changed, and nothing would fail. Spelled out, a wrong pairing is
+ * visible in this file. `showcase-mission-images.test.ts` holds the set to five
+ * unique, existing files.
+ */
+const showcaseMissionImages = {
+  "iss-style-resupply": {
+    alt: "Cargo spacecraft approaching an orbital station above Earth.",
+    src: "/images/missions/iss-style-resupply.webp",
+  },
+  "leo-satellite-deployment": {
+    alt: "Satellite separating from an upper stage above Earth.",
+    src: "/images/missions/leo-satellite-deployment.webp",
+  },
+  "lunar-transfer-concept": {
+    alt: "Spacecraft crossing cislunar space, with the Moon ahead and Earth distant.",
+    src: "/images/missions/lunar-transfer-concept.webp",
+  },
+  "mars-transfer-concept": {
+    alt: "Deep-space spacecraft cruising toward distant Mars.",
+    src: "/images/missions/mars-transfer-concept.webp",
+  },
+  "reentry-demonstrator": {
+    alt: "Capsule descending through atmospheric plasma above Earth.",
+    src: "/images/missions/reentry-demonstrator.webp",
+  },
+} as const satisfies Record<string, ShowcaseMissionImage>;
+
 const showcaseMissionIds = [
   "leo-satellite-deployment",
   "iss-style-resupply",
@@ -152,6 +203,7 @@ function createShowcaseMission(
   return {
     ...details,
     categoryLabel: categoryLabels[preset.category],
+    image: showcaseMissionImages[id],
     includedSystems: getIncludedSystems(preset),
     preset,
   };

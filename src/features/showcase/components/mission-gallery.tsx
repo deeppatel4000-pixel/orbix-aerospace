@@ -1,14 +1,11 @@
 import { ArrowUpRight, Eye, Focus, Gauge, Layers3 } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 
-import {
-  getOrbixEnvironmentLabel,
-  OrbixEnvironmentBackdrop,
-} from "@/components/brand/orbix-environment";
 import { Container } from "@/components/layout/container";
 import { ShowcaseSectionHeading } from "@/features/showcase/components/showcase-section-heading";
-import { getShowcaseMissionEnvironment } from "@/features/showcase/data/mission-environments";
 import type { ShowcaseMission } from "@/features/showcase/data/mission-showcase";
+import { cn } from "@/lib/cn";
 
 interface MissionGalleryProps {
   readonly missions: readonly ShowcaseMission[];
@@ -49,26 +46,30 @@ export function MissionGallery({ missions }: MissionGalleryProps) {
 
         <div className="mt-12 grid gap-5 xl:grid-cols-2">
           {missions.map((mission, index) => {
-            const environment = getShowcaseMissionEnvironment(
-              mission.preset.id,
-            );
-
             return (
               <article className="orbix-premium-card" key={mission.preset.id}>
-                <div className="relative isolate aspect-[16/6] min-h-44 overflow-hidden border-b border-border">
-                  <OrbixEnvironmentBackdrop
-                    className="z-0"
+                {/*
+                 * 16:9, matching the source files, so `object-cover` has
+                 * nothing to crop. The card used to run a 16:6 letterbox over a
+                 * shared backdrop, which would now cut a third of the height
+                 * out of every mission's own photograph.
+                 */}
+                <div className="relative isolate aspect-video overflow-hidden border-b border-border">
+                  <Image
+                    alt={mission.image.alt}
+                    className={cn("object-cover", mission.image.objectPosition)}
+                    fill
+                    quality={90}
                     sizes="(min-width: 1280px) 50vw, 100vw"
-                    theme={environment}
+                    src={mission.image.src}
                   />
-                  <div className="absolute inset-x-0 bottom-0 z-10 flex items-end justify-between gap-4 p-5">
-                    <span className="orbix-environment-label bg-background/65 backdrop-blur-md">
-                      {getOrbixEnvironmentLabel(environment)}
-                    </span>
-                    <span className="font-mono text-[0.56rem] tracking-[0.14em] text-foreground/70 uppercase">
-                      Original ORBIX visual
-                    </span>
-                  </div>
+                  {/*
+                   * Nothing is overlaid on the photograph — no label, no
+                   * gradient, no scrim. A scrim exists to keep overlaid text
+                   * readable, and there is no overlaid text to keep readable;
+                   * added anyway it would be the content-fade defect the
+                   * readability pass just removed, wearing a different name.
+                   */}
                 </div>
                 <div className="border-b border-border bg-surface/65 p-6 sm:p-7">
                   <div className="flex items-start justify-between gap-6">
