@@ -225,4 +225,104 @@ test.describe("Mission replay transport", () => {
       )
       .toBe(false);
   });
+
+  /**
+   * The 3D scene is the replay's visual anchor, so its presence is a contract.
+   *
+   * Deliberately NOT asserted: that the scene node survives a phase change.
+   * `mission-replay.tsx` renders it with `key={activePhase.id}`, so it remounts
+   * per phase by design. The contract is that exactly one scene root exists at
+   * any moment — never zero, never two.
+   */
+  test("exactly one mission scene is present, through play, pause and phase change", async ({
+    page,
+  }) => {
+    await openReplay(page);
+
+    const scene = page.locator('[aria-labelledby="mission-3d-scene-title"]');
+    await expect(scene).toHaveCount(1);
+
+    await page.getByRole("button", { name: "Play mission replay" }).click();
+    await expect(scene).toHaveCount(1);
+
+    await page.getByRole("button", { name: "Pause mission replay" }).click();
+    await expect(scene).toHaveCount(1);
+
+    await page
+      .getByRole("button", { name: /^Show replay phase:/ })
+      .nth(1)
+      .click();
+    await expect(scene).toHaveCount(1);
+    await expect(scene).toBeVisible();
+  });
+
+  test("the scene leads the replay, ahead of the transport", async ({
+    page,
+  }) => {
+    // The composition's whole point: the scene sat 802px below the panel top,
+    // behind the controls, the phase rail and a context card. Asserted as an
+    // ordering relationship rather than a pixel offset.
+    await openReplay(page);
+
+    const order = await page.evaluate(() => {
+      const panel = document.querySelector(
+        '[aria-labelledby="mission-replay-title"]',
+      );
+      const scene = document.querySelector(
+        '[aria-labelledby="mission-3d-scene-title"]',
+      );
+      const controls = document.querySelector(
+        'section[aria-label="Mission replay controls"]',
+      );
+      if (!panel || !scene || !controls) return null;
+      const top = panel.getBoundingClientRect().top;
+      return {
+        controls: controls.getBoundingClientRect().top - top,
+        scene: scene.getBoundingClientRect().top - top,
+      };
+    });
+
+    expect(order).not.toBeNull();
+    expect(order?.scene).toBeLessThan(order?.controls ?? 0);
+  });
+
+  test("synchronized telemetry is one grouped region, not five cards", async ({
+    page,
+  }) => {
+    // The five readings each had their own bordered card, which put them at the
+    // same visual weight as the scene and the transport. They now share one
+    // surface with internal dividers. Asserted structurally: the region carries
+    // a single bordered container, and still lists all five entries.
+    await openReplay(page);
+
+    const region = page.locator(
+      'section[aria-labelledby="replay-telemetry-title"]',
+    );
+    await expect(region).toHaveCount(1);
+
+    const shape = await page.evaluate(() => {
+      const section = document.querySelector(
+        'section[aria-labelledby="replay-telemetry-title"]',
+      );
+      if (!section) return null;
+      const bordered = [...section.querySelectorAll("*")].filter((node) => {
+        const style = getComputedStyle(node);
+        return (
+          Number.parseFloat(style.borderTopWidth) > 0 &&
+          Number.parseFloat(style.borderLeftWidth) > 0 &&
+          Number.parseFloat(style.borderRightWidth) > 0
+        );
+      }).length;
+      return {
+        bordered,
+        entries: section.querySelectorAll("dt").length,
+      };
+    });
+
+    expect(shape?.entries, "all five readings remain").toBe(5);
+    expect(
+      shape?.bordered,
+      "the readings should share one surface, not carry one each",
+    ).toBeLessThanOrEqual(1);
+  });
 });

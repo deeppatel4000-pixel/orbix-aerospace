@@ -356,6 +356,23 @@ test.describe("Visual regression / mobile 390x844", () => {
     );
   });
 
+  // Mission Replay had no mobile baseline. Captured paused at the first phase,
+  // the state the reducer starts in, so the frame is deterministic.
+  test("mission control / replay workspace", async ({ page }) => {
+    await page.goto(`${ROUTES.engineeringLab}${MISSION_CONTROL_HASH}`, {
+      waitUntil: "domcontentloaded",
+    });
+    await settle(page, dismissMissionControlStartup);
+    await page.getByRole("tab", { name: "Replay" }).click();
+    await expect(
+      page.getByRole("button", { name: "Play mission replay" }),
+    ).toBeVisible();
+    await expect(page).toHaveScreenshot(
+      "mission-control-replay-mobile.png",
+      SCREENSHOT_OPTIONS,
+    );
+  });
+
   // The widest of the three repaired comparison tables: it clipped 932px at
   // this viewport before the containment fix. One capture rather than three —
   // the geometry tests in engineering-lab-modules.spec.ts are the real
