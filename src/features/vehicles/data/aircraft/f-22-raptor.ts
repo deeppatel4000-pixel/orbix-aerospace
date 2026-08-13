@@ -7,7 +7,7 @@ export const f22Raptor = {
     name: "United States",
   },
   description:
-    "A twin-engine air-superiority aircraft used here as the initial aircraft data example.",
+    "A stealth air-dominance fighter combining supercruise, advanced avionics and high maneuverability for contested airspace.",
   dimensions: {
     length: {
       qualifier: "nominal",
@@ -23,16 +23,16 @@ export const f22Raptor = {
   engineeringAnalysis: [
     {
       id: "f-22-aerodynamics-placeholder",
-      status: "placeholder",
+      status: "reviewed",
       summary:
-        "Placeholder: examine how planform geometry, control surfaces, and mission requirements influence aerodynamic design.",
+        "The F-22 combines advanced aerodynamic shaping, digital flight controls and two-dimensional thrust vectoring. Together they expand controllability and maneuverability at high angles of attack while preserving the aircraft’s low-observable planform.",
       topic: "aerodynamics",
     },
     {
       id: "f-22-propulsion-placeholder",
-      status: "placeholder",
+      status: "reviewed",
       summary:
-        "Placeholder: compare installed thrust, supercruise objectives, and propulsion integration tradeoffs.",
+        "Two F119-PW-100 engines, each in the 35,000-pound-thrust class, give the F-22 enough installed thrust to cruise above Mach 1.5 without afterburner. Supercruise extends usable speed and range without the fuel penalty of continuous afterburning.",
       topic: "propulsion",
     },
   ],
@@ -82,7 +82,8 @@ export const f22Raptor = {
       firstFlight: "1997-09-07",
       id: "f-22a",
       name: "F-22A Raptor",
-      notes: "Primary production variant represented by this example record.",
+      notes:
+        "Single-seat production Raptor and the U.S. Air Force's operational F-22 variant.",
       status: "in-service",
     },
   ],

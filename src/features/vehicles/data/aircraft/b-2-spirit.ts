@@ -23,16 +23,16 @@ export const b2Spirit = {
   engineeringAnalysis: [
     {
       id: "b-2-flying-wing-placeholder",
-      status: "placeholder",
+      status: "reviewed",
       summary:
-        "Placeholder: examine the aerodynamic efficiency, stability, and control challenges associated with a flying-wing configuration.",
+        "The B-2 combines the aerodynamic efficiency of a flying wing with shaping chosen for low observability. Integrating lift, payload volume and stealth into one broad airframe reduces the distinction between aerodynamic and signature design decisions.",
       topic: "aerodynamics",
     },
     {
       id: "b-2-systems-placeholder",
-      status: "placeholder",
+      status: "reviewed",
       summary:
-        "Placeholder: explore how airframe shaping, propulsion integration, flight controls, and mission requirements interact at the system level.",
+        "B-2 survivability is produced by the whole airframe: flying-wing geometry, composite materials, special coatings and reduced infrared, acoustic, electromagnetic and radar signatures. Even surface-condition maintenance is therefore part of preserving mission performance.",
       topic: "systems-engineering",
     },
   ],

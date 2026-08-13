@@ -1,11 +1,18 @@
 import { FileText } from "lucide-react";
 
 import { ProfileSection } from "@/features/rockets/components/profile-section";
-import {
-  formatRocketEngineeringDomain,
-  formatRocketEngineeringNoteStatus,
-} from "@/features/rockets/utils";
+import { formatRocketEngineeringDomain } from "@/features/rockets/utils";
 import type { EngineeringNote } from "@/features/vehicles/types";
+
+/**
+ * A launch vehicle's engineering observations.
+ *
+ * The rockets twin of the aircraft panel, and it must stay in step with it:
+ * both once rendered each note's `status` as a badge, so every profile
+ * advertised "PLACEHOLDER" in warning amber. `status` still exists on the data
+ * and in the formatter, because it remains useful for authoring; it is simply
+ * not something a reader needs to see.
+ */
 
 interface EngineeringNotesPanelProps {
   notes: readonly EngineeringNote[];
@@ -14,8 +21,8 @@ interface EngineeringNotesPanelProps {
 export function EngineeringNotesPanel({ notes }: EngineeringNotesPanelProps) {
   return (
     <ProfileSection
-      description="Educational analysis prompts reserved for future sourced engineering content."
-      eyebrow="Analysis queue"
+      description="Concise engineering observations based on public aerospace specifications and documented design characteristics."
+      eyebrow="Engineering analysis"
       mode="editorial"
       id="engineering-notes"
       title="Engineering Notes"
@@ -40,9 +47,6 @@ export function EngineeringNotesPanel({ notes }: EngineeringNotesPanelProps) {
                   </h3>
                 </div>
               </div>
-              <span className="self-start rounded-full border border-signal/30 bg-signal/8 px-3 py-1 font-mono text-[0.62rem] tracking-[0.12em] text-signal uppercase">
-                {formatRocketEngineeringNoteStatus(note.status)}
-              </span>
             </div>
             <p className="mt-5 border-t border-border pt-5 text-sm leading-6 text-muted">
               {note.summary}
