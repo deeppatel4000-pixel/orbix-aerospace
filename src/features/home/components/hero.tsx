@@ -67,13 +67,19 @@ export function Hero() {
          * glow, no box. Width is fluid and drives height through the
          * component's own `aspect-[1055/400]`, so the mark tracks the clamp
          * behaviour the display type had and never outgrows the copy beneath.
+         *
+         * `sizes` restates `clamp(168px, 23vw, 240px)` in media-query form, so
+         * the two odd breakpoints are derived rather than chosen: 23vw reaches
+         * 168px at a 730px viewport and 240px at a 1044px one, which is exactly
+         * where the clamp stops tracking the viewport at each end. It selects
+         * which rendition to download and changes no geometry.
          */}
         <h1 className="mt-6" id="home-hero-title">
           <OrbixWordmark
             alt={siteConfig.wordmark}
-            className="w-[clamp(9rem,20vw,13rem)]"
+            className="w-[clamp(10.5rem,23vw,15rem)]"
             priority
-            sizes="(min-width: 1024px) 208px, 20vw"
+            sizes="(min-width: 1044px) 240px, (min-width: 731px) 23vw, 168px"
           />
         </h1>
 
