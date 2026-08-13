@@ -2,6 +2,7 @@ import { ArrowUpRight } from "lucide-react";
 import Link from "next/link";
 
 import { OrbixEnvironmentBackdrop } from "@/components/brand/orbix-environment";
+import { OrbixWordmark } from "@/components/brand/orbix-wordmark";
 import { Container } from "@/components/layout/container";
 import { siteConfig } from "@/config/site";
 
@@ -54,8 +55,26 @@ export function Hero() {
           Aerospace systems · Engineering · Research
         </p>
 
-        <h1 className="orbix-display-lg mt-6 max-w-[18ch]" id="home-hero-title">
-          {siteConfig.wordmark}
+        {/*
+         * The wordmark is the logo, not type.
+         *
+         * `h1` is kept so the document still opens with a real level-one
+         * heading; its accessible name comes from the image's alt, which is the
+         * whole point of alt text on a logo that IS the heading. No `sr-only`
+         * duplicate sits beside it — that would announce "ORBIX ORBIX".
+         *
+         * The transparent PNG sits directly on the hero scrim: no plate, no
+         * glow, no box. Width is fluid and drives height through the
+         * component's own `aspect-[1055/400]`, so the mark tracks the clamp
+         * behaviour the display type had and never outgrows the copy beneath.
+         */}
+        <h1 className="mt-6" id="home-hero-title">
+          <OrbixWordmark
+            alt={siteConfig.wordmark}
+            className="w-[clamp(9rem,20vw,13rem)]"
+            priority
+            sizes="(min-width: 1024px) 208px, 20vw"
+          />
         </h1>
 
         <p className="text-muted-strong mt-7 max-w-[46rem] text-lg leading-9">
