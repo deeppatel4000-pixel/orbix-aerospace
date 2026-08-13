@@ -23,23 +23,23 @@ export const sr71Blackbird = {
   engineeringAnalysis: [
     {
       id: "sr-71-aerodynamics-placeholder",
-      status: "placeholder",
+      status: "reviewed",
       summary:
-        "Placeholder: examine how slender-body geometry, chines, and the flight envelope shaped high-speed aerodynamic performance.",
+        "The SR-71 was engineered around sustained Mach 3 flight, with prominent chines, a slender high-speed planform and carefully controlled inlet flow. NASA later used the aircraft to study aerodynamics, stability, control and thermal loads at speeds up to roughly Mach 3.2.",
       topic: "aerodynamics",
     },
     {
       id: "sr-71-propulsion-placeholder",
-      status: "placeholder",
+      status: "reviewed",
       summary:
-        "Placeholder: study the interaction between variable-geometry inlets, the J58 engines, and sustained Mach 3 operation.",
+        "The J58 installation had to manage inlet shock waves across an enormous speed range. Movable inlet hardware and bypass flow kept the engines operating at Mach 3+, where the Blackbird cruised with continuous afterburner and achieved its best specific range.",
       topic: "propulsion",
     },
     {
       id: "sr-71-structures-placeholder",
-      status: "placeholder",
+      status: "reviewed",
       summary:
-        "Placeholder: investigate material selection, thermal expansion, and structural design for prolonged aerodynamic heating.",
+        "Sustained Mach 3 flight heated the SR-71’s skin to roughly 600°F in places, beyond what a conventional aluminum airframe could comfortably tolerate. Lockheed therefore relied heavily on titanium alloys, making thermal expansion and high-temperature strength core structural constraints.",
       topic: "structures",
     },
   ],

@@ -1,11 +1,19 @@
 import { ChevronDown, FileText } from "lucide-react";
 
 import { ProfileSection } from "@/features/aircraft/components/profile-section";
-import {
-  formatEngineeringDomain,
-  formatEngineeringNoteStatus,
-} from "@/features/aircraft/utils";
+import { formatEngineeringDomain } from "@/features/aircraft/utils";
 import type { EngineeringNote } from "@/features/vehicles/types";
+
+/**
+ * A vehicle's engineering observations.
+ *
+ * The card deliberately shows no editorial state. It used to render each note's
+ * `status` as a badge, which meant every profile advertised "PLACEHOLDER" in
+ * warning amber — a content-management detail leaking into an end-user
+ * aerospace product. `status` still exists on the data and in the formatter,
+ * because it remains useful for authoring; it simply is not something a reader
+ * needs to see. A note either says something true or it should not ship.
+ */
 
 interface EngineeringNotesPanelProps {
   notes: readonly EngineeringNote[];
@@ -14,8 +22,8 @@ interface EngineeringNotesPanelProps {
 export function EngineeringNotesPanel({ notes }: EngineeringNotesPanelProps) {
   return (
     <ProfileSection
-      description="Educational analysis prompts reserved for future sourced engineering content."
-      eyebrow="Analysis queue"
+      description="Concise engineering observations based on public aerospace specifications and documented design characteristics."
+      eyebrow="Engineering analysis"
       mode="editorial"
       id="engineering-notes"
       title="Engineering Notes"
@@ -42,9 +50,6 @@ export function EngineeringNotesPanel({ notes }: EngineeringNotesPanelProps) {
                 </span>
               </span>
               <span className="flex items-center gap-3 self-start">
-                <span className="border border-signal/30 bg-signal/8 px-3 py-1 font-mono text-[0.62rem] tracking-[0.12em] text-signal uppercase">
-                  {formatEngineeringNoteStatus(note.status)}
-                </span>
                 <ChevronDown
                   aria-hidden="true"
                   className="text-tactical-amber transition-transform group-open:rotate-180 motion-reduce:transition-none"

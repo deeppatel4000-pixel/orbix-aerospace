@@ -23,16 +23,16 @@ export const f35LightningII = {
   engineeringAnalysis: [
     {
       id: "f-35-systems-placeholder",
-      status: "placeholder",
+      status: "reviewed",
       summary:
-        "Placeholder: examine how sensor integration, pilot workload, and mission-system architecture influence aircraft-level design decisions.",
+        "The F-35 treats sensors, avionics and networking as one mission system. Onboard fusion combines data before presenting it to the pilot, while the aircraft can share that picture with other forces—making information integration a vehicle-level design requirement.",
       topic: "systems-engineering",
     },
     {
       id: "f-35-variant-aerodynamics-placeholder",
-      status: "placeholder",
+      status: "reviewed",
       summary:
-        "Placeholder: compare the aerodynamic and structural tradeoffs among conventional, short-takeoff, and carrier variants.",
+        "A common F-35 design supports three very different basing modes. The F-35B adds short-takeoff/vertical-landing hardware, while the F-35C uses a larger wing, stronger structure and more robust landing gear for catapult launches and arrested carrier recoveries.",
       topic: "aerodynamics",
     },
   ],
@@ -88,6 +88,7 @@ export const f35LightningII = {
     },
     {
       designation: "F-35B",
+      firstFlight: "2008-06-11",
       id: "f-35b",
       name: "F-35B Lightning II",
       notes: "Short-takeoff and vertical-landing variant.",
@@ -95,6 +96,7 @@ export const f35LightningII = {
     },
     {
       designation: "F-35C",
+      firstFlight: "2010-06-07",
       id: "f-35c",
       name: "F-35C Lightning II",
       notes: "Carrier variant with a larger wing and navalized structure.",

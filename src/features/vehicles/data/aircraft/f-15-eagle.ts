@@ -23,16 +23,16 @@ export const f15Eagle = {
   engineeringAnalysis: [
     {
       id: "f-15-aerodynamics-placeholder",
-      status: "placeholder",
+      status: "reviewed",
       summary:
-        "Placeholder: examine how wing loading, control authority, and thrust-to-weight ratio influence maneuvering performance.",
+        "The F-15’s maneuverability comes from the pairing of low wing loading with a high thrust-to-weight ratio. That combination lets the aircraft turn tightly without shedding as much airspeed and gives strong acceleration through vertical maneuvers.",
       topic: "aerodynamics",
     },
     {
       id: "f-15-propulsion-placeholder",
-      status: "placeholder",
+      status: "reviewed",
       summary:
-        "Placeholder: compare engine selection, installed thrust, external stores, and mission-range tradeoffs across the aircraft family.",
+        "F-15E aircraft use F100-PW-220 or -229 engines producing about 25,000 to 29,000 pounds of thrust each. Conformal fuel tanks add substantial fuel while creating less drag than conventional external tanks, trading added mass for greater mission radius.",
       topic: "propulsion",
     },
   ],
@@ -102,6 +102,7 @@ export const f15Eagle = {
     },
     {
       designation: "F-15EX",
+      firstFlight: "2021-02-02",
       id: "f-15ex",
       name: "F-15EX Eagle II",
       notes: "Current advanced production variant for the U.S. Air Force.",
