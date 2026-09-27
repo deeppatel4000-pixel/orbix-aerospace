@@ -3,6 +3,10 @@ export type RocketCardTreatment = "flagship" | "standard" | "wide";
 export interface RocketVisual {
   readonly alt: string;
   readonly cardTreatment: RocketCardTreatment;
+  /** Photographer or agency, as the licence asks to be credited. */
+  readonly credit?: string;
+  /** Licence name, for example "Public domain (NASA)" or "CC BY-SA 4.0". */
+  readonly license?: string;
   readonly objectPosition: string;
   readonly sourceUrl: string;
   readonly src: string;

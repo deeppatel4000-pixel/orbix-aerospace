@@ -3,6 +3,10 @@ export type AircraftCardTreatment = "flagship" | "standard" | "wide";
 export interface AircraftVisual {
   readonly alt: string;
   readonly cardTreatment: AircraftCardTreatment;
+  /** Photographer or agency, as the licence asks to be credited. */
+  readonly credit?: string;
+  /** Licence name, for example "Public domain (NASA)" or "CC BY-SA 4.0". */
+  readonly license?: string;
   readonly objectPosition: string;
   readonly sourceUrl: string;
   readonly src: string;
