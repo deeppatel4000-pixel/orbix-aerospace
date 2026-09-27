@@ -54,9 +54,11 @@ test.describe("Compare query parameters", () => {
 
     // Both requested aircraft are present as columns, and a third is not.
     await expect(
-      table.getByText("F-22 Raptor", { exact: false }),
+      table.getByRole("columnheader", { name: /^F-22 Raptor/ }),
     ).toBeVisible();
-    await expect(table.getByText("F-15 Eagle", { exact: false })).toBeVisible();
+    await expect(
+      table.getByRole("columnheader", { name: /^F-15 Eagle/ }),
+    ).toBeVisible();
     await expect(
       table.getByText("SR-71 Blackbird", { exact: false }),
     ).toHaveCount(0);
@@ -77,8 +79,12 @@ test.describe("Compare query parameters", () => {
 
     const table = page.getByRole("table");
     await expect(table).toBeVisible();
-    await expect(table.getByText("Falcon 9", { exact: false })).toBeVisible();
-    await expect(table.getByText("Saturn V", { exact: false })).toBeVisible();
+    await expect(
+      table.getByRole("columnheader", { name: /^Falcon 9/ }),
+    ).toBeVisible();
+    await expect(
+      table.getByRole("columnheader", { name: /^Saturn V/ }),
+    ).toBeVisible();
 
     // Cross-category leakage would be a real defect: aircraft must not appear
     // in a rockets comparison.
@@ -97,22 +103,19 @@ test.describe("Compare query parameters", () => {
       waitUntil: "domcontentloaded",
     });
 
-    // The rockets category control is the active one.
-    await expect(page.getByRole("button", { name: "Rockets" })).toHaveAttribute(
-      "aria-pressed",
-      "true",
-    );
-
-    // The two requested rockets are the checked profiles.
+    // The launch-vehicle category radio is the checked one.
     await expect(
-      page.getByRole("checkbox", { name: /Falcon 9/ }),
+      page.getByRole("radio", { name: "Launch vehicles" }),
     ).toBeChecked();
     await expect(
-      page.getByRole("checkbox", { name: /Starship/ }),
-    ).toBeChecked();
-    await expect(
-      page.getByRole("checkbox", { name: /Saturn V/ }),
+      page.getByRole("radio", { name: "Aircraft" }),
     ).not.toBeChecked();
+
+    // The two requested rockets fill the first two vehicle selects, in order,
+    // and the optional third is left empty.
+    await expect(page.getByLabel("First vehicle")).toHaveValue("falcon-9");
+    await expect(page.getByLabel("Second vehicle")).toHaveValue("starship");
+    await expect(page.locator("#compare-vehicle-3")).toHaveValue("");
   });
 
   test("more ids than the maximum are capped at three", async ({ page }) => {
@@ -142,7 +145,7 @@ test.describe("Compare query parameters", () => {
     // row-label column plus 2 vehicle columns.
     expect(await vehicleColumns(page).count()).toBe(3);
     await expect(
-      page.getByRole("table").getByText("F-22 Raptor", { exact: false }),
+      page.locator("thead th[scope=col] .orbix-h4", { hasText: "F-22 Raptor" }),
     ).toHaveCount(1);
   });
 
@@ -156,11 +159,9 @@ test.describe("Compare query parameters", () => {
     );
     expect(response?.status()).toBe(200);
 
+    await expect(page.getByRole("radio", { name: "Aircraft" })).toBeChecked();
     await expect(
-      page.getByRole("button", { name: "Aircraft" }),
-    ).toHaveAttribute("aria-pressed", "true");
-    await expect(
-      page.getByRole("table").getByText("F-22 Raptor", { exact: false }),
+      page.getByRole("columnheader", { name: /^F-22 Raptor/ }),
     ).toBeVisible();
 
     expectNoUnexpectedConsoleErrors(consoleMessages);
@@ -218,11 +219,9 @@ test.describe("Compare query parameters", () => {
   test("browser back returns to a parameterised comparison intact", async ({
     page,
   }) => {
-    // Note on scope: the in-page selection controls use `router.replace`
-    // (see comparison-controls.tsx), so changing a selection deliberately
-    // does NOT push a history entry. What the architecture does support —
-    // and what this asserts — is that a parameterised comparison survives
-    // navigating away and coming back.
+    // What this asserts is that a parameterised comparison survives
+    // navigating away and coming back. (Submitting the selection form uses
+    // `router.push`, so each submitted comparison is its own history entry.)
     await page.goto(`${COMPARE}?category=rockets&vehicles=falcon-9,saturn-v`, {
       waitUntil: "domcontentloaded",
     });
@@ -236,7 +235,49 @@ test.describe("Compare query parameters", () => {
     await expect(page).toHaveURL(/category=rockets/);
     const table = page.getByRole("table");
     await expect(table).toBeVisible();
-    await expect(table.getByText("Falcon 9", { exact: false })).toBeVisible();
-    await expect(table.getByText("Saturn V", { exact: false })).toBeVisible();
+    await expect(
+      table.getByRole("columnheader", { name: /^Falcon 9/ }),
+    ).toBeVisible();
+    await expect(
+      table.getByRole("columnheader", { name: /^Saturn V/ }),
+    ).toBeVisible();
+  });
+
+  test("submitting the selection form updates the URL and the table", async ({
+    page,
+  }) => {
+    await page.goto(
+      `${COMPARE}?category=aircraft&vehicles=f-22-raptor,f-15-eagle`,
+      {
+        waitUntil: "domcontentloaded",
+      },
+    );
+    await expect(page.getByRole("table")).toBeVisible();
+
+    // The form is server-rendered; a selection made before React hydrates it
+    // is reset by hydration. Wait until the select has its React handlers.
+    await expect
+      .poll(() =>
+        page
+          .locator("#compare-vehicle-3")
+          .evaluate((select) =>
+            Object.keys(select).some((key) => key.startsWith("__reactProps")),
+          ),
+      )
+      .toBe(true);
+
+    await page
+      .getByLabel("Third vehicle (optional)")
+      .selectOption("b-2-spirit");
+    await page
+      .getByRole("button", { name: "Compare selected vehicles" })
+      .click();
+
+    await expect(page).toHaveURL(
+      /vehicles=f-22-raptor(,|%2C)f-15-eagle(,|%2C)b-2-spirit/,
+    );
+    await expect(
+      page.getByRole("columnheader", { name: /^B-2 Spirit/ }),
+    ).toBeVisible();
   });
 });

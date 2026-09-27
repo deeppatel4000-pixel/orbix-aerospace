@@ -9,10 +9,13 @@ import type {
 /**
  * Showcase mission data.
  *
- * Everything here is read from the typed mission presets or is fixed
- * descriptive copy. Nothing is calculated for display: altitudes, allowances
- * and vehicle inputs are the preset's own input values, converted to display
- * units only. The showcase uses no photographs; the diagrams are drawn from
+ * Altitudes, allowances and vehicle inputs are the preset's own input values,
+ * converted to display units only; text is read from the preset or is fixed
+ * descriptive copy. Two values are not preset inputs: the sum of the maneuver allowances, and the
+ * planet radius of a transfer diagram when the preset leaves it unset, which
+ * falls back to the calculators' EARTH_MEAN_RADIUS_METRES (the default the
+ * orbital elements calculator applies). `planetRadiusSource` records which
+ * case applies. The showcase uses no photographs; the diagrams are drawn from
  * these numbers.
  */
 
@@ -41,6 +44,11 @@ export type MissionDiagram =
       readonly initialAltitudeKilometres: number;
       readonly kind: "transfer";
       readonly planetRadiusKilometres: number;
+      /**
+       * `preset`: the preset sets the planet radius. `calculator-default`: it
+       * does not, so the calculators' mean Earth radius constant is used.
+       */
+      readonly planetRadiusSource: "calculator-default" | "preset";
     }
   | {
       readonly kind: "allowances";
@@ -80,17 +88,29 @@ const categoryLabels: Record<MissionPresetCategory, string> = {
   "reentry-demonstration": "Reentry demonstration",
 };
 
+/**
+ * Where each preset appears in the Engineering Lab, checked against
+ * `engineering-dashboard.tsx`: every preset loads through the Mission presets
+ * tool into the mission profile analyzer; the trade study uses the LEO, ISS
+ * and lunar presets; the example modules (diagrams, viewer, Mission Control,
+ * briefing, report viewer) all use the ISS-style preset. Analysis names match
+ * the functions `analyzeMissionProfile` runs for the preset's inputs.
+ */
+const LOADED_BY_PRESET_TOOL =
+  "Mission presets, loaded into the mission profile analyzer";
+const TRADE_STUDY = "Mission trade study, beside two other presets";
+
 const showcaseMissionDetails = {
   "iss-style-resupply": {
     analysisAvailability: [
-      "Circular-orbit transfer",
-      "Reentry vehicle evaluation",
-      "Thermal protection comparison",
+      "Hohmann transfer",
+      "Delta-v budget",
+      "Vehicle reentry evaluation, including a TPS material comparison",
     ],
     availableVisualizations: [
-      "Mission Control overview",
-      "Orbit workspace",
-      "Reentry profile",
+      LOADED_BY_PRESET_TOOL,
+      TRADE_STUDY,
+      "Example mission in the Mission diagrams, Mission viewer, Mission control dashboard, Mission briefing and Mission report viewer tools",
     ],
     engineeringFocus: [
       "Orbital logistics",
@@ -99,46 +119,28 @@ const showcaseMissionDetails = {
     ],
   },
   "leo-satellite-deployment": {
-    analysisAvailability: [
-      "Circular-orbit transfer",
-      "Two-impulse delta-v budget",
-      "Mission profile summary",
-    ],
-    availableVisualizations: [
-      "Mission Control overview",
-      "Orbit workspace",
-      "Mission timeline",
-    ],
+    analysisAvailability: ["Hohmann transfer", "Delta-v budget"],
+    availableVisualizations: [LOADED_BY_PRESET_TOOL, TRADE_STUDY],
     engineeringFocus: ["Low Earth orbit", "Orbit raising", "Mission budgeting"],
   },
   "lunar-transfer-concept": {
     analysisAvailability: [
-      "High-altitude transfer",
-      "Inclination change",
-      "Combined delta-v budget",
+      "Hohmann transfer",
+      "Orbital plane change",
+      "Delta-v budget",
     ],
-    availableVisualizations: [
-      "Mission Control overview",
-      "Transfer-orbit workspace",
-      "Mission briefing",
-    ],
+    availableVisualizations: [LOADED_BY_PRESET_TOOL, TRADE_STUDY],
     engineeringFocus: [
       "Transfer architecture",
       "Plane-change cost",
-      "Mission communication",
+      "Delta-v budgeting",
     ],
   },
   "mars-transfer-concept": {
     analysisAvailability: [
-      "Ordered maneuver budget",
-      "Largest maneuver review",
-      "Mission profile summary",
+      "Delta-v budget from the preset maneuver allowances, with its largest contributor",
     ],
-    availableVisualizations: [
-      "Mission Control overview",
-      "Mission replay",
-      "Mission briefing",
-    ],
+    availableVisualizations: [LOADED_BY_PRESET_TOOL],
     engineeringFocus: [
       "Deep-space architecture",
       "Maneuver allocation",
@@ -148,14 +150,10 @@ const showcaseMissionDetails = {
   "reentry-demonstrator": {
     analysisAvailability: [
       "Vehicle reentry evaluation",
-      "Vehicle comparison",
+      "Vehicle reentry comparison",
       "TPS material comparison",
     ],
-    availableVisualizations: [
-      "Mission Control overview",
-      "Reentry profile",
-      "Trade-study workspace",
-    ],
+    availableVisualizations: [LOADED_BY_PRESET_TOOL],
     engineeringFocus: [
       "Ballistic deceleration",
       "Stagnation heating",
@@ -293,6 +291,8 @@ function getDiagram(preset: MissionPreset): MissionDiagram {
   const budget = preset.missionProfileInputs.deltaVBudget;
 
   if (budget?.hohmannTransfer) {
+    const presetRadiusMetres = budget.hohmannTransfer.planetRadiusMetres;
+
     return {
       finalAltitudeKilometres: metresToKilometres(
         budget.hohmannTransfer.finalAltitudeMetres,
@@ -302,8 +302,10 @@ function getDiagram(preset: MissionPreset): MissionDiagram {
       ),
       kind: "transfer",
       planetRadiusKilometres: metresToKilometres(
-        budget.hohmannTransfer.planetRadiusMetres ?? EARTH_MEAN_RADIUS_METRES,
+        presetRadiusMetres ?? EARTH_MEAN_RADIUS_METRES,
       ),
+      planetRadiusSource:
+        presetRadiusMetres === undefined ? "calculator-default" : "preset",
     };
   }
 

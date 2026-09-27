@@ -43,10 +43,11 @@ test("navigating into the Falcon 9 profile works, shows its heading, loads its i
 }) => {
   await page.goto(ROUTES.rockets, { waitUntil: "domcontentloaded" });
 
-  // The explorer hero always features the first vehicle in the registry,
-  // Falcon 9.
+  // Each registry card is one link whose accessible name starts with the
+  // vehicle name (followed by its configuration and headline specifications).
   await page
-    .getByRole("link", { name: `Open ${ROCKET_NAMES["falcon-9"]}` })
+    .locator("#launch-vehicle-registry")
+    .getByRole("link", { name: new RegExp(`^${ROCKET_NAMES["falcon-9"]}`) })
     .click();
 
   await expect(page).toHaveURL(`${ROUTES.rockets}/falcon-9`);
@@ -56,8 +57,16 @@ test("navigating into the Falcon 9 profile works, shows its heading, loads its i
 
   await expectAllImagesLoaded(page);
 
-  // The profile's own call-to-action navigates back to the explorer.
-  await page.getByRole("link", { name: "Back to Explorer" }).click();
+  // The profile's breadcrumb leads back to the registry...
+  await expect(
+    page
+      .getByRole("navigation", { name: "Breadcrumb" })
+      .getByRole("link", { name: "Launch vehicles", exact: true }),
+  ).toHaveAttribute("href", ROUTES.rockets);
+
+  // ...and its own call-to-action, after the related launch vehicles,
+  // navigates there.
+  await page.getByRole("link", { name: "Browse all launch vehicles" }).click();
   await expect(page).toHaveURL(ROUTES.rockets);
 
   expectNoUnexpectedConsoleErrors(consoleMessages);

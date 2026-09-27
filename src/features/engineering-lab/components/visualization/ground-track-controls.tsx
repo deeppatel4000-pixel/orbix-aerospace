@@ -86,11 +86,7 @@ export function GroundTrackControls({
           <ZoomIn aria-hidden="true" size={16} />
           Zoom in
         </Button>
-        <Button
-          aria-label="Reset planetary visualization"
-          onClick={onReset}
-          variant="ghost"
-        >
+        <Button onClick={onReset} variant="ghost">
           <RotateCcw aria-hidden="true" size={16} />
           Reset view
         </Button>

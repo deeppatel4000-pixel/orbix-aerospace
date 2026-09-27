@@ -287,7 +287,7 @@ export function TPSMaterialComparisonAnalyzer() {
                 idPrefix="tps-material-comparison"
                 label="Drag coefficient"
                 onChange={updateValue}
-                unit="CD"
+                unit=""
                 value={values.dragCoefficient}
               />
               <CalculatorNumberField

@@ -389,6 +389,7 @@ export function InletCompressionAnalyzer() {
                 }
                 idPrefix="inlet-compression"
                 label="Altitude (optional)"
+                optional
                 onChange={updateCommonValue}
                 unit="m"
                 value={values.altitudeMeters}
@@ -399,8 +400,9 @@ export function InletCompressionAnalyzer() {
                 hint="Optional ratio of specific heats greater than one. Leave blank to use 1.4."
                 idPrefix="inlet-compression"
                 label="Gamma (optional)"
+                optional
                 onChange={updateCommonValue}
-                unit="gamma"
+                unit=""
                 value={values.gamma}
               />
             </div>

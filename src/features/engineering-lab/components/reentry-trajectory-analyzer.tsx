@@ -278,7 +278,7 @@ export function ReentryTrajectoryAnalyzer() {
                 idPrefix="reentry-trajectory"
                 label="Drag coefficient"
                 onChange={updateValue}
-                unit="CD"
+                unit=""
                 value={values.dragCoefficient}
               />
               <CalculatorNumberField
@@ -305,6 +305,7 @@ export function ReentryTrajectoryAnalyzer() {
                 hint="Positive fixed Euler timestep. Leave blank to use the one-second default."
                 idPrefix="reentry-trajectory"
                 label="Time step (optional)"
+                optional
                 onChange={updateValue}
                 unit="s"
                 value={values.timeStepSeconds}
@@ -315,6 +316,7 @@ export function ReentryTrajectoryAnalyzer() {
                 hint="Fixed descent angle from -90 to 0 degrees. Leave blank for vertical descent."
                 idPrefix="reentry-trajectory"
                 label="Flight path angle (optional)"
+                optional
                 onChange={updateValue}
                 unit="deg"
                 value={values.initialFlightPathAngleDegrees}

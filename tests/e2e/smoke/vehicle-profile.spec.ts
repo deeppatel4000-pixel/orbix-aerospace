@@ -7,215 +7,171 @@ import {
 } from "../fixtures/orbix";
 
 /**
- * Phase 2A profile framework coverage.
+ * Vehicle profile structure (2026 redesign).
  *
- * Profiles previously rendered every one of their ~12 sections through a
- * per-domain wrapper with an identical shape, so narrative, specifications,
- * performance data and imagery all read as one repeated container. This phase
- * introduced a shared section primitive with explicit modes plus a redesigned
- * hero. These tests pin the contracts that replaced it.
+ * A profile is a documentation page: a breadcrumb, one h1, a credited
+ * photograph, an "On this page" list, then one flat section per topic, each
+ * an h2, ending with three related vehicles. The earlier hero record,
+ * `data-profile-mode` section grammar and full-bleed hero image were removed
+ * by design; these tests pin the structure that replaced them.
  *
- * Deliberately NOT asserted: pixel geometry, class names or class ordering.
- * The contracts here are structural — which modes exist, that the hero record
- * is populated from real data, and that existing deep links still resolve.
+ * Deliberately NOT asserted: pixel geometry, class names or copy beyond
+ * section names. The contracts here are structural: which sections exist in
+ * which order, that the section list matches them, that the specification
+ * table is populated from real data, and that the photograph is credited.
  */
 
-const HERO_RECORD = ".orbix-profile-hero__record";
-const SECTION = "[data-profile-mode]";
-
-/** Anchors that existed before this phase and must keep working. */
-const AIRCRAFT_ANCHORS = [
-  "mission-overview",
-  "aircraft-image",
-  "technical-dashboard",
-  "powerplant",
-] as const;
-
-const ROCKET_ANCHORS = [
+/** Section ids in document order, per domain. */
+const AIRCRAFT_SECTIONS = [
   "overview",
-  "vehicle-image",
-  "architecture",
-  "technical-dashboard",
+  "specifications",
+  "propulsion",
+  "performance",
+  "history",
+  "variants",
+  "engineering-notes",
+  "related-aircraft",
 ] as const;
 
-test.describe("Vehicle profile framework", () => {
+const ROCKET_SECTIONS = [
+  "overview",
+  "specifications",
+  "stages",
+  "propulsion",
+  "performance",
+  "engineering-notes",
+  "related-rockets",
+] as const;
+
+const PROFILES = [
+  ...AIRCRAFT_IDS.map((id) => ({
+    path: `${ROUTES.aircraft}/${id}`,
+    sections: AIRCRAFT_SECTIONS as readonly string[],
+  })),
+  ...ROCKET_IDS.map((id) => ({
+    path: `${ROUTES.rockets}/${id}`,
+    sections: ROCKET_SECTIONS as readonly string[],
+  })),
+];
+
+test.describe("Vehicle profile structure", () => {
   test.skip(
     () => test.info().project.name !== "desktop",
     "Profile structure is viewport-independent; responsive behaviour is covered by the overflow guards.",
   );
 
-  for (const id of AIRCRAFT_IDS) {
-    test(`${id} profile hero renders a populated technical record`, async ({
+  for (const { path, sections } of PROFILES) {
+    test(`${path} has its sections in order, each titled by an h2`, async ({
       page,
     }) => {
-      await page.goto(`${ROUTES.aircraft}/${id}`, {
-        waitUntil: "domcontentloaded",
-      });
-
+      await page.goto(path, { waitUntil: "domcontentloaded" });
+      await expect(page.locator("main#main-content")).toBeVisible();
       await expect(page.getByRole("heading", { level: 1 })).toHaveCount(1);
 
-      const values = page.locator(`${HERO_RECORD} dd`);
-      await expect(values).toHaveCount(3);
+      const found = await page
+        .locator("#main-content section[id]")
+        .evaluateAll((nodes) => nodes.map((node) => node.id));
+      expect(found).toEqual([...sections]);
 
-      // Every hero metric comes from a required field, so a blank or zero
-      // here is a formatting regression, not missing data.
-      for (const value of await values.allTextContents()) {
-        expect(value.trim()).not.toBe("");
-        expect(value.trim()).not.toMatch(/^(0|—|-|N\/A|Not recorded)$/i);
-      }
-    });
-  }
-
-  for (const id of ROCKET_IDS) {
-    test(`${id} profile hero renders a populated technical record`, async ({
-      page,
-    }) => {
-      await page.goto(`${ROUTES.rockets}/${id}`, {
-        waitUntil: "domcontentloaded",
-      });
-
-      await expect(page.getByRole("heading", { level: 1 })).toHaveCount(1);
-
-      const values = page.locator(`${HERO_RECORD} dd`);
-      await expect(values).toHaveCount(3);
-
-      for (const value of await values.allTextContents()) {
-        expect(value.trim()).not.toBe("");
-        expect(value.trim()).not.toMatch(/^(0|—|-|N\/A|Not recorded)$/i);
-      }
-    });
-  }
-
-  test("both domains use a differentiated set of section modes", async ({
-    page,
-  }) => {
-    // The point of the framework is that different information types look
-    // different. If a domain collapsed back to one mode, the repetition this
-    // work set out to fix would have returned.
-    //
-    // This asserts BREADTH, not that every domain uses all five. Phase 2A
-    // could require all five only because unmigrated sections were still
-    // sitting on the `record` default. Once every rocket section adopted the
-    // mode its content actually calls for, rockets legitimately stopped using
-    // `record` — they have no structured-record section, because the launch
-    // vehicle dataset has no dimensions or variants panels the way aircraft
-    // do. Assigning one anyway to satisfy a count would be fabricating
-    // parity between domains that genuinely differ.
-    const valid = new Set([
-      "configuration",
-      "data",
-      "editorial",
-      "media",
-      "record",
-    ]);
-
-    for (const route of [
-      `${ROUTES.aircraft}/f-22-raptor`,
-      `${ROUTES.rockets}/falcon-9`,
-    ]) {
-      await page.goto(route, { waitUntil: "domcontentloaded" });
-
-      const modes = await page
-        .locator(SECTION)
-        .evaluateAll((nodes) => [
-          ...new Set(
-            nodes.map((n) => n.getAttribute("data-profile-mode") ?? ""),
-          ),
-        ]);
-
-      for (const mode of modes) {
-        expect(valid.has(mode), `${route} used unknown mode "${mode}"`).toBe(
-          true,
+      for (const id of sections) {
+        const heading = page.locator(`#${id} > h2#${id}-title`);
+        await expect(heading, `#${id} needs its own h2`).toHaveCount(1);
+        await expect(page.locator(`#${id}`)).toHaveAttribute(
+          "aria-labelledby",
+          `${id}-title`,
         );
+        expect(((await heading.textContent()) ?? "").trim()).not.toBe("");
       }
+    });
+
+    test(`${path} lists every content section under "On this page"`, async ({
+      page,
+    }) => {
+      await page.goto(path, { waitUntil: "domcontentloaded" });
+
+      const nav = page.getByRole("navigation", { name: "On this page" });
+      await expect(nav).toBeVisible();
+
+      const targets = await nav
+        .locator('a[href^="#"]')
+        .evaluateAll((links) =>
+          links.map((link) => (link.getAttribute("href") ?? "").slice(1)),
+        );
+
+      // Every section except the closing related-vehicles list, in order.
+      expect(targets).toEqual(
+        sections.filter((id) => !id.startsWith("related-")),
+      );
+    });
+  }
+
+  test("the specification table is populated from real data", async ({
+    page,
+  }) => {
+    for (const { path } of PROFILES) {
+      await page.goto(path, { waitUntil: "domcontentloaded" });
+
+      const values = await page
+        .locator("#specifications table tbody td.orbix-num")
+        .evaluateAll((cells) =>
+          cells.map((cell) => (cell.textContent ?? "").trim()),
+        );
+
       expect(
-        modes.length,
-        `${route} should differentiate its sections across several modes`,
-      ).toBeGreaterThanOrEqual(4);
+        values.length,
+        `${path} has no specification rows`,
+      ).toBeGreaterThan(0);
+      // A blank or placeholder here is a formatting regression, because every
+      // row comes from a recorded figure.
+      for (const value of values) {
+        expect(value, `${path} rendered an empty value`).not.toBe("");
+        expect(value).not.toMatch(/^(0|\u2014|-|N\/A)$/i);
+      }
     }
   });
 
-  test("aircraft and rocket heroes use their own media layout", async ({
+  test("each profile photograph has alt text and a credit with its source", async ({
     page,
   }) => {
-    // Aircraft are wide subjects and rockets are vertical; forcing one frame
-    // on both is what cropped launch vehicles through the middle on the
-    // index cards before the discovery phase.
-    //
-    // Asserted through geometry rather than class names: a backdrop hero
-    // spans the viewport, a column hero is bounded well inside it. Both are
-    // scoped to `.orbix-profile-hero`, because `header` also matches the
-    // site header.
-    // Polled rather than read once: `fill` images report a zero-width box
-    // until layout settles, which races under parallel workers.
-    const heroImageRatio = () =>
-      expect
-        .poll(async () =>
-          page.evaluate(() => {
-            const hero = document.querySelector(".orbix-profile-hero");
-            const image = hero?.querySelector("img");
-            if (!hero || !image) return 0;
-            return image.getBoundingClientRect().width / window.innerWidth;
-          }),
-        )
-        .toBeGreaterThan(0);
+    for (const { path } of PROFILES) {
+      await page.goto(path, { waitUntil: "domcontentloaded" });
 
-    await page.goto(`${ROUTES.aircraft}/f-22-raptor`, {
-      waitUntil: "domcontentloaded",
-    });
-    await heroImageRatio();
-    const aircraftRatio = await page.evaluate(() => {
-      const image = document.querySelector(".orbix-profile-hero img");
-      return image
-        ? image.getBoundingClientRect().width / window.innerWidth
-        : 0;
-    });
-    expect(
-      aircraftRatio,
-      "the aircraft hero media should span the viewport as a backdrop",
-    ).toBeGreaterThan(0.9);
+      const figure = page.locator("#main-content figure").first();
+      await expect(figure).toBeVisible();
 
-    await page.goto(`${ROUTES.rockets}/falcon-9`, {
-      waitUntil: "domcontentloaded",
-    });
-    await heroImageRatio();
-    const rocketRatio = await page.evaluate(() => {
-      const image = document.querySelector(".orbix-profile-hero img");
-      return image
-        ? image.getBoundingClientRect().width / window.innerWidth
-        : 0;
-    });
-    expect(
-      rocketRatio,
-      "the rocket hero media should be a bounded vertical column",
-    ).toBeLessThan(0.5);
-  });
+      const alt = (await figure.locator("img").getAttribute("alt")) ?? "";
+      expect(
+        alt.trim().length,
+        `${path} photograph needs alt text`,
+      ).toBeGreaterThan(10);
 
-  test("existing profile anchors still resolve to real sections", async ({
-    page,
-  }) => {
-    // These ids predate this phase and may be bookmarked, so the framework
-    // must not have renamed them.
-    await page.goto(`${ROUTES.aircraft}/f-22-raptor`, {
-      waitUntil: "domcontentloaded",
-    });
-    for (const id of AIRCRAFT_ANCHORS) {
-      await expect(page.locator(`#${id}`), `#${id} should exist`).toHaveCount(
-        1,
-      );
-    }
-
-    await page.goto(`${ROUTES.rockets}/falcon-9`, {
-      waitUntil: "domcontentloaded",
-    });
-    for (const id of ROCKET_ANCHORS) {
-      await expect(page.locator(`#${id}`), `#${id} should exist`).toHaveCount(
-        1,
-      );
+      const caption = figure.locator("figcaption");
+      await expect(caption).toContainText(/public domain|CC BY/i);
+      await expect(
+        caption.getByRole("link", { name: /^Source of the / }),
+      ).toHaveAttribute("href", /^https:\/\//);
     }
   });
 
-  test("profile heroes carry their route's division", async ({ page }) => {
+  test("the breadcrumb leads back to the right registry", async ({ page }) => {
+    await page.goto(`${ROUTES.aircraft}/b-2-spirit`, {
+      waitUntil: "domcontentloaded",
+    });
+    const aircraftCrumbs = page.getByRole("navigation", { name: "Breadcrumb" });
+    await expect(
+      aircraftCrumbs.getByRole("link", { name: "Aircraft", exact: true }),
+    ).toHaveAttribute("href", ROUTES.aircraft);
+
+    await page.goto(`${ROUTES.rockets}/saturn-v`, {
+      waitUntil: "domcontentloaded",
+    });
+    const rocketCrumbs = page.getByRole("navigation", { name: "Breadcrumb" });
+    await expect(
+      rocketCrumbs.getByRole("link", { name: "Launch vehicles", exact: true }),
+    ).toHaveAttribute("href", ROUTES.rockets);
+  });
+
+  test("profiles carry their route's division", async ({ page }) => {
     await page.goto(`${ROUTES.aircraft}/b-2-spirit`, {
       waitUntil: "domcontentloaded",
     });
@@ -231,19 +187,5 @@ test.describe("Vehicle profile framework", () => {
       "data-orbix-division",
       "space",
     );
-  });
-
-  test("sections not yet migrated still render through the default mode", async ({
-    page,
-  }) => {
-    // Backward compatibility is the whole reason the adapters exist: Phase 2B
-    // migrates the rest, and until then those sections must keep rendering.
-    await page.goto(`${ROUTES.aircraft}/f-22-raptor`, {
-      waitUntil: "domcontentloaded",
-    });
-
-    const recordSections = page.locator('[data-profile-mode="record"]');
-    await expect(recordSections.first()).toBeVisible();
-    expect(await recordSections.count()).toBeGreaterThan(1);
   });
 });

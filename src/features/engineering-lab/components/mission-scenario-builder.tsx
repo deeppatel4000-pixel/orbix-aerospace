@@ -601,7 +601,7 @@ export function MissionScenarioBuilder({
                     idPrefix="mission-scenario"
                     label="Drag coefficient"
                     onChange={updateNumericField}
-                    unit="CD"
+                    unit=""
                     value={values.dragCoefficient}
                   />
                 </div>
@@ -666,9 +666,9 @@ export function MissionScenarioBuilder({
                   <OptionalNumberField
                     field="heatingCoefficient"
                     hint="Optional coefficient; blank preserves the calculator default."
-                    label="Heating coefficient"
+                    label="Heating coefficient k (optional)"
                     onChange={updateNumericField}
-                    unit="k"
+                    unit="kg½/m"
                     value={values.heatingCoefficient}
                   />
                 </div>
@@ -687,7 +687,7 @@ export function MissionScenarioBuilder({
           </div>
         </form>
 
-        <aside className="h-fit rounded-md border border-border bg-surface p-4 sm:p-6 xl:sticky xl:top-6">
+        <aside className="h-fit rounded-md border border-border bg-surface p-4 sm:p-6 xl:sticky xl:top-[calc(57px+1.5rem)]">
           <h3 className="orbix-h3 text-foreground">What this builder does</h3>
           <p className="mt-2 text-sm leading-6 text-muted">
             This builder creates the existing mission-profile input object.

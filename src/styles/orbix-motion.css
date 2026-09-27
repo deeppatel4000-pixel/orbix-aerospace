@@ -13,16 +13,6 @@
   }
 }
 
-@layer utilities {
-  /* Neutralised: entrance fades and decorative pulses are removed. Kept as
-   * no-ops for existing usages until phase C. */
-  .orbix-enter,
-  .orbix-signal-pulse,
-  .orbix-page-transition {
-    animation: none;
-  }
-}
-
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

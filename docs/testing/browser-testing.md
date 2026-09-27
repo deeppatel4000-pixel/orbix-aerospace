@@ -28,6 +28,16 @@ a real production build, real interaction.
   reaches interactive controls (tab order, focus visibility), focus is restored to the mobile
   menu toggle when the menu is dismissed with Escape, and layout does not overflow horizontally
   at the mobile viewport.
+- **Site integrity sweep** (`tests/e2e/smoke/site-integrity.spec.ts`, added 2026-09-27, desktop
+  project only): every public route (home, registries, all ten profiles, compare, lab, learn,
+  showcase, about, credits and the four legal pages) returns 200, has a unique title and meta
+  description and exactly one h1, does not scroll sideways at 320, 360 or 1440px, loads every
+  image, contains no em dash in visible text or accessible names, carries the footer `mailto:`
+  contact link and a header logo linking to `/`. It also crawls every internal link and in-page
+  anchor, and checks that an unknown path returns the custom 404 inside the site chrome.
+  Headless Chromium hides scrollbars, so this file launches it without `--hide-scrollbars`:
+  with a real 15px scrollbar a 320px window has a 305px layout width, which is what exposed the
+  old `html { min-width: 320px }` overflow.
 
 ## 3. How to run
 
@@ -89,7 +99,9 @@ regenerated from scratch every time.
 
 ### Size tradeoff — measured, and deliberately accepted
 
-The 17 baselines total **33.5 MB** (0.5–3.6 MB each). This was investigated properly rather
+As of the 2026-09-27 redesign there are 27 baselines totalling about 12 MB, all regenerated and
+reviewed after the redesign. The figures below are from the earlier 17-baseline set: those 17
+totalled **33.5 MB** (0.5–3.6 MB each). This was investigated properly rather
 than guessed, and the decision is to **keep them as they are**. The measurements:
 
 - **Height, not photography, drives size.** Bytes/pixel is a fairly uniform 0.14–0.48 across
@@ -161,14 +173,24 @@ So there is nothing wrong with the application. Two test-side accommodations han
    only for images that are genuinely stuck, pins each one to the exact variant the browser had
    already selected so the fetch actually happens. Rendered pixels are unchanged.
 
-If ORBIX's oversized source PNGs are ever optimized (handoff Known Issue #6), this quirk should
-disappear and the workaround can be revisited.
+The oversized source PNGs were replaced by 40 to 225 KB WebP files in the 2026 redesign; the
+workaround is kept because it is harmless and only acts on images that are genuinely stuck.
+
+## 6b. Hydration and the root loading fallback
+
+`src/app/loading.tsx` is a root Suspense fallback with its own `<main>`, so right after
+`domcontentloaded` a page can still show that fallback. Tests that read the DOM wait for
+`main#main-content` (the real page) rather than any `main`. Controls that are server-rendered
+(the mobile menu toggle, the Compare selects) are clicked only after React has attached its
+props to them, and the Engineering Lab sweeps load the lab once and wait for hydration before
+moving between tools by hash.
 
 ## 7. Critical routes
 
 The smoke suite treats these as must-not-break: `/` (home), `/aircraft`, `/rockets`,
-`/compare`, `/engineering-lab`, `/showcase`, `/learn`, an aircraft profile deep link, a
-rocket profile deep link, and Mission Control's workspace tablist/switching.
+`/compare`, `/engineering-lab`, `/showcase`, `/learn`, `/about`, `/credits`, `/privacy`,
+`/terms`, `/cookies`, `/accessibility`, every aircraft and rocket profile, and Mission
+Control's workspace tablist/switching.
 
 ## 8. What these tests intentionally do NOT guarantee
 

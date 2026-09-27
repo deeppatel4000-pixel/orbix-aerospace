@@ -56,6 +56,19 @@ export const ROUTES = {
 
 export type RouteKey = keyof typeof ROUTES;
 
+/** The about, credits and legal pages linked from the footer. */
+export const INFO_ROUTES = {
+  about: "/about",
+  credits: "/credits",
+  privacy: "/privacy",
+  terms: "/terms",
+  cookies: "/cookies",
+  accessibility: "/accessibility",
+} as const;
+
+/** The site's contact address, shown as a mailto: link in the footer. */
+export const CONTACT_EMAIL = "deep.patel4000@gmail.com";
+
 export const AIRCRAFT_IDS = [
   "f-22-raptor",
   "f-35-lightning-ii",

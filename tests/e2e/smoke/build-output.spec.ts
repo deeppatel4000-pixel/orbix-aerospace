@@ -67,6 +67,13 @@ const STATIC_PAGE_ROUTES = [
   "/engineering-lab",
   "/learn",
   "/showcase",
+  // About, credits and legal pages (added in the 2026 redesign).
+  "/about",
+  "/accessibility",
+  "/cookies",
+  "/credits",
+  "/privacy",
+  "/terms",
 ] as const;
 
 /**

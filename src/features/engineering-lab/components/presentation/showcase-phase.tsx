@@ -80,7 +80,6 @@ export function ShowcasePhase({
     <li className="min-w-0">
       <button
         aria-current={active ? "step" : undefined}
-        aria-label={`Show phase ${index + 1}: ${phase.label}`}
         className={
           active
             ? "flex min-h-10 w-full items-center gap-2 border-l-2 border-accent bg-accent/12 px-3 py-2 text-left text-sm font-medium text-foreground"

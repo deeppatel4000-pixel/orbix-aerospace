@@ -71,9 +71,25 @@ describe("showcase capture view", () => {
       expect(markup).toContain('aria-labelledby="capture-mission-title"');
       expect(markup.match(/<h1/g)).toHaveLength(1);
       expect(markup).toContain(mission.preset.name);
-      expect(markup).toContain("this page calculates nothing");
+      expect(markup).toContain("Values shown are preset inputs");
       expect(markup).not.toContain("/images/");
       expect(markup).not.toContain(EM_DASH);
+    }
+  });
+
+  it("says the transfer scale uses the calculators' Earth radius, not a preset input", () => {
+    for (const mission of SHOWCASE_MISSIONS) {
+      const markup = renderToStaticMarkup(
+        <ShowcaseCapture mission={mission} />,
+      );
+      const disclosesRadius = markup.includes(
+        "standard value, not a preset input",
+      );
+
+      expect(disclosesRadius).toBe(
+        mission.diagram.kind === "transfer" &&
+          mission.diagram.planetRadiusSource === "calculator-default",
+      );
     }
   });
 });

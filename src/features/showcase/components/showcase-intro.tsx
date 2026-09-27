@@ -11,7 +11,7 @@ export function ShowcaseIntro() {
         <h1 className="orbix-h1 mt-2 text-text-primary">How ORBIX is built</h1>
         <p className="orbix-lead mt-4">
           ORBIX keeps its engineering calculations in plain TypeScript modules
-          and uses React only to collect inputs and display the typed results.
+          and uses React components to collect inputs and display the results.
         </p>
         <div className="mt-6 flex flex-wrap gap-3">
           <ButtonLink href="/engineering-lab">

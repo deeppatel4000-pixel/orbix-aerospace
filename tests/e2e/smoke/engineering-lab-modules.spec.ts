@@ -61,6 +61,34 @@ const MODULE_IDS = [
   "demo-mode",
 ] as const;
 
+/**
+ * Loads the lab once and waits until React has hydrated the tool index.
+ *
+ * The sweeps below move between tools with same-document hash navigations.
+ * If the first of those lands while the page is still hydrating, the Next.js
+ * router's initial `history.replaceState` restores the hash it booted with,
+ * and the shell (correctly) keeps showing that tool. Waiting for hydration
+ * first makes every later hash change a real user-style navigation.
+ */
+async function openHydratedLab(
+  page: import("@playwright/test").Page,
+): Promise<void> {
+  await page.goto(ROUTES.engineeringLab, { waitUntil: "load" });
+  await expect
+    .poll(
+      () =>
+        page.evaluate(() => {
+          const select = document.getElementById("laboratory-tool-select");
+          return (
+            select !== null &&
+            Object.keys(select).some((key) => key.startsWith("__reactProps"))
+          );
+        }),
+      { timeout: 30_000 },
+    )
+    .toBe(true);
+}
+
 /** Modules that are present and not inside anything hidden. */
 async function shownModuleIds(
   page: import("@playwright/test").Page,
@@ -81,6 +109,7 @@ test.describe("Engineering Laboratory modules", () => {
   test("every module resolves from its own deep link and is the only one shown", async ({
     page,
   }) => {
+    await openHydratedLab(page);
     for (const id of MODULE_IDS) {
       await page.goto(`${ROUTES.engineeringLab}#${id}`, {
         waitUntil: "domcontentloaded",
@@ -100,6 +129,7 @@ test.describe("Engineering Laboratory modules", () => {
     // The index is authored beside the cards rather than derived from them.
     // If the two lists ever slip out of order, a reader would select one model
     // and be shown another — the worst failure this design can produce.
+    await openHydratedLab(page);
     for (const id of MODULE_IDS) {
       await page.goto(`${ROUTES.engineeringLab}#${id}`, {
         waitUntil: "domcontentloaded",
@@ -110,19 +140,19 @@ test.describe("Engineering Laboratory modules", () => {
         })
         .toBe(id);
 
-      // Read in one pass from the visible module's own section: every
-      // workflow keeps its own active module, including the five that are
-      // hidden, so a document-wide `aria-current` match would pick up a
-      // neighbouring workflow's label.
+      // Read in one pass: the current link in the visible index (the index
+      // is rendered twice, once for narrow viewports inside a <details>, so
+      // only the visible copy counts) against the visible tool's heading.
       const pair = await page.evaluate(() => {
         const shown = [
           ...document.querySelectorAll("[data-laboratory-tool]"),
         ].find((node) => !node.closest("[hidden]"));
-        const section = shown?.closest("section[id]");
-        const label = section
-          ?.querySelector(
-            '.orbix-lab-tool[aria-current="true"] .orbix-lab-tool__title',
-          )
+        const label = [
+          ...document.querySelectorAll(
+            'nav[aria-label="Engineering Lab tools"] a[aria-current="location"]',
+          ),
+        ]
+          .find((link) => link.checkVisibility())
           ?.textContent?.trim();
         const heading = shown?.querySelector("h2, h3")?.textContent?.trim();
 
@@ -142,8 +172,9 @@ test.describe("Engineering Laboratory modules", () => {
     await expect.poll(async () => (await shownModuleIds(page)).length).toBe(1);
 
     await page
-      .locator("#foundations-workflow .orbix-lab-tool")
-      .filter({ hasText: "Drag Equation" })
+      .getByRole("navigation", { name: "Engineering Lab tools" })
+      .getByRole("link", { name: "Drag equation", exact: true })
+      .filter({ visible: true })
       .click();
 
     await expect
@@ -162,47 +193,62 @@ test.describe("Engineering Laboratory modules", () => {
       .poll(async () => (await shownModuleIds(page)).join(","))
       .toBe("lift-equation");
 
+    // Marked: the current link carries aria-current (and a text weight and
+    // border change, not only a colour change).
     const current = page.locator(
-      '#foundations-workflow .orbix-lab-tool[aria-current="true"]',
+      'nav[aria-label="Engineering Lab tools"] a[aria-current="location"]:visible',
     );
     await expect(current).toHaveCount(1);
-    await expect(current).toContainText("Lift Equation");
+    await expect(current).toHaveText("Lift equation");
 
+    // Announced: a polite live region names the current tool.
     await expect(
-      page.locator("#foundations-workflow").getByText("Current module:", {
-        exact: false,
-      }),
-    ).toContainText("Lift Equation");
+      page.locator('[aria-live="polite"]', { hasText: /^Current tool: / }),
+    ).toHaveText("Current tool: Lift equation");
   });
 
-  test("index controls are real buttons with a usable target", async ({
+  test("index entries are plain links with a usable target", async ({
     page,
   }) => {
     await page.goto(ROUTES.engineeringLab, { waitUntil: "domcontentloaded" });
 
-    const nested = await page.evaluate(
-      () =>
-        [...document.querySelectorAll(".orbix-lab-tool")].filter(
-          (node) =>
-            node.tagName !== "BUTTON" ||
-            node.querySelector("a, button, input, select") !== null,
-        ).length,
+    // Every entry is a single in-page link to its tool id, with nothing
+    // interactive nested inside it.
+    const entries = await page.evaluate(() =>
+      [
+        ...document.querySelectorAll(
+          'nav[aria-label="Engineering Lab tools"] li',
+        ),
+      ].map((item) => {
+        const controls = item.querySelectorAll("a, button, input, select");
+        const link = item.querySelector("a");
+        return {
+          controls: controls.length,
+          href: link?.getAttribute("href") ?? "",
+        };
+      }),
     );
-    expect(nested, "no nested interactive controls in the index").toBe(0);
+    expect(entries.length).toBeGreaterThan(0);
+    for (const entry of entries) {
+      expect(entry.controls).toBe(1);
+      expect(entry.href).toMatch(/^#[a-z0-9-]+$/);
+    }
 
-    // Polled: the controls are server-rendered, so they exist in the DOM
-    // before the stylesheet that gives them their height has applied.
+    // WCAG 2.2 2.5.8: every visible entry is at least 24px tall and spans
+    // the index width. Polled: the links are server-rendered, so they exist
+    // in the DOM before the stylesheet that gives them their height applies.
     await expect
       .poll(async () =>
         page.evaluate(
           () =>
             [
               ...document.querySelectorAll(
-                "#foundations-workflow .orbix-lab-tool",
+                'nav[aria-label="Engineering Lab tools"] a',
               ),
             ]
+              .filter((node) => node.checkVisibility())
               .map((node) => node.getBoundingClientRect().height)
-              .filter((height) => height < 44).length,
+              .filter((height) => height < 24).length,
         ),
       )
       .toBe(0);
@@ -308,6 +354,7 @@ test.describe("Engineering Laboratory modules", () => {
     // the page scroll sideways — it is silently cut off instead, which is the
     // worse outcome and one a body-overflow assertion cannot see.
     await page.setViewportSize({ height: 844, width: 390 });
+    await openHydratedLab(page);
 
     const overflowing: string[] = [];
     for (const id of MODULE_IDS) {

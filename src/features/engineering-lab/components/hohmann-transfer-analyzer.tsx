@@ -228,6 +228,7 @@ export function HohmannTransferAnalyzer() {
                 hint="Optional. Leave blank to use Earth's standard gravitational parameter."
                 idPrefix="hohmann-transfer"
                 label="Gravitational parameter (optional)"
+                optional
                 onChange={updateValue}
                 unit="m³/s²"
                 value={values.gravitationalParameter}
@@ -238,6 +239,7 @@ export function HohmannTransferAnalyzer() {
                 hint="Optional. Leave blank to use Earth's mean radius."
                 idPrefix="hohmann-transfer"
                 label="Planet radius (optional)"
+                optional
                 onChange={updateValue}
                 unit="m"
                 value={values.planetRadiusMetres}

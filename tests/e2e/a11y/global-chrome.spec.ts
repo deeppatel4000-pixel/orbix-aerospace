@@ -1,14 +1,21 @@
-import { expect, ROUTES, test } from "../fixtures/orbix";
+import {
+  CONTACT_EMAIL,
+  expect,
+  INFO_ROUTES,
+  ROUTES,
+  test,
+} from "../fixtures/orbix";
 
 /**
- * The 7 statically-linked `(site)` routes. `/showcase-capture/[id]` is
+ * The statically-linked `(site)` routes, plus the about, credits and legal
+ * pages. `/showcase-capture/[id]` is
  * deliberately excluded from this list -- it lives outside the `(site)`
  * route group and has no shared header, footer, skip link, or
  * `id="main-content"` (see the dedicated test below), so asserting the
  * shared-chrome expectations against it would be asserting something the
  * app was never meant to do.
  */
-const routeEntries = Object.entries(ROUTES);
+const routeEntries = Object.entries({ ...ROUTES, ...INFO_ROUTES });
 
 test.describe("Landmark structure", () => {
   for (const [name, path] of routeEntries) {
@@ -133,10 +140,16 @@ test.describe("Footer", () => {
       if (href !== null) hrefs.push(href);
     }
 
+    // The contact address is a mailto: link, which has no HTTP response to
+    // check; assert its target instead of requesting it.
+    const mailto = hrefs.filter((href) => href.startsWith("mailto:"));
+    expect(mailto).toEqual([`mailto:${CONTACT_EMAIL}`]);
+
     // Requested once per unique href rather than once per link, so a footer
     // that happens to repeat the same href twice doesn't double the network
     // calls this test makes.
     for (const href of new Set(hrefs)) {
+      if (href.startsWith("mailto:")) continue;
       const response = await request.get(href);
       expect(response.status(), `Footer link "${href}" should resolve`).toBe(
         200,

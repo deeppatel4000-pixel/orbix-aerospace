@@ -18,10 +18,12 @@ import {
  *
  * Everything asserted here is derived from the implementation, not assumed:
  *
- *   - Play is `disabled` while playing; Pause is `disabled` while paused
- *     (`replay-controls.tsx`), so the buttons' own disabled state is the
- *     component's observable playback state — no internal state is touched.
- *   - Progress is reported as text, `Phase {index + 1} of {totalPhases}`.
+ *   - Play and Pause are one toggle (`replay-controls.tsx`) whose
+ *     accessible name flips between "Play mission replay" and "Pause mission
+ *     replay", so the toggle's own name is the component's observable
+ *     playback state; no internal state is touched.
+ *   - Progress is reported as text,
+ *     `Phase {index + 1} of {totalPhases}, playing` (or `, paused`).
  *   - The advance timer fires every `reducedMotionDelayMilliseconds` (3600 ms)
  *     whenever reduced motion is active — which it always is in this suite,
  *     because `playwright.config.ts` sets `contextOptions.reducedMotion:
@@ -63,6 +65,24 @@ function pauseButton(page: Page) {
   return page.getByRole("button", { name: "Pause mission replay" });
 }
 
+/** Paused: the single toggle offers Play, and nothing offers Pause. */
+async function expectPaused(page: Page): Promise<void> {
+  await expect(playButton(page)).toBeEnabled();
+  await expect(pauseButton(page)).toHaveCount(0);
+  await expect(
+    replaySection(page).getByText(/^Phase \d+ of \d+, paused$/),
+  ).toBeVisible();
+}
+
+/** Playing: the same toggle now offers Pause, and nothing offers Play. */
+async function expectPlaying(page: Page): Promise<void> {
+  await expect(pauseButton(page)).toBeEnabled();
+  await expect(playButton(page)).toHaveCount(0);
+  await expect(
+    replaySection(page).getByText(/^Phase \d+ of \d+, playing$/),
+  ).toBeVisible();
+}
+
 /**
  * The replay root itself, not an ancestor wrapper. `mission-replay.tsx`
  * renders `<section aria-labelledby="mission-replay-title" ...>` and hangs
@@ -73,25 +93,23 @@ function replaySection(page: Page) {
   return page.locator('section[aria-labelledby="mission-replay-title"]');
 }
 
-/** Reads the rendered `Phase N of M` progress readout. */
+/** Reads the rendered `Phase N of M, paused|playing` progress readout. */
 async function readPhase(
   page: Page,
 ): Promise<{ current: number; total: number }> {
   const text =
-    (await page
-      .getByText(/^Phase \d+ of \d+$/)
-      .first()
+    (await replaySection(page)
+      .getByText(/^Phase \d+ of \d+, (paused|playing)$/)
       .textContent()) ?? "";
-  const match = /^Phase (\d+) of (\d+)$/.exec(text.trim());
+  const match = /^Phase (\d+) of (\d+),/.exec(text.trim());
   if (match === null) throw new Error(`Unrecognised phase readout: "${text}"`);
 
   return { current: Number(match[1]), total: Number(match[2]) };
 }
 
 /**
- * Mission Replay lives inside Mission Control, which mounts behind the
- * `MissionStartupSequence` overlay. Same dismissal approach as
- * `mission-control.spec.ts`.
+ * Mission Replay lives inside Mission Control, which renders its content
+ * directly (the old startup overlay was removed in the 2026 redesign).
  */
 async function openReplayWorkspace(page: Page): Promise<void> {
   await page.goto(`${ROUTES.engineeringLab}#mission-control-dashboard`, {
@@ -99,16 +117,8 @@ async function openReplayWorkspace(page: Page): Promise<void> {
   });
 
   await expect(
-    page.getByRole("navigation", { name: "Mission Control sections" }),
+    page.getByRole("navigation", { name: "Mission control sections" }),
   ).toBeVisible();
-
-  const skip = page.getByRole("button", {
-    name: "Skip Mission Control startup",
-  });
-  if (await skip.isVisible().catch(() => false)) {
-    await skip.click({ timeout: 5_000 }).catch(() => {});
-  }
-  await expect(skip).toBeHidden();
 
   await page.getByRole("tab", { name: "Replay" }).click();
   await expect(page.locator("#mission-replay-title")).toBeVisible();
@@ -132,9 +142,8 @@ test.describe("Mission Replay controls", () => {
       expect(phase.current, "replay should start on the first phase").toBe(1);
       expect(phase.total).toBeGreaterThan(1);
 
-      // Paused: Play offered, Pause unavailable.
-      await expect(playButton(page)).toBeEnabled();
-      await expect(pauseButton(page)).toBeDisabled();
+      // Paused: the toggle offers Play.
+      await expectPaused(page);
     });
 
     test("Play advances the replay to the next phase", async ({ page }) => {
@@ -143,9 +152,8 @@ test.describe("Mission Replay controls", () => {
 
       await playButton(page).click();
 
-      // Playback state flips immediately, observed through the controls.
-      await expect(playButton(page)).toBeDisabled();
-      await expect(pauseButton(page)).toBeEnabled();
+      // Playback state flips immediately, observed through the toggle.
+      await expectPlaying(page);
 
       // The replay genuinely advances, not merely "a button was clicked".
       await expect
@@ -156,7 +164,7 @@ test.describe("Mission Replay controls", () => {
 
       // The phase label and live region follow the advance.
       await expect(
-        replaySection(page).getByText(/^Phase 2 of \d+$/),
+        replaySection(page).getByText(/^Phase 2 of \d+, playing$/),
       ).toBeVisible();
     });
 
@@ -173,9 +181,8 @@ test.describe("Mission Replay controls", () => {
 
       await pauseButton(page).click();
 
-      // Observable paused state, straight from the controls.
-      await expect(pauseButton(page)).toBeDisabled();
-      await expect(playButton(page)).toBeEnabled();
+      // Observable paused state, straight from the toggle.
+      await expectPaused(page);
 
       const paused = await readPhase(page);
 
@@ -189,7 +196,7 @@ test.describe("Mission Replay controls", () => {
         after.current,
         "phase must not advance while the replay is paused",
       ).toBe(paused.current);
-      await expect(pauseButton(page)).toBeDisabled();
+      await expectPaused(page);
     });
 
     test("selecting a phase moves the replay and pauses it", async ({
@@ -200,7 +207,7 @@ test.describe("Mission Replay controls", () => {
 
       // Start playing so the pause-on-select behaviour is observable.
       await playButton(page).click();
-      await expect(pauseButton(page)).toBeEnabled();
+      await expectPlaying(page);
 
       // The timeline control is the phase indicator, not a slider.
       const phaseButtons = page.getByRole("button", {
@@ -234,8 +241,7 @@ test.describe("Mission Replay controls", () => {
       ).toHaveCount(1);
 
       // ...and `select-phase` also stops playback.
-      await expect(pauseButton(page)).toBeDisabled();
-      await expect(playButton(page)).toBeEnabled();
+      await expectPaused(page);
     });
 
     test("Restart returns the replay to the first phase", async ({ page }) => {
@@ -255,7 +261,7 @@ test.describe("Mission Replay controls", () => {
         .click();
 
       await expect.poll(async () => (await readPhase(page)).current).toBe(1);
-      await expect(pauseButton(page)).toBeDisabled();
+      await expectPaused(page);
     });
   });
 

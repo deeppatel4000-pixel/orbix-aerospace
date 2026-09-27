@@ -1,7 +1,8 @@
 import { expect, ROUTES, test } from "../fixtures/orbix";
 
 /**
- * Learn research layout (Phase 6A).
+ * Learn research layout (introduced in Phase 6A, redesigned in 2026 as prose
+ * pathways beside a sticky Contents list).
  *
  * The dataset itself is frozen by `learning-areas.test.ts`; this covers what
  * only a browser can see — that the redesigned pathway records stay inside the

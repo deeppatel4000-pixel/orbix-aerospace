@@ -15,9 +15,8 @@ import { expect, ROUTES, test } from "../fixtures/orbix";
 
 const FEATURED = [
   "/aircraft/f-22-raptor",
-  "/aircraft/sr-71-blackbird",
-  "/rockets/falcon-9",
-  "/rockets/saturn-v",
+  "/aircraft/b-2-spirit",
+  "/rockets/space-launch-system",
 ] as const;
 
 /** Every primary destination the homepage must expose. */
@@ -62,16 +61,23 @@ test.describe("Homepage", () => {
     // section could point at the wrong route and still pass because another
     // section happens to link there. Each section owns its outbound routes.
     const sections = [
-      { expected: ["/aircraft", "/rockets"], id: "vehicle-systems-title" },
+      { expected: ["/aircraft", "/engineering-lab"], id: "home-title" },
       {
-        expected: ["/compare", "/engineering-lab"],
-        id: "analysis-preview-title",
+        expected: [
+          "/aircraft",
+          "/rockets",
+          "/compare",
+          "/engineering-lab",
+          "/learn",
+          "/showcase",
+        ],
+        id: "home-sections-title",
       },
       {
-        expected: ["/engineering-lab", "/showcase"],
-        id: "mission-preview-title",
+        expected: ["/aircraft", "/rockets", ...FEATURED],
+        id: "home-featured-title",
       },
-      { expected: ["/learn"], id: "research-preview-title" },
+      { expected: ["/about"], id: "home-sourcing-title" },
     ] as const;
 
     await page.goto(ROUTES.home, { waitUntil: "domcontentloaded" });
@@ -103,9 +109,9 @@ test.describe("Homepage", () => {
     );
 
     expect(hrefs.sort()).toEqual([...FEATURED].sort());
-    // Two from each registry: one modern, one historic.
+    // Both registries are represented: two aircraft and one launch vehicle.
     expect(hrefs.filter((h) => h.startsWith("/aircraft/"))).toHaveLength(2);
-    expect(hrefs.filter((h) => h.startsWith("/rockets/"))).toHaveLength(2);
+    expect(hrefs.filter((h) => h.startsWith("/rockets/"))).toHaveLength(1);
   });
 
   test("featured vehicles use the compact discovery card", async ({ page }) => {
@@ -132,12 +138,13 @@ test.describe("Homepage", () => {
     }
   });
 
-  test("the mission preview does not claim a timeline scrubber", async ({
+  test("the homepage copy does not claim a scrubber, live data or simulation", async ({
     page,
   }) => {
     // Mission Replay has play/pause/restart, a speed selector and phase
-    // buttons — its progress element is non-interactive. Promising a scrubber
-    // or a live feed would misrepresent the product.
+    // buttons; its progress element is non-interactive, and every figure is
+    // computed from textbook models. Promising a scrubber, a live feed or a
+    // simulation would misrepresent the product.
     await page.goto(ROUTES.home, { waitUntil: "domcontentloaded" });
 
     // `main` alone also matches the loading fallback's
@@ -155,6 +162,15 @@ test.describe("Homepage", () => {
         `homepage copy should not claim "${forbidden.trim()}"`,
       ).not.toContain(forbidden);
     }
+  });
+
+  test("the hero figure credits its photograph", async ({ page }) => {
+    await page.goto(ROUTES.home, { waitUntil: "domcontentloaded" });
+
+    const caption = page.locator("section:has(#home-title) figcaption");
+    await expect(caption).toHaveText(
+      "Apollo 11 Saturn V lifting off from Launch Complex 39A, 16 July 1969. Credit: NASA. Public domain (U.S. government work) (licence terms, opens in a new tab). Source: Wikimedia Commons (opens in a new tab)",
+    );
   });
 
   test("contains no nested interactive controls", async ({ page }) => {

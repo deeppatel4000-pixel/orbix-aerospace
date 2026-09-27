@@ -236,6 +236,7 @@ export function OrbitalPlaneChangeAnalyzer() {
                 hint="Optional. Leave blank to use Earth's mean radius."
                 idPrefix="orbital-plane-change"
                 label="Planet radius (optional)"
+                optional
                 onChange={updateValue}
                 unit="m"
                 value={values.planetRadiusMetres}
@@ -246,6 +247,7 @@ export function OrbitalPlaneChangeAnalyzer() {
                 hint="Optional. Leave blank to use Earth's standard gravitational parameter."
                 idPrefix="orbital-plane-change"
                 label="Gravitational parameter (optional)"
+                optional
                 onChange={updateValue}
                 unit="m³/s²"
                 value={values.gravitationalParameter}

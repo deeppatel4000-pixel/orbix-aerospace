@@ -15,12 +15,15 @@ import { expect, ROUTES, test } from "../fixtures/orbix";
  *
  *   Accept: image/avif,image/webp,...  -> 200 image/webp   (NOT avif)
  *   Accept: image/webp                 -> 200 image/webp
- *   Accept: image/avif                 -> 200 image/png    (source format)
- *   Accept: * / *                      -> 200 image/png    (source format)
+ *   Accept: image/avif                 -> 200 image/jpeg
+ *   Accept: * / *                      -> 200 image/jpeg
  *
- * A .jpg source behaves the same way, falling back to `image/jpeg` rather
- * than `image/png`, confirming the fallback is "the source's own format"
- * rather than a hardcoded PNG.
+ * Since the 2026 redesign every vehicle photograph is stored as WebP. For a
+ * client that does not accept WebP, Next falls back to the source format
+ * only when that format is neither WebP nor AVIF; otherwise it encodes JPEG
+ * (`node_modules/next/dist/server/image-optimizer.js`, the
+ * `contentType = JPEG` branch). Measured against the local production build:
+ * a 640px F-22 variant is 7,006 bytes as WebP and 11,101 bytes as JPEG.
  *
  * ## Why AVIF is asserted as NOT produced
  *
@@ -145,7 +148,7 @@ test.describe("next/image format negotiation", () => {
     expect(contentType).toMatch(/^image\//);
   });
 
-  test("no format preference falls back to the source format", async ({
+  test("no format preference falls back to JPEG for a WebP source", async ({
     page,
     request,
   }) => {
@@ -159,58 +162,43 @@ test.describe("next/image format negotiation", () => {
     });
 
     expect(response.status()).toBe(200);
-    // The aircraft asset is a PNG, and that is what comes back untranscoded.
-    expect(response.headers()["content-type"]).toBe("image/png");
+    // The aircraft asset is a WebP file. A client that did not ask for WebP
+    // must not be sent it, so the optimizer encodes a universally supported
+    // JPEG instead.
+    expect(response.headers()["content-type"]).toBe("image/jpeg");
   });
 
-  test("negotiated WebP is materially smaller than the untranscoded source", async ({
-    page,
+  test("the optimizer really resizes: a narrow variant is materially smaller", async ({
     request,
   }) => {
-    // The point of negotiation is payload reduction. Comparing the two
-    // responses proves transcoding actually happened rather than the header
-    // merely being echoed.
-    await page.goto(`${ROUTES.aircraft}/f-22-raptor`, {
-      waitUntil: "domcontentloaded",
-    });
-    const url = await renderedOptimizerUrl(page);
+    // With WebP sources, comparing a negotiated response against the source
+    // format no longer proves anything (both are WebP). Resizing is the other
+    // half of what the optimizer is for, so compare two widths of the same
+    // source instead: the narrow one must be clearly smaller.
+    const variant = (width: number) =>
+      `/_next/image?${new URLSearchParams({
+        q: "75",
+        url: "/images/aircraft/f-22-raptor.webp",
+        w: String(width),
+      }).toString()}`;
 
-    const webp = await request.get(url, {
+    const narrow = await request.get(variant(640), {
       headers: { accept: ACCEPT_WEBP_ONLY },
     });
-    const original = await request.get(url, {
-      headers: { accept: ACCEPT_ANY },
+    const wide = await request.get(variant(1920), {
+      headers: { accept: ACCEPT_WEBP_ONLY },
     });
 
-    expect(webp.status()).toBe(200);
-    expect(original.status()).toBe(200);
+    expect(narrow.status()).toBe(200);
+    expect(wide.status()).toBe(200);
+    expect(narrow.headers()["content-type"]).toBe("image/webp");
 
-    const webpBytes = (await webp.body()).byteLength;
-    const originalBytes = (await original.body()).byteLength;
+    const narrowBytes = (await narrow.body()).byteLength;
+    const wideBytes = (await wide.body()).byteLength;
 
     expect(
-      webpBytes,
-      `negotiated WebP (${webpBytes}B) should be smaller than the source-format response (${originalBytes}B)`,
-    ).toBeLessThan(originalBytes);
-  });
-
-  test("a JPEG source falls back to JPEG rather than a hardcoded PNG", async ({
-    request,
-  }) => {
-    // f-35-lightning-ii is the one .jpg in the aircraft set, which is what
-    // makes it useful here: it proves the no-preference fallback follows the
-    // source's own format.
-    const params = new URLSearchParams({
-      q: "90",
-      url: "/images/aircraft/f-35-lightning-ii.jpg",
-      w: "640",
-    });
-
-    const response = await request.get(`/_next/image?${params.toString()}`, {
-      headers: { accept: ACCEPT_ANY },
-    });
-
-    expect(response.status()).toBe(200);
-    expect(response.headers()["content-type"]).toBe("image/jpeg");
+      narrowBytes,
+      `the 640px variant (${narrowBytes}B) should be well under the 1920px one (${wideBytes}B)`,
+    ).toBeLessThan(wideBytes * 0.75);
   });
 });

@@ -1,8 +1,8 @@
 import type { Page } from "@playwright/test";
 
-import { expect, ROUTES, test } from "../fixtures/orbix";
+import { expect, INFO_ROUTES, ROUTES, test } from "../fixtures/orbix";
 
-const routeEntries = Object.entries(ROUTES);
+const routeEntries = Object.entries({ ...ROUTES, ...INFO_ROUTES });
 
 interface HeadingInfo {
   level: number;
@@ -50,7 +50,9 @@ test.describe("Headings", () => {
       // concurrency limit (see the matching comment on
       // `expectAllImagesLoaded` in fixtures/orbix.ts).
       await page.goto(path, { waitUntil: "domcontentloaded" });
-      await expect(page.getByRole("main")).toBeVisible();
+      // The root `loading.tsx` fallback is its own <main>; wait for the
+      // route's real main landmark before reading the DOM.
+      await expect(page.locator("main#main-content")).toBeVisible();
 
       const headings = await getVisibleHeadingsInOrder(page);
 
@@ -94,7 +96,9 @@ test.describe("Images", () => {
       // concurrency limit (see the matching comment on
       // `expectAllImagesLoaded` in fixtures/orbix.ts).
       await page.goto(path, { waitUntil: "domcontentloaded" });
-      await expect(page.getByRole("main")).toBeVisible();
+      // The root `loading.tsx` fallback is its own <main>; wait for the
+      // route's real main landmark before reading the DOM.
+      await expect(page.locator("main#main-content")).toBeVisible();
 
       // The `alt` attribute is present in the initial markup for every
       // Next.js `<Image>` regardless of whether the image has actually
@@ -133,7 +137,9 @@ test.describe("Duplicate landmark roles", () => {
       // concurrency limit (see the matching comment on
       // `expectAllImagesLoaded` in fixtures/orbix.ts).
       await page.goto(path, { waitUntil: "domcontentloaded" });
-      await expect(page.getByRole("main")).toBeVisible();
+      // The root `loading.tsx` fallback is its own <main>; wait for the
+      // route's real main landmark before reading the DOM.
+      await expect(page.locator("main#main-content")).toBeVisible();
 
       const navLabels = await page.evaluate(() =>
         Array.from(document.querySelectorAll<HTMLElement>("nav"))
@@ -143,17 +149,29 @@ test.describe("Duplicate landmark roles", () => {
               checkVisibilityCSS: true,
             }),
           )
-          .map((nav) => nav.getAttribute("aria-label")),
+          .map((nav) => {
+            const labelledBy = nav.getAttribute("aria-labelledby");
+            if (labelledBy !== null) {
+              const text = labelledBy
+                .split(/\s+/)
+                .map((id) => document.getElementById(id)?.textContent ?? "")
+                .join(" ")
+                .trim();
+              return text === "" ? null : text;
+            }
+            return nav.getAttribute("aria-label");
+          }),
       );
 
-      // Every <nav> in this app declares an aria-label (desktop nav,
-      // footer nav, laboratory workflow nav, mission-control sections,
-      // etc.) -- an unlabelled <nav> would itself be a regression this
-      // check should catch, not silently pass through.
+      // Every <nav> in this app is named, by aria-label or by
+      // aria-labelledby pointing at visible text (desktop nav, footer nav,
+      // Learn contents, Engineering Lab tools, mission-control sections,
+      // etc.). An unnamed <nav> would itself be a regression this check
+      // should catch, not silently pass through.
       for (const label of navLabels) {
         expect(
           label,
-          "Every <nav> landmark should declare an aria-label",
+          "Every <nav> landmark should have an accessible name",
         ).not.toBeNull();
       }
 

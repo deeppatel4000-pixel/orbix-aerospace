@@ -7,39 +7,22 @@ import {
 } from "../fixtures/orbix";
 
 /**
- * Phase 2B coverage: the migrated profile body, related vehicles and the
- * section navigation.
- *
- * Phase 2A introduced the section-mode grammar but deliberately left ~20 leaf
- * sections on the backward-compatible default, and related vehicles still
- * duplicated index-card markup by hand. This phase migrated them. These tests
- * pin the contracts that keep that from silently regressing:
+ * Profile body coverage: the section navigation, ids and related vehicles.
+ * These tests pin the contracts that keep them from silently regressing:
  *
  *   - every anchor in the section nav resolves to a real id
  *   - no duplicate ids (two sections claiming one anchor breaks deep links)
  *   - related cards use the shared compact discovery card
- *   - a related card never links back to the vehicle you are already on
- *   - migrated sections carry a real mode, not the default fallback
+ *   - a profile shows three related vehicles from its own registry, and never
+ *     links back to the vehicle you are already on
+ *
+ * Section order and headings are covered by `vehicle-profile.spec.ts`.
  */
 
 const COMPACT_CARD = '.orbix-vehicle-card[data-variant="compact"]';
 
-/** Sections migrated in Phase 2B that must no longer be on the default. */
-const AIRCRAFT_MIGRATED = [
-  { id: "performance", mode: "data" },
-  { id: "dimensions", mode: "record" },
-  { id: "variants", mode: "record" },
-  { id: "historical-timeline", mode: "editorial" },
-  { id: "mission-applications", mode: "editorial" },
-  { id: "engineering-notes", mode: "editorial" },
-] as const;
-
-const ROCKET_MIGRATED = [
-  { id: "performance", mode: "data" },
-  { id: "propulsion", mode: "configuration" },
-  { id: "mission-applications", mode: "editorial" },
-  { id: "engineering-notes", mode: "editorial" },
-] as const;
+/** Each profile closes with this many related vehicles. */
+const RELATED_COUNT = 3;
 
 test.describe("Vehicle profile body", () => {
   test.skip(
@@ -84,36 +67,6 @@ test.describe("Vehicle profile body", () => {
     }
   });
 
-  test("migrated aircraft sections carry their assigned mode", async ({
-    page,
-  }) => {
-    await page.goto(`${ROUTES.aircraft}/f-22-raptor`, {
-      waitUntil: "domcontentloaded",
-    });
-
-    for (const { id, mode } of AIRCRAFT_MIGRATED) {
-      await expect(
-        page.locator(`#${id}`),
-        `#${id} should be in ${mode} mode`,
-      ).toHaveAttribute("data-profile-mode", mode);
-    }
-  });
-
-  test("migrated rocket sections carry their assigned mode", async ({
-    page,
-  }) => {
-    await page.goto(`${ROUTES.rockets}/falcon-9`, {
-      waitUntil: "domcontentloaded",
-    });
-
-    for (const { id, mode } of ROCKET_MIGRATED) {
-      await expect(
-        page.locator(`#${id}`),
-        `#${id} should be in ${mode} mode`,
-      ).toHaveAttribute("data-profile-mode", mode);
-    }
-  });
-
   for (const id of AIRCRAFT_IDS) {
     test(`${id} related aircraft link correctly and exclude itself`, async ({
       page,
@@ -122,9 +75,9 @@ test.describe("Vehicle profile body", () => {
         waitUntil: "domcontentloaded",
       });
 
-      const cards = page.locator(COMPACT_CARD);
-      // Four peers: the registry holds five aircraft, minus the current one.
-      await expect(cards).toHaveCount(AIRCRAFT_IDS.length - 1);
+      const cards = page.locator(`#related-aircraft ${COMPACT_CARD}`);
+      await expect(cards).toHaveCount(RELATED_COUNT);
+      await expect(page.locator(COMPACT_CARD)).toHaveCount(RELATED_COUNT);
 
       const hrefs = await cards.evaluateAll((nodes) =>
         nodes.map((n) => n.getAttribute("href") ?? ""),
@@ -148,8 +101,9 @@ test.describe("Vehicle profile body", () => {
         waitUntil: "domcontentloaded",
       });
 
-      const cards = page.locator(COMPACT_CARD);
-      await expect(cards).toHaveCount(ROCKET_IDS.length - 1);
+      const cards = page.locator(`#related-rockets ${COMPACT_CARD}`);
+      await expect(cards).toHaveCount(RELATED_COUNT);
+      await expect(page.locator(COMPACT_CARD)).toHaveCount(RELATED_COUNT);
 
       const hrefs = await cards.evaluateAll((nodes) =>
         nodes.map((n) => n.getAttribute("href") ?? ""),
@@ -180,7 +134,7 @@ test.describe("Vehicle profile body", () => {
     }
   });
 
-  test("no migrated section renders an empty heading", async ({ page }) => {
+  test("no profile section renders an empty heading", async ({ page }) => {
     for (const route of [
       `${ROUTES.aircraft}/f-22-raptor`,
       `${ROUTES.rockets}/falcon-9`,
@@ -188,7 +142,7 @@ test.describe("Vehicle profile body", () => {
       await page.goto(route, { waitUntil: "domcontentloaded" });
 
       const empty = await page
-        .locator("[data-profile-mode] h2")
+        .locator("#main-content section[id] h2")
         .evaluateAll((nodes) =>
           nodes
             .filter((n) => (n.textContent ?? "").trim() === "")

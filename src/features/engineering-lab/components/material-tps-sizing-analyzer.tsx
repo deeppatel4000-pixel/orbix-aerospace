@@ -272,7 +272,7 @@ export function MaterialTPSSizingAnalyzer() {
                 idPrefix="material-tps-sizing"
                 label="Drag coefficient"
                 onChange={updateValue}
-                unit="CD"
+                unit=""
                 value={values.dragCoefficient}
               />
               <CalculatorNumberField

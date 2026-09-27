@@ -227,7 +227,7 @@ export function MissionPresets({ missions }: MissionPresetsProps) {
   return (
     <ShowcaseSection
       id="mission-presets"
-      lead="The Engineering Lab ships five educational mission presets. Each one is a typed set of inputs, shown here as entered; the diagrams are drawn from those numbers."
+      lead="The Engineering Lab ships five educational mission presets. Each one is a typed set of inputs, shown here converted to display units such as km; the diagrams are drawn from those numbers, with the calculators’ standard Earth radius setting the scale of the transfer drawings."
       title="Mission presets"
     >
       <div>

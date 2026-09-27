@@ -1,3 +1,5 @@
+import type { Page } from "@playwright/test";
+
 import {
   expect,
   expectNoHorizontalOverflow,
@@ -21,6 +23,23 @@ const expectedLabels = [
 ];
 
 /**
+ * The toggle's visible text is its accessible name (WCAG 2.5.3): "Menu" when
+ * closed, "Close menu" when open. Matched exactly, because a substring match
+ * on "Menu" would also find "Close menu".
+ */
+function closedToggle(page: Page) {
+  return page.getByRole("button", { name: "Menu", exact: true });
+}
+
+function openToggle(page: Page) {
+  return page.getByRole("button", { name: "Close menu", exact: true });
+}
+
+function mobileNav(page: Page) {
+  return page.getByRole("navigation", { name: "Mobile navigation" });
+}
+
+/**
  * mobile-navigation.tsx wraps its toggle button in a `lg:hidden` div: at
  * >=1024px the whole control is `display:none` and unreachable, so the
  * desktop project is skipped for every test in this file rather than
@@ -33,58 +52,60 @@ function skipOnDesktop() {
   );
 }
 
+async function openHome(page: Page): Promise<void> {
+  await page.goto(ROUTES.home, { waitUntil: "domcontentloaded" });
+  await expect(page.getByRole("banner")).toBeVisible();
+  // The toggle is server-rendered, so it is visible (and clickable) before
+  // React attaches its click handler. Under a loaded parallel run a click in
+  // that window does nothing, so wait until the button is hydrated.
+  await expect
+    .poll(() =>
+      page
+        .locator(".orbix-menu-toggle")
+        .evaluate((button) =>
+          Object.keys(button).some((key) => key.startsWith("__reactProps")),
+        ),
+    )
+    .toBe(true);
+}
+
 test.describe("Mobile navigation toggle", () => {
-  test("aria-expanded and accessible name flip false -> true -> false across a full open/close cycle", async ({
+  test("aria-expanded and the visible name flip false -> true -> false across a full open/close cycle", async ({
     page,
   }) => {
     skipOnDesktop();
+    await openHome(page);
 
-    await page.goto(ROUTES.home, { waitUntil: "domcontentloaded" });
-    await expect(page.getByRole("banner")).toBeVisible();
+    await expect(closedToggle(page)).toHaveAttribute("aria-expanded", "false");
+    await expect(closedToggle(page)).toHaveText("Menu");
 
-    const closedToggle = page.getByRole("button", {
-      name: "Open navigation menu",
-    });
-    await expect(closedToggle).toHaveAttribute("aria-expanded", "false");
+    await closedToggle(page).click();
 
-    await closedToggle.click();
+    await expect(openToggle(page)).toHaveAttribute("aria-expanded", "true");
+    await expect(openToggle(page)).toHaveText("Close menu");
+    // Same underlying <button>; its name genuinely changes with state rather
+    // than a second control appearing alongside the first.
+    await expect(closedToggle(page)).toHaveCount(0);
 
-    const openToggle = page.getByRole("button", {
-      name: "Close navigation menu",
-    });
-    await expect(openToggle).toHaveAttribute("aria-expanded", "true");
-    // Same underlying <button>; its accessible name genuinely changes with
-    // state rather than a second control appearing alongside the first.
-    await expect(
-      page.getByRole("button", { name: "Open navigation menu" }),
-    ).toHaveCount(0);
+    await openToggle(page).click();
 
-    await openToggle.click();
-
-    await expect(
-      page.getByRole("button", { name: "Open navigation menu" }),
-    ).toHaveAttribute("aria-expanded", "false");
-    await expect(
-      page.getByRole("button", { name: "Close navigation menu" }),
-    ).toHaveCount(0);
+    await expect(closedToggle(page)).toHaveAttribute("aria-expanded", "false");
+    await expect(openToggle(page)).toHaveCount(0);
   });
 
   test("aria-controls references an element that exists once the menu is open", async ({
     page,
   }) => {
     skipOnDesktop();
+    await openHome(page);
 
-    await page.goto(ROUTES.home, { waitUntil: "domcontentloaded" });
-    await expect(page.getByRole("banner")).toBeVisible();
-
-    const toggle = page.getByRole("button", { name: "Open navigation menu" });
-    const controlsId = await toggle.getAttribute("aria-controls");
+    const controlsId = await closedToggle(page).getAttribute("aria-controls");
     expect(controlsId, "Toggle button is missing aria-controls").not.toBeNull();
 
-    await toggle.click();
+    await closedToggle(page).click();
 
     if (controlsId !== null) {
-      const controlledElement = page.locator(`#${controlsId}`);
+      const controlledElement = page.locator(`[id="${controlsId}"]`);
       await expect(controlledElement).toBeVisible();
       await expect(controlledElement).toHaveAttribute(
         "aria-label",
@@ -99,50 +120,52 @@ test.describe("Mobile navigation menu contents", () => {
     page,
   }) => {
     skipOnDesktop();
+    await openHome(page);
 
-    await page.goto(ROUTES.home, { waitUntil: "domcontentloaded" });
-    await expect(page.getByRole("banner")).toBeVisible();
+    await closedToggle(page).click();
 
-    await page.getByRole("button", { name: "Open navigation menu" }).click();
-
-    const mobileNav = page.getByRole("navigation", {
-      name: "Mobile navigation",
-    });
-    await expect(mobileNav).toBeVisible();
-    await expect(mobileNav.getByRole("link")).toHaveCount(
+    await expect(mobileNav(page)).toBeVisible();
+    await expect(mobileNav(page).getByRole("link")).toHaveCount(
       expectedLabels.length,
     );
 
     for (const label of expectedLabels) {
       await expect(
-        mobileNav.getByRole("link", { name: label, exact: true }),
+        mobileNav(page).getByRole("link", { name: label, exact: true }),
       ).toBeVisible();
     }
+
+    // The current page is marked in words for assistive technology.
+    await expect(
+      mobileNav(page).getByRole("link", { name: "Home", exact: true }),
+    ).toHaveAttribute("aria-current", "page");
+  });
+
+  test("opening the menu moves focus to its first link", async ({ page }) => {
+    skipOnDesktop();
+    await openHome(page);
+
+    await closedToggle(page).click();
+
+    await expect(
+      mobileNav(page).getByRole("link", { name: "Home", exact: true }),
+    ).toBeFocused();
   });
 
   test("clicking a link navigates and closes the menu, without forcing focus back to the toggle", async ({
     page,
   }) => {
     skipOnDesktop();
+    await openHome(page);
 
-    await page.goto(ROUTES.home, { waitUntil: "domcontentloaded" });
-    await expect(page.getByRole("banner")).toBeVisible();
-
-    await page.getByRole("button", { name: "Open navigation menu" }).click();
-
-    const mobileNav = page.getByRole("navigation", {
-      name: "Mobile navigation",
-    });
-    await mobileNav
+    await closedToggle(page).click();
+    await mobileNav(page)
       .getByRole("link", { name: "Aircraft", exact: true })
       .click();
 
     await expect(page).toHaveURL(`${ROUTES.aircraft}`);
-    await expect(
-      page.getByRole("navigation", { name: "Mobile navigation" }),
-    ).toHaveCount(0);
-    const toggle = page.getByRole("button", { name: "Open navigation menu" });
-    await expect(toggle).toHaveAttribute("aria-expanded", "false");
+    await expect(mobileNav(page)).toHaveCount(0);
+    await expect(closedToggle(page)).toHaveAttribute("aria-expanded", "false");
 
     // The link click path is a genuine navigation, not a dismissal: the
     // user is leaving this page on purpose. mobile-navigation.tsx's focus
@@ -150,104 +173,84 @@ test.describe("Mobile navigation menu contents", () => {
     // restoreFocusOnCloseRef in the component), so a link click must NOT
     // force focus back onto the toggle button behind the page that's now
     // loading.
-    await expect(toggle).not.toBeFocused();
+    await expect(closedToggle(page)).not.toBeFocused();
   });
 
-  test("Escape from the toggle itself closes the menu and returns focus to the toggle", async ({
+  test("Escape from a link inside the menu closes it and returns focus to the toggle, not <body>", async ({
     page,
   }) => {
     skipOnDesktop();
+    await openHome(page);
 
-    await page.goto(ROUTES.home, { waitUntil: "domcontentloaded" });
-    await expect(page.getByRole("banner")).toBeVisible();
+    await closedToggle(page).click();
+    await expect(openToggle(page)).toHaveAttribute("aria-expanded", "true");
+    await expect(mobileNav(page)).toBeVisible();
 
-    // Matched by a name pattern rather than the exact "Open navigation
-    // menu" string: it's the same underlying <button> throughout (its
-    // accessible name genuinely alternates with state -- see the
-    // aria-expanded test above), and re-resolving this locator after the
-    // click would otherwise stop matching once the label flips to "Close
-    // navigation menu".
-    const toggle = page.getByRole("button", { name: /navigation menu/ });
-    await toggle.click();
-    await expect(toggle).toBeFocused();
-    await expect(
-      page.getByRole("navigation", { name: "Mobile navigation" }),
-    ).toBeVisible();
-
-    await page.keyboard.press("Escape");
-
-    await expect(
-      page.getByRole("navigation", { name: "Mobile navigation" }),
-    ).toHaveCount(0);
-    await expect(toggle).toHaveAttribute("aria-expanded", "false");
-    await expect(toggle).toBeFocused();
-  });
-
-  test("Escape while focus is on a link inside the menu closes it and returns focus to the toggle, not <body>", async ({
-    page,
-  }) => {
-    skipOnDesktop();
-
-    await page.goto(ROUTES.home, { waitUntil: "domcontentloaded" });
-    await expect(page.getByRole("banner")).toBeVisible();
-
-    const toggle = page.getByRole("button", { name: "Open navigation menu" });
-    await expect(toggle).toHaveAttribute("aria-expanded", "false");
-
-    await toggle.click();
-
-    const openToggle = page.getByRole("button", {
-      name: "Close navigation menu",
-    });
-    await expect(openToggle).toHaveAttribute("aria-expanded", "true");
-
-    const mobileNav = page.getByRole("navigation", {
-      name: "Mobile navigation",
-    });
-    await expect(mobileNav).toBeVisible();
-
-    // Tab from the toggle into the menu, landing on the first link inside
-    // it -- this is the scenario the fix targets: a keyboard user who has
-    // moved past the toggle before deciding to back out with Escape.
+    // Opening already put focus on the first link. Tab once more so focus is
+    // genuinely deep inside the menu before backing out with Escape.
     await page.keyboard.press("Tab");
-    const firstLink = mobileNav.getByRole("link").first();
-    await expect(firstLink).toBeFocused();
+    await expect(
+      mobileNav(page).getByRole("link", { name: "Aircraft", exact: true }),
+    ).toBeFocused();
 
     await page.keyboard.press("Escape");
 
     // Menu closed...
-    await expect(mobileNav).toHaveCount(0);
-    const closedToggle = page.getByRole("button", {
-      name: "Open navigation menu",
-    });
-    await expect(closedToggle).toHaveAttribute("aria-expanded", "false");
+    await expect(mobileNav(page)).toHaveCount(0);
+    await expect(closedToggle(page)).toHaveAttribute("aria-expanded", "false");
 
     // ...and focus landed back on the toggle, not on <body>. Asserting the
     // raw DOM active element (rather than just `toBeFocused()` on the
     // toggle) is deliberate: it's the strongest possible proof that focus
     // was genuinely restored to a real, re-operable control and not merely
     // dropped by the browser when the focused link unmounted.
-    await expect(closedToggle).toBeFocused();
-    const activeElementTag = await page.evaluate(
-      () => document.activeElement?.tagName ?? null,
-    );
-    expect(activeElementTag).toBe("BUTTON");
-    const activeElementLabel = await page.evaluate(
-      () => document.activeElement?.getAttribute("aria-label") ?? null,
-    );
-    expect(activeElementLabel).toBe("Open navigation menu");
+    await expect(closedToggle(page)).toBeFocused();
+    const active = await page.evaluate(() => ({
+      tag: document.activeElement?.tagName ?? null,
+      text: document.activeElement?.textContent?.trim() ?? null,
+    }));
+    expect(active).toEqual({ tag: "BUTTON", text: "Menu" });
+  });
+
+  test("Escape right after opening closes the menu and returns focus to the toggle", async ({
+    page,
+  }) => {
+    skipOnDesktop();
+    await openHome(page);
+
+    await closedToggle(page).click();
+    await expect(mobileNav(page)).toBeVisible();
+
+    await page.keyboard.press("Escape");
+
+    await expect(mobileNav(page)).toHaveCount(0);
+    await expect(closedToggle(page)).toHaveAttribute("aria-expanded", "false");
+    await expect(closedToggle(page)).toBeFocused();
+  });
+
+  test("menu links are comfortable touch targets", async ({ page }) => {
+    skipOnDesktop();
+    await openHome(page);
+
+    await closedToggle(page).click();
+    const heights = await mobileNav(page)
+      .getByRole("link")
+      .evaluateAll((links) =>
+        links.map((link) => link.getBoundingClientRect().height),
+      );
+
+    expect(heights).toHaveLength(expectedLabels.length);
+    for (const height of heights) {
+      expect(height).toBeGreaterThanOrEqual(44);
+    }
   });
 
   test("menu open does not cause horizontal overflow", async ({ page }) => {
     skipOnDesktop();
+    await openHome(page);
 
-    await page.goto(ROUTES.home, { waitUntil: "domcontentloaded" });
-    await expect(page.getByRole("banner")).toBeVisible();
-
-    await page.getByRole("button", { name: "Open navigation menu" }).click();
-    await expect(
-      page.getByRole("navigation", { name: "Mobile navigation" }),
-    ).toBeVisible();
+    await closedToggle(page).click();
+    await expect(mobileNav(page)).toBeVisible();
 
     await expectNoHorizontalOverflow(page);
   });

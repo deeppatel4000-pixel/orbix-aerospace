@@ -378,7 +378,7 @@ export function VehicleReentryEvaluationAnalyzer() {
                 idPrefix="vehicle-reentry-evaluation"
                 label="Drag coefficient"
                 onChange={updateValue}
-                unit="CD"
+                unit=""
                 value={values.dragCoefficient}
               />
               <CalculatorNumberField
@@ -478,7 +478,7 @@ export function VehicleReentryEvaluationAnalyzer() {
                 error={errors.heatingCoefficient}
                 field="heatingCoefficient"
                 hint="Leave blank to use the heating calculator's educational default."
-                label="Heating coefficient k (optional)"
+                label="Heating coefficient k"
                 min={0}
                 onChange={updateValue}
                 unit="kg½/m"

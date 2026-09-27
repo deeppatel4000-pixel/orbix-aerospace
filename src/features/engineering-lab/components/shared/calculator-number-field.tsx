@@ -22,6 +22,8 @@ interface CalculatorNumberFieldProps<Field extends string> {
   idPrefix: string;
   label: string;
   onChange: (field: Field, value: string) => void;
+  /** Marks a field the calculation can run without; defaults to required. */
+  optional?: boolean;
   unit: string;
   value: string;
 }
@@ -33,6 +35,7 @@ export function CalculatorNumberField<Field extends string>({
   idPrefix,
   label,
   onChange,
+  optional = false,
   unit,
   value,
 }: CalculatorNumberFieldProps<Field>) {
@@ -58,7 +61,7 @@ export function CalculatorNumberField<Field extends string>({
           id={inputId}
           inputMode="decimal"
           onChange={(event) => onChange(field, event.target.value)}
-          required
+          required={!optional}
           step="any"
           type="number"
           value={value}

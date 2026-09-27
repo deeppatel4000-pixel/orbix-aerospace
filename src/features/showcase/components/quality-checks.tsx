@@ -20,7 +20,8 @@ const checks = [
     when: ON_PUSH,
   },
   {
-    check: "Design rules: no raw color values outside the tokens",
+    check:
+      "Design rules: no file may add raw color values beyond its recorded baseline",
     command: "npm run check:design",
     tool: "Node script",
     when: ON_PUSH,

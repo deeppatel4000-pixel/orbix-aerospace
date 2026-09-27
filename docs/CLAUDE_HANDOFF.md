@@ -2,12 +2,31 @@
 
 This document records the verified repository state at the end of the Codex development period. It is a handoff, not a substitute for inspecting the repository. Re-run every command in the startup checklist before changing code.
 
+## 0. Current State: 2026 Redesign (2026-09-27)
+
+Read this section first; later sections are the Codex-era record and are only partly updated.
+
+- Branch `redesign/anti-vibe-legal`, not yet merged to `main`. The binding design spec is `docs/design-system/orbix-redesign-2026.md`.
+- Every public page was redesigned to that spec: flat panels, one accent colour, no purple, no pill shapes (radius at most 6px), no decorative motion, no em dashes in copy, sentence-case headings.
+- New pages: `/about`, `/credits`, `/privacy`, `/terms`, `/cookies`, `/accessibility`. The footer carries the operator, location and a `mailto:` contact link.
+- Imagery: the ten vehicle photographs were replaced with credited, freely licensed WebP files (40 to 225 KB) recorded in `docs/assets/image-provenance.md` and on `/credits`. The four AI-generated environment plates (`public/images/environments/`) and five unsourced mission images (`public/images/missions/`) were deleted; the showcase now uses SVG diagrams drawn from mission data.
+- Removed as dead code in the integration pass: `OrbixBackground`, `OrbixEnvironmentBackdrop`, `OrbixMark` and the brand barrel file, `FeaturePlaceholder`, `OrbixSurface`, `ProgressIndicator`, `TechnicalLabel`, `EngineeringContextNote`, the unused Engineering Lab mission gallery (`components/showcase/`), about 50 unused CSS classes (including `.orbix-premium-card` and the neutralised grid, star-field and glow classes), and the `html { min-width: 320px }` rule that caused 15px of sideways scroll at a 320px window with a classic scrollbar. `design-debt-baseline.json` was re-recorded (3 raw colours in 2 files).
+- Engineering Lab: one tool at a time with a tool index ("Engineering Lab tools"); below 1024px a "Choose a tool" select. The Mission Control startup overlay was replaced by a static "Checks performed" list; replay uses a single Play/Pause toggle.
+- Checks on 2026-09-27: `npm run validate` passed (76 test files, 980 unit tests). `npm run test:e2e` passed: 617 passed, 419 skipped (project-conditional skips), 0 failed, across desktop, tablet, mobile and 28 visual checks on 27 regenerated baselines. New sweep: `tests/e2e/smoke/site-integrity.spec.ts` (status, unique titles and descriptions, one h1, no sideways scroll at 320/360/1440 with real scrollbars, link and anchor crawl, image loading, no em dashes, footer contact, logo link, custom 404).
+
+Known gaps found during integration (not fixed; outside the integration task's scope):
+
+- The root `src/app/loading.tsx` wraps the whole `(site)` layout, so the first paint of every page can briefly show "Loading" without the header until React reveals the streamed content. Tests wait for `main#main-content`. Moving the fallback under `(site)` would keep the chrome visible.
+- Compare's row explanations still link with Title Case tool names ("Open the Thrust-to-Weight Ratio tool") while the lab uses sentence case, and mission preset names are Title Case ("ISS Style Resupply"); one demo string says "Orbix".
+- Full-page screenshots of Mission Control replay paint the sticky header mid-page (a capture artifact, stable across runs; the old baseline had it too).
+- Legal pages name the operator and contact address; the owner should review the legal text before publishing.
+
 ## 1. Project Identity
 
 ORBIX is an educational aerospace engineering and visualization platform. It connects typed aerospace inputs to pure TypeScript calculators, higher-level analysis workflows, structured reports, and presentation-only mission visualizations.
 
 - Product: **ORBIX**
-- Tagline: **Advanced Aerospace Engineering Laboratory**
+- Tagline: **Aerospace engineering, explained with real vehicles** (was "Advanced Aerospace Engineering Laboratory" before the 2026 redesign)
 - Audience: students, educators, engineering mentors, recruiters, portfolio reviewers, and aerospace professionals evaluating educational software architecture
 - Purpose: demonstrate traceable aerospace calculations, mission composition, vehicle exploration, engineering communication, and accessible product design
 - Maturity: public portfolio application with a broad tested engineering core and substantial presentation systems; it is not operational or certification software
@@ -72,8 +91,9 @@ Current public routes include:
 - `/learn`
 - `/showcase`
 - `/showcase-capture/[id]`
+- `/about`, `/privacy`, `/terms`, `/cookies`, `/accessibility`, `/credits`
 
-The production build generates **26 prerendered routes**: **21 user-facing pages** — 6 static routes, 5 aircraft profiles, 5 rocket profiles, and 5 showcase-capture mission pages — plus 5 framework outputs (`/_global-error`, `/_not-found`, `/favicon.ico`, `/icon.png`, `/manifest.webmanifest`). It also emits **3 dynamic route templates**: `/aircraft/[id]`, `/rockets/[id]`, and `/showcase-capture/[id]`.
+The production build generates **32 prerendered routes**: **27 user-facing pages** (12 static routes: `/`, `/aircraft`, `/rockets`, `/engineering-lab`, `/learn`, `/showcase`, `/about`, `/privacy`, `/terms`, `/cookies`, `/accessibility`, `/credits`), 5 aircraft profiles, 5 rocket profiles, and 5 showcase-capture mission pages, plus 5 framework outputs (`/_global-error`, `/_not-found`, `/favicon.ico`, `/icon.png`, `/manifest.webmanifest`). It also emits **3 dynamic route templates**: `/aircraft/[id]`, `/rockets/[id]`, and `/showcase-capture/[id]`.
 
 `/compare` is server-rendered on demand and is intentionally **not** prerendered, because it reads `searchParams`.
 
@@ -392,11 +412,11 @@ Do not redraw, recolor, distort, or substitute the official identity.
 - Aircraft: five canonical files in `public/images/aircraft`; source URLs recorded in `aircraft-visuals.ts`
 - Rockets: five canonical files in `public/images/rockets`; source URLs recorded in `rocket-visuals.ts`
 
-Several source images are large: B-2 is about 9.2 MB, the brand suite about 6.0 MB, and several vehicle files are 2-4 MB. Next/Image mitigates delivery size, but repository and image-pipeline optimization remains future work. Preserve original/canonical files while creating optimized derivatives.
+Since the 2026 redesign every vehicle photograph is a credited WebP file of 40 to 225 KB; the provenance of each file (author, licence, source page) is in `docs/assets/image-provenance.md` and on `/credits`. The brand suite PNG (about 6.0 MB) is still large.
 
 ### Generated environments
 
-Four ORBIX-generated 1600x900 WebP plates live in `public/images/environments`: orbital command, tactical aircraft, launch complex, and engineering laboratory. Their prompts, exclusions, and non-engineering usage policy are in `docs/assets/visuals/generated-environments.md`.
+Deleted 2026-09-27. The four AI-generated environment plates formerly in `public/images/environments` and the five unsourced mission images in `public/images/missions` were removed with the components that displayed them. `docs/assets/visuals/generated-environments.md` is kept as a provenance record only.
 
 ### Local generated output
 

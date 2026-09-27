@@ -17,9 +17,10 @@ import {
  * 227px spread in aircraft card heights (317px for rockets) — the ragged grid
  * the audit reported. Nothing asserted any of it, so it was invisible to CI.
  *
- * These tests pin the contract that replaced it: one media ratio per domain,
- * every vehicle present, every card linking to its own profile, and exactly
- * one interactive element per card.
+ * These tests pin the contract that replaced it: one 16:9 media ratio shared
+ * by both registries (spec section 10, card link), every vehicle present, every
+ * card linking to its own profile, and exactly one interactive element per
+ * card.
  */
 
 const CARD = ".orbix-vehicle-card";
@@ -54,7 +55,7 @@ test.describe("Vehicle discovery", () => {
     }
   });
 
-  test("aircraft cards share one landscape media ratio", async ({ page }) => {
+  test("aircraft cards share one 16:9 media ratio", async ({ page }) => {
     await page.goto(ROUTES.aircraft, { waitUntil: "domcontentloaded" });
     await page.locator(CARD).first().waitFor();
 
@@ -67,12 +68,12 @@ test.describe("Vehicle discovery", () => {
       }),
     );
 
-    // 16:10. Every card, not merely the first.
+    // 16:9. Every card, not merely the first.
     expect(new Set(ratios).size, `ratios were ${ratios.join(", ")}`).toBe(1);
-    expect(ratios[0]).toBeCloseTo(1.6, 1);
+    expect(ratios[0]).toBeCloseTo(16 / 9, 1);
   });
 
-  test("launch-vehicle cards share one portrait media ratio", async ({
+  test("launch-vehicle cards share the same 16:9 media ratio", async ({
     page,
   }) => {
     await page.goto(ROUTES.rockets, { waitUntil: "domcontentloaded" });
@@ -87,10 +88,11 @@ test.describe("Vehicle discovery", () => {
       }),
     );
 
-    // 4:5 — launch vehicles are vertical subjects, so the portrait variant
-    // is what stops `object-cover` slicing them through the middle.
+    // The redesign uses one landscape frame for both registries so the two
+    // grids line up; each rocket photograph sets its own object position so
+    // the vehicle stays in frame.
     expect(new Set(ratios).size, `ratios were ${ratios.join(", ")}`).toBe(1);
-    expect(ratios[0]).toBeCloseTo(0.8, 1);
+    expect(ratios[0]).toBeCloseTo(16 / 9, 1);
   });
 
   test("cards expose exactly one interactive element each", async ({
@@ -126,7 +128,11 @@ test.describe("Vehicle discovery", () => {
       .evaluateAll((nodes) => [
         ...new Set(nodes.map((n) => (n.textContent ?? "").trim())),
       ]);
-    expect(aircraftLabels.sort()).toEqual(["Maximum speed", "Service ceiling"]);
+    expect(aircraftLabels.sort()).toEqual([
+      "First flight",
+      "Maximum speed",
+      "Service ceiling",
+    ]);
 
     await page.goto(ROUTES.rockets, { waitUntil: "domcontentloaded" });
     const rocketLabels = await page
@@ -134,7 +140,7 @@ test.describe("Vehicle discovery", () => {
       .evaluateAll((nodes) => [
         ...new Set(nodes.map((n) => (n.textContent ?? "").trim())),
       ]);
-    expect(rocketLabels.sort()).toEqual(["Liftoff thrust", "Stages"]);
+    expect(rocketLabels.sort()).toEqual(["Height", "Liftoff thrust", "Stages"]);
   });
 
   test("no specification renders as an empty or zero placeholder", async ({
@@ -151,7 +157,7 @@ test.describe("Vehicle discovery", () => {
       expect(values.length).toBeGreaterThan(0);
       for (const value of values) {
         expect(value, `${route} produced an empty specification`).not.toBe("");
-        expect(value).not.toMatch(/^(0|—|-|N\/A|Not recorded)$/i);
+        expect(value).not.toMatch(/^(0|\u2014|-|N\/A|Not recorded)$/i);
       }
     }
   });

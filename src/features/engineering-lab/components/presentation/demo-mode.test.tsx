@@ -130,10 +130,17 @@ describe("DemoMode", () => {
     );
 
     expect(markup).toContain('aria-label="Orbix demo tour navigation"');
-    expect(markup).toContain('aria-label="Previous demo step"');
-    expect(markup).toContain('aria-label="Next demo step"');
+    // WCAG 2.5.3: buttons are named by their visible text, so no
+    // aria-label may diverge from it.
+    expect(markup).not.toContain('aria-label="Previous demo step"');
+    expect(markup).not.toContain('aria-label="Next demo step"');
+    expect(markup).not.toContain('aria-label="Skip Orbix demo tour"');
+    expect(markup).toMatch(/<button[^>]*>(?:<svg[^]*?<\/svg>)?Back<\/button>/);
+    expect(markup).toMatch(
+      /<button[^>]*>Next step(?:<svg[^]*?<\/svg>)?<\/button>/,
+    );
+    expect(markup).toMatch(/<button[^>]*>Skip tour<\/button>/);
     expect(markup).toContain('aria-label="Restart demo tour"');
-    expect(markup).toContain('aria-label="Skip Orbix demo tour"');
     expect(markup).toContain('aria-live="polite"');
     expect(markup).toContain("the left and right arrow keys change steps");
   });

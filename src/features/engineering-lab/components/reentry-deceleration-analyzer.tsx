@@ -224,7 +224,7 @@ export function ReentryDecelerationAnalyzer() {
                 idPrefix="reentry-deceleration"
                 label="Drag coefficient"
                 onChange={updateValue}
-                unit="CD"
+                unit=""
                 value={values.dragCoefficient}
               />
               <CalculatorNumberField

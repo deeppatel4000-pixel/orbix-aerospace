@@ -5,11 +5,10 @@ import type { FullConfig } from "@playwright/test";
  *
  * Why this exists
  * ---------------
- * ORBIX ships its canonical vehicle imagery as large source PNGs
- * (`b-2-spirit.png` is ~9.2 MB, `space-launch-system.png` ~4.1 MB). A local
- * `next start` server optimizes each `next/image` variant on first request,
- * and for these files that first request costs hundreds of milliseconds to
- * a couple of seconds.
+ * A local `next start` server optimizes each `next/image` variant on first
+ * request. The vehicle sources are now WebP files of 40 to 225 KB, so a cold
+ * variant is much cheaper than it was with the old multi-megabyte PNGs, but
+ * it still costs a noticeable delay under the suite's parallel workers.
  *
  * That latency, not the image itself, is what broke the image-heavy visual
  * tests. The failure mode was measured rather than guessed:
@@ -36,18 +35,31 @@ import type { FullConfig } from "@playwright/test";
  * failure — the tests themselves remain the real assertions.
  */
 
-/** Source images that are expensive enough to be worth warming. */
+/**
+ * Vehicle source images, at both qualities the app requests (90 for a
+ * priority hero image, 75 elsewhere).
+ */
 const IMAGE_PATHS = [
-  { path: "/images/aircraft/b-2-spirit.png", quality: 90 },
-  { path: "/images/aircraft/f-15-eagle.png", quality: 90 },
-  { path: "/images/aircraft/f-22-raptor.png", quality: 90 },
-  { path: "/images/aircraft/f-35-lightning-ii.jpg", quality: 90 },
-  { path: "/images/aircraft/sr-71-blackbird.png", quality: 90 },
-  { path: "/images/rockets/falcon-9.png", quality: 75 },
-  { path: "/images/rockets/falcon-heavy.png", quality: 75 },
-  { path: "/images/rockets/saturn-v.png", quality: 75 },
-  { path: "/images/rockets/space-launch-system.png", quality: 75 },
-  { path: "/images/rockets/starship.png", quality: 75 },
+  { path: "/images/aircraft/b-2-spirit.webp", quality: 75 },
+  { path: "/images/aircraft/b-2-spirit.webp", quality: 90 },
+  { path: "/images/aircraft/f-15-eagle.webp", quality: 75 },
+  { path: "/images/aircraft/f-15-eagle.webp", quality: 90 },
+  { path: "/images/aircraft/f-22-raptor.webp", quality: 75 },
+  { path: "/images/aircraft/f-22-raptor.webp", quality: 90 },
+  { path: "/images/aircraft/f-35-lightning-ii.webp", quality: 75 },
+  { path: "/images/aircraft/f-35-lightning-ii.webp", quality: 90 },
+  { path: "/images/aircraft/sr-71-blackbird.webp", quality: 75 },
+  { path: "/images/aircraft/sr-71-blackbird.webp", quality: 90 },
+  { path: "/images/rockets/falcon-9.webp", quality: 75 },
+  { path: "/images/rockets/falcon-9.webp", quality: 90 },
+  { path: "/images/rockets/falcon-heavy.webp", quality: 75 },
+  { path: "/images/rockets/falcon-heavy.webp", quality: 90 },
+  { path: "/images/rockets/saturn-v.webp", quality: 75 },
+  { path: "/images/rockets/saturn-v.webp", quality: 90 },
+  { path: "/images/rockets/space-launch-system.webp", quality: 75 },
+  { path: "/images/rockets/space-launch-system.webp", quality: 90 },
+  { path: "/images/rockets/starship.webp", quality: 75 },
+  { path: "/images/rockets/starship.webp", quality: 90 },
 ] as const;
 
 /**
@@ -82,8 +94,8 @@ export default async function globalSetup(config: FullConfig): Promise<void> {
   let warmed = 0;
   let failed = 0;
 
-  // Serial on purpose: concurrent cold resizes of multi-megabyte PNGs are
-  // exactly the contention this is meant to eliminate.
+  // Serial on purpose: concurrent cold resizes are exactly the contention
+  // this is meant to eliminate.
   for (const image of IMAGE_PATHS) {
     for (const width of WIDTHS) {
       const url =

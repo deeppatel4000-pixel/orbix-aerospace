@@ -1,14 +1,14 @@
 {
   "project": "ORBIX",
-  "tagline": "Advanced Aerospace Engineering Laboratory",
+  "tagline": "Aerospace engineering, explained with real vehicles",
   "repository": "https://github.com/deeppatel4000-pixel/orbix-aerospace",
-  "branch": "main",
+  "branch": "redesign/anti-vibe-legal",
   "commit": "HEAD",
   "auditedBaselineCommit": "5bb7c054e0b2d0b49fba32c7536e4810d0501675",
   "commitNote": "Resolve the immutable handoff checkpoint with git rev-parse HEAD after clone; a commit cannot contain its own final hash.",
   "productionUrl": "https://orbix-aerospace.vercel.app",
   "vercelProject": "orbix-aerospace",
-  "currentMilestone": "Codex to Claude preservation checkpoint after Engineering Laboratory 4.0",
+  "currentMilestone": "2026 redesign integrated on redesign/anti-vibe-legal (not yet merged to main)",
   "completedMilestones": [
     "Typed aircraft and rocket architecture",
     "Engineering calculators and analyses",
@@ -24,7 +24,8 @@
     "Learn conceptual pathways and Compare educational comparison layer",
     "Dependency/security audit and security-header regression guard",
     "Next.js 16.3.0 security upgrade (advisories resolved, deployed to production)",
-    "Browser test-coverage hardening (compare query params, laboratory click path, showcase captures)"
+    "Browser test-coverage hardening (compare query params, laboratory click path, showcase captures)",
+    "2026 redesign to docs/design-system/orbix-redesign-2026.md: all pages, legal pages, credited WebP vehicle photographs, AI and unsourced images deleted, dead code removed, 320px overflow fixed, e2e suite updated and site-integrity sweep added"
   ],
   "completedDays": [
     "1-80 (exact early-day mapping partially unavailable; implemented state documented in CLAUDE_HANDOFF.md)",
@@ -41,8 +42,9 @@
   ],
   "activeWork": [],
   "plannedWork": [
-    "Dependency security upgrade assessment",
-    "Canonical asset licensing and optimization review",
+    "Owner review of legal page text before merging to main",
+    "Move the root loading.tsx fallback under (site) so the chrome stays visible on first paint",
+    "Sentence-case the Compare tool links and mission preset names",
     "Authentic portfolio screenshots"
   ],
   "deferredWork": [
@@ -52,13 +54,13 @@
     "External engineering APIs"
   ],
   "knownIssues": [
-    "Several canonical images are large source files",
-    "Engineering Laboratory first-load JavaScript was measured at 232 kB",
+    "Root src/app/loading.tsx wraps the (site) layout, so first paint can briefly show a 'Loading' main without the header before the streamed page is revealed",
+    "Compare row links use Title Case tool names and mission presets use Title Case names; one demo string reads 'Orbix'",
+    "Full-page screenshots of Mission Control replay paint the sticky header mid-page (capture artifact, stable)",
+    "Engineering Laboratory first-load JavaScript was measured at 232 kB (pre-redesign figure, not re-measured)",
     "Authentic screenshot gallery is empty; all six folders contain only a README",
-    "Vehicle image licensing documentation is incomplete for some sources",
     "Day 1-17 per-day history is not fully recoverable",
-    "Soft 404: /showcase-capture/<unknown> returns 200 with the not-found UI because that route does not set dynamicParams = false, unlike /aircraft/[id] and /rockets/[id]; asserted as current behaviour in tests/e2e/smoke/showcase-capture.spec.ts",
-    "Coverage gaps remaining: Mission Replay play/pause/scrub controls, images.qualities behaviour, build page-instance count, and full image-load assertions on 8 of 10 vehicle profiles"
+    "Soft 404: /showcase-capture/<unknown> returns 200 with the not-found UI because that route does not set dynamicParams = false; asserted as current behaviour in tests/e2e/smoke/showcase-capture.spec.ts"
   ],
   "inventory": {
     "aircraft": 5,
@@ -67,28 +69,28 @@
     "engineeringLabAnalyzers": 33,
     "calculatorModules": 20,
     "analysisModules": 23,
-    "prerenderedRoutesTotal": 26,
-    "prerenderedUserFacingPages": 21,
+    "prerenderedRoutesTotal": 32,
+    "prerenderedUserFacingPages": 27,
     "prerenderedFrameworkOutputs": 5,
     "dynamicRouteTemplates": 3,
-    "playwrightBrowserTests": 287,
-    "playwrightSkipped": 12,
-    "visualBaselines": 17,
+    "playwrightBrowserTests": 617,
+    "playwrightSkipped": 419,
+    "visualBaselines": 27,
     "learningPathways": 6
   },
   "validation": {
-    "auditedAt": "2026-08-08",
+    "auditedAt": "2026-09-27",
     "node": "22.17.0",
     "npm": "10.9.2",
-    "tests": "68 files, 863 tests passed",
+    "tests": "76 files, 980 tests passed",
     "format": "passed",
     "lint": "passed with zero warnings",
     "typecheck": "passed",
-    "build": "passed; 26 prerendered routes (21 user-facing pages, 5 framework outputs) plus 3 dynamic route templates; /compare is dynamic by design and not prerendered",
+    "build": "passed; 27 user-facing prerendered pages (6 about/legal pages added in the redesign) plus /compare, which is dynamic by design",
     "fullValidation": "npm run validate passed",
     "npmAudit": "0 vulnerabilities (was 3 high; resolved by the Next 16.3.0 upgrade)",
-    "browserSuite": "287 passed, 43 skipped (viewport/project-conditional); 330 total instances across desktop/tablet/mobile + visual",
-    "visualBaselines": "17 committed, platform-specific (win32); ~34 MB, cost measured and accepted",
+    "browserSuite": "npm run test:e2e: 617 passed, 419 skipped (project-conditional), 0 failed; desktop/tablet/mobile plus 28 visual checks",
+    "visualBaselines": "27 committed, platform-specific (win32), all regenerated on 2026-09-27 after review",
     "securityHeaders": "guarded by tests/e2e/smoke/security-headers.spec.ts; guard verified by deliberate header removal (10/11 failed) then restored",
     "frameworkVersions": "next 16.3.0, react/react-dom 19.2.0, eslint-config-next 16.3.0, postcss 8.5.23, sharp 0.35.3",
     "productionCommit": "ac1aebce55e487245c25879e9fad9c3d929ad8be",

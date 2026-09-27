@@ -28,7 +28,6 @@ export function DemoNavigation({
     >
       <div className="flex flex-wrap gap-2">
         <Button
-          aria-label="Previous demo step"
           disabled={currentStepIndex === 0}
           onClick={onBack}
           variant="secondary"
@@ -36,10 +35,7 @@ export function DemoNavigation({
           <ArrowLeft aria-hidden="true" size={16} />
           Back
         </Button>
-        <Button
-          aria-label={isLastStep ? "Complete demo tour" : "Next demo step"}
-          onClick={onNext}
-        >
+        <Button onClick={onNext}>
           {isLastStep ? "Complete tour" : "Next step"}
           <ArrowRight aria-hidden="true" size={16} />
         </Button>
@@ -51,11 +47,7 @@ export function DemoNavigation({
           <RotateCcw aria-hidden="true" size={16} />
           Restart
         </Button>
-        <Button
-          aria-label="Skip Orbix demo tour"
-          onClick={onSkip}
-          variant="ghost"
-        >
+        <Button onClick={onSkip} variant="ghost">
           Skip tour
         </Button>
       </div>

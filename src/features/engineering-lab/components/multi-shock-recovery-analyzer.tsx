@@ -345,6 +345,7 @@ export function MultiShockRecoveryAnalyzer() {
                 }
                 idPrefix="multi-shock-recovery"
                 label="Altitude (optional)"
+                optional
                 onChange={updateCommonValue}
                 unit="m"
                 value={values.altitudeMeters}

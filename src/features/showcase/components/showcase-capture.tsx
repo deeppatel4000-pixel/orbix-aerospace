@@ -12,8 +12,11 @@ interface ShowcaseCaptureProps {
 }
 
 const detailGroups = [
-  { key: "availableVisualizations", title: "Views in the Engineering Lab" },
-  { key: "analysisAvailability", title: "Analyses available" },
+  {
+    key: "availableVisualizations",
+    title: "Where it appears in the Engineering Lab",
+  },
+  { key: "analysisAvailability", title: "Analyses its inputs run" },
   { key: "engineeringFocus", title: "Engineering focus" },
 ] as const;
 
@@ -86,8 +89,15 @@ export function ShowcaseCapture({ mission }: ShowcaseCaptureProps) {
 
         <footer className="border-t border-border py-4">
           <p className="orbix-label">
-            Educational mission preset. Every value shown is a preset input;
-            this page calculates nothing.
+            Educational mission preset. Values shown are preset inputs,
+            converted to display units.
+            {mission.diagram.kind === "allowances"
+              ? " The only derived value is the sum of the delta-v allowances."
+              : null}
+            {mission.diagram.kind === "transfer" &&
+            mission.diagram.planetRadiusSource === "calculator-default"
+              ? " The Earth radius used for the scale drawing is the calculators’ standard value, not a preset input."
+              : null}
           </p>
         </footer>
       </Container>

@@ -143,7 +143,7 @@ export function DragEquationCalculator() {
               idPrefix="drag-equation"
               label="Drag coefficient"
               onChange={updateValue}
-              unit="CD"
+              unit=""
               value={values.dragCoefficient}
             />
           </div>

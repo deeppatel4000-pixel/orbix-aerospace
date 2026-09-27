@@ -7,14 +7,14 @@ import {
 
 /**
  * Learn's educational value depends entirely on its outbound links actually
- * resolving. Every "continue in the Engineering Laboratory" pill is a
+ * resolving. Every "continue in the Engineering Lab" link is a
  * `/engineering-lab#<anchorId>` deep link, and a typo in an anchor id would
  * fail silently: the browser would navigate to `/engineering-lab` and simply
  * not scroll anywhere, leaving the page looking fine while the learning
  * journey quietly dead-ends.
  *
  * Nothing else in the suite covers that, so these tests crawl the real links
- * Learn emits and assert each target id exists in the Engineering Laboratory
+ * Learn emits and assert each target id exists in the Engineering Lab
  * document.
  */
 

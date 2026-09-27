@@ -1,7 +1,6 @@
 export { AtmosphereCalculator } from "./atmosphere-calculator";
 export { CalculatorCard } from "./calculator-card";
 export { DragEquationCalculator } from "./drag-equation-calculator";
-export { EngineeringContextNote } from "./engineering-context-note";
 export { EngineeringDashboard } from "./engineering-dashboard";
 export { FlightConditionAnalyzer } from "./flight-condition-analyzer";
 export { HohmannTransferAnalyzer } from "./hohmann-transfer-analyzer";
@@ -141,15 +140,6 @@ export {
   ScenarioLibraryIntegration,
   type ScenarioLibraryIntegrationProps,
 } from "./scenario-library";
-export {
-  GalleryHeader,
-  type GalleryHeaderProps,
-} from "./showcase/gallery-header";
-export { MissionCard, type MissionCardProps } from "./showcase/mission-card";
-export {
-  MissionGallery,
-  type MissionGalleryProps,
-} from "./showcase/mission-gallery";
 export { ShockConditionAnalyzer } from "./shock-condition-analyzer";
 export { ShockPressureLossAnalyzer } from "./shock-pressure-loss-analyzer";
 export { StagnationConditionAnalyzer } from "./stagnation-condition-analyzer";

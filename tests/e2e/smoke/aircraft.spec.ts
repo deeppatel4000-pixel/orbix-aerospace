@@ -43,9 +43,13 @@ test("navigating into the F-22 Raptor profile works, shows its heading, loads it
 }) => {
   await page.goto(ROUTES.aircraft, { waitUntil: "domcontentloaded" });
 
-  // The explorer hero always features the F-22 Raptor.
+  // Each registry card is one link whose accessible name starts with the
+  // vehicle name (followed by its role and headline specifications).
   await page
-    .getByRole("link", { name: `Open ${AIRCRAFT_NAMES["f-22-raptor"]}` })
+    .locator("#available-aircraft")
+    .getByRole("link", {
+      name: new RegExp(`^${AIRCRAFT_NAMES["f-22-raptor"]}`),
+    })
     .click();
 
   await expect(page).toHaveURL(`${ROUTES.aircraft}/f-22-raptor`);
@@ -55,8 +59,15 @@ test("navigating into the F-22 Raptor profile works, shows its heading, loads it
 
   await expectAllImagesLoaded(page);
 
-  // The profile's own call-to-action navigates back to the explorer.
-  await page.getByRole("link", { name: "Back to Explorer" }).click();
+  // The profile's breadcrumb leads back to the registry...
+  await expect(
+    page
+      .getByRole("navigation", { name: "Breadcrumb" })
+      .getByRole("link", { name: "Aircraft", exact: true }),
+  ).toHaveAttribute("href", ROUTES.aircraft);
+
+  // ...and its own call-to-action, after the related aircraft, navigates there.
+  await page.getByRole("link", { name: "Browse all aircraft" }).click();
   await expect(page).toHaveURL(ROUTES.aircraft);
 
   expectNoUnexpectedConsoleErrors(consoleMessages);

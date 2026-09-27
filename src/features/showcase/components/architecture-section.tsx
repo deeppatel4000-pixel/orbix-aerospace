@@ -7,13 +7,15 @@ interface ArchitectureLayer {
 }
 
 /**
- * Top to bottom in import order: a layer may import from layers above it and
- * never from a layer below it. React components may import any layer above.
+ * Top to bottom in import order: a layer imports only from layers above it
+ * (or from the shared types and helpers) and never from a layer below it.
+ * Not every layer imports the one directly above; the diagram draws the real
+ * edges.
  */
 export const ARCHITECTURE_LAYERS: readonly ArchitectureLayer[] = [
   {
     description:
-      "Vehicle records, mission presets and material properties as typed constants with SI units.",
+      "Vehicle records store each value with its own unit, such as ft, mi or Mach. Mission presets and material properties are typed constants whose property names state their units, for example initialAltitudeMetres.",
     name: "Data",
     paths: [
       "src/features/vehicles/data",
@@ -23,25 +25,25 @@ export const ARCHITECTURE_LAYERS: readonly ArchitectureLayer[] = [
   },
   {
     description:
-      "Pure functions for one equation each, such as a Hohmann transfer or stagnation-point heating. They validate inputs and return plain objects.",
+      "Pure functions for one equation each, such as a Hohmann transfer or stagnation-point heating. They validate inputs, return plain objects and import only shared types and helpers.",
     name: "Calculators",
     paths: ["src/features/engineering-lab/calculators"],
   },
   {
     description:
-      "Compose several calculators into one study, for example a delta-v budget or a vehicle reentry evaluation.",
+      "Compose several calculators, and the material data where needed, into one study, for example a delta-v budget or a vehicle reentry evaluation.",
     name: "Analyses",
     paths: ["src/features/engineering-lab/analysis"],
   },
   {
     description:
-      "Collect finished analyses into a mission report with assumptions and limits, exportable as JSON or Markdown.",
+      "Arrange a finished mission profile analysis, passed in as an argument, into a report with assumptions and limits, exportable as JSON or Markdown. Reports import only shared types.",
     name: "Reports",
     paths: ["src/features/engineering-lab/reports"],
   },
   {
     description:
-      "Server Components and a few client components that render forms, tables and diagrams. Engineering equations stay in the layers above.",
+      "Server and client components that render forms, tables and diagrams. Engineering equations stay in the layers above.",
     name: "React",
     paths: ["src/app", "src/features/*/components"],
   },
@@ -49,29 +51,50 @@ export const ARCHITECTURE_LAYERS: readonly ArchitectureLayer[] = [
 
 const BOX_HEIGHT = 48;
 const STEP = 80;
-const BOX_WIDTH = 272;
+/** Left edge of the boxes; the strip to its left carries the data rail. */
+const BOX_X = 24;
+const BOX_WIDTH = 256;
+const BOX_RIGHT = BOX_X + BOX_WIDTH;
+/** x of the rail that carries data imports into Analyses. */
+const LEFT_RAIL_X = 8;
 /** x of the rail that carries imports from every upper layer into React. */
-const RAIL_X = 300;
+const RAIL_X = 304;
 const WIDTH = 320;
 /** Extra room above the React box for the presentation boundary label. */
 const BOUNDARY_GAP = 32;
 const LAST = ARCHITECTURE_LAYERS.length - 1;
+const DATA = 0;
+const CALCULATORS = 1;
+const ANALYSES = 2;
+const STROKE = "var(--orbix-data-axis)";
 
 function layerY(index: number): number {
   return index * STEP + (index === LAST ? BOUNDARY_GAP : 0);
 }
 
+function layerMid(index: number): number {
+  return layerY(index) + BOX_HEIGHT / 2;
+}
+
 /**
  * The layer stack as an SVG. Box names only, so the text stays legible when
  * the drawing shrinks to a phone width; the list beside it carries the detail.
- * Arrows show import direction. The centre arrows join adjacent upper layers;
- * the rail on the right shows that React may import from every one of them.
+ * Every arrow is a real import edge, pointing from the imported layer to the
+ * importing one: Calculators into Analyses, Data into Analyses (left rail),
+ * and every upper layer into React (right rail). Calculators import no other
+ * layer, and Reports import only shared types.
  */
 function ArchitectureDiagram() {
   const reportsBottom = layerY(LAST - 1) + BOX_HEIGHT;
   const boundaryY = reportsBottom + (layerY(LAST) - reportsBottom) / 2 + 8;
-  const reactMid = layerY(LAST) + BOX_HEIGHT / 2;
+  const reactMid = layerMid(LAST);
   const height = layerY(LAST) + BOX_HEIGHT + 2;
+  const dataRail = [
+    `${BOX_X},${layerMid(DATA)}`,
+    `${LEFT_RAIL_X},${layerMid(DATA)}`,
+    `${LEFT_RAIL_X},${layerMid(ANALYSES)}`,
+    `${BOX_X - 4},${layerMid(ANALYSES)}`,
+  ].join(" ");
 
   return (
     <svg
@@ -83,10 +106,11 @@ function ArchitectureDiagram() {
       <title id="architecture-diagram-title">ORBIX layer diagram</title>
       <desc id="architecture-diagram-desc">
         Five stacked layers: data, calculators, analyses, reports, then React.
-        Arrows show import direction. Downward arrows join data, calculators,
-        analyses and reports. A rail on the right connects each of those four
-        layers to React, because components may import any of them. A line
-        between reports and React marks the presentation boundary.
+        Arrows point from the imported layer to the importing one. Analyses
+        import calculators and data. Calculators and reports import no other
+        layer, only shared types and helpers. A rail on the right connects all
+        four upper layers to React, because components may import any of them. A
+        line between reports and React marks the presentation boundary.
       </desc>
       <defs>
         <marker
@@ -98,7 +122,7 @@ function ArchitectureDiagram() {
           refY="4"
           viewBox="0 0 8 8"
         >
-          <path d="M0 0 L8 4 L0 8 Z" fill="var(--orbix-data-axis)" />
+          <path d="M0 0 L8 4 L0 8 Z" fill={STROKE} />
         </marker>
       </defs>
 
@@ -119,7 +143,7 @@ function ArchitectureDiagram() {
               }
               strokeWidth="1"
               width={BOX_WIDTH}
-              x="0"
+              x={BOX_X}
               y={y}
             />
             <text
@@ -128,27 +152,16 @@ function ArchitectureDiagram() {
               fontSize="16"
               fontWeight="600"
               textAnchor="middle"
-              x={BOX_WIDTH / 2}
+              x={BOX_X + BOX_WIDTH / 2}
               y={y + BOX_HEIGHT / 2}
             >
               {layer.name}
             </text>
-            {index < LAST - 1 ? (
-              <line
-                markerEnd="url(#architecture-arrow)"
-                stroke="var(--orbix-data-axis)"
-                strokeWidth="1.5"
-                x1={BOX_WIDTH / 2}
-                x2={BOX_WIDTH / 2}
-                y1={y + BOX_HEIGHT + 4}
-                y2={layerY(index + 1) - 4}
-              />
-            ) : null}
             {isPresentation ? null : (
               <line
-                stroke="var(--orbix-data-axis)"
+                stroke={STROKE}
                 strokeWidth="1.5"
-                x1={BOX_WIDTH}
+                x1={BOX_RIGHT}
                 x2={RAIL_X}
                 y1={y + BOX_HEIGHT / 2}
                 y2={y + BOX_HEIGHT / 2}
@@ -158,20 +171,41 @@ function ArchitectureDiagram() {
         );
       })}
 
+      {/* Calculators into Analyses. */}
       <line
-        stroke="var(--orbix-data-axis)"
+        markerEnd="url(#architecture-arrow)"
+        stroke={STROKE}
+        strokeWidth="1.5"
+        x1={BOX_X + BOX_WIDTH / 2}
+        x2={BOX_X + BOX_WIDTH / 2}
+        y1={layerY(CALCULATORS) + BOX_HEIGHT + 4}
+        y2={layerY(ANALYSES) - 4}
+      />
+
+      {/* Data into Analyses, down the left rail. */}
+      <polyline
+        fill="none"
+        markerEnd="url(#architecture-arrow)"
+        points={dataRail}
+        stroke={STROKE}
+        strokeWidth="1.5"
+      />
+
+      {/* Every upper layer into React, down the right rail. */}
+      <line
+        stroke={STROKE}
         strokeWidth="1.5"
         x1={RAIL_X}
         x2={RAIL_X}
-        y1={BOX_HEIGHT / 2}
+        y1={layerMid(DATA)}
         y2={reactMid}
       />
       <line
         markerEnd="url(#architecture-arrow)"
-        stroke="var(--orbix-data-axis)"
+        stroke={STROKE}
         strokeWidth="1.5"
         x1={RAIL_X}
-        x2={BOX_WIDTH + 4}
+        x2={BOX_RIGHT + 4}
         y1={reactMid}
         y2={reactMid}
       />
@@ -179,7 +213,7 @@ function ArchitectureDiagram() {
       <line
         stroke="var(--orbix-border-strong)"
         strokeWidth="1"
-        x1="0"
+        x1={BOX_X}
         x2={RAIL_X - 8}
         y1={boundaryY}
         y2={boundaryY}
@@ -196,7 +230,7 @@ function ArchitectureDiagram() {
         fill="var(--orbix-text-muted)"
         fontSize="14"
         textAnchor="start"
-        x="0"
+        x={BOX_X}
         y={boundaryY - 8}
       >
         Presentation boundary
@@ -210,7 +244,7 @@ export function ArchitectureSection() {
     <ShowcaseSection
       first
       id="architecture"
-      lead="Each layer imports only from the layers above it, and no layer above React imports React. Components may call calculators, analyses or reports directly."
+      lead="Each layer imports only from layers above it or from shared types and helpers, and no layer above React imports React. Components import data, calculators, analyses and reports directly."
       title="Architecture"
     >
       <div className="grid gap-8 lg:grid-cols-12 lg:gap-6">
@@ -219,9 +253,10 @@ export function ArchitectureSection() {
             <ArchitectureDiagram />
           </div>
           <figcaption className="orbix-label mt-3 max-w-[22rem]">
-            Layer order in the repository. Arrows show import direction only:
-            the centre arrows join adjacent layers, and the rail on the right
-            shows React importing from any layer above the boundary.
+            Layer order in the repository. Each arrow points from an imported
+            layer to the layer that imports it: analyses import calculators and
+            data, calculators and reports import no other layer, and the rail on
+            the right shows React importing from every layer above the boundary.
           </figcaption>
         </figure>
 

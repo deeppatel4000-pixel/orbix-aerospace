@@ -9,7 +9,7 @@ const MISSION_CONTROL_HASH = "#mission-control-dashboard";
  *
  * The plain `/compare` captures below photograph the empty state — the route
  * renders no matrix until at least two vehicles are selected — so for the whole
- * of the Compare redesign the identity strip, the populated matrix and the
+ * of the Compare redesign the vehicle column headers, the populated matrix and the
  * magnitude tracks had no visual coverage at all. These two queries fill that
  * gap, and each is chosen because it shows both halves of the magnitude
  * contract in one frame:
@@ -23,8 +23,7 @@ const MISSION_CONTROL_HASH = "#mission-control-dashboard";
  *   rockets   Height is metres and liftoff mass is kilograms for all three, but
  *             Falcon 9 and Falcon Heavy publish thrust in kN while Saturn V
  *             publishes MN, so the thrust row must stay text-only. This also
- *             captures the portrait media treatment the launch-vehicle identity
- *             strip uses.
+ *             captures the launch-vehicle photographs in the column headers.
  *
  * Both go through the ordinary query contract; nothing here is a test-only
  * entry point.
@@ -56,31 +55,17 @@ const SCREENSHOT_OPTIONS = {
 } as const;
 
 /**
- * Duplicated from `dismissMissionControlStartup` in
- * tests/e2e/smoke/mission-control.spec.ts (not imported — the visual and
- * smoke suites are kept independent per the ownership split for this repo).
- * Mission Control always mounts wrapped in `MissionStartupSequence`, a
- * cinematic overlay that starts active and auto-advances on its own timer
- * (faster under this project's `reducedMotion: "reduce"` context option),
- * unmounting itself when done. Whether the timer has already finished by
- * the time this runs is a race, so this either dismisses the overlay or,
- * if it already completed on its own, no-ops — either way the overlay is
- * confirmed gone before a screenshot is taken of what's behind it.
+ * Waits for Mission Control's own content. Duplicated in spirit from
+ * tests/e2e/smoke/mission-control.spec.ts (not imported: the visual and smoke
+ * suites are kept independent). `LaboratoryShell` reveals the tool from a
+ * hash-driven effect after hydration, so the section navigation becoming
+ * visible is the signal. The 2026 redesign removed the startup overlay, so
+ * there is nothing to dismiss before a screenshot.
  */
-async function dismissMissionControlStartup(page: Page): Promise<void> {
+async function waitForMissionControl(page: Page): Promise<void> {
   await expect(
-    page.getByRole("navigation", { name: "Mission Control sections" }),
+    page.getByRole("navigation", { name: "Mission control sections" }),
   ).toBeVisible();
-
-  const skipButton = page.getByRole("button", {
-    name: "Skip Mission Control startup",
-  });
-
-  if (await skipButton.isVisible().catch(() => false)) {
-    await skipButton.click({ timeout: 5_000 }).catch(() => {});
-  }
-
-  await expect(skipButton).toBeHidden();
 }
 
 async function waitForHeading(page: Page): Promise<void> {
@@ -94,9 +79,8 @@ async function waitForHeading(page: Page): Promise<void> {
  * tests/e2e/smoke/public-routes.spec.ts, so its visibility is a reliable
  * signal that the Suspense fallback in src/app/loading.tsx — the app's one
  * infinite CSS animation — has been replaced by the real page; Mission
- * Control passes `dismissMissionControlStartup` instead, since that already
- * waits for its own real content and additionally clears its startup
- * overlay), let lazy images resolve so screenshots never race a
+ * Control passes `waitForMissionControl` instead, since that waits for its
+ * own real content), let lazy images resolve so screenshots never race a
  * still-loading image, then reset scroll to the top so every screenshot
  * starts from the same origin. `fullPage` capture in Chromium is independent
  * of current scroll position, but a consistent starting point keeps this
@@ -122,7 +106,31 @@ async function settle(
 ): Promise<void> {
   await readyCheck(page);
   await expectAllImagesLoaded(page);
-  await page.evaluate(() => window.scrollTo(0, 0));
+  await resetScroll(page);
+}
+
+/**
+ * Returns to the top and holds there. The Engineering Lab scrolls a hash
+ * target into view one animation frame after it reveals it, and a tab click
+ * scrolls the tab into view, so a single `scrollTo` can be undone a frame
+ * later. A full-page capture taken while scrolled paints the sticky header and
+ * the off-screen skip link mid-page, so this waits until the top position
+ * survives two frames.
+ */
+async function resetScroll(page: Page): Promise<void> {
+  await expect
+    .poll(() =>
+      page.evaluate(async () => {
+        window.scrollTo(0, 0);
+        await new Promise((resolve) =>
+          window.requestAnimationFrame(() =>
+            window.requestAnimationFrame(resolve),
+          ),
+        );
+        return window.scrollY;
+      }),
+    )
+    .toBe(0);
 }
 
 test.describe("Visual regression / desktop 1440x900", () => {
@@ -189,7 +197,7 @@ test.describe("Visual regression / desktop 1440x900", () => {
     await page.goto(`${ROUTES.engineeringLab}${MISSION_CONTROL_HASH}`, {
       waitUntil: "domcontentloaded",
     });
-    await settle(page, dismissMissionControlStartup);
+    await settle(page, waitForMissionControl);
     await expect(page).toHaveScreenshot(
       "mission-control-desktop.png",
       SCREENSHOT_OPTIONS,
@@ -257,6 +265,10 @@ test.describe("Visual regression / desktop 1440x900", () => {
       await page.goto(`${ROUTES.engineeringLab}#${id}`, {
         waitUntil: "domcontentloaded",
       });
+      // The server render shows the lab's first tool; the hash is resolved
+      // after hydration. Wait for the requested tool before settling, or the
+      // capture can race hydration and photograph the default tool.
+      await expect(page.locator(`[id="${id}"]`)).toBeVisible();
       await settle(page);
       await expect(page).toHaveScreenshot(
         `engineering-lab-${id}-desktop.png`,
@@ -273,11 +285,12 @@ test.describe("Visual regression / desktop 1440x900", () => {
     await page.goto(`${ROUTES.engineeringLab}${MISSION_CONTROL_HASH}`, {
       waitUntil: "domcontentloaded",
     });
-    await settle(page, dismissMissionControlStartup);
+    await settle(page, waitForMissionControl);
     await page.getByRole("tab", { name: "Replay" }).click();
     await expect(
       page.getByRole("button", { name: "Play mission replay" }),
     ).toBeVisible();
+    await resetScroll(page);
     await expect(page).toHaveScreenshot(
       "mission-control-replay-desktop.png",
       SCREENSHOT_OPTIONS,
@@ -362,11 +375,12 @@ test.describe("Visual regression / mobile 390x844", () => {
     await page.goto(`${ROUTES.engineeringLab}${MISSION_CONTROL_HASH}`, {
       waitUntil: "domcontentloaded",
     });
-    await settle(page, dismissMissionControlStartup);
+    await settle(page, waitForMissionControl);
     await page.getByRole("tab", { name: "Replay" }).click();
     await expect(
       page.getByRole("button", { name: "Play mission replay" }),
     ).toBeVisible();
+    await resetScroll(page);
     await expect(page).toHaveScreenshot(
       "mission-control-replay-mobile.png",
       SCREENSHOT_OPTIONS,
@@ -385,6 +399,10 @@ test.describe("Visual regression / mobile 390x844", () => {
       `${ROUTES.engineeringLab}#vehicle-reentry-comparison-analyzer`,
       { waitUntil: "domcontentloaded" },
     );
+    // The hash is resolved after hydration; wait for the requested tool.
+    await expect(
+      page.locator('[id="vehicle-reentry-comparison-analyzer"]'),
+    ).toBeVisible();
     await settle(page);
     await expect(page).toHaveScreenshot(
       "engineering-lab-table-mobile.png",
@@ -405,7 +423,7 @@ test.describe("Visual regression / mobile 390x844", () => {
     await page.goto(`${ROUTES.engineeringLab}${MISSION_CONTROL_HASH}`, {
       waitUntil: "domcontentloaded",
     });
-    await settle(page, dismissMissionControlStartup);
+    await settle(page, waitForMissionControl);
     await expect(page).toHaveScreenshot(
       "mission-control-mobile.png",
       SCREENSHOT_OPTIONS,

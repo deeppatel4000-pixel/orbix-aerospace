@@ -40,6 +40,7 @@ describe("showcase mission diagrams", () => {
       initialAltitudeKilometres: 200,
       kind: "transfer",
       planetRadiusKilometres: 6_371,
+      planetRadiusSource: "calculator-default",
     });
   });
 

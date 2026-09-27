@@ -1,12 +1,14 @@
 import { expect, ROUTES, test } from "../fixtures/orbix";
 
 /**
- * Compare workspace (Phase 3A) coverage.
+ * Compare workspace coverage.
  *
- * The shipped Compare route rendered exactly ONE image — the hero backdrop —
- * so a comparison of physical vehicles showed a picture of none of them, and
- * the matrix identified its columns by text alone. This phase added a column
- * identity strip.
+ * A comparison of physical vehicles once showed a picture of none of them,
+ * and the matrix identified its columns by text alone. Each vehicle column
+ * header now carries the vehicle's photograph, name and maker, and a
+ * "Vehicle profile" row links each column to its full profile. (The separate
+ * identity strip above the table was folded into the header row by the 2026
+ * redesign.)
  *
  * These tests cover the new UI contract only. Query semantics are unchanged
  * and remain covered by `compare-query.spec.ts`; nothing here re-tests them.
@@ -15,7 +17,8 @@ import { expect, ROUTES, test } from "../fixtures/orbix";
  * nothing here asserts anything about it.
  */
 
-const IDENTITY = ".orbix-compare-identity > li";
+/** One header cell per compared vehicle (the first column labels rows). */
+const IDENTITY = "thead th[scope=col]:not(:first-child)";
 
 const AIRCRAFT_QUERY = `${ROUTES.compare}?category=aircraft&vehicles=f-22-raptor,sr-71-blackbird,b-2-spirit`;
 const ROCKET_QUERY = `${ROUTES.compare}?category=rockets&vehicles=falcon-9,saturn-v,starship`;
@@ -26,14 +29,12 @@ test.describe("Compare workspace", () => {
     "Structure is viewport-independent; the mobile containment test below sets its own viewport.",
   );
 
-  test("identity strip matches the query-selected vehicles, in order", async ({
+  test("vehicle columns match the query-selected vehicles, in order", async ({
     page,
   }) => {
     await page.goto(AIRCRAFT_QUERY, { waitUntil: "domcontentloaded" });
 
-    const names = await page
-      .locator(`${IDENTITY} .orbix-compare-identity__name`)
-      .allTextContents();
+    const names = await page.locator(`${IDENTITY} .orbix-h4`).allTextContents();
 
     expect(names.map((name) => name.trim())).toEqual([
       "F-22 Raptor",
@@ -42,11 +43,17 @@ test.describe("Compare workspace", () => {
     ]);
   });
 
-  test("each identity links to its own vehicle profile", async ({ page }) => {
+  test("each column links to its own vehicle profile", async ({ page }) => {
     await page.goto(ROCKET_QUERY, { waitUntil: "domcontentloaded" });
 
-    const hrefs = await page
-      .locator(`${IDENTITY} a[href^="/rockets/"]`)
+    // The links live in the "Vehicle profile" row, one cell per column.
+    const profileRow = page.locator("tbody tr", {
+      has: page.locator("th", { hasText: /^Vehicle profile$/ }),
+    });
+    await expect(profileRow).toHaveCount(1);
+
+    const hrefs = await profileRow
+      .locator('a[href^="/rockets/"]')
       .evaluateAll((nodes) => nodes.map((n) => n.getAttribute("href") ?? ""));
 
     expect(hrefs).toEqual([
@@ -88,7 +95,7 @@ test.describe("Compare workspace", () => {
     }
   });
 
-  test("the identity count follows the selection", async ({ page }) => {
+  test("the column count follows the selection", async ({ page }) => {
     await page.goto(
       `${ROUTES.compare}?category=aircraft&vehicles=f-22-raptor,sr-71-blackbird`,
       { waitUntil: "domcontentloaded" },
@@ -99,11 +106,11 @@ test.describe("Compare workspace", () => {
     await expect(page.locator(IDENTITY)).toHaveCount(3);
   });
 
-  test("fewer than two vehicles renders no matrix and no identity strip", async ({
+  test("fewer than two vehicles renders no matrix and no vehicle columns", async ({
     page,
   }) => {
-    // The `vehicles.length >= 2` gate is existing behaviour; the identity
-    // strip must respect it rather than rendering a lone column.
+    // The `vehicles.length >= 2` gate is existing behaviour; the columns
+    // must respect it rather than rendering a lone vehicle.
     await page.goto(
       `${ROUTES.compare}?category=aircraft&vehicles=f-22-raptor`,
       {
@@ -125,18 +132,16 @@ test.describe("Compare workspace", () => {
     expect(groups).toBeGreaterThan(1);
   });
 
-  test("the identity strip contains no nested interactive controls", async ({
+  test("the comparison contains no nested interactive controls", async ({
     page,
   }) => {
     await page.goto(AIRCRAFT_QUERY, { waitUntil: "domcontentloaded" });
 
     const nested = await page.evaluate(
       () =>
-        [
-          ...document.querySelectorAll(
-            ".orbix-compare-identity a, .orbix-compare-identity button",
-          ),
-        ].filter((el) => el.querySelector("a, button")).length,
+        [...document.querySelectorAll("table a, table button")].filter((el) =>
+          el.querySelector("a, button"),
+        ).length,
     );
 
     expect(nested).toBe(0);

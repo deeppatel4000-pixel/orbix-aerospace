@@ -12,7 +12,7 @@ import { expect, ROUTES, test } from "../fixtures/orbix";
  *    link, which carries no `orbix-*` utility class of its own), and
  *  - component-specific rings that explicitly zero the outline
  *    (`outline: 0`) and draw a `box-shadow` ring instead (`.orbix-button`,
- *    `.orbix-icon-control`, `.orbix-nav-link`).
+ *    `.orbix-menu-toggle`, `.orbix-nav-link`).
  * A check that only looks at `outline` would silently pass every element
  * using the first mechanism and silently *miss* real regressions in every
  * element using the second (an element can have `outline-style: none` and
@@ -55,28 +55,15 @@ function focusStyleDiffers(
 }
 
 /**
- * Mission Control always mounts behind `MissionStartupSequence`, a
- * cinematic initialization overlay that auto-advances and unmounts itself
- * once finished. This is the same dismissal pattern the existing
- * `tests/e2e/smoke/mission-control.spec.ts` suite uses (see its
- * `dismissMissionControlStartup` for the fuller rationale); it is
- * reproduced here rather than imported so this a11y suite only depends on
- * the shared `fixtures/orbix` module.
+ * Mission Control is revealed by `LaboratoryShell` from a hash-driven
+ * effect after hydration. Waiting for its section navigation to be visible
+ * is enough: the 2026 redesign removed the startup overlay, so there is
+ * nothing to dismiss.
  */
-async function dismissMissionControlStartup(page: Page): Promise<void> {
+async function waitForMissionControl(page: Page): Promise<void> {
   await expect(
-    page.getByRole("navigation", { name: "Mission Control sections" }),
+    page.getByRole("navigation", { name: "Mission control sections" }),
   ).toBeVisible();
-
-  const skipButton = page.getByRole("button", {
-    name: "Skip Mission Control startup",
-  });
-
-  if (await skipButton.isVisible().catch(() => false)) {
-    await skipButton.click({ timeout: 5_000 }).catch(() => {});
-  }
-
-  await expect(skipButton).toBeHidden();
 }
 
 test.describe("Skip link", () => {
@@ -115,7 +102,7 @@ test.describe("Focus indicators", () => {
    * every focusable element on the page: the skip link and header logo
    * exercise the two focus-ring mechanisms described above, and the third
    * control (desktop nav link vs. mobile menu toggle) exercises the
-   * `.orbix-nav-link` / `.orbix-icon-control` box-shadow-ring variant on
+   * `.orbix-nav-link` / `.orbix-menu-toggle` focus-ring variant on
    * whichever chrome is actually present at this viewport. Sweeping every
    * interactive element on the page would multiply run time and flakiness
    * risk without meaningfully increasing regression coverage, since all of
@@ -172,7 +159,7 @@ test.describe("Focus indicators", () => {
     } else {
       // Below 1024px the desktop nav is `display:none` (removed from the
       // tab order); the mobile toggle is the next stop instead.
-      const toggle = page.getByRole("button", { name: "Open navigation menu" });
+      const toggle = page.getByRole("button", { name: "Menu", exact: true });
       const toggleBaseline = await captureFocusStyle(toggle);
 
       await page.keyboard.press("Tab");
@@ -233,7 +220,7 @@ test.describe("Mission Control workspace tabs", () => {
     page,
   }) => {
     await page.goto(missionControlUrl, { waitUntil: "domcontentloaded" });
-    await dismissMissionControlStartup(page);
+    await waitForMissionControl(page);
 
     // mission-control-sidebar.tsx implements a genuine roving-tabindex
     // tablist: only the active tab carries tabIndex 0 (a Tab stop), every
@@ -241,14 +228,14 @@ test.describe("Mission Control workspace tabs", () => {
     // are handled explicitly (resolveWorkspaceNavigationIndex) to move
     // focus AND activate the newly-focused workspace in the same keypress.
     const tablist = page
-      .getByRole("navigation", { name: "Mission Control sections" })
+      .getByRole("navigation", { name: "Mission control sections" })
       .getByRole("tablist");
 
     const overviewTab = tablist.getByRole("tab", {
-      name: "Overview - Mission Timeline summary",
+      name: "Overview: mission timeline summary",
     });
     const unifiedTab = tablist.getByRole("tab", {
-      name: "Unified View - Unified Mission presentation",
+      name: "Unified view: unified mission presentation",
     });
 
     await expect(overviewTab).toHaveAttribute("aria-selected", "true");
@@ -275,10 +262,10 @@ test.describe("Mission Control workspace tabs", () => {
     page,
   }) => {
     await page.goto(missionControlUrl, { waitUntil: "domcontentloaded" });
-    await dismissMissionControlStartup(page);
+    await waitForMissionControl(page);
 
     const tablist = page
-      .getByRole("navigation", { name: "Mission Control sections" })
+      .getByRole("navigation", { name: "Mission control sections" })
       .getByRole("tablist");
     const tabs = tablist.getByRole("tab");
     const firstTab = tabs.first();
@@ -298,7 +285,7 @@ test.describe("Mission Control workspace tabs", () => {
     page,
   }) => {
     await page.goto(missionControlUrl, { waitUntil: "domcontentloaded" });
-    await dismissMissionControlStartup(page);
+    await waitForMissionControl(page);
 
     // Every workspace tab is a real <button type="button">, which the
     // browser natively activates (fires `click`) on Enter/Space while
@@ -309,11 +296,11 @@ test.describe("Mission Control workspace tabs", () => {
     // isolates and confirms that Enter/Space -- not just a click -- is what
     // activates the tab currently holding focus.
     const tablist = page
-      .getByRole("navigation", { name: "Mission Control sections" })
+      .getByRole("navigation", { name: "Mission control sections" })
       .getByRole("tablist");
 
     const reentryTab = tablist.getByRole("tab", {
-      name: "Reentry - Reentry View",
+      name: "Reentry: reentry view",
     });
     await expect(reentryTab).toHaveAttribute("aria-selected", "false");
     await reentryTab.focus();
@@ -321,7 +308,7 @@ test.describe("Mission Control workspace tabs", () => {
     await expect(reentryTab).toHaveAttribute("aria-selected", "true");
 
     const groundTrackTab = tablist.getByRole("tab", {
-      name: "Ground Track - Planetary orbital projection",
+      name: "Ground track: illustrative orbital projection",
     });
     await expect(groundTrackTab).toHaveAttribute("aria-selected", "false");
     await groundTrackTab.focus();
@@ -342,7 +329,18 @@ test.describe("Mobile menu Escape handling", () => {
     await page.goto(ROUTES.home, { waitUntil: "domcontentloaded" });
     await expect(page.getByRole("banner")).toBeVisible();
 
-    await page.getByRole("button", { name: "Open navigation menu" }).click();
+    // Wait for hydration: a click on the server-rendered toggle before React
+    // attaches its handler would do nothing.
+    await expect
+      .poll(() =>
+        page
+          .locator(".orbix-menu-toggle")
+          .evaluate((button) =>
+            Object.keys(button).some((key) => key.startsWith("__reactProps")),
+          ),
+      )
+      .toBe(true);
+    await page.getByRole("button", { name: "Menu", exact: true }).click();
 
     const mobileNav = page.getByRole("navigation", {
       name: "Mobile navigation",
@@ -359,7 +357,7 @@ test.describe("Mobile menu Escape handling", () => {
 
     await expect(mobileNav).toBeHidden();
 
-    const toggle = page.getByRole("button", { name: "Open navigation menu" });
+    const toggle = page.getByRole("button", { name: "Menu", exact: true });
     await expect(toggle).toHaveAttribute("aria-expanded", "false");
 
     // mobile-navigation.tsx now restores focus to the toggle button once the

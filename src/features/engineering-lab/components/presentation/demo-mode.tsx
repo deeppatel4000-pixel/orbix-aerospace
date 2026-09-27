@@ -479,7 +479,6 @@ export function DemoMode({
             <EmptyState
               action={
                 <Button
-                  aria-label="Restart Orbix demo tour"
                   onClick={() => dispatch({ type: "restart" })}
                   variant="secondary"
                 >

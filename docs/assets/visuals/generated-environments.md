@@ -1,7 +1,7 @@
 # Generated ORBIX Environment Plates
 
-> **Status (verified 2026-09-27):** these four files are AI-generated, unverified, and scheduled
-> for removal. They must not be used for new work. See
+> **Status:** these four files were AI-generated and unverified. They were deleted from the
+> repository on 2026-09-27 and are no longer used anywhere. See
 > [`../image-provenance.md`](../image-provenance.md). The prompt summaries below are paraphrased
 > records of how the files were made, kept for provenance only.
 

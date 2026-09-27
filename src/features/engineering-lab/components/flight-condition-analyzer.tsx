@@ -157,7 +157,7 @@ export function FlightConditionAnalyzer() {
               idPrefix="flight-condition"
               label="Lift coefficient"
               onChange={updateValue}
-              unit="CL"
+              unit=""
               value={values.liftCoefficient}
             />
             <CalculatorNumberField
@@ -167,7 +167,7 @@ export function FlightConditionAnalyzer() {
               idPrefix="flight-condition"
               label="Drag coefficient"
               onChange={updateValue}
-              unit="CD"
+              unit=""
               value={values.dragCoefficient}
             />
           </div>

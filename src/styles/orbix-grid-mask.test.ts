@@ -6,10 +6,9 @@ import { describe, expect, it } from "vitest";
 /**
  * Global style guards for the 2026 redesign (spec 1, 15.1).
  *
- * The decorative grid, star field and glow classes are still referenced by
- * feature code that has not migrated yet, so they must exist but draw
- * nothing. And no stylesheet may reintroduce the deleted violet token, pill
- * radii, pure black, blur, or smooth scrolling.
+ * The decorative grid, star field and glow classes have been deleted, and no
+ * stylesheet may reintroduce them, the deleted violet token, pill radii, pure
+ * black, blur, or smooth scrolling.
  */
 
 const stylesDir = join(process.cwd(), "src/styles");
@@ -23,24 +22,11 @@ const sheets = [
   "orbix-motion.css",
 ].map((file) => [file, read(file)] as const);
 
-function ruleBody(source: string, selectorPattern: RegExp): string {
-  const match = source.match(
-    new RegExp(`${selectorPattern.source}[^{]*\\{([\\s\\S]*?)\\n {2}\\}`),
-  );
-  expect(match, `${selectorPattern} should exist`).not.toBeNull();
-  return match?.[1] ?? "";
-}
-
-describe("neutralised decoration", () => {
-  it("keeps the shared grid class but draws nothing and masks nothing", () => {
-    const rule = ruleBody(
-      read("orbix-foundations.css"),
-      /\.technical-grid,\s*\.orbix-grid/,
+describe("deleted decoration", () => {
+  it.each(sheets)("%s defines no grid, star field or glow class", (_, css) => {
+    expect(css).not.toMatch(
+      /\.(technical-grid|orbix-grid|orbix-starfield|orbix-atmosphere-glow|orbix-light-field|orbix-brand-glow|orbix-carbon|orbix-premium-card)(?![\w-])/,
     );
-
-    expect(rule).toMatch(/background-image:\s*none/);
-    expect(rule).not.toMatch(/gradient\(/);
-    expect(rule).not.toMatch(/mask(-image)?\s*:/);
   });
 });
 

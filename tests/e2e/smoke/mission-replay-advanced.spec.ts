@@ -78,22 +78,23 @@ function phaseButtons(page: Page) {
   return page.getByRole("button", { name: /^Show replay phase: / });
 }
 
-/** The 3D scene's currently selected mode tab. */
+/** The mission scene's currently selected view tab. */
 function selectedSceneMode(page: Page) {
   return page.locator(
-    '[role="tablist"][aria-label="3D mission mode"] [role="tab"][aria-selected="true"]',
+    '[role="tablist"][aria-label="Mission scene view"] [role="tab"][aria-selected="true"]',
   );
 }
 
+/** Reads the replay's `Phase N of M, paused|playing` readout. */
 async function readPhase(
   page: Page,
 ): Promise<{ current: number; total: number }> {
   const text =
     (await page
-      .getByText(/^Phase \d+ of \d+$/)
-      .first()
+      .locator('section[aria-labelledby="mission-replay-title"]')
+      .getByText(/^Phase \d+ of \d+, (paused|playing)$/)
       .textContent()) ?? "";
-  const match = /^Phase (\d+) of (\d+)$/.exec(text.trim());
+  const match = /^Phase (\d+) of (\d+),/.exec(text.trim());
   if (match === null) throw new Error(`Unrecognised phase readout: "${text}"`);
 
   return { current: Number(match[1]), total: Number(match[2]) };
@@ -131,23 +132,15 @@ async function selectPhase(
     .toBe(expectedLabel);
 }
 
-/** Same dismissal approach as `mission-replay.spec.ts`, kept independent. */
+/** Same approach as `mission-replay.spec.ts`, kept independent. */
 async function openReplayWorkspace(page: Page): Promise<void> {
   await page.goto(`${ROUTES.engineeringLab}#mission-control-dashboard`, {
     waitUntil: "domcontentloaded",
   });
 
   await expect(
-    page.getByRole("navigation", { name: "Mission Control sections" }),
+    page.getByRole("navigation", { name: "Mission control sections" }),
   ).toBeVisible();
-
-  const skip = page.getByRole("button", {
-    name: "Skip Mission Control startup",
-  });
-  if (await skip.isVisible().catch(() => false)) {
-    await skip.click({ timeout: 5_000 }).catch(() => {});
-  }
-  await expect(skip).toBeHidden();
 
   await page.getByRole("tab", { name: "Replay" }).click();
   await expect(page.locator("#mission-replay-title")).toBeVisible();
@@ -202,7 +195,7 @@ test.describe("Mission Replay speed", () => {
       page,
     }) => {
       await openReplayWorkspace(page);
-      await page.getByLabel("Mission replay speed").selectOption(speed);
+      await page.getByLabel("Replay speed").selectOption(speed);
 
       const elapsed = await timeToFirstAdvance(page, advanceWithinMs);
 
@@ -217,7 +210,7 @@ test.describe("Mission Replay speed", () => {
     page,
   }) => {
     await openReplayWorkspace(page);
-    await page.getByLabel("Mission replay speed").selectOption("0.5");
+    await page.getByLabel("Replay speed").selectOption("0.5");
 
     // 2x advances inside this window (measured 1877ms); 0.5x cannot, because
     // its timer alone is 4800ms. This is the assertion that proves the
@@ -263,7 +256,9 @@ test.describe("Mission Replay end of sequence", () => {
       .toBe(total - 1);
 
     await playButton(page).click();
+    // Play and Pause are one toggle, so playing shows up as its name flipping.
     await expect(pauseButton(page)).toBeEnabled();
+    await expect(playButton(page)).toHaveCount(0);
 
     // Reaches the last phase...
     await expect
@@ -272,9 +267,10 @@ test.describe("Mission Replay end of sequence", () => {
       })
       .toBe(total);
 
-    // ...and the reducer's guard stops playback there.
-    await expect(pauseButton(page)).toBeDisabled();
+    // ...and the reducer's guard stops playback there: the toggle offers
+    // Play again.
     await expect(playButton(page)).toBeEnabled();
+    await expect(pauseButton(page)).toHaveCount(0);
 
     // Hold for longer than a further interval: the phase must not overrun the
     // final index, and playback must not resume on its own.
@@ -284,7 +280,7 @@ test.describe("Mission Replay end of sequence", () => {
     expect(settled.current, "must not advance past the final phase").toBe(
       total,
     );
-    await expect(pauseButton(page)).toBeDisabled();
+    await expect(pauseButton(page)).toHaveCount(0);
   });
 });
 
@@ -380,11 +376,11 @@ test.describe("Mission Replay 3D scene", () => {
     // frozen at whatever the first phase set, and the round trip below fails.
     await openReplayWorkspace(page);
 
-    // Phase 1 (Mission Preparation) is an orbital-scene phase.
+    // Phase 1 (Mission preparation) is an orbital-scene phase.
     await expect(selectedSceneMode(page)).toHaveText(/Orbital/);
 
-    // Index 5 = Reentry Preparation, a reentry-scene phase.
-    await selectPhase(page, 5, "Reentry Preparation");
+    // Index 5 = Reentry preparation, a reentry-scene phase.
+    await selectPhase(page, 5, "Reentry preparation");
     await expect(
       selectedSceneMode(page),
       "moving to a reentry phase must switch the scene to reentry",
@@ -392,7 +388,7 @@ test.describe("Mission Replay 3D scene", () => {
 
     // ...and back, so this cannot pass by the mode merely being stuck on
     // whichever value it drifted to.
-    await selectPhase(page, 2, "Orbital Operations");
+    await selectPhase(page, 2, "Orbital operations");
     await expect(
       selectedSceneMode(page),
       "returning to an orbital phase must switch the scene back",
@@ -408,15 +404,15 @@ test.describe("Mission Replay 3D scene", () => {
     // the scene is scoped to the phase.
     await openReplayWorkspace(page);
 
-    const orbitalTab = page.getByRole("tab", { name: /Orbital Mission/ });
-    const reentryTab = page.getByRole("tab", { name: /Reentry Mission/ });
+    const orbitalTab = page.getByRole("tab", { name: "Orbital mission" });
+    const reentryTab = page.getByRole("tab", { name: "Reentry mission" });
 
     // On an orbital phase, reentry has no data behind it.
     await expect(orbitalTab).toBeEnabled();
     await expect(reentryTab).toBeDisabled();
 
     // On a reentry phase the availability inverts.
-    await selectPhase(page, 5, "Reentry Preparation");
+    await selectPhase(page, 5, "Reentry preparation");
     await expect(reentryTab).toBeEnabled();
     await expect(orbitalTab).toBeDisabled();
   });

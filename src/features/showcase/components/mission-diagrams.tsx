@@ -118,8 +118,11 @@ export function TransferOrbitDiagram({
         </li>
       </ul>
       <figcaption className="orbix-label mt-2" id={captionId}>
-        Drawn to scale from the preset altitudes and an Earth radius of{" "}
-        {formatShowcaseNumber(planet)} km.
+        Drawn to scale from the preset altitudes and{" "}
+        {diagram.planetRadiusSource === "calculator-default"
+          ? "the calculators’ standard Earth radius"
+          : "the preset’s planet radius"}{" "}
+        of {formatShowcaseNumber(planet)} km.
         {r1 < 8
           ? " At this scale Earth and the initial orbit shrink to the burn marker at the center."
           : null}

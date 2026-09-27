@@ -15,8 +15,7 @@ import { expect, ROUTES, test } from "../fixtures/orbix";
  *
  * Mission Replay is not a route. It is a workspace tab inside the Mission
  * Control dashboard, which is one module of the Engineering Laboratory, so
- * every test walks that path: open the module, clear the startup overlay,
- * activate the Replay tab.
+ * every test walks that path: open the module, then activate the Replay tab.
  */
 
 /**
@@ -32,13 +31,9 @@ async function openReplay(page: import("@playwright/test").Page) {
     waitUntil: "domcontentloaded",
   });
 
-  const skip = page.getByRole("button", {
-    name: "Skip Mission Control startup",
-  });
-  if (await skip.isVisible({ timeout: 15_000 }).catch(() => false)) {
-    await skip.click().catch(() => {});
-  }
-  await expect(skip).toBeHidden();
+  await expect(
+    page.getByRole("navigation", { name: "Mission control sections" }),
+  ).toBeVisible();
 
   await page.getByRole("tab", { name: "Replay" }).click();
   await expect(
@@ -52,7 +47,7 @@ test.describe("Mission replay transport", () => {
     "Transport structure is viewport-independent; the reachability check below sets its own viewport.",
   );
 
-  test("play and pause express the current state through availability", async ({
+  test("one play/pause toggle expresses the current state and keeps focus", async ({
     page,
   }) => {
     await openReplay(page);
@@ -60,20 +55,25 @@ test.describe("Mission replay transport", () => {
     const play = page.getByRole("button", { name: "Play mission replay" });
     const pause = page.getByRole("button", { name: "Pause mission replay" });
 
-    // Stopped: play is the only thing you can do.
+    // Stopped: the toggle offers Play, and nothing offers Pause.
     await expect(play).toBeEnabled();
-    await expect(pause).toBeDisabled();
+    await expect(pause).toHaveCount(0);
 
-    await play.click();
+    await play.focus();
+    await page.keyboard.press("Enter");
 
-    // Playing: the pair swaps, so the state is readable from the transport
-    // itself rather than from a separate status line.
+    // Playing: the same button now offers Pause, so the state is readable
+    // from the transport itself. It is one element whose name flips, so
+    // keyboard focus stays on it instead of dropping to <body> (which is what
+    // disabling a focused Play button used to do).
     await expect(pause).toBeEnabled();
-    await expect(play).toBeDisabled();
+    await expect(play).toHaveCount(0);
+    await expect(pause).toBeFocused();
 
-    await pause.click();
+    await page.keyboard.press("Enter");
     await expect(play).toBeEnabled();
-    await expect(pause).toBeDisabled();
+    await expect(pause).toHaveCount(0);
+    await expect(play).toBeFocused();
   });
 
   test("restart is present, distinct, and returns the sequence to its first phase", async ({
@@ -199,21 +199,23 @@ test.describe("Mission replay transport", () => {
     for (const name of [
       "Play mission replay",
       "Restart mission replay",
-      "Mission replay speed",
+      "Replay speed",
     ]) {
       await expect(
         page.getByRole("button", { name }).or(page.getByLabel(name)).first(),
       ).toBeVisible();
     }
 
-    // Controls must clear a 44px target at the width where that matters most.
+    // Controls must clear the design system's 40px control height (spec
+    // section 10, `.orbix-button` min-height 2.5rem), well above the WCAG 2.2
+    // 2.5.8 minimum of 24px, at the width where that matters most.
     const short = await page.evaluate(
       () =>
         [
           ...document.querySelectorAll(
             'section[aria-label="Mission replay controls"] button, section[aria-label="Mission replay controls"] select',
           ),
-        ].filter((node) => node.getBoundingClientRect().height < 44).length,
+        ].filter((node) => node.getBoundingClientRect().height < 40).length,
     );
     expect(short).toBe(0);
 
@@ -239,7 +241,9 @@ test.describe("Mission replay transport", () => {
   }) => {
     await openReplay(page);
 
-    const scene = page.locator('[aria-labelledby="mission-3d-scene-title"]');
+    const scene = page.locator(
+      'section[aria-labelledby^="mission-scene-"][aria-labelledby$="-title"]',
+    );
     await expect(scene).toHaveCount(1);
 
     await page.getByRole("button", { name: "Play mission replay" }).click();
@@ -256,12 +260,14 @@ test.describe("Mission replay transport", () => {
     await expect(scene).toBeVisible();
   });
 
-  test("the scene leads the replay, ahead of the transport", async ({
+  test("the transport comes first, ahead of the scene it drives", async ({
     page,
   }) => {
-    // The composition's whole point: the scene sat 802px below the panel top,
-    // behind the controls, the phase rail and a context card. Asserted as an
-    // ordering relationship rather than a pixel offset.
+    // The 2026 redesign composes the replay top to bottom as: transport,
+    // phase sequence, active phase, scene, values. Play/Pause is the first
+    // thing a keyboard or screen-reader user reaches, and the scene follows
+    // the phase it illustrates. Asserted as an ordering relationship rather
+    // than a pixel offset.
     await openReplay(page);
 
     const order = await page.evaluate(() => {
@@ -269,7 +275,7 @@ test.describe("Mission replay transport", () => {
         '[aria-labelledby="mission-replay-title"]',
       );
       const scene = document.querySelector(
-        '[aria-labelledby="mission-3d-scene-title"]',
+        'section[aria-labelledby^="mission-scene-"][aria-labelledby$="-title"]',
       );
       const controls = document.querySelector(
         'section[aria-label="Mission replay controls"]',
@@ -283,10 +289,10 @@ test.describe("Mission replay transport", () => {
     });
 
     expect(order).not.toBeNull();
-    expect(order?.scene).toBeLessThan(order?.controls ?? 0);
+    expect(order?.controls).toBeLessThan(order?.scene ?? 0);
   });
 
-  test("synchronized telemetry is one grouped region, not five cards", async ({
+  test("the mission values are one grouped region, not five cards", async ({
     page,
   }) => {
     // The five readings each had their own bordered card, which put them at the

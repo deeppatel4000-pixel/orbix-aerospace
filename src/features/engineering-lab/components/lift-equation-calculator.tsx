@@ -143,7 +143,7 @@ export function LiftEquationCalculator() {
               idPrefix="lift-equation"
               label="Lift coefficient"
               onChange={updateValue}
-              unit="CL"
+              unit=""
               value={values.liftCoefficient}
             />
           </div>

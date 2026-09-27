@@ -32,7 +32,7 @@ export async function generateMetadata({
   }
 
   const title = `${mission.preset.name} presentation view`;
-  const description = `The ${mission.preset.name} educational mission preset on one screen: its inputs, a diagram drawn from them, and the Engineering Lab analyses that use it.`;
+  const description = `The ${mission.preset.name} educational mission preset on one screen: its inputs, a diagram drawn from them where they support one, and the Engineering Lab analyses its inputs run.`;
 
   return {
     description,

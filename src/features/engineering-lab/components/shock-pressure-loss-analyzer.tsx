@@ -256,6 +256,7 @@ export function ShockPressureLossAnalyzer() {
               }
               idPrefix="shock-pressure-loss"
               label="Altitude (optional)"
+              optional
               onChange={updateValue}
               unit="m"
               value={values.altitudeMeters}

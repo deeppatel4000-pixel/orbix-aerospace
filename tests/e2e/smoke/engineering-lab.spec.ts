@@ -6,50 +6,50 @@ import {
 } from "../fixtures/orbix";
 
 /**
- * One representative analyzer card per workflow group (33 cards exist in
- * total; this exercises a sample from each of the 6 groups rather than
- * asserting on all of them).
+ * One representative tool per workflow group (33 tools exist in total; this
+ * exercises the tool each workflow opens on rather than asserting on all of
+ * them). A workflow hash opens that workflow's first tool.
  */
 const workflows = [
   {
     id: "foundations-workflow",
     representativeCardId: "rocket-equation",
-    representativeCardTitle: "Tsiolkovsky Rocket Equation",
-    title: "Engineering foundations",
+    representativeCardTitle: "Tsiolkovsky rocket equation",
+    title: "Foundations",
   },
   {
     id: "compressible-flow-workflow",
     representativeCardId: "stagnation-condition-analyzer",
-    representativeCardTitle: "Stagnation Condition Analyzer",
-    title: "Compressible flow and shock systems",
+    representativeCardTitle: "Stagnation condition analyzer",
+    title: "Compressible flow",
   },
   {
     id: "entry-systems-workflow",
     representativeCardId: "hypersonic-heating-analyzer",
-    representativeCardTitle: "Hypersonic Heating Analyzer",
-    title: "Atmospheric entry and thermal systems",
+    representativeCardTitle: "Hypersonic heating analyzer",
+    title: "Atmospheric entry",
   },
   {
     id: "orbital-mission-workflow",
     representativeCardId: "hohmann-transfer-analyzer",
-    representativeCardTitle: "Hohmann Transfer Analyzer",
-    title: "Orbital and mission architecture",
+    representativeCardTitle: "Hohmann transfer analyzer",
+    title: "Orbits and missions",
   },
   {
     id: "mission-operations-workflow",
     representativeCardId: "mission-visualization",
-    representativeCardTitle: "Mission Visualization",
-    title: "Mission operations and visualization",
+    representativeCardTitle: "Mission diagrams",
+    title: "Mission visualization",
   },
   {
     id: "review-presentation-workflow",
     representativeCardId: "mission-scenario-builder",
-    representativeCardTitle: "Mission Scenario Builder",
-    title: "Scenario review and presentation",
+    representativeCardTitle: "Mission scenario builder",
+    title: "Scenarios and review",
   },
 ] as const;
 
-test("engineering lab loads with its workflow index present", async ({
+test("engineering lab loads with its tool index present", async ({
   consoleMessages,
   page,
 }) => {
@@ -59,19 +59,19 @@ test("engineering lab loads with its workflow index present", async ({
   expect(response?.status()).toBe(200);
 
   await expect(
-    page.getByRole("heading", { level: 1, name: "Engineering Laboratory" }),
+    page.getByRole("heading", { level: 1, name: "Engineering Lab" }),
   ).toBeVisible();
 
   await expect(
     page.getByRole("navigation", {
-      name: "Engineering Laboratory workflows",
+      name: "Engineering Lab tools",
     }),
   ).toBeVisible();
 
   expectNoUnexpectedConsoleErrors(consoleMessages);
 });
 
-test("hash deep-links activate each workflow and render a representative analyzer card", async ({
+test("hash deep-links activate each workflow and render its first tool", async ({
   consoleMessages,
   page,
 }) => {
@@ -80,18 +80,19 @@ test("hash deep-links activate each workflow and render a representative analyze
       waitUntil: "domcontentloaded",
     });
 
+    // Each workflow is a region named by its (visible) workflow label.
     const section = page.locator(`#${workflow.id}`);
     await expect(section).toBeVisible();
-    await expect(
-      section.getByRole("heading", { level: 2, name: workflow.title }),
-    ).toBeVisible();
+    await expect(section).toHaveAccessibleName(workflow.title);
 
+    // The tool is the workspace's main subject, so its title is an h2.
     const card = page.locator(`#${workflow.representativeCardId}`);
     await expect(card).toBeVisible();
     await expect(
       card.getByRole("heading", {
-        level: 3,
+        level: 2,
         name: workflow.representativeCardTitle,
+        exact: true,
       }),
     ).toBeVisible();
   }

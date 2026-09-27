@@ -221,6 +221,7 @@ export function HypersonicHeatingAnalyzer() {
                 hint="Optional positive empirical coefficient. Leave blank to use the educational default."
                 idPrefix="hypersonic-heating"
                 label="Heating coefficient k (optional)"
+                optional
                 onChange={updateValue}
                 unit="kg½/m"
                 value={values.heatingCoefficient}

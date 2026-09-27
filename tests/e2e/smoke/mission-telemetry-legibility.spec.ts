@@ -61,13 +61,9 @@ async function openReplay(page: import("@playwright/test").Page) {
     waitUntil: "domcontentloaded",
   });
 
-  const skip = page.getByRole("button", {
-    name: "Skip Mission Control startup",
-  });
-  if (await skip.isVisible({ timeout: 15_000 }).catch(() => false)) {
-    await skip.click().catch(() => {});
-  }
-  await expect(skip).toBeHidden();
+  await expect(
+    page.getByRole("navigation", { name: "Mission control sections" }),
+  ).toBeVisible();
 
   await page.getByRole("tab", { name: "Replay" }).click();
   await expect(

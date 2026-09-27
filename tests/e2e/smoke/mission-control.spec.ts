@@ -11,49 +11,18 @@ import {
 const MISSION_CONTROL_HASH = "#mission-control-dashboard";
 
 /**
- * `LaboratoryShell` renders every workflow group up front and only reveals
- * the one matching the URL hash, and it does that from a `useEffect` that
- * runs after hydration — so immediately after navigation the Mission
- * Operations group (and Mission Control inside it) is still `hidden`. This
- * waits for the hash to actually take effect before anything else touches
- * Mission Control; skipping this wait was previously making the startup
- * overlay's "Skip startup" button read as hidden for the wrong reason (its
- * hidden ancestor, not a dismissed overlay), causing the helper below to
- * exit as a false positive before the real UI had even appeared.
+ * `LaboratoryShell` renders every tool up front and only reveals the one
+ * matching the URL hash, and it does that from a `useEffect` that runs after
+ * hydration, so immediately after navigation Mission Control is still
+ * `hidden`. This waits for the hash to take effect before anything else
+ * touches Mission Control. There is no startup overlay any more: the 2026
+ * redesign replaced it with a static "Checks performed" list, so the
+ * workspace is usable as soon as it is visible.
  */
 async function waitForMissionControlActive(page: Page): Promise<void> {
   await expect(
-    page.getByRole("navigation", { name: "Mission Control sections" }),
+    page.getByRole("navigation", { name: "Mission control sections" }),
   ).toBeVisible();
-}
-
-/**
- * Mission Control always mounts wrapped in `MissionStartupSequence`, a
- * cinematic initialization overlay that starts active and auto-advances
- * (faster under `prefers-reduced-motion`, which this project's config
- * enables). Its "Skip startup" button is present while the overlay is
- * active. Whether the timer has already finished by the time a test looks
- * for it is a race, so this either dismisses it or, if it already completed
- * on its own, no-ops — either way the overlay is confirmed gone afterwards.
- */
-async function dismissMissionControlStartup(page: Page): Promise<void> {
-  await waitForMissionControlActive(page);
-
-  const skipButton = page.getByRole("button", {
-    name: "Skip Mission Control startup",
-  });
-
-  // The overlay auto-advances on its own timer (faster under reduced
-  // motion) and unmounts itself the moment it finishes, so the button can
-  // legitimately detach from the DOM mid-click if the timer wins the race.
-  // Either outcome is fine — the assertion below is what actually matters —
-  // so a click that fails because the button vanished out from under it is
-  // not itself a test failure.
-  if (await skipButton.isVisible().catch(() => false)) {
-    await skipButton.click({ timeout: 5_000 }).catch(() => {});
-  }
-
-  await expect(skipButton).toBeHidden();
 }
 
 test.describe("Mission Control", () => {
@@ -64,10 +33,10 @@ test.describe("Mission Control", () => {
     await page.goto(`${ROUTES.engineeringLab}${MISSION_CONTROL_HASH}`, {
       waitUntil: "domcontentloaded",
     });
-    await dismissMissionControlStartup(page);
+    await waitForMissionControlActive(page);
 
     const missionControlNav = page.getByRole("navigation", {
-      name: "Mission Control sections",
+      name: "Mission control sections",
     });
     await expect(missionControlNav).toBeVisible();
 
@@ -75,9 +44,9 @@ test.describe("Mission Control", () => {
     await expect(tablist).toBeVisible();
 
     const overviewTab = tablist.getByRole("tab", {
-      name: "Overview - Mission Timeline summary",
+      name: "Overview: mission timeline summary",
     });
-    const orbitTab = tablist.getByRole("tab", { name: "Orbit - Orbital View" });
+    const orbitTab = tablist.getByRole("tab", { name: "Orbit: orbital view" });
 
     await expect(overviewTab).toHaveAttribute("aria-selected", "true");
     await expect(orbitTab).toHaveAttribute("aria-selected", "false");
@@ -93,7 +62,7 @@ test.describe("Mission Control", () => {
       "mission-workspace-orbit-tab",
     );
     await expect(
-      panel.getByRole("region", { name: "Mission orbit visualization" }),
+      panel.getByRole("region", { name: "Mission orbit diagram" }),
     ).toBeVisible();
 
     await expectNoHorizontalOverflow(page);
@@ -106,10 +75,10 @@ test.describe("Mission Control", () => {
     await page.goto(`${ROUTES.engineeringLab}${MISSION_CONTROL_HASH}`, {
       waitUntil: "domcontentloaded",
     });
-    await dismissMissionControlStartup(page);
+    await waitForMissionControlActive(page);
 
     const missionControlNav = page.getByRole("navigation", {
-      name: "Mission Control sections",
+      name: "Mission control sections",
     });
     const activeTab = missionControlNav.getByRole("tab", {
       selected: true,
@@ -138,10 +107,10 @@ test.describe("Mission Control", () => {
     await page.goto(`${ROUTES.engineeringLab}${MISSION_CONTROL_HASH}`, {
       waitUntil: "domcontentloaded",
     });
-    await dismissMissionControlStartup(page);
+    await waitForMissionControlActive(page);
 
     const tablist = page
-      .getByRole("navigation", { name: "Mission Control sections" })
+      .getByRole("navigation", { name: "Mission control sections" })
       .getByRole("tablist");
     const panel = page.locator("#mission-workspace-panel");
 
@@ -184,7 +153,7 @@ test.describe("Mission Control", () => {
     await page.goto(`${ROUTES.engineeringLab}${MISSION_CONTROL_HASH}`, {
       waitUntil: "domcontentloaded",
     });
-    await dismissMissionControlStartup(page);
+    await waitForMissionControlActive(page);
 
     await expectNoHorizontalOverflow(page);
   });

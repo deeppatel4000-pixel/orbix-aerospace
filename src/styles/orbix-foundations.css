@@ -2,10 +2,6 @@
   box-sizing: border-box;
 }
 
-html {
-  min-width: 320px;
-}
-
 body {
   background: var(--orbix-bg-page);
   color: var(--orbix-text-primary);
@@ -124,8 +120,7 @@ a {
   }
 
   /* Column headers and footer group headings only. */
-  .orbix-caps,
-  .orbix-label--column {
+  .orbix-caps {
     font-size: var(--text-caps);
     font-weight: 600;
     letter-spacing: var(--tracking-caps);
@@ -219,67 +214,6 @@ a {
   }
 
   /* ------------------------------------------------------------------ *
-   * DEPRECATED TYPE CLASSES. Restyled onto the scale above so existing
-   * usages render correctly; page tasks replace them, phase C deletes.
-   * ------------------------------------------------------------------ */
-
-  .orbix-display-xl,
-  .orbix-display-lg {
-    font-family: var(--font-interface);
-    font-size: var(--text-h1);
-    font-weight: 600;
-    letter-spacing: -0.015em;
-    line-height: 1.15;
-    text-wrap: balance;
-  }
-
-  .orbix-section-title {
-    font-family: var(--font-interface);
-    font-size: var(--text-h2);
-    font-weight: 600;
-    letter-spacing: -0.01em;
-    line-height: 1.25;
-  }
-
-  .orbix-body-lead {
-    color: var(--orbix-text-secondary);
-    font-size: var(--text-lead);
-    line-height: 1.6;
-  }
-
-  .orbix-telemetry-value {
-    color: var(--orbix-text-primary);
-    font-family: var(--font-telemetry);
-    font-variant-numeric: tabular-nums;
-    letter-spacing: 0;
-  }
-
-  /* Replaced by `.orbix-label`. */
-  .orbix-kicker,
-  .orbix-technical-label {
-    color: var(--orbix-text-muted);
-    font-family: var(--font-interface);
-    font-size: var(--text-label);
-    font-weight: 500;
-    letter-spacing: 0;
-    line-height: 1.4;
-    text-transform: none;
-  }
-
-  /* Rendered as a plain tag. */
-  .orbix-environment-label {
-    align-items: center;
-    border: 1px solid var(--orbix-border-strong);
-    border-radius: var(--radius-1);
-    color: var(--orbix-text-secondary);
-    display: inline-flex;
-    font-family: var(--font-interface);
-    font-size: var(--text-label);
-    gap: var(--space-2);
-    padding: 0.125rem 0.5rem;
-  }
-
-  /* ------------------------------------------------------------------ *
    * LAYOUT
    * ------------------------------------------------------------------ */
 
@@ -287,48 +221,10 @@ a {
     padding-block: var(--space-7);
   }
 
-  .orbix-section-compact {
-    padding-block: var(--space-7);
-  }
-
   @media (min-width: 640px) {
     .orbix-section {
       padding-block: var(--space-8);
     }
-  }
-
-  /* ------------------------------------------------------------------ *
-   * NEUTRALISED DECORATION (spec 15.1)
-   *
-   * These classes are still referenced by feature code that page tasks have
-   * not migrated yet. They now render nothing decorative: no grids, star
-   * fields, glows, gradient rules, HUD corners or textures. Phase C deletes
-   * the definitions once no usage remains.
-   * ------------------------------------------------------------------ */
-
-  .technical-grid,
-  .orbix-grid,
-  .orbix-starfield,
-  .orbix-atmosphere-glow,
-  .orbix-light-field,
-  .orbix-brand-glow,
-  .orbix-carbon {
-    /* `background-image` only, so a Tailwind `bg-*` colour on the same
-     * element survives. */
-    background-image: none;
-    box-shadow: none;
-  }
-
-  /* Always an empty decorative element. */
-  .orbix-brand-rule {
-    display: none;
-  }
-
-  /* Former HUD frame: now a plain flat panel edge, no clip-path, no ticks. */
-  .orbix-frame {
-    border: 1px solid var(--orbix-border);
-    border-radius: var(--radius-3);
-    position: relative;
   }
 
   .text-balance {

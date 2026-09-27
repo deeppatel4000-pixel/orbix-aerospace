@@ -97,12 +97,13 @@ test.describe("next/image quality configuration", () => {
         "an optimized image should have a non-trivial body",
       ).toBeGreaterThan(1_000);
 
-      // It went through the optimizer rather than serving the raw asset:
-      // the source PNGs in public/images/aircraft are 1.6-9.2 MB, so a
-      // width-constrained optimized variant must be far smaller.
+      // Sanity bound. The sources in public/images are WebP files of 40 to
+      // 225 KB (they replaced 1.6 to 9.2 MB PNGs in the 2026 redesign), so an
+      // optimized variant anywhere near 1 MB would mean the optimizer had
+      // started producing oversized output.
       expect(
         body.byteLength,
-        "optimized output should be much smaller than the multi-megabyte source",
+        "optimized output should stay far below 1 MB",
       ).toBeLessThan(1_000_000);
     });
   }

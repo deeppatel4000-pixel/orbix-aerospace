@@ -8,8 +8,8 @@ const boundaries = [
   },
   {
     detail:
-      "Inputs and results carry their unit in the property name, for example altitudeMetres or deltaVMetresPerSecond. Other units, such as kilometres, appear only when a value is displayed.",
-    title: "SI units in the data",
+      "Most dimensional calculator and analysis inputs and results name their unit in the property, for example altitudeMetres or deltaVMetresPerSecond. These are mostly SI units; angles use degrees, and a few results add hours or minutes. Vehicle records instead store a unit beside each value, such as ft or mi.",
+    title: "Units in calculator property names",
   },
   {
     detail:

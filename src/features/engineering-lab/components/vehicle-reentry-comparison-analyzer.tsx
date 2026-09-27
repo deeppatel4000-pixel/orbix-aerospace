@@ -512,7 +512,7 @@ export function VehicleReentryComparisonAnalyzer() {
                 error={errors.shared.timestepSeconds}
                 field="timestepSeconds"
                 hint="Leave blank to preserve the trajectory analysis default."
-                label="Time step"
+                label="Time step (optional)"
                 min={0}
                 onChange={updateSharedValue}
                 unit="s"
@@ -522,7 +522,7 @@ export function VehicleReentryComparisonAnalyzer() {
                 error={errors.shared.initialFlightPathAngleDegrees}
                 field="initialFlightPathAngleDegrees"
                 hint="Leave blank to preserve the default vertical descent."
-                label="Flight-path angle"
+                label="Flight-path angle (optional)"
                 max={0}
                 min={-90}
                 onChange={updateSharedValue}
@@ -711,7 +711,7 @@ export function VehicleReentryComparisonAnalyzer() {
                               value,
                             )
                           }
-                          unit="CD"
+                          unit=""
                           value={vehicle.dragCoefficient}
                         />
                         <CalculatorNumberField

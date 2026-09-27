@@ -836,7 +836,7 @@ function VehicleFields({
           idPrefix={idPrefix}
           label="Drag coefficient"
           onChange={onChange}
-          unit="CD"
+          unit=""
           value={values[dragField]}
         />
         <CalculatorNumberField
