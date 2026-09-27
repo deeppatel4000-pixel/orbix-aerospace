@@ -1,5 +1,6 @@
 "use client";
 
+import { Button } from "@/components/ui";
 import { useState, type FormEvent } from "react";
 import {
   AlertTriangle,
@@ -19,7 +20,9 @@ import {
 } from "@/features/engineering-lab/calculators";
 import {
   CalculatorNumberField,
+  focusFirstInvalidField,
   CalculatorResultSection,
+  NotCalculated,
   ValidationErrorSummary,
 } from "@/features/engineering-lab/components/shared";
 import type {
@@ -84,6 +87,7 @@ export function AtmosphereCalculator() {
     setErrors(validationErrors);
 
     if (hasAtmosphereValidationErrors(validationErrors)) {
+      focusFirstInvalidField(event.currentTarget);
       setResult(null);
       return;
     }
@@ -112,24 +116,20 @@ export function AtmosphereCalculator() {
             value={values.altitudeMetres}
           />
 
-          <ValidationErrorSummary errors={Object.values(errors)} />
+          <ValidationErrorSummary
+            errors={errors}
+            idPrefix="standard-atmosphere"
+          />
 
           <div className="mt-7 flex flex-col gap-3 sm:flex-row">
-            <button
-              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-accent px-5 py-2.5 text-sm font-semibold text-background shadow-[0_12px_40px_rgb(87_215_255/0.18)] transition-colors hover:bg-foreground"
-              type="submit"
-            >
+            <Button variant="primary" type="submit">
               <Calculator aria-hidden="true" size={16} />
               Calculate atmosphere
-            </button>
-            <button
-              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-border bg-surface/60 px-5 py-2.5 text-sm font-semibold text-foreground transition-colors hover:border-accent/60 hover:text-accent"
-              onClick={resetCalculator}
-              type="button"
-            >
+            </Button>
+            <Button variant="secondary" onClick={resetCalculator}>
               <RotateCcw aria-hidden="true" size={16} />
-              Reset example
-            </button>
+              Reset inputs
+            </Button>
           </div>
         </form>
       </div>
@@ -144,10 +144,10 @@ export function AtmosphereCalculator() {
           {result ? (
             <dl className="grid gap-5 sm:grid-cols-2">
               <div>
-                <dt className="text-xs text-muted">Temperature</dt>
+                <dt className="orbix-label">Temperature</dt>
                 <dd className="mt-2">
                   <output
-                    className="font-mono text-xl font-semibold text-accent"
+                    className="orbix-data-lg"
                     htmlFor="standard-atmosphere-altitudeMetres"
                   >
                     {stateFormatter.format(result.temperatureKelvin)} K
@@ -155,10 +155,10 @@ export function AtmosphereCalculator() {
                 </dd>
               </div>
               <div>
-                <dt className="text-xs text-muted">Pressure</dt>
+                <dt className="orbix-label">Pressure</dt>
                 <dd className="mt-2">
                   <output
-                    className="font-mono text-xl font-semibold text-accent"
+                    className="orbix-data-lg"
                     htmlFor="standard-atmosphere-altitudeMetres"
                   >
                     {stateFormatter.format(result.pressurePascals)} Pa
@@ -166,10 +166,10 @@ export function AtmosphereCalculator() {
                 </dd>
               </div>
               <div>
-                <dt className="text-xs text-muted">Density</dt>
+                <dt className="orbix-label">Density</dt>
                 <dd className="mt-2">
                   <output
-                    className="font-mono text-xl font-semibold text-accent"
+                    className="orbix-data-lg"
                     htmlFor="standard-atmosphere-altitudeMetres"
                   >
                     {densityFormatter.format(
@@ -180,10 +180,10 @@ export function AtmosphereCalculator() {
                 </dd>
               </div>
               <div>
-                <dt className="text-xs text-muted">Speed of sound</dt>
+                <dt className="orbix-label">Speed of sound</dt>
                 <dd className="mt-2">
                   <output
-                    className="font-mono text-xl font-semibold text-accent"
+                    className="orbix-data-lg"
                     htmlFor="standard-atmosphere-altitudeMetres"
                   >
                     {stateFormatter.format(result.speedOfSoundMetersPerSecond)}{" "}
@@ -193,18 +193,15 @@ export function AtmosphereCalculator() {
               </div>
             </dl>
           ) : (
-            <div className="py-5">
-              <p className="font-mono text-3xl text-muted">—</p>
-              <p className="mt-3 text-sm leading-6 text-muted">
-                Validate an altitude and run the model to calculate temperature,
-                pressure, density, and speed of sound.
-              </p>
-            </div>
+            <NotCalculated invalid={Object.values(errors).some(Boolean)}>
+              Validate an altitude and run the model to calculate temperature,
+              pressure, density, and speed of sound.
+            </NotCalculated>
           )}
         </CalculatorResultSection>
 
-        <section className="rounded-2xl border border-border bg-surface/55 p-5 sm:p-6">
-          <p className="orbix-label flex items-center gap-2 text-accent">
+        <section className="rounded-md border border-border bg-surface p-4 sm:p-6">
+          <p className="orbix-label flex items-center gap-2">
             <Sigma aria-hidden="true" size={15} />
             Equation model
           </p>
@@ -236,32 +233,32 @@ export function AtmosphereCalculator() {
           </div>
           <dl className="mt-5 grid gap-4 text-sm sm:grid-cols-2">
             <div>
-              <dt className="font-mono text-xs text-accent">T0</dt>
+              <dt className="orbix-data text-foreground">T0</dt>
               <dd className="mt-1 text-muted">
                 {SEA_LEVEL_STANDARD_TEMPERATURE_KELVIN} K
               </dd>
             </div>
             <div>
-              <dt className="font-mono text-xs text-accent">P0</dt>
+              <dt className="orbix-data text-foreground">P0</dt>
               <dd className="mt-1 text-muted">
                 {SEA_LEVEL_STANDARD_PRESSURE_PASCALS.toLocaleString("en-US")} Pa
               </dd>
             </div>
             <div>
-              <dt className="font-mono text-xs text-accent">L</dt>
+              <dt className="orbix-data text-foreground">L</dt>
               <dd className="mt-1 text-muted">
                 {TROPOSPHERIC_LAPSE_RATE_KELVIN_PER_METRE} K/m
               </dd>
             </div>
             <div>
-              <dt className="font-mono text-xs text-accent">R</dt>
+              <dt className="orbix-data text-foreground">R</dt>
               <dd className="mt-1 text-muted">
                 {DRY_AIR_SPECIFIC_GAS_CONSTANT_JOULES_PER_KILOGRAM_KELVIN}{" "}
                 J/(kg·K)
               </dd>
             </div>
             <div>
-              <dt className="font-mono text-xs text-accent">γ</dt>
+              <dt className="orbix-data text-foreground">γ</dt>
               <dd className="mt-1 text-muted">
                 {RATIO_OF_SPECIFIC_HEATS_FOR_DRY_AIR}
               </dd>
@@ -274,7 +271,7 @@ export function AtmosphereCalculator() {
             <AlertTriangle aria-hidden="true" size={17} />
             Engineering notes
           </p>
-          <ul className="mt-4 list-disc space-y-2 pl-5 text-xs leading-5 text-muted">
+          <ul className="mt-4 list-disc space-y-2 pl-5 text-sm leading-6 text-muted">
             <li>
               This model covers the constant-lapse-rate troposphere from sea
               level through 11,000 metres.

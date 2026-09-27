@@ -1,5 +1,6 @@
 "use client";
 
+import { Button } from "@/components/ui";
 import { useState, type FormEvent } from "react";
 import {
   AlertTriangle,
@@ -12,7 +13,9 @@ import {
 import { calculateDragEquation } from "@/features/engineering-lab/calculators";
 import {
   CalculatorNumberField,
+  focusFirstInvalidField,
   CalculatorResultSection,
+  NotCalculated,
   ValidationErrorSummary,
 } from "@/features/engineering-lab/components/shared";
 import type {
@@ -84,6 +87,7 @@ export function DragEquationCalculator() {
     setErrors(validationErrors);
 
     if (hasDragEquationValidationErrors(validationErrors)) {
+      focusFirstInvalidField(event.currentTarget);
       setResult(null);
       return;
     }
@@ -144,24 +148,17 @@ export function DragEquationCalculator() {
             />
           </div>
 
-          <ValidationErrorSummary errors={Object.values(errors)} />
+          <ValidationErrorSummary errors={errors} idPrefix="drag-equation" />
 
           <div className="mt-7 flex flex-col gap-3 sm:flex-row">
-            <button
-              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-accent px-5 py-2.5 text-sm font-semibold text-background shadow-[0_12px_40px_rgb(87_215_255/0.18)] transition-colors hover:bg-foreground"
-              type="submit"
-            >
+            <Button variant="primary" type="submit">
               <Calculator aria-hidden="true" size={16} />
               Calculate drag
-            </button>
-            <button
-              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-border bg-surface/60 px-5 py-2.5 text-sm font-semibold text-foreground transition-colors hover:border-accent/60 hover:text-accent"
-              onClick={resetCalculator}
-              type="button"
-            >
+            </Button>
+            <Button variant="secondary" onClick={resetCalculator}>
               <RotateCcw aria-hidden="true" size={16} />
-              Reset example
-            </button>
+              Reset inputs
+            </Button>
           </div>
         </form>
       </div>
@@ -175,24 +172,21 @@ export function DragEquationCalculator() {
         >
           {result ? (
             <output
-              className="block font-mono text-4xl font-semibold tracking-[-0.04em] text-accent sm:text-5xl"
+              className="orbix-data-lg block"
               htmlFor="drag-equation-airDensityKilogramsPerCubicMetre drag-equation-velocityMetresPerSecond drag-equation-referenceAreaSquareMetres drag-equation-dragCoefficient"
             >
               {numberFormatter.format(result.dragForceNewtons)} N
             </output>
           ) : (
-            <div className="py-5">
-              <p className="font-mono text-3xl text-muted">— N</p>
-              <p className="mt-3 text-sm leading-6 text-muted">
-                Validate the aerodynamic condition and run the calculation to
-                produce a drag-force estimate.
-              </p>
-            </div>
+            <NotCalculated invalid={Object.values(errors).some(Boolean)}>
+              Validate the aerodynamic condition and run the calculation to
+              produce a drag-force estimate.
+            </NotCalculated>
           )}
         </CalculatorResultSection>
 
-        <section className="rounded-2xl border border-border bg-surface/55 p-5 sm:p-6">
-          <p className="orbix-label flex items-center gap-2 text-accent">
+        <section className="rounded-md border border-border bg-surface p-4 sm:p-6">
+          <p className="orbix-label flex items-center gap-2">
             <MoveRight aria-hidden="true" size={15} />
             Equation model
           </p>
@@ -212,19 +206,19 @@ export function DragEquationCalculator() {
           </div>
           <dl className="mt-5 grid gap-4 text-sm sm:grid-cols-2">
             <div>
-              <dt className="font-mono text-xs text-accent">D</dt>
+              <dt className="orbix-data text-foreground">D</dt>
               <dd className="mt-1 text-muted">Drag force in newtons</dd>
             </div>
             <div>
-              <dt className="font-mono text-xs text-accent">q</dt>
+              <dt className="orbix-data text-foreground">q</dt>
               <dd className="mt-1 text-muted">Dynamic pressure in pascals</dd>
             </div>
             <div>
-              <dt className="font-mono text-xs text-accent">S</dt>
+              <dt className="orbix-data text-foreground">S</dt>
               <dd className="mt-1 text-muted">Reference area in m²</dd>
             </div>
             <div>
-              <dt className="font-mono text-xs text-accent">CD</dt>
+              <dt className="orbix-data text-foreground">CD</dt>
               <dd className="mt-1 text-muted">
                 Dimensionless drag coefficient
               </dd>
@@ -237,7 +231,7 @@ export function DragEquationCalculator() {
             <AlertTriangle aria-hidden="true" size={17} />
             Engineering notes
           </p>
-          <ul className="mt-4 list-disc space-y-2 pl-5 text-xs leading-5 text-muted">
+          <ul className="mt-4 list-disc space-y-2 pl-5 text-sm leading-6 text-muted">
             <li>
               Reference area and drag coefficient must use the same convention;
               frontal and planform reference areas are not interchangeable.

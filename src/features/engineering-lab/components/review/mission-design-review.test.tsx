@@ -49,10 +49,9 @@ describe("MissionDesignReview", () => {
       />,
     );
 
-    expect(markup).toContain("ORBIX // Mission Design Review");
+    expect(markup).toContain("Mission design review");
     expect(markup).toContain("ORBIX Design Review Mission");
     expect(markup).toContain("Orbital logistics");
-    expect(markup).toContain("Mission parameter");
   });
 
   it("renders all requested review sections", () => {
@@ -64,11 +63,11 @@ describe("MissionDesignReview", () => {
       />,
     );
 
-    expect(markup).toContain("Mission Architecture");
-    expect(markup).toContain("Orbital Considerations");
-    expect(markup).toContain("Vehicle Considerations");
-    expect(markup).toContain("Thermal Considerations");
-    expect(markup).toContain("Modeling Assumptions");
+    expect(markup).toContain("Mission architecture");
+    expect(markup).toContain("Orbital considerations");
+    expect(markup).toContain("Vehicle considerations");
+    expect(markup).toContain("Thermal considerations");
+    expect(markup).toContain("Modeling assumptions");
     expect(markup).toContain("Limitations");
   });
 
@@ -102,7 +101,7 @@ describe("MissionDesignReview", () => {
 
     expect(markup).toContain("Sparse review mission");
     expect(markup).toContain('data-parameter-availability="not-reported"');
-    expect(markup).toContain("Not Reported");
+    expect(markup).toContain("Not reported");
     expect(markup).toContain("No modeling assumptions were reported");
   });
 
@@ -126,9 +125,8 @@ describe("MissionDesignReview", () => {
     expect(markup).toContain(
       'aria-labelledby="design-review-architecture-title"',
     );
-    expect(markup).toContain('aria-label="Mission category:');
-    expect(markup).toContain('tabindex="0"');
-    expect(markup).toContain("motion-reduce:transition-none");
+    expect(markup).toContain("<dl");
+    expect(markup).toContain('href="#design-review-assumptions-title"');
   });
 
   it("does not present outcome or feasibility verdicts", () => {

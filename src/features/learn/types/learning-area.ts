@@ -1,23 +1,9 @@
 /**
- * A learning pathway's accent identity. Each value maps to an existing
- * ORBIX design-token color (see `src/styles/orbix-tokens.css`) so pathway
- * presentation never introduces new colors outside the design system.
- */
-export type LearnAccent =
-  "accent" | "atmosphere" | "laboratory" | "plasma" | "signal" | "tactical";
-
-/**
- * Subset of `OrbixSurfaceVariant` (see `@/components/ui/orbix-surface`) that
- * makes sense for a static, non-interactive content panel. `hero` is
- * intentionally excluded — it is reserved for page-level hero treatment.
- */
-export type LearnSurfaceVariant =
-  "engineering" | "gallery" | "mission" | "report" | "telemetry" | "vehicle";
-
-/**
- * A real, verified deep link into an Engineering Laboratory module. `label`
- * mirrors the analyzer's published title on `/engineering-lab` so a reader
- * recognizes the destination before they click through.
+ * A deep link into an Engineering Lab module, reachable at
+ * `/engineering-lab#<anchorId>`. `label` matches the module's heading on
+ * `/engineering-lab` so a reader recognises the destination. The heading
+ * comes from the lab's `MODULES` map in engineering-dashboard.tsx, and
+ * learning-areas.test.ts fails if the two drift apart.
  */
 export interface LearnLabAnchor {
   readonly anchorId: string;
@@ -25,9 +11,8 @@ export interface LearnLabAnchor {
 }
 
 /**
- * A real, verified link elsewhere in ORBIX (a vehicle catalog, a specific
- * vehicle profile, the comparison engine, or the showcase) that lets a
- * reader see a pathway's concepts applied to published ORBIX content.
+ * A link to another ORBIX route (a registry, a vehicle profile, Compare, or
+ * Showcase) where a pathway's ideas can be seen applied to published content.
  */
 export interface LearnExplorationLink {
   readonly description: string;
@@ -36,20 +21,36 @@ export interface LearnExplorationLink {
 }
 
 /**
- * One conceptual learning pathway. Every string field is general aerospace
- * theory — never a specific vehicle specification or a computed result.
- * Computed output only ever lives behind `labAnchors` links, inside the
- * Engineering Laboratory.
+ * One key idea: a plain-language statement, optionally with the governing
+ * relation written as a short equation (rendered in the mono face).
+ */
+export interface LearnKeyIdea {
+  readonly equation?: string;
+  readonly text: string;
+}
+
+/**
+ * A published reference. `href` is present when a stable public copy exists
+ * (NASA and NACA documents); textbooks are cited without a link.
+ */
+export interface LearnReference {
+  readonly href?: string;
+  readonly source: string;
+  readonly title: string;
+}
+
+/**
+ * One reading pathway. Every string is general, textbook-level theory. No
+ * vehicle specification or computed result is stated here; numbers are only
+ * calculated behind the `labAnchors` links, in the Engineering Lab.
  */
 export interface LearningArea {
-  readonly accent: LearnAccent;
-  readonly code: string;
-  readonly concept: string;
   readonly explorationLinks: readonly LearnExplorationLink[];
+  readonly furtherReading: readonly LearnReference[];
   readonly id: string;
+  readonly keyIdeas: readonly LearnKeyIdea[];
   readonly labAnchors: readonly LearnLabAnchor[];
-  readonly realWorldContext: string;
-  readonly surfaceVariant: LearnSurfaceVariant;
+  readonly summary: string;
   readonly title: string;
   readonly whyItMatters: string;
 }

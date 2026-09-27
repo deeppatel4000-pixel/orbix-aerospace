@@ -1,5 +1,6 @@
 "use client";
 
+import { Button, Tag } from "@/components/ui";
 import { useState, type FormEvent } from "react";
 import {
   AlertTriangle,
@@ -19,7 +20,10 @@ import {
 } from "@/features/engineering-lab/calculators";
 import {
   CalculatorNumberField,
+  focusFirstInvalidField,
   CalculatorResultSection,
+  NotCalculated,
+  toSentenceCase,
   ValidationErrorSummary,
 } from "@/features/engineering-lab/components/shared";
 import type {
@@ -126,6 +130,7 @@ export function ThrustToWeightCalculator() {
     setErrors(validationErrors);
 
     if (hasThrustToWeightValidationErrors(validationErrors)) {
+      focusFirstInvalidField(event.currentTarget);
       setResult(null);
       return;
     }
@@ -166,24 +171,17 @@ export function ThrustToWeightCalculator() {
             />
           </div>
 
-          <ValidationErrorSummary errors={Object.values(errors)} />
+          <ValidationErrorSummary errors={errors} idPrefix="thrust-to-weight" />
 
           <div className="mt-7 flex flex-col gap-3 sm:flex-row">
-            <button
-              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-accent px-5 py-2.5 text-sm font-semibold text-background shadow-[0_12px_40px_rgb(87_215_255/0.18)] transition-colors hover:bg-foreground"
-              type="submit"
-            >
+            <Button variant="primary" type="submit">
               <Calculator aria-hidden="true" size={16} />
               Calculate ratio
-            </button>
-            <button
-              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-border bg-surface/60 px-5 py-2.5 text-sm font-semibold text-foreground transition-colors hover:border-accent/60 hover:text-accent"
-              onClick={resetCalculator}
-              type="button"
-            >
+            </Button>
+            <Button variant="secondary" onClick={resetCalculator}>
               <RotateCcw aria-hidden="true" size={16} />
-              Reset example
-            </button>
+              Reset inputs
+            </Button>
           </div>
         </form>
       </div>
@@ -198,42 +196,39 @@ export function ThrustToWeightCalculator() {
           {result ? (
             <>
               <output
-                className="block font-mono text-4xl font-semibold tracking-[-0.04em] text-accent sm:text-5xl"
+                className="orbix-data-lg block"
                 htmlFor="thrust-to-weight-thrustNewtons thrust-to-weight-massKg"
               >
                 {ratioFormatter.format(result.thrustToWeightRatio)}
               </output>
               <dl className="mt-6 grid gap-3 border-t border-border pt-5 sm:grid-cols-2">
                 <div>
-                  <dt className="text-xs text-muted">Classification</dt>
-                  <dd className="mt-1 text-sm font-semibold capitalize">
-                    {result.regime.replace("-", " ")}
+                  <dt className="orbix-label">Classification</dt>
+                  <dd className="mt-1 text-sm font-semibold">
+                    {toSentenceCase(result.regime.replace("-", " "))}
                   </dd>
                 </div>
                 <div>
-                  <dt className="text-xs text-muted">Weight force</dt>
-                  <dd className="mt-1 font-mono text-sm font-semibold">
+                  <dt className="orbix-label">Weight force</dt>
+                  <dd className="orbix-data mt-1">
                     {numberFormatter.format(result.weightNewtons)} N
                   </dd>
                 </div>
               </dl>
             </>
           ) : (
-            <div className="py-5">
-              <p className="font-mono text-3xl text-muted">—</p>
-              <p className="mt-3 text-sm leading-6 text-muted">
-                Validate the inputs and run the calculation to produce a
-                dimensionless thrust-to-weight ratio.
-              </p>
-            </div>
+            <NotCalculated invalid={Object.values(errors).some(Boolean)}>
+              Validate the inputs and run the calculation to produce a
+              dimensionless thrust-to-weight ratio.
+            </NotCalculated>
           )}
         </CalculatorResultSection>
 
         <section
           aria-labelledby="thrust-to-weight-interpretation-title"
-          className="rounded-2xl border border-border bg-surface/55 p-5 sm:p-6"
+          className="rounded-md border border-border bg-surface p-4 sm:p-6"
         >
-          <p className="orbix-label flex items-center gap-2 text-accent">
+          <p className="orbix-label flex items-center gap-2">
             <Scale aria-hidden="true" size={15} />
             Result interpretation
           </p>
@@ -248,20 +243,20 @@ export function ThrustToWeightCalculator() {
               return (
                 <li
                   className={
-                    "rounded-xl border p-4 transition-colors " +
+                    "rounded-md border p-4 transition-colors " +
                     (isActive
-                      ? "border-accent/45 bg-accent/8"
-                      : "border-border bg-background/30")
+                      ? "border-border-strong bg-surface-raised"
+                      : "border-border-subtle")
                   }
                   key={interpretation.regime}
                 >
                   <div className="flex items-start gap-3">
                     <span
                       className={
-                        "mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg " +
+                        "mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded border " +
                         (isActive
-                          ? "bg-accent/15 text-accent"
-                          : "bg-surface text-muted")
+                          ? "border-border-control text-foreground"
+                          : "border-border-subtle text-muted")
                       }
                     >
                       <Icon aria-hidden="true" size={16} />
@@ -271,16 +266,12 @@ export function ThrustToWeightCalculator() {
                         <p className="text-sm font-semibold">
                           {interpretation.label}
                         </p>
-                        <p className="font-mono text-[0.65rem] text-muted">
+                        <p className="orbix-data text-muted">
                           {interpretation.threshold}
                         </p>
-                        {isActive ? (
-                          <span className="font-mono text-[0.6rem] tracking-[0.1em] text-accent uppercase">
-                            Current result
-                          </span>
-                        ) : null}
+                        {isActive ? <Tag>Current result</Tag> : null}
                       </div>
-                      <p className="mt-1.5 text-xs leading-5 text-muted">
+                      <p className="mt-1 text-sm leading-6 text-muted">
                         {interpretation.description}
                       </p>
                     </div>
@@ -291,8 +282,8 @@ export function ThrustToWeightCalculator() {
           </ul>
         </section>
 
-        <section className="rounded-2xl border border-border bg-surface/55 p-5 sm:p-6">
-          <p className="orbix-label flex items-center gap-2 text-accent">
+        <section className="rounded-md border border-border bg-surface p-4 sm:p-6">
+          <p className="orbix-label flex items-center gap-2">
             <Scale aria-hidden="true" size={15} />
             Equation model
           </p>
@@ -304,23 +295,23 @@ export function ThrustToWeightCalculator() {
           </p>
           <dl className="mt-5 grid gap-4 text-sm sm:grid-cols-2">
             <div>
-              <dt className="font-mono text-xs text-accent">T</dt>
+              <dt className="orbix-data text-foreground">T</dt>
               <dd className="mt-1 text-muted">Thrust in newtons</dd>
             </div>
             <div>
-              <dt className="font-mono text-xs text-accent">m</dt>
+              <dt className="orbix-data text-foreground">m</dt>
               <dd className="mt-1 text-muted">
                 Instantaneous mass in kilograms
               </dd>
             </div>
             <div>
-              <dt className="font-mono text-xs text-accent">g0</dt>
+              <dt className="orbix-data text-foreground">g0</dt>
               <dd className="mt-1 text-muted">
                 {STANDARD_GRAVITY_METRES_PER_SECOND_SQUARED} m/s²
               </dd>
             </div>
             <div>
-              <dt className="font-mono text-xs text-accent">TWR</dt>
+              <dt className="orbix-data text-foreground">TWR</dt>
               <dd className="mt-1 text-muted">Dimensionless force ratio</dd>
             </div>
           </dl>
@@ -331,7 +322,7 @@ export function ThrustToWeightCalculator() {
             <AlertTriangle aria-hidden="true" size={17} />
             Engineering notes
           </p>
-          <ul className="mt-4 list-disc space-y-2 pl-5 text-xs leading-5 text-muted">
+          <ul className="mt-4 list-disc space-y-2 pl-5 text-sm leading-6 text-muted">
             <li>
               Standard gravity is fixed at{" "}
               {STANDARD_GRAVITY_METRES_PER_SECOND_SQUARED} m/s²; local

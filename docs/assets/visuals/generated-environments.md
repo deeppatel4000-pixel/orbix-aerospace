@@ -1,19 +1,24 @@
 # Generated ORBIX Environment Plates
 
+> **Status (verified 2026-09-27):** these four files are AI-generated, unverified, and scheduled
+> for removal. They must not be used for new work. See
+> [`../image-provenance.md`](../image-provenance.md). The prompt summaries below are paraphrased
+> records of how the files were made, kept for provenance only.
+
 These assets were generated specifically for ORBIX on 2026-08-04 using the built-in image-generation tool. They contain no external source imagery, logos, readable text, telemetry, or real mission claims. Original PNG outputs were retained in the local generation archive; project copies were resized to 1600×900 and converted to WebP for efficient delivery.
 
 ## Orbital command
 
 - Project asset: `public/images/environments/orbital-command.webp`
 - Purpose: homepage, showcase, and Mission Control atmosphere
-- Prompt summary: photorealistic uncrewed spacecraft above Earth's night-side limb, dark left-side copy space, restrained cyan/violet lighting, NASA/JPL-inspired engineering realism
+- Prompt summary: photorealistic uncrewed spacecraft above Earth's night-side limb, dark left-side copy space, restrained cool cyan lighting, NASA/JPL-inspired engineering realism
 - Exclusions: logos, text, astronauts, national insignia, fantasy technology, game styling
 
 ## Tactical aircraft
 
 - Project asset: `public/images/environments/tactical-aircraft.webp`
 - Purpose: Aircraft Explorer flight-test environment
-- Prompt summary: technically believable advanced twin-engine aircraft concept in a professional test hangar, graphite and olive-black palette, restrained amber instrumentation
+- Prompt summary: technically believable twin-engine aircraft concept in a test hangar, graphite and olive-black palette, restrained amber instrumentation
 - Exclusions: combat, weapons use, flags, classified real-world design claims, soldiers, game styling
 
 ## Launch complex

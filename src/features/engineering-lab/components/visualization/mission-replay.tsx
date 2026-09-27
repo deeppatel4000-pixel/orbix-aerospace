@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useMemo, useReducer, useState } from "react";
-import { Clapperboard, Flame, Gauge, Orbit } from "lucide-react";
+
+import { EmptyState } from "@/components/ui/empty-state";
 
 import type {
   MissionProfileAnalysis,
@@ -15,6 +16,7 @@ import {
   ReplayPhaseIndicator,
   type ReplayPresentationPhase,
 } from "./replay-phase-indicator";
+import { formatLabValue } from "./format-lab-value";
 
 export interface MissionReplayProps {
   readonly missionProfileAnalysis?: MissionProfileAnalysis | null;
@@ -50,10 +52,6 @@ const presentationDelayMilliseconds: Readonly<Record<ReplaySpeed, number>> = {
 };
 
 const reducedMotionDelayMilliseconds = 3_600;
-
-const replayFormatter = new Intl.NumberFormat("en-US", {
-  maximumFractionDigits: 2,
-});
 
 export function missionReplayReducer(
   state: MissionReplayState,
@@ -110,56 +108,53 @@ export function buildReplayPhases({
   const preparationScene = hasOrbitalData ? "orbital" : "reentry";
   const phases: ReplayPresentationPhase[] = [
     {
-      description:
-        "Completed mission objects are loaded into the presentation workspace.",
+      description: "The completed mission results are loaded for review.",
       id: "preparation",
-      label: "Mission Preparation",
+      label: "Mission preparation",
       sceneMode: preparationScene,
-      statusLabel: "Data link ready",
+      statusLabel: "Mission results loaded",
     },
   ];
 
   if (deltaVBudget?.maneuvers.length) {
     phases.push({
-      description:
-        "Departure is presented from the existing mission maneuver sequence.",
+      description: "Departure, shown from the mission's maneuver sequence.",
       id: "departure",
-      label: "Launch / Departure",
+      label: "Launch and departure",
       sceneMode: "orbital",
-      statusLabel: "Departure sequence",
+      statusLabel: "Showing departure maneuvers",
     });
   }
 
   if (hasOrbitalData) {
     phases.push({
       description:
-        "Available orbital outputs are displayed without propagating a new trajectory.",
+        "The computed orbital results. No new trajectory is propagated.",
       id: "orbital-operations",
-      label: "Orbital Operations",
+      label: "Orbital operations",
       sceneMode: "orbital",
-      statusLabel: "Orbital telemetry active",
+      statusLabel: "Showing orbital results",
     });
   }
 
   if (transfer) {
     phases.push({
-      description:
-        "The resolved Hohmann transfer is presented using its existing mission outputs.",
+      description: "The Hohmann transfer between the two circular orbits.",
       id: "transfer",
-      label: "Transfer Maneuver",
+      label: "Transfer maneuver",
       sceneMode: "orbital",
-      statusLabel: "Transfer path active",
+      statusLabel: "Showing the transfer",
     });
   }
 
   if (transfer || planeChange) {
     phases.push({
       description:
-        "Arrival and cruise are educational sequence labels for resolved orbital outputs.",
+        "Arrival at the target orbit. A label for the computed orbital results, not a separate calculation.",
       id: "arrival",
-      label: "Arrival / Cruise",
+      label: "Arrival and cruise",
       sceneMode: "orbital",
-      statusLabel: "Arrival state displayed",
+      statusLabel: "Showing arrival",
     });
   }
 
@@ -167,30 +162,28 @@ export function buildReplayPhases({
     phases.push(
       {
         description:
-          "The existing vehicle evaluation is staged for atmospheric-entry presentation.",
+          "The vehicle and its entry conditions from the reentry evaluation.",
         id: "reentry-preparation",
-        label: "Reentry Preparation",
+        label: "Reentry preparation",
         sceneMode: "reentry",
-        statusLabel: "Entry interface pending",
+        statusLabel: "Showing entry conditions",
       },
       {
-        description:
-          "Reported reentry trajectory and thermal outputs are displayed without simulation.",
+        description: "The computed reentry trajectory and heating results.",
         id: "atmospheric-entry",
-        label: "Atmospheric Entry",
+        label: "Atmospheric entry",
         sceneMode: "reentry",
-        statusLabel: "Reentry telemetry active",
+        statusLabel: "Showing entry results",
       },
     );
   }
 
   phases.push({
-    description:
-      "The replay has reached the end of the available presentation sequence.",
+    description: "The end of the replay.",
     id: "complete",
-    label: "Mission Complete",
+    label: "Mission complete",
     sceneMode: hasReentryData ? "reentry" : preparationScene,
-    statusLabel: "Replay sequence complete",
+    statusLabel: "End of replay",
   });
 
   return phases;
@@ -224,16 +217,20 @@ function ReplayTelemetry({
   readonly value: number | string | undefined;
 }) {
   return (
-    <div className="px-4 py-3">
-      <dt className="font-mono text-[0.52rem] tracking-[0.1em] text-[#71878d] uppercase">
-        {label}
-      </dt>
-      <dd className="mt-1">
-        {/* Block and wrapping: an inline output let long readings such as the
-         * active phase label paint past the card's padding. */}
-        <output className="block font-mono text-xs font-semibold break-words text-[#d8e4e5]">
+    <div className="flex items-baseline justify-between gap-4 border-t border-border-subtle py-2 text-sm">
+      <dt className="text-muted">{label}</dt>
+      <dd className="min-w-0 text-right">
+        <output
+          className={
+            value === undefined
+              ? "text-muted"
+              : typeof value === "number"
+                ? "orbix-data text-foreground"
+                : "break-words text-foreground"
+          }
+        >
           {typeof value === "number"
-            ? replayFormatter.format(value)
+            ? formatLabValue(value)
             : (value ?? "Not reported")}
           {value !== undefined && unit ? ` ${unit}` : ""}
         </output>
@@ -289,113 +286,30 @@ export function MissionReplay({
 
   if (!activePhase) {
     return (
-      <section
-        aria-label="Mission replay"
-        className="rounded-2xl border border-white/10 bg-[#040b0f] p-6"
-      >
-        <div className="flex items-center gap-3">
-          <span className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-accent">
-            <Clapperboard aria-hidden="true" size={18} />
-          </span>
-          <div>
-            <p className="font-mono text-[0.61rem] tracking-[0.14em] text-accent uppercase">
-              Mission replay
-            </p>
-            <h3 className="mt-1 text-lg font-semibold">
-              Replay sequence unavailable
-            </h3>
-          </div>
-        </div>
-        <p className="mt-4 text-sm leading-6 text-[#81969b]">
-          Supply a completed mission analysis, report, or vehicle reentry
-          evaluation to construct a presentation sequence.
-        </p>
-      </section>
+      <EmptyState
+        description="Supply a completed mission analysis, report, or vehicle reentry evaluation to build a replay."
+        title="Replay sequence unavailable"
+      />
     );
   }
 
   return (
     <section
       aria-labelledby="mission-replay-title"
-      className="overflow-hidden rounded-2xl border border-white/12 bg-[#03090d]"
+      className="min-w-0"
       data-reduced-motion={reducedMotion ? "true" : "false"}
     >
-      <header className="flex flex-col gap-4 border-b border-white/10 px-5 py-4 lg:flex-row lg:items-center lg:justify-between">
-        <div>
-          <p className="flex items-center gap-2 font-mono text-[0.61rem] tracking-[0.16em] text-accent uppercase">
-            <Clapperboard aria-hidden="true" size={14} />
-            Mission replay // Presentation sequence
-          </p>
-          <h3 className="mt-1 text-lg font-semibold" id="mission-replay-title">
-            Mission Replay
-          </h3>
-        </div>
-        <div className="flex items-center gap-3 rounded-xl border border-accent/20 bg-accent/6 px-4 py-2.5">
-          <span
-            aria-hidden="true"
-            className={
-              "h-2 w-2 rounded-full bg-accent " +
-              (state.isPlaying
-                ? "motion-safe:animate-pulse motion-reduce:animate-none"
-                : "opacity-55")
-            }
-          />
-          <div>
-            <p className="font-mono text-[0.5rem] tracking-[0.1em] text-[#73898e] uppercase">
-              Spacecraft status
-            </p>
-            <output className="font-mono text-xs text-accent">
-              {activePhase.statusLabel}
-            </output>
-          </div>
-        </div>
+      <header className="flex flex-col gap-2 border-b border-border-subtle pb-4 sm:flex-row sm:items-baseline sm:justify-between">
+        <h3 className="orbix-h3 text-foreground" id="mission-replay-title">
+          Mission replay
+        </h3>
+        <p className="text-sm text-text-secondary">
+          <span className="text-muted">Now: </span>
+          <output>{activePhase.statusLabel}</output>
+        </p>
       </header>
 
-      <div className="space-y-6 p-5">
-        <Mission3DScene
-          initialMode={activePhase.sceneMode}
-          key={activePhase.id}
-          missionProfileAnalysis={
-            activePhase.sceneMode === "orbital" ? missionProfileAnalysis : null
-          }
-          missionReport={missionReport}
-          vehicleReentryEvaluation={
-            activePhase.sceneMode === "reentry"
-              ? vehicleReentryEvaluation
-              : null
-          }
-        />
-
-        <section
-          aria-labelledby="replay-active-phase-title"
-          className="rounded-xl border border-white/10 bg-[#071116] p-4"
-        >
-          <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-            <div>
-              <p className="font-mono text-[0.56rem] tracking-[0.12em] text-accent uppercase">
-                Current phase // {activePhase.statusLabel}
-              </p>
-              <h4
-                className="mt-1 text-xl font-semibold"
-                id="replay-active-phase-title"
-              >
-                {activePhase.label}
-              </h4>
-              <p className="mt-2 max-w-3xl text-sm leading-6 text-[#91a5aa]">
-                {activePhase.description}
-              </p>
-            </div>
-            <span className="inline-flex w-fit items-center gap-2 rounded-full border border-white/10 bg-black/15 px-3 py-1.5 font-mono text-[0.58rem] tracking-[0.08em] text-[#9eb1b5] uppercase">
-              {activePhase.sceneMode === "orbital" ? (
-                <Orbit aria-hidden="true" size={13} />
-              ) : (
-                <Flame aria-hidden="true" size={13} />
-              )}
-              {activePhase.sceneMode} presentation
-            </span>
-          </div>
-        </section>
-
+      <div className="space-y-6 pt-6">
         <ReplayControls
           currentPhaseIndex={state.currentPhaseIndex}
           currentPhaseLabel={activePhase.label}
@@ -418,17 +332,40 @@ export function MissionReplay({
           />
         </div>
 
+        <section aria-labelledby="replay-active-phase-title">
+          <p className="orbix-label">
+            {activePhase.sceneMode === "orbital" ? "Orbital" : "Reentry"} phase
+          </p>
+          <h4
+            className="orbix-h4 mt-1 text-foreground"
+            id="replay-active-phase-title"
+          >
+            {activePhase.label}
+          </h4>
+          <p className="mt-1 max-w-[68ch] text-sm leading-6 text-text-secondary">
+            {activePhase.description}
+          </p>
+        </section>
+
+        <Mission3DScene
+          initialMode={activePhase.sceneMode}
+          key={activePhase.id}
+          missionProfileAnalysis={
+            activePhase.sceneMode === "orbital" ? missionProfileAnalysis : null
+          }
+          missionReport={missionReport}
+          vehicleReentryEvaluation={
+            activePhase.sceneMode === "reentry"
+              ? vehicleReentryEvaluation
+              : null
+          }
+        />
+
         <section aria-labelledby="replay-telemetry-title">
-          <div className="flex items-center gap-2">
-            <Gauge aria-hidden="true" className="text-accent" size={15} />
-            <h4
-              className="font-mono text-[0.64rem] tracking-[0.12em] text-[#b8c7ca] uppercase"
-              id="replay-telemetry-title"
-            >
-              Synchronized Telemetry
-            </h4>
-          </div>
-          <dl className="mt-3 grid divide-y divide-white/8 overflow-hidden rounded-xl border border-white/10 bg-[#071116] sm:grid-cols-2 sm:divide-x xl:grid-cols-5">
+          <h4 className="orbix-h4 text-foreground" id="replay-telemetry-title">
+            Values for this mission
+          </h4>
+          <dl className="mt-2 grid gap-x-8 sm:grid-cols-2">
             <ReplayTelemetry label="Active phase" value={activePhase.label} />
             <ReplayTelemetry
               label="Total delta-v"
@@ -455,17 +392,17 @@ export function MissionReplay({
           </dl>
         </section>
 
-        {reducedMotion ? (
-          <p className="rounded-lg border border-white/10 bg-white/3 px-3 py-2 text-xs text-[#85999e]">
-            Reduced motion mode is active. Phase updates remain discrete and
-            decorative motion is suppressed by system preferences.
-          </p>
-        ) : null}
+        <p className="text-sm leading-6 text-muted">
+          Play steps through the phases one at a time and stops at the end.
+          {reducedMotion
+            ? " Reduced motion is on, so each phase is held longer and nothing animates between phases."
+            : " Nothing animates between phases."}
+        </p>
       </div>
 
       <p aria-live="polite" className="sr-only" role="status">
-        Mission replay phase changed to {activePhase.label}. Spacecraft status:{" "}
-        {activePhase.statusLabel}.
+        Mission replay phase changed to {activePhase.label}.{" "}
+        {state.isPlaying ? "Playing." : "Paused."}
       </p>
     </section>
   );

@@ -1,33 +1,25 @@
-import { AnalysisPreview } from "@/features/home/components/analysis-preview";
-import { FinalCta } from "@/features/home/components/final-cta";
+import { FeaturedRecords } from "@/features/home/components/featured-records";
 import { Hero } from "@/features/home/components/hero";
-import { MissionPreview } from "@/features/home/components/mission-preview";
-import { ResearchPreview } from "@/features/home/components/research-preview";
-import { VehicleSystems } from "@/features/home/components/vehicle-systems";
+import { SiteSections } from "@/features/home/components/site-sections";
+import { SourcingNote } from "@/features/home/components/sourcing-note";
 
 /**
- * Homepage narrative:
+ * Homepage (spec 14, Home):
  *
- *   hero              what ORBIX is
- *   vehicle systems   what you can explore   -> /aircraft, /rockets
- *   analysis          what you can analyse   -> /compare, /engineering-lab
- *   mission           what you can watch     -> Mission Control
- *   research          what you can learn     -> /learn
- *   final             where to go next       -> /rockets, /compare
- *
- * Each section has a different composition — full-bleed media, a card row,
- * two editorial columns, a split with a backdrop, an index, a quiet close —
- * so the page does not read as one repeated card grid.
+ *   intro              what ORBIX is, two destinations, one credited photo
+ *   what is here       plain list of every section of the site
+ *   featured records   three record cards from the registries
+ *   sourcing           how vehicle values are sourced, and their limits
  */
 export function HomePage() {
   return (
     <>
       <Hero />
-      <VehicleSystems />
-      <AnalysisPreview />
-      <MissionPreview />
-      <ResearchPreview />
-      <FinalCta />
+      <div className="flex flex-col gap-12 py-12 sm:gap-16 sm:py-16">
+        <SiteSections />
+        <FeaturedRecords />
+        <SourcingNote />
+      </div>
     </>
   );
 }

@@ -55,7 +55,7 @@ const preset: MissionPreset = {
 };
 
 describe("MissionBriefing", () => {
-  it("renders the mission title and premium briefing structure", () => {
+  it("renders the mission title and briefing structure", () => {
     const markup = renderToStaticMarkup(
       <MissionBriefing
         insights={insights}
@@ -65,12 +65,11 @@ describe("MissionBriefing", () => {
       />,
     );
 
-    expect(markup).toContain("Mission profile // Executive briefing");
     expect(markup).toContain("Mission Briefing Integration Test");
-    expect(markup).toContain("Mission Overview");
-    expect(markup).toContain("Mission Objectives");
-    expect(markup).toContain("Engineering Summary");
-    expect(markup).toContain("Mission Architecture Timeline");
+    expect(markup).toContain("Mission overview");
+    expect(markup).toContain("Mission objectives");
+    expect(markup).toContain("Engineering summary");
+    expect(markup).toContain("Typical mission phases");
   });
 
   it("displays category and presentation-only mission status", () => {
@@ -79,7 +78,6 @@ describe("MissionBriefing", () => {
     );
 
     expect(markup).toContain("Orbital logistics");
-    expect(markup).toContain("Simulation review");
     expect(markup).toContain("Educational mission");
     expect(markup).toContain("does not assess mission feasibility");
   });
@@ -126,7 +124,7 @@ describe("MissionBriefing", () => {
     expect(markup).toContain("Launch");
     expect(markup).toContain("Orbit insertion");
     expect(markup).toContain("Recovery review");
-    expect(markup).toContain("Not simulated");
+    expect(markup).toContain("Not simulated; shown for context only");
   });
 
   it("handles missions without optional report, preset, or insight data", () => {
@@ -139,10 +137,10 @@ describe("MissionBriefing", () => {
     expect(markup).toContain("Custom educational mission");
     expect(markup).toContain("no optional analysis systems reported");
     expect(markup).toContain("Not reported");
-    expect(markup).not.toContain("Engineering Briefing Notes");
+    expect(markup).not.toContain("Engineering notes");
   });
 
-  it("provides semantic labels, live status, and reduced-motion fallbacks", () => {
+  it("provides semantic labels, ordered phases, and no decorative motion", () => {
     const markup = renderToStaticMarkup(
       <MissionBriefing missionProfile={missionProfile} report={report} />,
     );
@@ -150,10 +148,7 @@ describe("MissionBriefing", () => {
     expect(markup).toContain(
       'aria-label="Mission briefing for Mission Briefing Integration Test"',
     );
-    expect(markup).toContain('aria-live="polite"');
-    expect(markup).toContain('role="status"');
     expect(markup).toContain("<ol");
-    expect(markup).toContain("motion-reduce:animate-none");
-    expect(markup).toContain("motion-reduce:transition-none");
+    expect(markup).not.toContain("animate-");
   });
 });

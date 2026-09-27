@@ -4,21 +4,13 @@ import {
   useEffect,
   useReducer,
   useRef,
-  useState,
   type KeyboardEvent,
   type ReactNode,
 } from "react";
-import {
-  Activity,
-  CheckCircle2,
-  Compass,
-  Orbit,
-  Plane,
-  Radar,
-  Rocket,
-  ShieldCheck,
-} from "lucide-react";
+import { RotateCcw } from "lucide-react";
 
+import { Button } from "@/components/ui/button";
+import { EmptyState } from "@/components/ui/empty-state";
 import type { MissionScenario } from "@/features/engineering-lab/missions";
 import type {
   MissionInsightsAnalysis,
@@ -34,12 +26,12 @@ import { DemoNavigation } from "./demo-navigation";
 import { DEMO_STEPS, DemoStep } from "./demo-step";
 import { MissionBriefing } from "./mission-briefing";
 import { MissionShowcase } from "./mission-showcase";
+import { formatLabValue } from "../visualization/format-lab-value";
 
 export interface DemoModeProps {
   readonly insights?: MissionInsightsAnalysis;
   readonly missionProfile?: MissionProfileAnalysis;
   readonly missionScenario?: MissionScenario;
-  readonly reducedMotionOverride?: boolean;
   readonly report?: MissionReport;
 }
 
@@ -69,10 +61,6 @@ const categoryLabels: Readonly<Record<MissionPresetCategory, string>> = {
   "reentry-demonstration": "Reentry demonstration",
 };
 
-const valueFormatter = new Intl.NumberFormat("en-US", {
-  maximumFractionDigits: 2,
-});
-
 export function demoModeReducer(
   state: DemoModeState,
   action: DemoModeAction,
@@ -97,22 +85,6 @@ export function demoModeReducer(
   };
 }
 
-function useReducedMotion(override: boolean | undefined) {
-  const [reducedMotion, setReducedMotion] = useState(override ?? false);
-
-  useEffect(() => {
-    if (override !== undefined || typeof window === "undefined") return;
-
-    const query = window.matchMedia("(prefers-reduced-motion: reduce)");
-    const updatePreference = () => setReducedMotion(query.matches);
-    updatePreference();
-    query.addEventListener("change", updatePreference);
-    return () => query.removeEventListener("change", updatePreference);
-  }, [override]);
-
-  return reducedMotion;
-}
-
 function DemoMetric({
   label,
   unit,
@@ -123,19 +95,23 @@ function DemoMetric({
   readonly value?: number | string;
 }) {
   return (
-    <div className="rounded-xl border border-white/10 bg-surface p-4">
-      <dt className="font-mono text-[0.55rem] tracking-[0.11em] text-muted uppercase">
-        {label}
-      </dt>
-      <dd className="mt-2">
-        <output className="font-mono text-sm font-semibold text-foreground">
+    <div className="flex items-baseline justify-between gap-4 border-t border-border-subtle py-2 text-sm">
+      <dt className="text-muted">{label}</dt>
+      <dd className="text-right">
+        <output
+          className={
+            value === undefined
+              ? "text-muted"
+              : typeof value === "number"
+                ? "orbix-data text-foreground"
+                : "text-foreground"
+          }
+        >
           {typeof value === "number"
-            ? valueFormatter.format(value)
+            ? formatLabValue(value)
             : (value ?? "Not reported")}
           {value !== undefined && unit ? (
-            <span className="ml-1 text-[0.64rem] font-normal text-muted">
-              {unit}
-            </span>
+            <span className="ml-1 text-muted">{unit}</span>
           ) : null}
         </output>
       </dd>
@@ -145,9 +121,7 @@ function DemoMetric({
 
 function EmptyPanel({ children }: { readonly children: ReactNode }) {
   return (
-    <div className="rounded-xl border border-dashed border-white/15 bg-black/10 px-5 py-9 text-center text-sm leading-6 text-muted">
-      {children}
-    </div>
+    <p className="orbix-empty-state text-sm leading-6 text-muted">{children}</p>
   );
 }
 
@@ -155,17 +129,19 @@ export function DemoMode({
   insights,
   missionProfile,
   missionScenario,
-  reducedMotionOverride,
   report,
 }: DemoModeProps) {
-  const [state, dispatch] = useReducer(
+  const [state, dispatchState] = useReducer(
     demoModeReducer,
     INITIAL_DEMO_MODE_STATE,
   );
-  const reducedMotion = useReducedMotion(reducedMotionOverride);
   const stepFocusRef = useRef<HTMLElement>(null);
   const statusFocusRef = useRef<HTMLDivElement>(null);
-  const hasMountedRef = useRef(false);
+  // Focus moves only after the reader acts (Next, Back, Restart, Skip, or the
+  // step keys). Tying it to a user action, not to "not the first render",
+  // keeps it correct under StrictMode's double effects: merely opening the
+  // workspace never pulls focus out of the tab that opened it.
+  const pendingFocusRef = useRef(false);
   const activeStep = DEMO_STEPS[state.currentStepIndex] ?? DEMO_STEPS[0];
   const missionName =
     missionProfile?.missionName ??
@@ -192,11 +168,14 @@ export function DemoMode({
     missionProfile?.selectedVehicleRecommendation?.vehicle;
   const comparison = missionProfile?.sourceAnalyses.vehicleComparison;
 
+  function dispatch(action: Parameters<typeof dispatchState>[0]) {
+    pendingFocusRef.current = true;
+    dispatchState(action);
+  }
+
   useEffect(() => {
-    if (!hasMountedRef.current) {
-      hasMountedRef.current = true;
-      return;
-    }
+    if (!pendingFocusRef.current) return;
+    pendingFocusRef.current = false;
 
     if (state.status === "active") {
       stepFocusRef.current?.focus();
@@ -206,7 +185,9 @@ export function DemoMode({
   }, [state.currentStepIndex, state.status]);
 
   function handleKeyboard(event: KeyboardEvent<HTMLElement>) {
-    if (event.target !== event.currentTarget) return;
+    const target = event.target as HTMLElement;
+    // Leave arrow keys to form controls and links inside a step.
+    if (target.closest("input, select, textarea, button, a, summary")) return;
 
     if (event.key === "ArrowRight") {
       event.preventDefault();
@@ -229,23 +210,25 @@ export function DemoMode({
   function renderStepContent() {
     if (activeStep.id === "mission-concept") {
       return (
-        <div className="grid gap-4 lg:grid-cols-[minmax(0,1.3fr)_minmax(16rem,0.7fr)]">
-          <section className="rounded-xl border border-accent/20 bg-accent/5 p-5">
-            <p className="font-mono text-[0.58rem] tracking-[0.14em] text-accent uppercase">
+        <div className="grid gap-6 lg:grid-cols-[minmax(0,1.3fr)_minmax(16rem,0.7fr)]">
+          <section aria-labelledby="demo-objective-title">
+            <p className="orbix-label" id="demo-objective-title">
               Mission objective
             </p>
-            <h4 className="mt-2 text-2xl font-semibold">{missionName}</h4>
-            <p className="mt-3 text-sm leading-6 text-muted">
+            <p className="mt-1 text-base font-semibold text-foreground">
+              {missionName}
+            </p>
+            <p className="mt-2 max-w-[68ch] text-sm leading-6 text-text-secondary">
               {report?.missionAssessment.educationalSummary ??
                 missionDescription}
             </p>
           </section>
-          <dl className="grid gap-3">
+          <dl>
             <DemoMetric label="Mission category" value={missionCategory} />
-            <DemoMetric
-              label="Scenario description"
-              value={missionDescription}
-            />
+            <div className="border-t border-border-subtle py-2 text-sm">
+              <dt className="text-muted">Scenario description</dt>
+              <dd className="mt-1 text-foreground">{missionDescription}</dd>
+            </div>
           </dl>
         </div>
       );
@@ -253,44 +236,36 @@ export function DemoMode({
 
     if (activeStep.id === "mission-architecture") {
       return (
-        <div className="space-y-5">
+        <div className="space-y-6">
           <section aria-labelledby="demo-selected-systems-title">
-            <h4
-              className="font-mono text-[0.62rem] tracking-[0.12em] text-accent uppercase"
+            <h5
+              className="text-sm font-semibold text-foreground"
               id="demo-selected-systems-title"
             >
               Selected systems
-            </h4>
+            </h5>
             {systems.length ? (
-              <ul className="mt-3 flex flex-wrap gap-2">
+              <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-text-secondary">
                 {systems.map((system) => (
-                  <li
-                    className="text-muted-strong flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-2 text-xs"
-                    key={system}
-                  >
-                    <CheckCircle2
-                      aria-hidden="true"
-                      className="text-accent"
-                      size={13}
-                    />
-                    {system}
-                  </li>
+                  <li key={system}>{system}</li>
                 ))}
               </ul>
             ) : (
-              <p className="mt-3 text-sm text-muted">
+              <p className="mt-2 text-sm text-muted">
                 No integrated systems were supplied.
               </p>
             )}
           </section>
 
-          <div className="grid gap-4 lg:grid-cols-2">
-            <section className="rounded-xl border border-white/10 bg-surface p-5">
-              <h4 className="flex items-center gap-2 text-sm font-semibold">
-                <Orbit aria-hidden="true" className="text-accent" size={16} />
+          <div className="grid gap-x-8 gap-y-6 lg:grid-cols-2">
+            <section aria-labelledby="demo-orbital-design-title">
+              <h5
+                className="text-sm font-semibold text-foreground"
+                id="demo-orbital-design-title"
+              >
                 Orbital design
-              </h4>
-              <dl className="mt-4 grid gap-3 sm:grid-cols-2">
+              </h5>
+              <dl className="mt-2">
                 <DemoMetric
                   label="Initial altitude"
                   unit="m"
@@ -303,12 +278,14 @@ export function DemoMode({
                 />
               </dl>
             </section>
-            <section className="rounded-xl border border-white/10 bg-surface p-5">
-              <h4 className="flex items-center gap-2 text-sm font-semibold">
-                <Plane aria-hidden="true" className="text-accent" size={16} />
+            <section aria-labelledby="demo-vehicle-configuration-title">
+              <h5
+                className="text-sm font-semibold text-foreground"
+                id="demo-vehicle-configuration-title"
+              >
                 Vehicle configuration
-              </h4>
-              <dl className="mt-4 grid gap-3 sm:grid-cols-2">
+              </h5>
+              <dl className="mt-2">
                 <DemoMetric label="Vehicle" value={vehicle?.vehicleName} />
                 <DemoMetric
                   label="Vehicle mass"
@@ -333,7 +310,7 @@ export function DemoMode({
 
     if (activeStep.id === "engineering-analysis") {
       return (
-        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <dl className="grid gap-x-8 sm:grid-cols-2">
           <DemoMetric
             label="Mission delta-v"
             unit="m/s"
@@ -356,24 +333,13 @@ export function DemoMode({
               evaluation?.summary.thermal.peakHeatFluxKilowattsPerSquareMetre
             }
           />
-        </div>
+        </dl>
       );
     }
 
     if (activeStep.id === "mission-visualization") {
       return (
-        <div className="space-y-5">
-          <div className="grid gap-3 sm:grid-cols-3">
-            <DemoMetric label="Workspace" value="Mission Control" />
-            <DemoMetric
-              label="Orbit view"
-              value={missionProfile ? "Available" : "Not supplied"}
-            />
-            <DemoMetric
-              label="Reentry view"
-              value={evaluation ? "Available" : "Not supplied"}
-            />
-          </div>
+        <div className="space-y-6">
           <MissionOrbitVisualization analysis={missionProfile} />
           <ReentryProfileVisualization analysis={evaluation} />
         </div>
@@ -382,10 +348,10 @@ export function DemoMode({
 
     if (activeStep.id === "engineering-review") {
       return (
-        <div className="space-y-5">
-          <dl className="grid gap-3 sm:grid-cols-2">
+        <div className="space-y-6">
+          <dl className="grid gap-x-8 sm:grid-cols-2">
             <DemoMetric
-              label="Trade-study vehicles"
+              label="Vehicles compared"
               value={comparison?.comparisonMetadata.vehiclesCompared}
             />
             <DemoMetric
@@ -395,34 +361,30 @@ export function DemoMode({
           </dl>
           <MissionInsightsPanel analysis={insights} />
           {report ? (
-            <div className="grid gap-4 lg:grid-cols-2">
-              <section className="rounded-xl border border-white/10 bg-surface p-5">
-                <h4 className="font-mono text-[0.61rem] tracking-[0.12em] text-accent uppercase">
+            <div className="grid gap-6 lg:grid-cols-2">
+              <section aria-labelledby="demo-assumptions-title">
+                <h5
+                  className="text-sm font-semibold text-foreground"
+                  id="demo-assumptions-title"
+                >
                   Assumptions
-                </h4>
-                <ul className="mt-3 space-y-2 text-xs leading-5 text-muted">
+                </h5>
+                <ul className="mt-2 list-disc space-y-1 pl-5 text-sm leading-6 text-muted">
                   {report.missionAssessment.modelAssumptions.map((item) => (
-                    <li className="flex gap-2" key={item}>
-                      <span aria-hidden="true" className="text-accent">
-                        —
-                      </span>
-                      {item}
-                    </li>
+                    <li key={item}>{item}</li>
                   ))}
                 </ul>
               </section>
-              <section className="rounded-xl border border-signal/20 bg-signal/5 p-5">
-                <h4 className="font-mono text-[0.61rem] tracking-[0.12em] text-signal uppercase">
-                  Limitations
-                </h4>
-                <ul className="mt-3 space-y-2 text-xs leading-5 text-muted">
+              <section aria-labelledby="demo-limitations-title">
+                <h5
+                  className="text-sm font-semibold text-foreground"
+                  id="demo-limitations-title"
+                >
+                  Limits
+                </h5>
+                <ul className="mt-2 list-disc space-y-1 pl-5 text-sm leading-6 text-muted">
                   {report.missionAssessment.limitations.map((item) => (
-                    <li className="flex gap-2" key={item}>
-                      <span aria-hidden="true" className="text-signal">
-                        —
-                      </span>
-                      {item}
-                    </li>
+                    <li key={item}>{item}</li>
                   ))}
                 </ul>
               </section>
@@ -442,7 +404,6 @@ export function DemoMode({
         <MissionShowcase
           insights={insights}
           missionProfile={missionProfile}
-          reducedMotionOverride={reducedMotion}
           report={report}
         />
       </div>
@@ -457,73 +418,39 @@ export function DemoMode({
     <article
       aria-describedby="demo-mode-keyboard-help"
       aria-label={`Orbix guided demo for ${missionName}`}
-      className="technical-grid overflow-hidden rounded-2xl border border-white/12 bg-surface text-foreground shadow-[0_30px_90px_rgba(0,0,0,0.3)] outline-none focus-visible:ring-2 focus-visible:ring-accent"
-      data-reduced-motion={reducedMotion ? "true" : "false"}
+      className="min-w-0 text-foreground"
       onKeyDown={handleKeyboard}
-      tabIndex={0}
     >
-      <header className="relative overflow-hidden border-b border-white/10 px-5 py-8 sm:px-8">
-        <div
-          aria-hidden="true"
-          className="absolute -top-24 right-0 h-72 w-72 rounded-full bg-accent/8 blur-3xl"
-        />
-        <div className="relative flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
-          <div>
-            <p className="flex items-center gap-2 font-mono text-[0.62rem] tracking-[0.2em] text-accent uppercase">
-              <Compass aria-hidden="true" size={15} />
-              ORBIX Demo Mode // Guided experience
-            </p>
-            <h2 className="mt-3 max-w-4xl text-3xl font-semibold tracking-[-0.04em] sm:text-4xl">
-              Welcome to Orbix
-            </h2>
-            <p className="mt-3 max-w-3xl text-sm leading-6 text-muted">
-              This walkthrough demonstrates how an aerospace mission moves from
-              concept to analysis, visualization, engineering review, and
-              presentation.
-            </p>
-          </div>
-          <div className="flex items-center gap-2 rounded-xl border border-signal/20 bg-signal/5 px-4 py-3 text-signal">
-            <ShieldCheck aria-hidden="true" size={16} />
-            <span className="font-mono text-[0.6rem] tracking-[0.09em] uppercase">
-              Presentation only
-            </span>
-          </div>
-        </div>
+      <header className="border-b border-border-subtle pb-4">
+        <h3 className="orbix-h3 text-foreground">Guided tour of a mission</h3>
+        <p className="mt-2 max-w-[68ch] text-sm leading-6 text-muted">
+          Six steps that follow one example mission from concept to analysis,
+          diagrams, review and presentation. The tour only shows results that
+          already exist; it runs no new analysis.
+        </p>
       </header>
 
-      <div className="space-y-6 p-5 sm:p-8">
+      <div className="space-y-6 pt-6">
         <ol
           aria-label="Orbix demo steps"
-          className="grid gap-2 sm:grid-cols-3 xl:grid-cols-6"
+          className="grid gap-x-4 gap-y-1 text-sm sm:grid-cols-3 xl:grid-cols-6"
         >
           {DEMO_STEPS.map((step, index) => {
-            const Icon = step.icon;
             const isActive =
               state.status === "active" && index === state.currentStepIndex;
-            const isVisited = index < state.currentStepIndex;
 
             return (
               <li
                 aria-current={isActive ? "step" : undefined}
                 className={
-                  "rounded-xl border px-3 py-3 transition-colors motion-reduce:transition-none " +
-                  (isActive
-                    ? "border-accent/45 bg-accent/10 text-accent"
-                    : isVisited
-                      ? "text-muted-strong border-white/12 bg-white/5"
-                      : "border-white/8 bg-black/10 text-muted")
+                  isActive
+                    ? "border-b-2 border-accent py-2 font-medium text-foreground"
+                    : "border-b-2 border-border py-2 text-muted"
                 }
                 key={step.id}
               >
-                <span className="flex items-center justify-between gap-2">
-                  <span className="font-mono text-[0.54rem] tracking-[0.1em]">
-                    {String(index + 1).padStart(2, "0")}
-                  </span>
-                  <Icon aria-hidden="true" size={13} />
-                </span>
-                <span className="mt-2 block font-mono text-[0.58rem] font-semibold tracking-[0.07em] uppercase">
-                  {step.shortLabel}
-                </span>
+                <span className="orbix-data mr-2">{index + 1}</span>
+                {step.shortLabel}
               </li>
             );
           })}
@@ -548,56 +475,39 @@ export function DemoMode({
             />
           </>
         ) : (
-          <div
-            className="rounded-2xl border border-accent/25 bg-accent/5 px-6 py-12 text-center outline-none focus-visible:ring-2 focus-visible:ring-accent"
-            ref={statusFocusRef}
-            tabIndex={-1}
-          >
-            {state.status === "complete" ? (
-              <CheckCircle2
-                aria-hidden="true"
-                className="mx-auto text-accent"
-                size={30}
-              />
-            ) : (
-              <Rocket
-                aria-hidden="true"
-                className="mx-auto text-signal"
-                size={30}
-              />
-            )}
-            <h3 className="mt-4 text-2xl font-semibold">
-              {state.status === "complete"
-                ? "Guided review complete"
-                : "Demo tour skipped"}
-            </h3>
-            <p className="mx-auto mt-3 max-w-xl text-sm leading-6 text-muted">
-              {state.status === "complete"
-                ? "You have reviewed the complete Orbix mission workflow using supplied educational outputs."
-                : "No mission data was changed. Restart whenever you want to resume the guided experience."}
-            </p>
-            <button
-              aria-label="Restart Orbix demo tour"
-              className="mt-6 inline-flex min-h-10 items-center gap-2 rounded-lg border border-accent/35 bg-accent/12 px-4 py-2 text-xs font-semibold text-accent outline-none hover:bg-accent/18 focus-visible:ring-2 focus-visible:ring-accent motion-reduce:transition-none"
-              onClick={() => dispatch({ type: "restart" })}
-              type="button"
-            >
-              <Radar aria-hidden="true" size={14} />
-              Restart guided tour
-            </button>
+          <div ref={statusFocusRef} tabIndex={-1} className="outline-none">
+            <EmptyState
+              action={
+                <Button
+                  aria-label="Restart Orbix demo tour"
+                  onClick={() => dispatch({ type: "restart" })}
+                  variant="secondary"
+                >
+                  <RotateCcw aria-hidden="true" size={16} />
+                  Restart guided tour
+                </Button>
+              }
+              description={
+                state.status === "complete"
+                  ? "You have seen every step of the mission workflow using the example results."
+                  : "No mission data was changed. Restart the tour whenever you like."
+              }
+              title={
+                state.status === "complete"
+                  ? "Guided review complete"
+                  : "Demo tour skipped"
+              }
+            />
           </div>
         )}
 
-        {reducedMotion ? (
-          <p className="rounded-lg border border-white/10 bg-white/3 px-3 py-2 text-xs text-muted">
-            Reduced motion mode is active. Guided content changes without
-            decorative motion.
-          </p>
-        ) : null}
-
-        <p className="sr-only" id="demo-mode-keyboard-help">
-          Focus the demo region and use left or right arrow keys to change
-          steps, Home to restart, and Escape to skip the tour.
+        <p
+          className="text-sm leading-6 text-muted"
+          id="demo-mode-keyboard-help"
+        >
+          Use the buttons to move between steps. With focus inside the tour but
+          not on a control, the left and right arrow keys change steps, Home
+          restarts and Escape skips the tour.
         </p>
         <p aria-live="polite" className="sr-only" role="status">
           {state.status === "active"
@@ -606,13 +516,6 @@ export function DemoMode({
               ? "Orbix guided demo complete."
               : "Orbix guided demo skipped."}
         </p>
-
-        <footer className="flex items-start gap-3 border-t border-white/10 pt-6 text-xs leading-5 text-muted">
-          <Activity aria-hidden="true" className="mt-0.5 shrink-0" size={14} />
-          Demo Mode navigates supplied objects only. It does not generate a
-          mission, execute analysis, alter vehicle or TPS state, or assess
-          mission feasibility.
-        </footer>
       </div>
     </article>
   );

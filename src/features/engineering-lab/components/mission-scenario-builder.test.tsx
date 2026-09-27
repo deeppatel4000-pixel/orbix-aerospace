@@ -48,7 +48,7 @@ describe("MissionScenarioBuilder", () => {
     expect(markup).toContain('aria-invalid="false"');
     expect(markup).toContain('aria-live="polite"');
     expect(markup).toContain('role="status"');
-    expect(markup).toContain("Analyze Mission");
+    expect(markup).toContain("Analyze mission");
     expect(markup).toContain("Reset scenario");
   });
 
@@ -56,7 +56,7 @@ describe("MissionScenarioBuilder", () => {
     const markup = renderToStaticMarkup(<MissionScenarioBuilder />);
 
     expect(markup).toContain(
-      "This workstation creates the existing mission-profile input object.",
+      "This builder creates the existing mission-profile input object.",
     );
     expect(markup).toContain(
       "Engineering calculations begin only inside the Mission Profile Analyzer",

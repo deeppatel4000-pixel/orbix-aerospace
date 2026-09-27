@@ -1,10 +1,9 @@
-import { CircleDot } from "lucide-react";
-
 import type {
   MissionProfileAnalysis,
   MissionReport,
   VehicleReentryEvaluationAnalysis,
 } from "@/features/engineering-lab/types";
+import { formatLabValue } from "./format-lab-value";
 
 export interface MissionControlStatusBarProps {
   readonly missionProfileAnalysis?: MissionProfileAnalysis | null;
@@ -18,25 +17,25 @@ interface StatusBarItemProps {
   readonly value?: number | string;
 }
 
-const statusNumberFormatter = new Intl.NumberFormat("en-US", {
-  maximumFractionDigits: 2,
-});
-
 function StatusBarItem({ label, unit, value }: StatusBarItemProps) {
   return (
-    <div className="min-w-40 shrink-0 border-l border-white/[0.07] px-4 py-3 xl:min-w-0 xl:border-l">
-      <dt className="font-mono text-[0.49rem] tracking-[0.15em] text-[#657b81] uppercase">
-        {label}
-      </dt>
-      <dd className="mt-1.5 truncate">
-        <output className="font-mono text-[0.7rem] font-semibold tracking-[0.02em] text-[#d6e2e4]">
+    <div className="min-w-0 py-2">
+      <dt className="text-sm text-muted">{label}</dt>
+      <dd className="mt-0.5 break-words">
+        <output
+          className={
+            value === undefined
+              ? "text-sm text-muted"
+              : typeof value === "number"
+                ? "orbix-data text-foreground"
+                : "text-sm text-foreground"
+          }
+        >
           {typeof value === "number"
-            ? statusNumberFormatter.format(value)
-            : (value ?? "Not Reported")}
+            ? formatLabValue(value)
+            : (value ?? "Not reported")}
           {value !== undefined && unit ? (
-            <span className="ml-1 text-[0.55rem] font-normal tracking-[0.06em] text-[#71878c] uppercase">
-              {unit}
-            </span>
+            <span className="ml-1 text-muted">{unit}</span>
           ) : null}
         </output>
       </dd>
@@ -44,6 +43,11 @@ function StatusBarItem({ label, unit, value }: StatusBarItemProps) {
   );
 }
 
+/**
+ * The key values for the loaded mission, repeated under every workspace.
+ * These are computed results, not live data, so nothing here pulses or
+ * claims a link state.
+ */
 export function MissionControlStatusBar({
   missionProfileAnalysis,
   missionReport,
@@ -63,49 +67,16 @@ export function MissionControlStatusBar({
   const tpsMaterial =
     missionReport?.thermalAnalysis?.tpsRecommendation?.material.name ??
     vehicleReentryEvaluation?.summary.tps.recommendedMaterial.name;
-  const telemetryLinked = Boolean(
-    missionProfileAnalysis || missionReport || vehicleReentryEvaluation,
-  );
-  const telemetryLabel = telemetryLinked ? "Linked" : "Standby";
 
   return (
     <footer
-      aria-label="Mission telemetry status bar"
-      className="relative z-20 border-t border-[#294451]/70 bg-[#02090d]/96 shadow-[0_-18px_44px_rgba(0,0,0,0.32)] backdrop-blur-xl xl:sticky xl:bottom-0"
+      aria-label="Mission summary"
+      className="border-t border-border-subtle py-2"
     >
-      <dl
-        aria-label="Persistent mission telemetry. Scroll horizontally to review all reported values."
-        className="flex [scrollbar-color:rgba(108,230,255,0.28)_transparent] overflow-x-auto px-1 outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-inset xl:grid xl:grid-cols-[10rem_repeat(5,minmax(0,1fr))] xl:items-center xl:overflow-visible xl:px-8"
-        tabIndex={0}
-      >
-        <div className="flex min-w-40 shrink-0 items-center px-4 py-3 xl:min-w-0 xl:px-0 xl:pr-5">
-          <dt className="sr-only">Persistent mission telemetry</dt>
-          <dd className="flex items-center gap-2.5">
-            <CircleDot
-              aria-hidden="true"
-              className={
-                telemetryLinked
-                  ? "text-accent motion-safe:animate-pulse motion-reduce:animate-none"
-                  : "text-[#60767c]"
-              }
-              size={13}
-            />
-            <span
-              className={
-                "font-mono text-[0.53rem] tracking-[0.12em] uppercase " +
-                (telemetryLinked ? "text-accent" : "text-[#71878c]")
-              }
-            >
-              Telemetry // {telemetryLabel}
-            </span>
-          </dd>
-        </div>
+      <h3 className="sr-only">Mission summary: computed values</h3>
+      <dl className="grid grid-cols-2 gap-x-6 sm:grid-cols-3 xl:grid-cols-5">
         <StatusBarItem label="Mission" value={missionName} />
-        <StatusBarItem
-          label="Systems resolved"
-          unit="active"
-          value={systemsResolved}
-        />
+        <StatusBarItem label="Analyses resolved" value={systemsResolved} />
         <StatusBarItem label="Delta-v" unit="m/s" value={deltaV} />
         <StatusBarItem label="Vehicle" value={vehicleName} />
         <StatusBarItem label="TPS" value={tpsMaterial} />

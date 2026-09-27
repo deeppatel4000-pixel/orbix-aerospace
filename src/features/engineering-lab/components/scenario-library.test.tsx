@@ -42,7 +42,7 @@ describe("ScenarioLibrary", () => {
     expect(markup).toContain("Saved educational scenarios");
     expect(markup).toContain("Saved Deployment Scenario");
     expect(markup).toContain("An accessible saved scenario fixture.");
-    expect(markup).toContain("Orbital Deployment");
+    expect(markup).toContain("Orbital deployment");
     expect(markup).toContain("Delta-v budget");
     expect(markup).toContain("Created");
     expect(markup).toContain("Updated");
@@ -65,7 +65,11 @@ describe("ScenarioLibrary", () => {
     const markup = renderLibrary([]);
 
     expect(markup).toContain("No saved mission scenarios");
-    expect(markup).toContain("Configure and analyze a mission in Module 28");
+    expect(markup).toContain(
+      "Configure and analyze a mission in the mission scenario builder",
+    );
+    expect(markup).toContain("orbix-empty-state");
+    expect(markup).not.toContain('aria-label="Saved mission scenarios"');
   });
 
   it("provides accessible library and live-announcement semantics", () => {
@@ -76,7 +80,10 @@ describe("ScenarioLibrary", () => {
     expect(markup).toContain('role="listitem"');
     expect(markup).toContain('aria-live="polite"');
     expect(markup).toContain('role="status"');
-    expect(markup).toContain("Save Current Mission");
+    expect(markup).toContain("Save current mission");
+    expect(markup).toContain(
+      "To enable saving, open the mission scenario builder",
+    );
     expect(markup).toContain('disabled=""');
   });
 });

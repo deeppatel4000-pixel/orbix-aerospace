@@ -1,7 +1,9 @@
 "use client";
 
+import { Button, Tag } from "@/components/ui";
 import { useMemo, useRef, useState, type FormEvent } from "react";
 import {
+  CircleAlert,
   AlertTriangle,
   Award,
   Flame,
@@ -14,7 +16,10 @@ import {
 import { analyzeVehicleReentryComparison } from "@/features/engineering-lab/analysis";
 import {
   CalculatorNumberField,
+  focusFirstInvalidField,
+  focusFirstInvalidFieldOnEnter,
   CalculatorResultSection,
+  NotCalculated,
   ValidationErrorSummary,
 } from "@/features/engineering-lab/components/shared";
 import type {
@@ -345,15 +350,16 @@ function OptionalNumberField({
 
   return (
     <div>
-      <label className="text-sm font-semibold" htmlFor={inputId}>
+      <label className="orbix-field__label block" htmlFor={inputId}>
         {label}
+        <span className="sr-only"> ({unit})</span>
       </label>
-      <div className="relative mt-2">
+      <div className="orbix-field__control mt-2">
         <input
           aria-describedby={error ? hintId + " " + errorId : hintId}
           aria-errormessage={error ? errorId : undefined}
           aria-invalid={Boolean(error)}
-          className="min-h-12 w-full rounded-xl border border-border bg-background/55 px-4 py-3 pr-20 font-mono text-base text-foreground transition-colors outline-none placeholder:text-muted/55 focus:border-accent focus:ring-2 focus:ring-accent/15"
+          className="orbix-input"
           id={inputId}
           inputMode="decimal"
           max={max}
@@ -363,15 +369,16 @@ function OptionalNumberField({
           type="number"
           value={value}
         />
-        <span className="pointer-events-none absolute top-1/2 right-4 -translate-y-1/2 font-mono text-xs text-muted">
+        <span aria-hidden="true" className="orbix-field__unit">
           {unit}
         </span>
       </div>
-      <p className="mt-2 text-xs leading-5 text-muted" id={hintId}>
+      <p className="orbix-field__help mt-2" id={hintId}>
         {hint}
       </p>
       {error ? (
-        <p className="mt-1.5 text-xs leading-5 text-signal" id={errorId}>
+        <p className="orbix-field__error mt-1" id={errorId}>
+          <CircleAlert aria-hidden="true" className="shrink-0" size={14} />
           {error}
         </p>
       ) : null}
@@ -444,6 +451,7 @@ export function VehicleReentryComparisonAnalyzer() {
 
   function preventSubmission(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    focusFirstInvalidField(event.currentTarget);
   }
 
   function resetAnalyzer() {
@@ -454,9 +462,13 @@ export function VehicleReentryComparisonAnalyzer() {
   return (
     <div className="grid gap-8 xl:grid-cols-[minmax(0,0.92fr)_minmax(34rem,1.08fr)] xl:gap-10">
       <div>
-        <form noValidate onSubmit={preventSubmission}>
+        <form
+          noValidate
+          onKeyDown={focusFirstInvalidFieldOnEnter}
+          onSubmit={preventSubmission}
+        >
           <fieldset>
-            <legend className="orbix-label text-accent">
+            <legend className="text-base font-semibold text-foreground">
               Shared reentry conditions
             </legend>
             <div className="mt-5 grid gap-5 sm:grid-cols-2">
@@ -521,10 +533,10 @@ export function VehicleReentryComparisonAnalyzer() {
                 error={errors.shared.heatingCoefficient}
                 field="heatingCoefficient"
                 hint="Leave blank to use the heating calculator's educational default."
-                label="Heating coefficient"
+                label="Heating coefficient k (optional)"
                 min={0}
                 onChange={updateSharedValue}
-                unit="k"
+                unit="kg½/m"
                 value={values.heatingCoefficient}
               />
             </div>
@@ -536,7 +548,7 @@ export function VehicleReentryComparisonAnalyzer() {
           >
             <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
               <div>
-                <p className="orbix-label text-accent">Comparison fleet</p>
+                <p className="orbix-label">Comparison fleet</p>
                 <h3
                   className="mt-1 text-lg font-semibold"
                   id="vehicle-reentry-comparison-vehicles-title"
@@ -544,23 +556,23 @@ export function VehicleReentryComparisonAnalyzer() {
                   Vehicle configurations
                 </h3>
               </div>
-              <button
+              <Button
                 aria-describedby="vehicle-reentry-comparison-limit"
-                className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-accent/45 bg-accent/8 px-4 py-2.5 text-sm font-semibold text-accent transition-colors hover:border-accent hover:bg-accent/12 disabled:cursor-not-allowed disabled:border-border disabled:bg-surface/50 disabled:text-muted"
+                className="shrink-0 whitespace-nowrap"
+                variant="secondary"
                 disabled={hasReachedVehicleLimit}
                 onClick={addVehicle}
-                type="button"
               >
                 <Plus aria-hidden="true" size={16} />
                 Add vehicle
-              </button>
+              </Button>
             </div>
 
             <p
               aria-live="polite"
               className={
                 "mt-3 text-xs leading-5 " +
-                (hasReachedVehicleLimit ? "text-signal" : "text-muted")
+                (hasReachedVehicleLimit ? "text-status-warning" : "text-muted")
               }
               id="vehicle-reentry-comparison-limit"
             >
@@ -588,7 +600,7 @@ export function VehicleReentryComparisonAnalyzer() {
                       aria-describedby={
                         vehicleErrors?.entry ? entryErrorId : undefined
                       }
-                      className="rounded-2xl border border-border bg-background/40 p-4 sm:p-5"
+                      className="rounded-md border border-border-subtle bg-surface-raised p-4 sm:p-6"
                       key={vehicle.id}
                     >
                       <legend className="sr-only">
@@ -596,33 +608,32 @@ export function VehicleReentryComparisonAnalyzer() {
                       </legend>
                       <div className="flex items-center justify-between gap-4">
                         <div>
-                          <p className="font-mono text-[0.64rem] tracking-[0.14em] text-muted uppercase">
+                          <p className="orbix-label">
                             Stable entry {vehicle.id}
                           </p>
                           <h4 className="mt-1 text-base font-semibold">
                             Vehicle {vehicleNumber}
                           </h4>
                         </div>
-                        <button
+                        <Button
                           aria-label={
                             "Remove vehicle " +
                             vehicleNumber +
                             ": " +
                             (vehicle.vehicleName || "unnamed vehicle")
                           }
-                          className="inline-flex min-h-10 items-center justify-center gap-2 rounded-full border border-border px-3.5 py-2 text-xs font-semibold text-muted transition-colors hover:border-signal/50 hover:text-signal"
+                          variant="secondary"
                           onClick={() => removeVehicle(vehicle.id)}
-                          type="button"
                         >
                           <Trash2 aria-hidden="true" size={15} />
                           Remove
-                        </button>
+                        </Button>
                       </div>
 
                       <div className="mt-5 grid gap-5 sm:grid-cols-2">
                         <div className="sm:col-span-2">
                           <label
-                            className="text-sm font-semibold"
+                            className="orbix-field__label block"
                             htmlFor={prefix + "-vehicleName"}
                           >
                             Vehicle name
@@ -639,7 +650,7 @@ export function VehicleReentryComparisonAnalyzer() {
                                 : undefined
                             }
                             aria-invalid={Boolean(vehicleErrors?.vehicleName)}
-                            className="mt-2 min-h-12 w-full rounded-xl border border-border bg-background/55 px-4 py-3 text-base text-foreground transition-colors outline-none focus:border-accent focus:ring-2 focus:ring-accent/15"
+                            className="orbix-input mt-2"
                             id={prefix + "-vehicleName"}
                             onChange={(event) =>
                               updateVehicleValue(
@@ -652,18 +663,20 @@ export function VehicleReentryComparisonAnalyzer() {
                             type="text"
                             value={vehicle.vehicleName}
                           />
-                          <p
-                            className="mt-2 text-xs leading-5 text-muted"
-                            id={nameHintId}
-                          >
+                          <p className="orbix-field__help mt-2" id={nameHintId}>
                             Identifies this configuration in result cards and
                             ranking output.
                           </p>
                           {vehicleErrors?.vehicleName ? (
                             <p
-                              className="mt-1.5 text-xs leading-5 text-signal"
+                              className="orbix-field__error mt-1"
                               id={nameErrorId}
                             >
+                              <CircleAlert
+                                aria-hidden="true"
+                                className="shrink-0"
+                                size={14}
+                              />
                               {vehicleErrors.vehicleName}
                             </p>
                           ) : null}
@@ -737,7 +750,7 @@ export function VehicleReentryComparisonAnalyzer() {
 
                       {vehicleErrors?.entry ? (
                         <p
-                          className="mt-4 rounded-xl border border-signal/35 bg-signal/8 p-3 text-xs leading-5 text-signal"
+                          className="mt-4 border-l-2 border-status-warning pl-3 text-sm leading-6 text-status-warning"
                           id={entryErrorId}
                           role="alert"
                         >
@@ -749,9 +762,9 @@ export function VehicleReentryComparisonAnalyzer() {
                 })}
               </div>
             ) : (
-              <div className="mt-5 rounded-2xl border border-dashed border-border p-5 text-center">
+              <div className="mt-5 rounded-md border border-dashed border-border-strong p-4">
                 <p className="text-sm font-semibold">No vehicles configured</p>
-                <p className="mt-2 text-xs leading-5 text-muted">
+                <p className="mt-2 text-sm leading-6 text-muted">
                   Add at least one vehicle to run the shared reentry comparison.
                 </p>
               </div>
@@ -759,7 +772,7 @@ export function VehicleReentryComparisonAnalyzer() {
 
             {errors.vehicleList ? (
               <p
-                className="mt-3 text-xs leading-5 text-signal"
+                className="orbix-field__error mt-3"
                 id="vehicle-reentry-comparison-list-error"
                 role="alert"
               >
@@ -771,18 +784,18 @@ export function VehicleReentryComparisonAnalyzer() {
           <ValidationErrorSummary errors={validationMessages} />
 
           <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:items-center">
-            <p className="text-xs leading-5 text-muted">
+            <p className="text-sm leading-6 text-muted">
               Valid changes rerun every vehicle under the same scenario and
               refresh the ranking immediately.
             </p>
-            <button
-              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-border bg-surface/60 px-5 py-2.5 text-sm font-semibold text-foreground transition-colors hover:border-accent/60 hover:text-accent sm:ml-auto"
+            <Button
+              className="shrink-0 whitespace-nowrap sm:ml-auto"
+              variant="secondary"
               onClick={resetAnalyzer}
-              type="button"
             >
               <RotateCcw aria-hidden="true" size={16} />
-              Reset example
-            </button>
+              Reset inputs
+            </Button>
           </div>
         </form>
 
@@ -790,40 +803,40 @@ export function VehicleReentryComparisonAnalyzer() {
           aria-labelledby="vehicle-reentry-comparison-education-title"
           className="mt-8 border-t border-border pt-7"
         >
-          <p className="orbix-label text-accent">Educational comparison</p>
+          <p className="orbix-label">Educational comparison</p>
           <h3
             className="mt-1 text-lg font-semibold"
             id="vehicle-reentry-comparison-education-title"
           >
             Reading the vehicle trade space
           </h3>
-          <div className="mt-5 grid gap-4 sm:grid-cols-3">
-            <article className="rounded-2xl border border-border bg-background/40 p-4">
-              <Scale aria-hidden="true" className="text-accent" size={18} />
+          <div className="mt-5 grid gap-4 sm:grid-cols-3 xl:grid-cols-1">
+            <article className="rounded-md border border-border-subtle bg-surface-raised p-4">
+              <Scale aria-hidden="true" className="text-muted" size={18} />
               <h4 className="mt-3 text-sm font-semibold">Vehicle trade-offs</h4>
-              <p className="mt-2 text-xs leading-5 text-muted">
+              <p className="mt-2 text-sm leading-6 text-muted">
                 Mass, drag, area, and nose geometry change deceleration,
                 heating, and the resulting TPS estimates together.
               </p>
             </article>
-            <article className="rounded-2xl border border-border bg-background/40 p-4">
-              <Award aria-hidden="true" className="text-accent" size={18} />
+            <article className="rounded-md border border-border-subtle bg-surface-raised p-4">
+              <Award aria-hidden="true" className="text-muted" size={18} />
               <h4 className="mt-3 text-sm font-semibold">Ranking order</h4>
-              <p className="mt-2 text-xs leading-5 text-muted">
+              <p className="mt-2 text-sm leading-6 text-muted">
                 The existing comparison ranks lowest TPS mass first, then lower
                 thickness, and finally lower peak deceleration.
               </p>
             </article>
-            <article className="rounded-2xl border border-border bg-background/40 p-4">
-              <Flame aria-hidden="true" className="text-accent" size={18} />
+            <article className="rounded-md border border-border-subtle bg-surface-raised p-4">
+              <Flame aria-hidden="true" className="text-muted" size={18} />
               <h4 className="mt-3 text-sm font-semibold">Shared scenario</h4>
-              <p className="mt-2 text-xs leading-5 text-muted">
+              <p className="mt-2 text-sm leading-6 text-muted">
                 Every vehicle receives identical reentry conditions so the
                 displayed differences originate from its configuration.
               </p>
             </article>
           </div>
-          <p className="mt-4 text-xs leading-5 text-muted">
+          <p className="mt-4 text-sm leading-6 text-muted">
             This is an educational comparison, not a flight-design selection or
             certification recommendation.
           </p>
@@ -832,7 +845,7 @@ export function VehicleReentryComparisonAnalyzer() {
 
       <div className="min-w-0 space-y-5">
         <CalculatorResultSection
-          eyebrow="Shared scenario // Ranked vehicles"
+          eyebrow="Shared scenario: ranked vehicles"
           icon={Award}
           id="vehicle-reentry-comparison-result"
           title="Vehicle reentry comparison"
@@ -841,7 +854,7 @@ export function VehicleReentryComparisonAnalyzer() {
             <div className="space-y-6">
               <section aria-labelledby="vehicle-reentry-comparison-recommended-title">
                 <h4
-                  className="orbix-label text-accent"
+                  className="text-sm font-semibold text-foreground"
                   id="vehicle-reentry-comparison-recommended-title"
                 >
                   Recommended vehicle
@@ -852,7 +865,7 @@ export function VehicleReentryComparisonAnalyzer() {
                 >
                   {result.recommendedVehicle.vehicleName}
                 </output>
-                <p className="mt-3 rounded-xl border border-accent/25 bg-accent/7 p-4 text-xs leading-5 text-muted">
+                <p className="mt-3 rounded-md border border-border-subtle bg-surface-raised p-4 text-sm leading-6 text-muted">
                   Selected from the configured vehicles using the analysis
                   ranking order: lowest TPS mass, lowest required thickness,
                   then lowest peak deceleration.
@@ -864,7 +877,7 @@ export function VehicleReentryComparisonAnalyzer() {
                 className="border-t border-border pt-5"
               >
                 <h4
-                  className="orbix-label text-accent"
+                  className="text-sm font-semibold text-foreground"
                   id="vehicle-reentry-comparison-details-title"
                 >
                   Vehicle results
@@ -880,7 +893,7 @@ export function VehicleReentryComparisonAnalyzer() {
 
                     return (
                       <article
-                        className="rounded-2xl border border-border bg-background/35 p-4 sm:p-5"
+                        className="rounded-md border border-border-subtle bg-surface-raised p-4 sm:p-6"
                         key={formVehicle?.id ?? entry.vehicleName}
                       >
                         <div className="flex flex-wrap items-center justify-between gap-3">
@@ -888,19 +901,15 @@ export function VehicleReentryComparisonAnalyzer() {
                             {entry.vehicleName}
                           </h5>
                           {entry === result.recommendedVehicle ? (
-                            <span className="rounded-full border border-accent/35 bg-accent/8 px-3 py-1 font-mono text-[0.62rem] tracking-[0.1em] text-accent uppercase">
-                              Recommended
-                            </span>
+                            <Tag>Recommended</Tag>
                           ) : null}
                         </div>
                         <dl className="mt-4 grid gap-4 sm:grid-cols-2">
                           <div>
-                            <dt className="text-xs text-muted">
-                              Final velocity
-                            </dt>
+                            <dt className="orbix-label">Final velocity</dt>
                             <dd className="mt-1">
                               <output
-                                className="font-mono text-sm font-semibold"
+                                className="orbix-data"
                                 htmlFor={outputIds}
                               >
                                 {standardFormatter.format(
@@ -912,12 +921,10 @@ export function VehicleReentryComparisonAnalyzer() {
                             </dd>
                           </div>
                           <div>
-                            <dt className="text-xs text-muted">
-                              Reentry duration
-                            </dt>
+                            <dt className="orbix-label">Reentry duration</dt>
                             <dd className="mt-1">
                               <output
-                                className="font-mono text-sm font-semibold"
+                                className="orbix-data"
                                 htmlFor={outputIds}
                               >
                                 {standardFormatter.format(
@@ -929,19 +936,17 @@ export function VehicleReentryComparisonAnalyzer() {
                             </dd>
                           </div>
                           <div>
-                            <dt className="text-xs text-muted">
-                              Peak deceleration
-                            </dt>
+                            <dt className="orbix-label">Peak deceleration</dt>
                             <dd className="mt-1">
                               <output
-                                className="font-mono text-sm font-semibold"
+                                className="orbix-data"
                                 htmlFor={outputIds}
                               >
                                 {standardFormatter.format(
                                   entry.peakDeceleration
                                     .decelerationMetersPerSecondSquared,
                                 )}{" "}
-                                m/s² ·{" "}
+                                m/s²,{" "}
                                 {standardFormatter.format(
                                   entry.peakDeceleration.decelerationGs,
                                 )}{" "}
@@ -950,12 +955,10 @@ export function VehicleReentryComparisonAnalyzer() {
                             </dd>
                           </div>
                           <div>
-                            <dt className="text-xs text-muted">
-                              Peak heat flux
-                            </dt>
+                            <dt className="orbix-label">Peak heat flux</dt>
                             <dd className="mt-1">
                               <output
-                                className="font-mono text-sm font-semibold"
+                                className="orbix-data"
                                 htmlFor={outputIds}
                               >
                                 {heatFluxFormatter.format(
@@ -966,12 +969,10 @@ export function VehicleReentryComparisonAnalyzer() {
                             </dd>
                           </div>
                           <div>
-                            <dt className="text-xs text-muted">
-                              Total heat load
-                            </dt>
+                            <dt className="orbix-label">Total heat load</dt>
                             <dd className="mt-1">
                               <output
-                                className="font-mono text-sm font-semibold"
+                                className="orbix-data"
                                 htmlFor={outputIds}
                               >
                                 {preciseFormatter.format(
@@ -983,7 +984,7 @@ export function VehicleReentryComparisonAnalyzer() {
                             </dd>
                           </div>
                           <div>
-                            <dt className="text-xs text-muted">
+                            <dt className="orbix-label">
                               Recommended TPS material
                             </dt>
                             <dd className="mt-1">
@@ -996,12 +997,10 @@ export function VehicleReentryComparisonAnalyzer() {
                             </dd>
                           </div>
                           <div>
-                            <dt className="text-xs text-muted">
-                              TPS thickness
-                            </dt>
+                            <dt className="orbix-label">TPS thickness</dt>
                             <dd className="mt-1">
                               <output
-                                className="font-mono text-sm font-semibold"
+                                className="orbix-data"
                                 htmlFor={outputIds}
                               >
                                 {preciseFormatter.format(
@@ -1012,10 +1011,10 @@ export function VehicleReentryComparisonAnalyzer() {
                             </dd>
                           </div>
                           <div>
-                            <dt className="text-xs text-muted">TPS mass</dt>
+                            <dt className="orbix-label">TPS mass</dt>
                             <dd className="mt-1">
                               <output
-                                className="font-mono text-sm font-semibold"
+                                className="orbix-data"
                                 htmlFor={outputIds}
                               >
                                 {preciseFormatter.format(
@@ -1026,18 +1025,16 @@ export function VehicleReentryComparisonAnalyzer() {
                             </dd>
                           </div>
                           <div>
-                            <dt className="text-xs text-muted">
-                              Thermal margin
-                            </dt>
+                            <dt className="orbix-label">Thermal margin</dt>
                             <dd className="mt-1">
                               <output
-                                className="font-mono text-sm font-semibold"
+                                className="orbix-data"
                                 htmlFor={outputIds}
                               >
                                 {standardFormatter.format(
                                   entry.thermalMargin.marginPercentage,
                                 )}
-                                % ·{" "}
+                                %,{" "}
                                 {preciseFormatter.format(
                                   entry.thermalMargin
                                     .heatLoadMarginMegajoulesPerSquareMetre,
@@ -1047,12 +1044,12 @@ export function VehicleReentryComparisonAnalyzer() {
                             </dd>
                           </div>
                           <div>
-                            <dt className="text-xs text-muted">
+                            <dt className="orbix-label">
                               Margin classification
                             </dt>
                             <dd className="mt-1">
                               <output
-                                className="text-sm font-semibold text-accent"
+                                className="text-sm font-semibold"
                                 htmlFor={outputIds}
                               >
                                 {entry.thermalClassification}
@@ -1071,47 +1068,31 @@ export function VehicleReentryComparisonAnalyzer() {
                 className="border-t border-border pt-5"
               >
                 <h4
-                  className="orbix-label text-accent"
+                  className="text-sm font-semibold text-foreground"
                   id="vehicle-reentry-comparison-table-title"
                 >
                   Comparison table
                 </h4>
                 <div
                   aria-label="Scrollable ranked vehicle reentry comparison table"
-                  className="mt-3 overflow-x-auto rounded-xl border border-border outline-none focus:ring-2 focus:ring-accent/25"
+                  className="orbix-table-wrap mt-3 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
                   role="region"
                   tabIndex={0}
                 >
-                  <table className="w-full min-w-[76rem] border-collapse text-left text-sm">
+                  <table className="orbix-table w-full min-w-[76rem]">
                     <caption className="sr-only">
                       Vehicles ranked under the shared reentry scenario
                     </caption>
-                    <thead className="bg-surface/85">
+                    <thead className="bg-surface-raised">
                       <tr>
-                        <th className="px-4 py-3 font-semibold" scope="col">
-                          Rank
-                        </th>
-                        <th className="px-4 py-3 font-semibold" scope="col">
-                          Vehicle
-                        </th>
-                        <th className="px-4 py-3 font-semibold" scope="col">
-                          TPS mass
-                        </th>
-                        <th className="px-4 py-3 font-semibold" scope="col">
-                          TPS thickness
-                        </th>
-                        <th className="px-4 py-3 font-semibold" scope="col">
-                          Peak deceleration
-                        </th>
-                        <th className="px-4 py-3 font-semibold" scope="col">
-                          Peak heat flux
-                        </th>
-                        <th className="px-4 py-3 font-semibold" scope="col">
-                          Recommended TPS material
-                        </th>
-                        <th className="px-4 py-3 font-semibold" scope="col">
-                          Margin classification
-                        </th>
+                        <th scope="col">Rank</th>
+                        <th scope="col">Vehicle</th>
+                        <th scope="col">TPS mass</th>
+                        <th scope="col">TPS thickness</th>
+                        <th scope="col">Peak deceleration</th>
+                        <th scope="col">Peak heat flux</th>
+                        <th scope="col">Recommended TPS material</th>
+                        <th scope="col">Margin classification</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -1129,29 +1110,24 @@ export function VehicleReentryComparisonAnalyzer() {
                         return (
                           <tr
                             className={
-                              recommended
-                                ? "border-t border-border bg-accent/7"
-                                : "border-t border-border"
+                              recommended ? "bg-surface-raised" : undefined
                             }
                             key={formVehicle?.id ?? entry.vehicleName}
                           >
-                            <th
-                              className="px-4 py-3 font-mono text-accent"
-                              scope="row"
-                            >
+                            <th className="orbix-num font-semibold" scope="row">
                               {rankIndex + 1}
                             </th>
-                            <td className="px-4 py-3 font-semibold">
+                            <td className="font-medium">
                               <output htmlFor={outputIds}>
                                 {entry.vehicleName}
                               </output>
                               {recommended ? (
-                                <span className="ml-2 text-[0.62rem] tracking-[0.1em] text-accent uppercase">
+                                <span className="orbix-label ml-2">
                                   Recommended
                                 </span>
                               ) : null}
                             </td>
-                            <td className="px-4 py-3 font-mono">
+                            <td className="orbix-num">
                               <output htmlFor={outputIds}>
                                 {preciseFormatter.format(
                                   entry.tpsMassKilograms,
@@ -1159,7 +1135,7 @@ export function VehicleReentryComparisonAnalyzer() {
                                 kg
                               </output>
                             </td>
-                            <td className="px-4 py-3 font-mono">
+                            <td className="orbix-num">
                               <output htmlFor={outputIds}>
                                 {preciseFormatter.format(
                                   entry.tpsThickness.millimetres,
@@ -1167,7 +1143,7 @@ export function VehicleReentryComparisonAnalyzer() {
                                 mm
                               </output>
                             </td>
-                            <td className="px-4 py-3 font-mono">
+                            <td className="orbix-num">
                               <output htmlFor={outputIds}>
                                 {standardFormatter.format(
                                   entry.peakDeceleration
@@ -1176,7 +1152,7 @@ export function VehicleReentryComparisonAnalyzer() {
                                 m/s²
                               </output>
                             </td>
-                            <td className="px-4 py-3 font-mono">
+                            <td className="orbix-num">
                               <output htmlFor={outputIds}>
                                 {heatFluxFormatter.format(
                                   entry.peakHeating.heatFluxWattsPerSquareMetre,
@@ -1184,12 +1160,12 @@ export function VehicleReentryComparisonAnalyzer() {
                                 W/m²
                               </output>
                             </td>
-                            <td className="px-4 py-3">
+                            <td>
                               <output htmlFor={outputIds}>
                                 {entry.recommendedTPSMaterial.name}
                               </output>
                             </td>
-                            <td className="px-4 py-3">
+                            <td>
                               <output htmlFor={outputIds}>
                                 {entry.thermalClassification}
                               </output>
@@ -1203,13 +1179,10 @@ export function VehicleReentryComparisonAnalyzer() {
               </section>
             </div>
           ) : (
-            <div className="py-5">
-              <p className="font-mono text-3xl text-muted">—</p>
-              <p className="mt-3 text-sm leading-6 text-muted">
-                Configure at least one valid vehicle to generate the shared
-                reentry comparison.
-              </p>
-            </div>
+            <NotCalculated invalid={validationMessages.some(Boolean)}>
+              Configure at least one valid vehicle to generate the shared
+              reentry comparison.
+            </NotCalculated>
           )}
         </CalculatorResultSection>
 
@@ -1218,7 +1191,7 @@ export function VehicleReentryComparisonAnalyzer() {
             <AlertTriangle aria-hidden="true" size={17} />
             Modeling assumptions
           </p>
-          <ul className="mt-4 grid list-disc gap-2 pl-5 text-xs leading-5 text-muted sm:grid-cols-2">
+          <ul className="mt-4 grid list-disc gap-2 pl-5 text-sm leading-6 text-muted sm:grid-cols-2">
             <li>Educational engineering comparison only</li>
             <li>Identical reentry conditions for every vehicle</li>
             <li>Constant mass, drag coefficient, area, and nose radius</li>

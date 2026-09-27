@@ -30,7 +30,7 @@ describe("GroundTrackVisualization", () => {
       <GroundTrackVisualization analysis={orbitalMission} />,
     );
 
-    expect(markup).toContain("Orbital Ground Track");
+    expect(markup).toContain("Orbital ground track");
     expect(markup).toContain("Illustrative Earth ground-track view");
     expect(markup).toContain("Illustrative orbital ground track");
     expect(markup).toContain('data-ground-track-mode="ground"');
@@ -44,7 +44,8 @@ describe("GroundTrackVisualization", () => {
     expect(markup).toContain("ORBIX Ground Track Mission");
     expect(markup).toContain("200,000 m");
     expect(markup).toContain("400,000 m");
-    expect(markup).toContain("5° supplied maneuver");
+    expect(markup).toContain("Plane change (supplied maneuver)");
+    expect(markup).toContain("<output>5°</output>");
   });
 
   it("handles missing orbital data without generating a replacement path", () => {
@@ -59,7 +60,7 @@ describe("GroundTrackVisualization", () => {
     expect(markup).not.toContain("ground-track-visual-panel");
   });
 
-  it("updates only presentation view, zoom, pause, and reset state", () => {
+  it("updates only presentation view, zoom, and reset state", () => {
     const orbitView = groundTrackPresentationReducer(
       INITIAL_GROUND_TRACK_PRESENTATION_STATE,
       { mode: "orbit", type: "set-mode" },
@@ -67,14 +68,10 @@ describe("GroundTrackVisualization", () => {
     const zoomed = groundTrackPresentationReducer(orbitView, {
       type: "zoom-in",
     });
-    const paused = groundTrackPresentationReducer(zoomed, {
-      type: "toggle-animation",
-    });
-    const reset = groundTrackPresentationReducer(paused, { type: "reset" });
+    const reset = groundTrackPresentationReducer(zoomed, { type: "reset" });
 
     expect(orbitView.mode).toBe("orbit");
     expect(zoomed.zoomLevelIndex).toBe(2);
-    expect(paused.animationPaused).toBe(true);
     expect(reset).toEqual(INITIAL_GROUND_TRACK_PRESENTATION_STATE);
   });
 
@@ -88,24 +85,18 @@ describe("GroundTrackVisualization", () => {
     );
     expect(markup).toContain('aria-label="Planet visualization mode"');
     expect(markup).toContain('aria-label="Zoom in planetary visualization"');
-    expect(markup).toContain(
-      'aria-label="Pause decorative ground-track animation"',
-    );
     expect(markup).toContain("press G for ground view");
+    expect(markup).toContain('role="tab"');
     expect(markup).toContain('aria-live="polite"');
   });
 
-  it("exposes reduced motion while preserving the static visual explanation", () => {
+  it("is static: no decorative motion or pause control", () => {
     const markup = renderToStaticMarkup(
-      <GroundTrackVisualization
-        analysis={orbitalMission}
-        reducedMotionOverride
-      />,
+      <GroundTrackVisualization analysis={orbitalMission} />,
     );
 
-    expect(markup).toContain('data-reduced-motion="true"');
-    expect(markup).toContain("motion-reduce:animate-none");
-    expect(markup).toContain("Illustrative mode");
+    expect(markup).not.toContain("animate-");
+    expect(markup).not.toContain("Pause");
   });
 
   it("always displays the navigation-data disclaimer", () => {

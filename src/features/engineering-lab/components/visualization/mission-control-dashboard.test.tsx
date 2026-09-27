@@ -12,7 +12,6 @@ import type {
 } from "@/features/engineering-lab/types";
 
 import { MissionControlDashboard } from "./mission-control-dashboard";
-import { MissionStatusPanel } from "./mission-status-panel";
 
 const reentryInputs: VehicleReentryEvaluationInputs = {
   initialAltitudeMeters: 1_000,
@@ -61,10 +60,10 @@ describe("MissionControlDashboard", () => {
       />,
     );
 
-    expect(markup).toContain("ORBIX // Mission Control");
+    expect(markup).toContain("Mission Control");
     expect(markup).toContain("Mission Control Integration Test");
     expect(markup).toContain("Orbital logistics");
-    expect(markup).toContain("Systems resolved");
+    expect(markup).toContain("Analyses resolved");
     expect(markup).toContain("Educational mission");
   });
 
@@ -78,7 +77,7 @@ describe("MissionControlDashboard", () => {
       />,
     );
 
-    expect(markup).toContain("Mission Metrics");
+    expect(markup).toContain("Mission metrics");
     expect(markup).toContain("Initial altitude");
     expect(markup).toContain("Final altitude");
     expect(markup).toContain("Total delta-v");
@@ -100,47 +99,34 @@ describe("MissionControlDashboard", () => {
 
     expect(markup).toContain("Mission profile unavailable");
     expect(markup).toContain("Not reported");
-    expect(markup).toContain('data-current-status="ready"');
     expect(markup).toContain("Unified mission visualization unavailable");
     expect(markup).toContain("Engineering review unavailable");
   });
 
-  it("advances presentation status only when supplied objects exist", () => {
-    const readyMarkup = renderToStaticMarkup(
-      <MissionStatusPanel
-        analysisAvailable={false}
-        reportAvailable={false}
-        visualizationAvailable={false}
+  it("lists supplied outputs under Checks performed, not a separate status panel", () => {
+    const emptyMarkup = renderToStaticMarkup(
+      <MissionControlDashboard
+        missionProfileAnalysis={null}
+        missionReport={null}
+        vehicleReentryEvaluation={null}
       />,
     );
-    const analysisMarkup = renderToStaticMarkup(
-      <MissionStatusPanel
-        analysisAvailable
-        reportAvailable={false}
-        visualizationAvailable={false}
-      />,
-    );
-    const reportMarkup = renderToStaticMarkup(
-      <MissionStatusPanel
-        analysisAvailable
-        reportAvailable
-        visualizationAvailable={false}
-      />,
-    );
-    const visualizationMarkup = renderToStaticMarkup(
-      <MissionStatusPanel
-        analysisAvailable
-        reportAvailable
-        visualizationAvailable
+    const suppliedMarkup = renderToStaticMarkup(
+      <MissionControlDashboard
+        missionProfileAnalysis={missionAnalysis}
+        missionReport={missionReport}
+        vehicleReentryEvaluation={reentryEvaluation}
       />,
     );
 
-    expect(readyMarkup).toContain('data-current-status="ready"');
-    expect(analysisMarkup).toContain('data-current-status="analysis-complete"');
-    expect(reportMarkup).toContain('data-current-status="report-generated"');
-    expect(visualizationMarkup).toContain(
-      'data-current-status="visualization-active"',
+    expect(emptyMarkup).toContain("Checks performed");
+    expect(emptyMarkup).not.toContain('data-check-availability="available"');
+    expect(suppliedMarkup).toContain("Mission report");
+    expect(suppliedMarkup).not.toContain(
+      'data-check-availability="not-supplied"',
     );
+    expect(suppliedMarkup).not.toContain("data-current-status");
+    expect(suppliedMarkup).not.toContain("Mission status");
   });
 
   it("provides keyboard-navigable visualization views", () => {
@@ -156,10 +142,10 @@ describe("MissionControlDashboard", () => {
     expect(markup).toContain('role="tablist"');
     expect(markup).toContain('role="tab"');
     expect(markup).toContain('aria-selected="true"');
-    expect(markup).toContain("Unified Mission");
-    expect(markup).toContain("Orbital View");
-    expect(markup).toContain("Reentry View");
-    expect(markup).toContain("Mission Timeline");
+    expect(markup).toContain("Unified view");
+    expect(markup).toContain("Orbit: orbital view");
+    expect(markup).toContain("Reentry: reentry view");
+    expect(markup).toContain("Overview: mission timeline summary");
   });
 
   it("handles completed missions without optional orbital, vehicle, or thermal systems", () => {
@@ -178,10 +164,10 @@ describe("MissionControlDashboard", () => {
     );
 
     expect(markup).toContain("Mission control shell");
-    expect(markup).toContain("Mission Summary");
+    expect(markup).toContain("Mission summary");
     expect(markup).toContain("Orbital visualization unavailable");
     expect(markup).toContain("Reentry visualization unavailable");
     expect(markup).toContain("Not reported");
-    expect(markup).toContain("Engineering Review");
+    expect(markup).toContain("Engineering review");
   });
 });

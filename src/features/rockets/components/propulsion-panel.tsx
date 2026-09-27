@@ -1,141 +1,100 @@
-import { Cog, Flame } from "lucide-react";
-
-import { ProfileSection } from "@/features/rockets/components/profile-section";
-import {
-  formatRocketEngineCycle,
-  formatRocketMeasurement,
-} from "@/features/rockets/utils";
+import { formatRocketEngineCycle } from "@/features/rockets/utils";
+import { DataTable } from "@/features/vehicles/components/data-table";
+import { MeasurementValue } from "@/features/vehicles/components/measurement-value";
+import { VehicleProfileSection } from "@/features/vehicles/components/vehicle-profile-section";
 import type {
   ForceMeasurement,
   RocketEngine,
   RocketStage,
 } from "@/features/vehicles/types";
+import { formatQualifierLabel } from "@/features/vehicles/utils/format-measurement";
 
 interface PropulsionPanelProps {
+  name: string;
   stages: readonly RocketStage[];
 }
 
-interface ThrustRating {
-  label: string;
-  measurement: ForceMeasurement;
+function ThrustCell({ measurement }: { measurement?: ForceMeasurement }) {
+  return measurement ? (
+    <MeasurementValue measurement={measurement} />
+  ) : (
+    <span className="text-muted">Not published</span>
+  );
 }
 
-function getThrustRatings(engine: RocketEngine): readonly ThrustRating[] {
-  const ratings: ThrustRating[] = [];
-
-  if (engine.thrust.seaLevel) {
-    ratings.push({
-      label: "Sea-level thrust",
-      measurement: engine.thrust.seaLevel,
-    });
+/**
+ * How the thrust figures were published, kept in its own column (as
+ * MeasurementTable does) so the thrust cells stay narrow.
+ */
+function formatThrustBasis({ seaLevel, vacuum }: RocketEngine["thrust"]) {
+  if (seaLevel && vacuum && seaLevel.qualifier !== vacuum.qualifier) {
+    return `Sea level: ${formatQualifierLabel(seaLevel.qualifier)}. Vacuum: ${formatQualifierLabel(vacuum.qualifier)}`;
   }
+  const measurement = seaLevel ?? vacuum;
 
-  if (engine.thrust.vacuum) {
-    ratings.push({
-      label: "Vacuum thrust",
-      measurement: engine.thrust.vacuum,
-    });
-  }
-
-  return ratings;
+  return measurement ? formatQualifierLabel(measurement.qualifier) : undefined;
 }
 
-export function PropulsionPanel({ stages }: PropulsionPanelProps) {
+/**
+ * Propulsion (spec 14): one row per engine type on each stage element. The
+ * engine count and manufacturer sit under the engine name rather than in
+ * their own columns so the table fits the profile's main column without
+ * scrolling.
+ */
+export function PropulsionPanel({ name, stages }: PropulsionPanelProps) {
+  const ordered = [...stages].sort((a, b) => a.stageNumber - b.stageNumber);
+  const engineRows = ordered.flatMap((stage) =>
+    stage.engines.map((engine) => ({ engine, stage })),
+  );
+
   return (
-    <ProfileSection
-      description="Engine families, power cycles, installed quantities, and available per-engine thrust ratings."
-      eyebrow="Propulsion"
-      mode="configuration"
-      id="propulsion"
-      title="Propulsion"
-    >
-      <div className="space-y-4">
-        {stages.flatMap((stage) =>
-          stage.engines.map((engine) => {
-            const thrustRatings = getThrustRatings(engine);
+    <VehicleProfileSection id="propulsion" title="Propulsion">
+      <p className="max-w-prose text-text-secondary">
+        Each row names an engine, how many that stage element carries, and who
+        builds it. The sea level and vacuum columns give thrust per engine where
+        a figure is published, and the basis column says how each figure was
+        published. A rocket engine produces more thrust in vacuum because no
+        outside air pressure acts against its exhaust.
+      </p>
+      <div className="mt-6">
+        <DataTable
+          caption={`${name} engines by stage`}
+          columns={[
+            { label: "Engine" },
+            { label: "Stage" },
+            { label: "Cycle" },
+            { label: "Sea level", numeric: true },
+            { label: "Vacuum", numeric: true },
+            { label: "Basis" },
+          ]}
+          rows={engineRows.map(({ engine, stage }) => {
+            const basis = formatThrustBasis(engine.thrust);
 
-            return (
-              <article
-                className="orbix-frame overflow-hidden border-atmosphere/20 bg-surface/70"
-                key={stage.id + "-" + engine.id}
-              >
-                <div className="flex flex-col gap-5 border-b border-atmosphere/20 bg-[#080d17] p-5 sm:flex-row sm:items-center sm:justify-between sm:p-6">
-                  <div className="flex items-center gap-4">
-                    <span className="flex h-11 w-11 items-center justify-center border border-signal/25 bg-signal/8 text-signal">
-                      <Cog aria-hidden="true" size={21} strokeWidth={1.7} />
-                    </span>
-                    <div>
-                      <p className="font-mono text-[0.62rem] tracking-[0.14em] text-muted uppercase">
-                        {stage.name}
-                      </p>
-                      <h3 className="font-display mt-1 text-xl font-semibold sm:text-2xl">
-                        {engine.name}
-                      </h3>
-                    </div>
-                  </div>
-                  <span className="orbix-status orbix-status--info self-start sm:self-auto">
-                    {engine.quantity} installed
+            return {
+              cells: [
+                stage.name,
+                formatRocketEngineCycle(engine.cycle),
+                <ThrustCell key="sea" measurement={engine.thrust.seaLevel} />,
+                <ThrustCell key="vacuum" measurement={engine.thrust.vacuum} />,
+                <span className="text-muted" key="basis">
+                  {basis ?? "Not published"}
+                </span>,
+              ],
+              header: (
+                <>
+                  {engine.name}
+                  <span className="block text-sm font-normal text-muted">
+                    {engine.quantity}{" "}
+                    {engine.quantity === 1 ? "engine" : "engines"},{" "}
+                    {engine.manufacturer}
                   </span>
-                </div>
-
-                <dl className="grid gap-px bg-atmosphere/20 sm:grid-cols-2">
-                  <div className="bg-surface px-5 py-4 sm:px-6">
-                    <dt className="font-mono text-[0.62rem] tracking-[0.14em] text-muted uppercase">
-                      Manufacturer
-                    </dt>
-                    <dd className="mt-2 text-sm font-medium">
-                      {engine.manufacturer}
-                    </dd>
-                  </div>
-                  <div className="bg-surface px-5 py-4 sm:px-6">
-                    <dt className="font-mono text-[0.62rem] tracking-[0.14em] text-muted uppercase">
-                      Engine cycle
-                    </dt>
-                    <dd className="mt-2 text-sm font-medium">
-                      {formatRocketEngineCycle(engine.cycle)}
-                    </dd>
-                  </div>
-                </dl>
-
-                <div className="p-5 sm:p-6">
-                  <p className="flex items-center gap-2 font-mono text-[0.62rem] tracking-[0.14em] text-muted uppercase">
-                    <Flame
-                      aria-hidden="true"
-                      className="text-signal"
-                      size={15}
-                    />
-                    Thrust ratings per engine
-                  </p>
-                  <dl className="mt-4 grid gap-3 sm:grid-cols-2">
-                    {thrustRatings.map((rating) => {
-                      const formatted = formatRocketMeasurement(
-                        rating.measurement,
-                      );
-
-                      return (
-                        <div
-                          className="border border-atmosphere/20 bg-background/40 p-4"
-                          key={rating.label}
-                        >
-                          <dt className="text-xs text-muted">{rating.label}</dt>
-                          <dd>
-                            <span className="orbix-telemetry-value mt-2 block text-lg text-signal">
-                              {formatted.value}
-                            </span>
-                            <span className="mt-1 block text-xs text-muted">
-                              {formatted.note}
-                            </span>
-                          </dd>
-                        </div>
-                      );
-                    })}
-                  </dl>
-                </div>
-              </article>
-            );
-          }),
-        )}
+                </>
+              ),
+              key: `${stage.id}-${engine.id}`,
+            };
+          })}
+        />
       </div>
-    </ProfileSection>
+    </VehicleProfileSection>
   );
 }

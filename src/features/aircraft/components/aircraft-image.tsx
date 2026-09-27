@@ -13,6 +13,11 @@ interface AircraftImageProps {
   sizes: string;
 }
 
+/**
+ * The aircraft's photograph from `aircraft-visuals.ts`, shown as taken: no
+ * hover zoom, no filters. When no photograph is recorded, a plain text panel
+ * says so instead of a stand-in image.
+ */
 export function AircraftImage({
   aircraft,
   className,
@@ -26,17 +31,15 @@ export function AircraftImage({
   if (!visual) {
     return (
       <div
-        aria-label={`No approved image is available for ${aircraft.name}.`}
         className={cn(
-          "technical-grid grid place-items-center bg-background/80",
+          "grid place-items-center bg-surface-raised p-4",
           fillContainer ? "absolute inset-0" : "relative",
           className,
         )}
-        role="img"
       >
-        <span className="font-mono text-xs tracking-[0.14em] text-muted uppercase">
-          Visual not available
-        </span>
+        <p className="text-sm text-muted">
+          No photograph of the {aircraft.name} is available yet.
+        </p>
       </div>
     );
   }
@@ -51,13 +54,10 @@ export function AircraftImage({
     >
       <Image
         alt={visual.alt}
-        className={cn(
-          "object-cover transition-transform duration-700 ease-out motion-safe:group-hover:scale-[1.025] motion-reduce:transition-none",
-          imageClassName,
-        )}
+        className={cn("object-cover", imageClassName)}
         fill
         priority={priority}
-        quality={90}
+        quality={priority ? 90 : 75}
         sizes={sizes}
         src={visual.src}
         style={{ objectPosition: visual.objectPosition }}

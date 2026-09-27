@@ -1,7 +1,7 @@
 {
   "name": "orbix",
   "version": "0.1.0",
-  "description": "ORBIX — Advanced Aerospace Engineering Laboratory for mission design, orbital analysis, spacecraft visualization, and aerospace engineering education.",
+  "description": "ORBIX: an educational web app for exploring U.S. aircraft and rockets, orbital mechanics, reentry and thermal-protection concepts, and mission reports.",
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",

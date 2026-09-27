@@ -2,9 +2,13 @@ import { AircraftImage } from "@/features/aircraft/components/aircraft-image";
 import {
   formatAircraftMeasurement,
   formatAircraftRoles,
+  formatFirstFlight,
 } from "@/features/aircraft/utils";
 import { VehicleMediaFrame } from "@/features/vehicles/components/vehicle-media-frame";
-import { VehicleRecordCard } from "@/features/vehicles/components/vehicle-record-card";
+import {
+  VehicleRecordCard,
+  type VehicleRecordCardVariant,
+} from "@/features/vehicles/components/vehicle-record-card";
 import type { Aircraft } from "@/features/vehicles/types";
 
 interface AircraftCardProps {
@@ -12,45 +16,31 @@ interface AircraftCardProps {
   className?: string;
   priority?: boolean;
   sizes?: string;
+  variant?: VehicleRecordCardVariant;
 }
 
 /**
- * Aircraft adapter over the shared vehicle record card.
- *
- * The card architecture is shared; only the domain slots differ. Discovery
- * specs are maximum speed and service ceiling — the two figures that most
- * distinguish one airframe from another at a glance, and both are REQUIRED
- * fields on `Aircraft`, so nothing here can render an absent value.
- *
- * The previous card additionally showed manufacturer, origin, first flight,
- * powerplant, and a hardcoded "Generation: Not recorded" row. That last one
- * displayed a placeholder for a field the dataset does not model at all;
- * it is removed rather than reproduced. The rest belong on the profile, which
- * is where they already appear.
+ * Aircraft card link. Key values are maximum speed, service ceiling and
+ * first flight: all required fields on `Aircraft`, so none can be missing.
+ * The compact variant shows maximum speed only.
  */
 export function AircraftCard({
   aircraft,
   className,
   priority = false,
-  sizes = "(max-width: 639px) 100vw, (max-width: 1023px) 50vw, 33vw",
+  sizes = "(max-width: 639px) 100vw, (max-width: 1023px) 50vw, 22rem",
+  variant = "default",
 }: AircraftCardProps) {
-  const maxSpeed = formatAircraftMeasurement(aircraft.performance.maxSpeed);
-  const ceiling = formatAircraftMeasurement(
-    aircraft.performance.serviceCeiling,
-  );
-
   return (
     <VehicleRecordCard
       className={className}
       classification={formatAircraftRoles(aircraft.roles)}
-      description={aircraft.description}
       href={`/aircraft/${aircraft.id}`}
       media={
         <VehicleMediaFrame aspect="landscape">
           <AircraftImage
             aircraft={aircraft}
             fillContainer
-            imageClassName="saturate-[0.85]"
             priority={priority}
             sizes={sizes}
           />
@@ -58,9 +48,21 @@ export function AircraftCard({
       }
       name={aircraft.name}
       specs={[
-        { label: "Maximum speed", value: maxSpeed.value },
-        { label: "Service ceiling", value: ceiling.value },
+        {
+          label: "Maximum speed",
+          value: formatAircraftMeasurement(aircraft.performance.maxSpeed).value,
+        },
+        {
+          label: "Service ceiling",
+          value: formatAircraftMeasurement(aircraft.performance.serviceCeiling)
+            .value,
+        },
+        {
+          label: "First flight",
+          value: formatFirstFlight(aircraft.firstFlight),
+        },
       ]}
+      variant={variant}
     />
   );
 }

@@ -1,5 +1,3 @@
-import { ArrowDown, RadioTower } from "lucide-react";
-
 import type {
   MissionInsightsAnalysis,
   MissionPreset,
@@ -64,25 +62,25 @@ export function MissionBriefing({
   return (
     <article
       aria-label={`Mission briefing for ${missionProfile.missionName}`}
-      className="technical-grid overflow-hidden rounded-2xl border border-white/12 bg-surface text-foreground shadow-[0_28px_80px_rgba(0,0,0,0.28)]"
+      className="min-w-0 text-foreground"
     >
       <BriefingHeader
         category={preset?.category}
         missionName={missionProfile.missionName}
       />
 
-      <div className="space-y-10 p-5 sm:p-8">
+      <div className="space-y-8 pt-6">
         <BriefingOverview
           analysesResolved={missionProfile.missionSummaryState.analysesResolved}
           purpose={purpose}
           systems={systems}
         />
 
-        <div className="border-t border-white/10 pt-9">
+        <div className="border-t border-border-subtle pt-8">
           <BriefingObjectives missionProfile={missionProfile} report={report} />
         </div>
 
-        <div className="border-t border-white/10 pt-9">
+        <div className="border-t border-border-subtle pt-8">
           <BriefingSystemSummary
             missionProfile={missionProfile}
             report={report}
@@ -91,38 +89,21 @@ export function MissionBriefing({
 
         <section
           aria-labelledby="mission-architecture-timeline-title"
-          className="border-t border-white/10 pt-9"
+          className="border-t border-border-subtle pt-8"
         >
-          <p className="flex items-center gap-2 font-mono text-[0.6rem] tracking-[0.16em] text-accent uppercase">
-            <RadioTower aria-hidden="true" size={14} />
-            Educational sequence // Not simulated
-          </p>
-          <h3
-            className="mt-1 text-xl font-semibold"
+          <h4
+            className="orbix-h4 text-foreground"
             id="mission-architecture-timeline-title"
           >
-            Mission Architecture Timeline
-          </h3>
-          <ol className="mt-5 grid gap-2 sm:grid-cols-3 xl:grid-cols-6">
-            {architecturePhases.map((phase, index) => (
-              <li
-                className="relative rounded-xl border border-white/10 bg-surface px-4 py-4"
-                key={phase}
-              >
-                <span className="font-mono text-[0.57rem] text-accent">
-                  T+{String(index).padStart(2, "0")}
-                </span>
-                <p className="text-muted-strong mt-2 font-mono text-[0.66rem] font-semibold tracking-[0.08em] uppercase">
-                  {phase}
-                </p>
-                {index < architecturePhases.length - 1 ? (
-                  <ArrowDown
-                    aria-hidden="true"
-                    className="mt-3 text-muted motion-safe:animate-bounce motion-reduce:animate-none motion-reduce:transition-none sm:hidden"
-                    size={14}
-                  />
-                ) : null}
-              </li>
+            Typical mission phases
+          </h4>
+          <p className="mt-1 text-sm leading-6 text-muted">
+            The usual order of phases for a mission like this. Not simulated;
+            shown for context only.
+          </p>
+          <ol className="mt-3 list-decimal space-y-1 pl-6 text-sm leading-6 text-text-secondary sm:columns-2 sm:gap-8">
+            {architecturePhases.map((phase) => (
+              <li key={phase}>{phase}</li>
             ))}
           </ol>
         </section>
@@ -130,33 +111,25 @@ export function MissionBriefing({
         {insights?.insights.length ? (
           <section
             aria-labelledby="mission-briefing-insights-title"
-            className="border-t border-white/10 pt-9"
+            className="border-t border-border-subtle pt-8"
           >
-            <p className="font-mono text-[0.6rem] tracking-[0.16em] text-accent uppercase">
-              Analyst notes // Supplied explanations
-            </p>
-            <h3
-              className="mt-1 text-xl font-semibold"
+            <h4
+              className="orbix-h4 text-foreground"
               id="mission-briefing-insights-title"
             >
-              Engineering Briefing Notes
-            </h3>
-            <ul className="mt-5 grid gap-3 lg:grid-cols-2">
+              Engineering notes
+            </h4>
+            <ul className="mt-3 list-disc space-y-2 pl-5 text-sm leading-6 text-text-secondary">
               {insights.insights.map((insight) => (
-                <li
-                  className="text-muted-strong rounded-xl border border-white/10 bg-black/15 p-4 text-sm leading-6"
-                  key={insight.id}
-                >
-                  {insight.summary}
-                </li>
+                <li key={insight.id}>{insight.summary}</li>
               ))}
             </ul>
           </section>
         ) : null}
 
-        <footer className="border-t border-white/10 pt-6 text-xs leading-5 text-muted">
-          Presentation status describes briefing availability only. It does not
-          assess mission feasibility, readiness, safety, or certification.
+        <footer className="border-t border-border-subtle pt-4 text-sm leading-6 text-muted">
+          This briefing restates computed results. It does not assess mission
+          feasibility, readiness, safety, or certification.
         </footer>
       </div>
     </article>

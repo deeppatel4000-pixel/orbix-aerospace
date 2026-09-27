@@ -1,67 +1,95 @@
-import { CalendarClock, PlaneTakeoff } from "lucide-react";
-
-import { ProfileSection } from "@/features/aircraft/components/profile-section";
 import {
   formatAircraftVariantStatus,
   formatFirstFlight,
 } from "@/features/aircraft/utils";
-import type { Aircraft } from "@/features/vehicles/types";
+import { VehicleProfileSection } from "@/features/vehicles/components/vehicle-profile-section";
+import type { Aircraft, IsoDateString } from "@/features/vehicles/types";
 
 interface HistoricalTimelineProps {
   aircraft: Aircraft;
 }
 
-export function HistoricalTimeline({ aircraft }: HistoricalTimelineProps) {
-  return (
-    <ProfileSection
-      description="A source-bound chronology assembled from the program and variant dates recorded in the current dataset."
-      eyebrow="Program chronology"
-      mode="editorial"
-      id="historical-timeline"
-      title="Historical Timeline"
-    >
-      <ol className="relative space-y-5 before:absolute before:top-5 before:bottom-5 before:left-[1.35rem] before:w-px before:bg-gradient-to-b before:from-tactical-amber/60 before:via-tactical/40 before:to-transparent">
-        <li className="relative grid grid-cols-[2.75rem_minmax(0,1fr)] gap-4">
-          <span className="relative z-10 flex h-11 w-11 items-center justify-center rounded-full border border-tactical-amber/45 bg-[#080d0c] text-tactical-amber">
-            <PlaneTakeoff aria-hidden="true" size={17} />
-          </span>
-          <article className="orbix-frame border-tactical/25 bg-[#080d0c]/90 p-5 sm:p-6">
-            <p className="font-mono text-[0.6rem] tracking-[0.14em] text-tactical-amber uppercase">
-              {formatFirstFlight(aircraft.firstFlight)}
-            </p>
-            <h3 className="font-display mt-2 text-xl font-semibold">
-              Program first flight
-            </h3>
-            <p className="mt-2 text-sm leading-6 text-muted">
-              {aircraft.name} entered its recorded flight-test chronology.
-            </p>
-          </article>
-        </li>
+interface TimelineEvent {
+  readonly date?: IsoDateString;
+  readonly key: string;
+  readonly text: string;
+}
 
-        {aircraft.variants.map((variant) => (
-          <li
-            className="relative grid grid-cols-[2.75rem_minmax(0,1fr)] gap-4"
-            key={variant.id}
-          >
-            <span className="relative z-10 flex h-11 w-11 items-center justify-center rounded-full border border-tactical/35 bg-[#080d0c] text-muted">
-              <CalendarClock aria-hidden="true" size={17} />
-            </span>
-            <article className="orbix-frame border-tactical/20 bg-[#080d0c]/80 p-5 sm:p-6">
-              <p className="font-mono text-[0.6rem] tracking-[0.14em] text-muted uppercase">
-                {variant.firstFlight
-                  ? formatFirstFlight(variant.firstFlight)
-                  : "Date not recorded"}
-              </p>
-              <h3 className="font-display mt-2 text-xl font-semibold">
-                {variant.designation} {"//"} {variant.name}
-              </h3>
-              <p className="mt-2 text-sm leading-6 text-muted">
-                Recorded status: {formatAircraftVariantStatus(variant.status)}.
-              </p>
-            </article>
+/**
+ * The events the record actually dates: the program's first flight, then
+ * each variant's first flight in date order. A variant whose first flight is
+ * the program's own is folded into that entry. Variants with no published date
+ * follow, marked as such rather than given a guessed year.
+ */
+function buildEvents(aircraft: Aircraft): readonly TimelineEvent[] {
+  const firstVariants = aircraft.variants
+    .filter((variant) => variant.firstFlight === aircraft.firstFlight)
+    .map((variant) => variant.designation);
+  const dated: TimelineEvent[] = [
+    {
+      date: aircraft.firstFlight,
+      key: "program",
+      text:
+        firstVariants.length > 0
+          ? `First flight of the ${aircraft.name} (${firstVariants.join(", ")}).`
+          : `First flight of the ${aircraft.name}.`,
+    },
+  ];
+  const undated: TimelineEvent[] = [];
+
+  for (const variant of aircraft.variants) {
+    const status = formatAircraftVariantStatus(
+      variant.status,
+    ).toLocaleLowerCase("en-US");
+
+    if (!variant.firstFlight) {
+      undated.push({
+        key: variant.id,
+        text: `${variant.name} (${variant.designation}), ${status}.`,
+      });
+    } else if (variant.firstFlight !== aircraft.firstFlight) {
+      dated.push({
+        date: variant.firstFlight,
+        key: variant.id,
+        text: `First flight of the ${variant.name} (${variant.designation}), now ${status}.`,
+      });
+    }
+  }
+
+  dated.sort((a, b) => (a.date ?? "").localeCompare(b.date ?? ""));
+  return [...dated, ...undated];
+}
+
+/** History (spec 14): an ordered list with dates; timeline dots are circles. */
+export function HistoricalTimeline({ aircraft }: HistoricalTimelineProps) {
+  const events = buildEvents(aircraft);
+
+  return (
+    <VehicleProfileSection
+      description="Dates recorded for the program and its variants."
+      id="history"
+      title="History"
+    >
+      <ol className="relative flex flex-col gap-6 border-l border-border pl-6">
+        {events.map((event) => (
+          <li className="relative" key={event.key}>
+            <span
+              aria-hidden="true"
+              className="absolute top-2 -left-6 size-2 -translate-x-1/2 rounded-full bg-border-strong"
+            />
+            <p className="text-sm text-muted">
+              {event.date ? (
+                <time className="orbix-data" dateTime={event.date}>
+                  {formatFirstFlight(event.date)}
+                </time>
+              ) : (
+                "First flight date not published"
+              )}
+            </p>
+            <p className="mt-1 text-text-secondary">{event.text}</p>
           </li>
         ))}
       </ol>
-    </ProfileSection>
+    </VehicleProfileSection>
   );
 }

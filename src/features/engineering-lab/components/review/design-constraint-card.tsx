@@ -1,5 +1,4 @@
-import { CircleDot, Minus } from "lucide-react";
-
+import { formatLabValue } from "../visualization/format-lab-value";
 export interface DesignConstraintCardProps {
   readonly description?: string;
   readonly label: string;
@@ -7,11 +6,10 @@ export interface DesignConstraintCardProps {
   readonly value?: number | string;
 }
 
-const parameterFormatter = new Intl.NumberFormat("en-US", {
-  maximumFractionDigits: 2,
-  minimumFractionDigits: 0,
-});
-
+/**
+ * One reported mission parameter as a definition-list row. Render inside a
+ * `<dl>`. A missing value reads "Not reported" in muted text.
+ */
 export function DesignConstraintCard({
   description,
   label,
@@ -21,49 +19,34 @@ export function DesignConstraintCard({
   const isReported = value !== undefined;
 
   return (
-    <article
-      aria-label={`${label}: ${isReported ? "reported mission parameter" : "not reported"}`}
-      className="rounded-xl border border-white/10 bg-[#081419] p-4"
+    <div
+      className="flex flex-wrap items-baseline justify-between gap-x-4 border-t border-border-subtle py-2 text-sm"
       data-parameter-availability={isReported ? "reported" : "not-reported"}
     >
-      <div className="flex items-start justify-between gap-3">
-        <div>
-          <p className="font-mono text-[0.52rem] tracking-[0.11em] text-accent uppercase">
-            Mission parameter
-          </p>
-          <h4 className="mt-1 text-sm font-semibold text-[#cdd9db]">{label}</h4>
-        </div>
-        <span
+      <dt className="text-muted">{label}</dt>
+      <dd className="text-right">
+        <output
           className={
-            "inline-flex items-center gap-1.5 rounded-full border px-2 py-1 font-mono text-[0.48rem] tracking-[0.07em] uppercase " +
-            (isReported
-              ? "border-accent/20 bg-accent/5 text-accent"
-              : "border-white/10 bg-white/3 text-[#71868c]")
+            !isReported
+              ? "text-muted"
+              : typeof value === "number"
+                ? "orbix-data text-foreground"
+                : "text-foreground"
           }
         >
-          {isReported ? (
-            <CircleDot aria-hidden="true" size={9} />
-          ) : (
-            <Minus aria-hidden="true" size={9} />
-          )}
-          {isReported ? "Reported" : "Not Reported"}
-        </span>
-      </div>
-      <p className="mt-4 font-mono text-lg font-semibold text-[#e1e9ea]">
-        <output>
           {typeof value === "number"
-            ? parameterFormatter.format(value)
-            : (value ?? "Not Reported")}
+            ? formatLabValue(value)
+            : (value ?? "Not reported")}
           {isReported && unit ? (
-            <span className="ml-1 text-[0.65rem] font-normal text-[#7f959a]">
-              {unit}
-            </span>
+            <span className="ml-1 text-muted">{unit}</span>
           ) : null}
         </output>
-      </p>
+      </dd>
       {description ? (
-        <p className="mt-3 text-xs leading-5 text-[#758b90]">{description}</p>
+        <dd className="mt-1 basis-full text-sm leading-6 text-muted">
+          {description}
+        </dd>
       ) : null}
-    </article>
+    </div>
   );
 }

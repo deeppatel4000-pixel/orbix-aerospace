@@ -1,10 +1,14 @@
 import { RocketImage } from "@/features/rockets/components/rocket-image";
 import {
-  formatOrbitType,
+  countRocketStages,
+  formatRocketClassification,
   formatRocketMeasurement,
 } from "@/features/rockets/utils";
 import { VehicleMediaFrame } from "@/features/vehicles/components/vehicle-media-frame";
-import { VehicleRecordCard } from "@/features/vehicles/components/vehicle-record-card";
+import {
+  VehicleRecordCard,
+  type VehicleRecordCardVariant,
+} from "@/features/vehicles/components/vehicle-record-card";
 import type { Rocket } from "@/features/vehicles/types";
 
 interface RocketCardProps {
@@ -12,47 +16,30 @@ interface RocketCardProps {
   priority?: boolean;
   rocket: Rocket;
   sizes?: string;
+  variant?: VehicleRecordCardVariant;
 }
 
 /**
- * Launch-vehicle adapter over the shared vehicle record card.
- *
- * Same card architecture as aircraft, two domain differences:
- *
- * 1. A PORTRAIT media frame. Launch vehicles are vertical subjects and their
- *    sources measure 0.67-1.00; the landscape frame used for aircraft cropped
- *    them through the middle.
- * 2. Domain-appropriate specs — liftoff thrust and stage count, rather than
- *    an aircraft's speed and ceiling. Both are required fields on `Rocket`,
- *    so neither can render as absent or zero.
- *
- * The classification line uses supported orbits, which is what actually
- * separates one launch vehicle from another during discovery.
+ * Launch vehicle card link. Key values are liftoff thrust, height and the
+ * number of stages in the flight sequence: all derived from required fields
+ * on `Rocket`. The compact variant shows liftoff thrust only.
  */
 export function RocketCard({
   className,
   priority = false,
   rocket,
-  sizes = "(max-width: 639px) 100vw, (max-width: 1023px) 50vw, 33vw",
+  sizes = "(max-width: 639px) 100vw, (max-width: 1023px) 50vw, 22rem",
+  variant = "default",
 }: RocketCardProps) {
-  const liftoffThrust = formatRocketMeasurement(
-    rocket.performance.liftoffThrust,
-  );
-  const stageCount = rocket.stages.length;
-
   return (
     <VehicleRecordCard
       className={className}
-      classification={rocket.performance.supportedOrbits
-        .map(formatOrbitType)
-        .join(" · ")}
-      description={rocket.description}
+      classification={formatRocketClassification(rocket.stages)}
       href={`/rockets/${rocket.id}`}
       media={
-        <VehicleMediaFrame aspect="portrait">
+        <VehicleMediaFrame aspect="landscape">
           <RocketImage
             fillContainer
-            imageClassName="saturate-[0.85]"
             priority={priority}
             rocket={rocket}
             sizes={sizes}
@@ -61,12 +48,18 @@ export function RocketCard({
       }
       name={rocket.name}
       specs={[
-        { label: "Liftoff thrust", value: liftoffThrust.value },
         {
-          label: "Stages",
-          value: `${stageCount}`,
+          label: "Liftoff thrust",
+          value: formatRocketMeasurement(rocket.performance.liftoffThrust)
+            .value,
         },
+        {
+          label: "Height",
+          value: formatRocketMeasurement(rocket.dimensions.height).value,
+        },
+        { label: "Stages", value: String(countRocketStages(rocket.stages)) },
       ]}
+      variant={variant}
     />
   );
 }

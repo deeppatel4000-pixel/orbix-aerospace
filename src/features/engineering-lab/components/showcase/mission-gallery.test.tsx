@@ -29,10 +29,8 @@ describe("MissionGallery", () => {
   it("renders all supplied mission presets", () => {
     const markup = renderToStaticMarkup(<MissionGallery presets={presets} />);
 
-    expect(markup).toContain("ORBIX MISSION ARCHIVE");
-    expect(markup).toContain(
-      "Explore engineered aerospace concepts through simulation, analysis, and visualization.",
-    );
+    expect(markup).toContain("Mission presets");
+    expect(markup).toContain("each a fixed set of mission-profile inputs");
     for (const preset of presets) {
       expect(markup).toContain(preset.name);
     }
@@ -70,7 +68,7 @@ describe("MissionGallery", () => {
 
     expect(markup).toContain('data-system-availability="not-included"');
     expect(markup).toContain("not included");
-    expect(markup).toContain("Enter Mission Control");
+    expect(markup).toContain("Enter Mission control");
   });
 
   it("renders an explicit empty archive state", () => {
@@ -94,11 +92,11 @@ describe("MissionGallery", () => {
       'aria-labelledby="mission-card-iss-style-resupply-title"',
     );
     expect(markup).toContain(
-      'aria-label="Enter Mission Control from ISS Style Resupply"',
+      'aria-label="Enter Mission control from ISS Style Resupply"',
     );
     expect(markup).toContain('href="#mission-control-dashboard"');
-    expect(markup).toContain("focus-visible:ring-2");
-    expect(markup).toContain("motion-reduce:transition-none");
+    expect(markup).toContain("orbix-button");
+    expect(markup).not.toContain("animate-");
   });
 
   it("does not add rankings or recommendations to mission cards", () => {

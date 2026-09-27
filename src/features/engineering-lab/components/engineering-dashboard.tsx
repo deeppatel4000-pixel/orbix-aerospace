@@ -1,36 +1,21 @@
-import {
-  CircleDot,
-  CloudSun,
-  FileText,
-  Flame,
-  FlaskConical,
-  Gauge,
-  Layers,
-  MoveRight,
-  Orbit,
-  Plane,
-  Radar,
-  Scale,
-  Shield,
-  Sigma,
-  Wind,
-} from "lucide-react";
+import type { ReactNode } from "react";
+import Link from "next/link";
 
 import { Container } from "@/components/layout/container";
-import { OrbixEnvironmentBackdrop } from "@/components/brand/orbix-environment";
-import { OrbixWordmark } from "@/components/brand/orbix-wordmark";
 import { analyzeMissionProfile } from "@/features/engineering-lab/analysis";
 import { AtmosphereCalculator } from "@/features/engineering-lab/components/atmosphere-calculator";
 import { CalculatorCard } from "@/features/engineering-lab/components/calculator-card";
 import { DragEquationCalculator } from "@/features/engineering-lab/components/drag-equation-calculator";
-import { EngineeringContextNote } from "@/features/engineering-lab/components/engineering-context-note";
 import { FlightConditionAnalyzer } from "@/features/engineering-lab/components/flight-condition-analyzer";
 import { HohmannTransferAnalyzer } from "@/features/engineering-lab/components/hohmann-transfer-analyzer";
 import { HypersonicHeatingAnalyzer } from "@/features/engineering-lab/components/hypersonic-heating-analyzer";
 import { InletCompressionAnalyzer } from "@/features/engineering-lab/components/inlet-compression-analyzer";
 import { LiftEquationCalculator } from "@/features/engineering-lab/components/lift-equation-calculator";
 import { LaboratoryShell } from "@/features/engineering-lab/components/laboratory-shell";
-import type { LaboratoryToolNavigationItem } from "@/features/engineering-lab/components/laboratory-tool-navigation";
+import type {
+  LaboratoryToolGroup,
+  LaboratoryToolNavigationItem,
+} from "@/features/engineering-lab/components/laboratory-tool-navigation";
 import { LaboratoryWorkflowSection } from "@/features/engineering-lab/components/laboratory-workflow-section";
 import { MaterialTPSSizingAnalyzer } from "@/features/engineering-lab/components/material-tps-sizing-analyzer";
 import {
@@ -49,7 +34,6 @@ import { OrbitalPlaneChangeAnalyzer } from "@/features/engineering-lab/component
 import { ReentryDecelerationAnalyzer } from "@/features/engineering-lab/components/reentry-deceleration-analyzer";
 import { ReentryTrajectoryAnalyzer } from "@/features/engineering-lab/components/reentry-trajectory-analyzer";
 import { RocketEquationCalculator } from "@/features/engineering-lab/components/rocket-equation-calculator";
-import { MissionGallery } from "@/features/engineering-lab/components/showcase/mission-gallery";
 import {
   ScenarioLibrary,
   ScenarioLibraryBuilderTarget,
@@ -70,7 +54,6 @@ import {
 } from "@/features/engineering-lab/components/visualization";
 import {
   getMissionPresetById,
-  listMissionPresets,
   type MissionScenario,
 } from "@/features/engineering-lab/missions";
 import { generateMissionReport } from "@/features/engineering-lab/reports";
@@ -140,773 +123,519 @@ function createTradeStudyPreview() {
 }
 
 const tradeStudyPreview = createTradeStudyPreview();
-const missionArchivePresets = listMissionPresets();
-const missionArchiveAnalyses = [
-  missionPreview.analysis,
-  ...tradeStudyPreview.analyses,
-];
-const missionArchiveReports = [
-  missionPreview.report,
-  ...tradeStudyPreview.reports,
-];
-
-const laboratoryWorkflows = [
-  {
-    code: "WF-01",
-    description: "Propulsion, force balance, aerodynamics, and atmosphere",
-    href: "#foundations-workflow",
-    title: "Engineering foundations",
-  },
-  {
-    code: "WF-02",
-    description: "Stagnation states, shocks, recovery, and inlet compression",
-    href: "#compressible-flow-workflow",
-    title: "Compressible flow",
-  },
-  {
-    code: "WF-03",
-    description: "Heating, reentry dynamics, TPS sizing, and vehicle studies",
-    href: "#entry-systems-workflow",
-    title: "Entry systems",
-  },
-  {
-    code: "WF-04",
-    description: "Transfers, plane changes, profiles, presets, and reports",
-    href: "#orbital-mission-workflow",
-    title: "Orbital and mission design",
-  },
-  {
-    code: "WF-05",
-    description: "Mission visualization, integrated viewing, and control",
-    href: "#mission-operations-workflow",
-    title: "Mission operations",
-  },
-  {
-    code: "WF-06",
-    description: "Scenario management, briefings, trade studies, and demos",
-    href: "#review-presentation-workflow",
-    title: "Review and presentation",
-  },
-] as const;
 
 /**
- * The module index for each workflow, in render order.
- *
- * Paired by position with the `CalculatorCard` children below. Kept as data
- * rather than derived from the children so the section stays a plain client
- * component; `engineering-lab-modules.spec.ts` asserts each entry matches the
- * heading of the card it reveals, so the pairing cannot drift unnoticed.
+ * Every module in the lab, keyed by its DOM id (which is also its deep-link
+ * anchor, so ids never change). The index, the compact select and each
+ * module's heading all read from here, so they cannot drift apart.
  */
-const FOUNDATIONS_MODULES: readonly LaboratoryToolNavigationItem[] = [
-  {
-    id: "rocket-equation",
+const MODULES = {
+  "rocket-equation": {
+    description:
+      "Calculates the ideal velocity change of a rocket stage from its mass ratio and specific impulse.",
     kind: "Rocket propulsion",
-    title: "Tsiolkovsky Rocket Equation",
+    title: "Tsiolkovsky rocket equation",
   },
-  {
-    id: "thrust-to-weight",
+  "thrust-to-weight": {
+    description:
+      "Compares available thrust with vehicle weight at a given instantaneous mass.",
     kind: "Force balance",
-    title: "Thrust-to-Weight Ratio",
+    title: "Thrust-to-weight ratio",
   },
-  { id: "lift-equation", kind: "Aerodynamics", title: "Lift Equation" },
-  { id: "drag-equation", kind: "Aerodynamics", title: "Drag Equation" },
-  {
-    id: "standard-atmosphere",
-    kind: "Atmospheric modeling",
-    title: "Standard Atmosphere",
+  "lift-equation": {
+    description:
+      "Calculates lift force from air density, airspeed, reference wing area and lift coefficient.",
+    kind: "Aerodynamics",
+    title: "Lift equation",
   },
-  {
-    id: "flight-condition-analyzer",
-    kind: "Integrated flight performance",
-    title: "Flight Condition Analyzer",
+  "drag-equation": {
+    description:
+      "Calculates aerodynamic drag from dynamic pressure, reference area and drag coefficient.",
+    kind: "Aerodynamics",
+    title: "Drag equation",
   },
-];
-
-const COMPRESSIBLE_FLOW_MODULES: readonly LaboratoryToolNavigationItem[] = [
-  {
-    id: "stagnation-condition-analyzer",
+  "standard-atmosphere": {
+    description:
+      "Calculates temperature, pressure and density in the troposphere using the standard-atmosphere model.",
+    kind: "Atmosphere",
+    title: "Standard atmosphere",
+  },
+  "flight-condition-analyzer": {
+    description:
+      "Combines atmosphere, dynamic pressure, lift and drag into one flight-condition calculation.",
+    kind: "Flight performance",
+    title: "Flight condition analyzer",
+  },
+  "stagnation-condition-analyzer": {
+    description:
+      "Converts static atmospheric properties into stagnation conditions with isentropic-flow ratios.",
     kind: "Compressible flow",
-    title: "Stagnation Condition Analyzer",
+    title: "Stagnation condition analyzer",
   },
-  {
-    id: "shock-condition-analyzer",
+  "shock-condition-analyzer": {
+    description:
+      "Calculates the flow state downstream of a one-dimensional normal shock.",
     kind: "Normal shock",
-    title: "Shock Condition Analyzer",
+    title: "Normal shock analyzer",
   },
-  {
-    id: "oblique-shock-condition-analyzer",
+  "oblique-shock-condition-analyzer": {
+    description:
+      "Calculates an attached weak oblique shock from upstream atmosphere, Mach number and deflection angle.",
     kind: "Oblique shock",
-    title: "Oblique Shock Condition Analyzer",
+    title: "Oblique shock analyzer",
   },
-  {
-    id: "shock-pressure-loss-analyzer",
+  "shock-pressure-loss-analyzer": {
+    description:
+      "Compares stagnation-pressure recovery across a normal shock and an attached weak oblique shock.",
     kind: "Pressure recovery",
-    title: "Shock Pressure Loss Analyzer",
+    title: "Shock pressure loss analyzer",
   },
-  {
-    id: "multi-shock-recovery-analyzer",
+  "multi-shock-recovery-analyzer": {
+    description:
+      "Calculates cumulative total-pressure recovery through an ordered sequence of shocks.",
     kind: "Staged compression",
-    title: "Multi-Shock Recovery Analyzer",
+    title: "Multi-shock recovery analyzer",
   },
-  {
-    id: "inlet-compression-analyzer",
+  "inlet-compression-analyzer": {
+    description:
+      "Models staged external compression followed by a terminal normal shock and reports inlet pressure recovery.",
     kind: "Supersonic inlet",
-    title: "Supersonic Inlet Compression Analyzer",
+    title: "Supersonic inlet compression analyzer",
   },
-];
-
-const ENTRY_SYSTEMS_MODULES: readonly LaboratoryToolNavigationItem[] = [
-  {
-    id: "hypersonic-heating-analyzer",
-    kind: "Hypersonic thermal analysis",
-    title: "Hypersonic Heating Analyzer",
+  "hypersonic-heating-analyzer": {
+    description:
+      "Estimates stagnation-point convective heating from standard-atmosphere conditions and local Mach number.",
+    kind: "Hypersonic heating",
+    title: "Hypersonic heating analyzer",
   },
-  {
-    id: "reentry-deceleration-analyzer",
-    kind: "Reentry dynamics",
-    title: "Reentry Deceleration Analyzer",
+  "reentry-deceleration-analyzer": {
+    description:
+      "Estimates instantaneous drag deceleration from atmosphere, ballistic coefficient and dynamic pressure.",
+    kind: "Entry dynamics",
+    title: "Reentry deceleration analyzer",
   },
-  {
-    id: "reentry-trajectory-analyzer",
-    kind: "Reentry trajectory",
-    title: "Reentry Trajectory Analyzer",
+  "reentry-trajectory-analyzer": {
+    description:
+      "Integrates a simplified point-mass descent and reports velocity, altitude, dynamic pressure and deceleration over time.",
+    kind: "Entry trajectory",
+    title: "Reentry trajectory analyzer",
   },
-  {
-    id: "material-tps-sizing-analyzer",
+  "material-tps-sizing-analyzer": {
+    description:
+      "Links the educational TPS material catalog to a reentry heating history for preliminary thickness sizing.",
     kind: "Thermal protection",
-    title: "TPS Material Selection Analyzer",
+    title: "TPS material selection analyzer",
   },
-  {
-    id: "tps-material-comparison-analyzer",
-    kind: "TPS comparison",
-    title: "TPS Material Comparison Analyzer",
+  "tps-material-comparison-analyzer": {
+    description:
+      "Compares catalog TPS materials under one shared reentry scenario.",
+    kind: "Thermal protection",
+    title: "TPS material comparison analyzer",
   },
-  {
-    id: "vehicle-reentry-evaluation-analyzer",
-    kind: "Vehicle reentry",
-    title: "Vehicle Reentry Evaluation Analyzer",
+  "vehicle-reentry-evaluation-analyzer": {
+    description:
+      "Runs one vehicle configuration through the reentry trajectory, heating history and TPS comparison.",
+    kind: "Vehicle entry",
+    title: "Vehicle reentry evaluation analyzer",
   },
-  {
-    id: "vehicle-reentry-comparison-analyzer",
-    kind: "Vehicle comparison",
-    title: "Vehicle Reentry Comparison Analyzer",
+  "vehicle-reentry-comparison-analyzer": {
+    description:
+      "Compares up to five vehicle configurations under identical reentry conditions.",
+    kind: "Vehicle entry",
+    title: "Vehicle reentry comparison analyzer",
   },
-];
-
-const ORBITAL_MISSION_MODULES: readonly LaboratoryToolNavigationItem[] = [
-  {
-    id: "hohmann-transfer-analyzer",
+  "hohmann-transfer-analyzer": {
+    description:
+      "Calculates the delta-v for a Hohmann transfer between two circular, coplanar orbits.",
     kind: "Orbital mechanics",
-    title: "Hohmann Transfer Analyzer",
+    title: "Hohmann transfer analyzer",
   },
-  {
-    id: "orbital-plane-change-analyzer",
+  "orbital-plane-change-analyzer": {
+    description:
+      "Calculates circular-orbit velocity from altitude and the delta-v for an impulsive inclination change.",
     kind: "Orbital mechanics",
-    title: "Orbital Plane Change Analyzer",
+    title: "Orbital plane change analyzer",
   },
-  {
-    id: "mission-profile-analyzer",
-    kind: "Mission integration",
-    title: "Mission Profile Analyzer",
+  "mission-profile-analyzer": {
+    description:
+      "Combines a delta-v budget, vehicle reentry evaluation, vehicle comparison and TPS selection into one mission profile.",
+    kind: "Mission profile",
+    title: "Mission profile analyzer",
   },
-  {
-    id: "mission-preset-launcher",
+  "mission-preset-launcher": {
+    description:
+      "Loads the inputs of a fixed educational mission preset into the mission profile analyzer.",
     kind: "Mission presets",
-    title: "Mission Preset Launcher",
+    title: "Mission presets",
   },
-  {
-    id: "mission-report-viewer",
-    kind: "Mission reporting",
-    title: "Mission Report Viewer",
+  "mission-report-viewer": {
+    description:
+      "Shows the structured report generated from a completed mission-profile calculation.",
+    kind: "Mission report",
+    title: "Mission report viewer",
   },
-];
+  "mission-visualization": {
+    description:
+      "Draws the orbital transfer and the reentry profile from a completed mission-profile calculation.",
+    kind: "Diagrams",
+    title: "Mission diagrams",
+  },
+  "interactive-mission-viewer": {
+    description:
+      "Steps through the reported mission sequence with the matching orbital and reentry diagrams and values.",
+    kind: "Mission viewer",
+    title: "Mission viewer",
+  },
+  "mission-control-dashboard": {
+    description:
+      "Brings the mission profile, diagrams, replay and report for one example mission together on one page.",
+    kind: "Mission overview",
+    title: "Mission control dashboard",
+  },
+  "mission-scenario-builder": {
+    description:
+      "Builds a custom mission-profile input from orbital, vehicle, reentry and TPS parameters, then runs the mission profile analyzer on it.",
+    kind: "Scenario input",
+    title: "Mission scenario builder",
+  },
+  "scenario-library": {
+    description:
+      "Saves mission scenarios in this browser so they can be reloaded, duplicated or deleted later.",
+    kind: "Saved scenarios",
+    title: "Scenario library",
+  },
+  "mission-briefing": {
+    description:
+      "Summarizes one completed mission-profile calculation and its report as a readable briefing.",
+    kind: "Presentation",
+    title: "Mission briefing",
+  },
+  "mission-trade-study": {
+    description:
+      "Places the orbital, vehicle and thermal results of several missions side by side, without scoring them.",
+    kind: "Comparison",
+    title: "Mission trade study",
+  },
+  "mission-showcase": {
+    description:
+      "Walks through a completed mission phase by phase with the values computed for each phase.",
+    kind: "Presentation",
+    title: "Mission walkthrough",
+  },
+  "demo-mode": {
+    description:
+      "A guided tour of the mission workflow, from inputs to report, using one example mission.",
+    kind: "Guided tour",
+    title: "Guided demo",
+  },
+} as const satisfies Record<
+  string,
+  Omit<LaboratoryToolNavigationItem, "id"> & { description: string }
+>;
 
-const MISSION_OPERATIONS_MODULES: readonly LaboratoryToolNavigationItem[] = [
-  {
-    id: "mission-visualization",
-    kind: "Mission telemetry",
-    title: "Mission Visualization",
-  },
-  {
-    id: "interactive-mission-viewer",
-    kind: "Integrated mission control",
-    title: "Interactive Mission Viewer",
-  },
-  {
-    id: "mission-control-dashboard",
-    kind: "Mission operations",
-    title: "Mission Control Dashboard",
-  },
-];
+type ModuleId = keyof typeof MODULES;
 
-const REVIEW_PRESENTATION_MODULES: readonly LaboratoryToolNavigationItem[] = [
+function tool(id: ModuleId): LaboratoryToolNavigationItem {
+  const { kind, title } = MODULES[id];
+  return { id, kind, title };
+}
+
+/**
+ * The workflows in render order, each with its modules in render order.
+ * Workflow ids are kept from earlier releases so existing deep links resolve.
+ */
+const WORKFLOWS = [
   {
-    id: "mission-scenario-builder",
-    kind: "Mission planning",
-    title: "Mission Scenario Builder",
+    id: "foundations-workflow",
+    title: "Foundations",
+    tools: [
+      tool("rocket-equation"),
+      tool("thrust-to-weight"),
+      tool("lift-equation"),
+      tool("drag-equation"),
+      tool("standard-atmosphere"),
+      tool("flight-condition-analyzer"),
+    ],
   },
   {
-    id: "scenario-library",
-    kind: "Scenario management",
-    title: "Mission Scenario Library",
+    id: "compressible-flow-workflow",
+    title: "Compressible flow",
+    tools: [
+      tool("stagnation-condition-analyzer"),
+      tool("shock-condition-analyzer"),
+      tool("oblique-shock-condition-analyzer"),
+      tool("shock-pressure-loss-analyzer"),
+      tool("multi-shock-recovery-analyzer"),
+      tool("inlet-compression-analyzer"),
+    ],
   },
   {
-    id: "mission-briefing",
-    kind: "Mission presentation",
-    title: "Mission Briefing",
+    id: "entry-systems-workflow",
+    title: "Atmospheric entry",
+    tools: [
+      tool("hypersonic-heating-analyzer"),
+      tool("reentry-deceleration-analyzer"),
+      tool("reentry-trajectory-analyzer"),
+      tool("material-tps-sizing-analyzer"),
+      tool("tps-material-comparison-analyzer"),
+      tool("vehicle-reentry-evaluation-analyzer"),
+      tool("vehicle-reentry-comparison-analyzer"),
+    ],
   },
   {
-    id: "mission-trade-study",
-    kind: "Architecture review",
-    title: "Mission Trade Study Center",
+    id: "orbital-mission-workflow",
+    title: "Orbits and missions",
+    tools: [
+      tool("hohmann-transfer-analyzer"),
+      tool("orbital-plane-change-analyzer"),
+      tool("mission-profile-analyzer"),
+      tool("mission-preset-launcher"),
+      tool("mission-report-viewer"),
+    ],
   },
   {
-    id: "mission-showcase",
-    kind: "Mission presentation",
-    title: "Cinematic Mission Showcase",
+    id: "mission-operations-workflow",
+    title: "Mission visualization",
+    tools: [
+      tool("mission-visualization"),
+      tool("interactive-mission-viewer"),
+      tool("mission-control-dashboard"),
+    ],
   },
-  { id: "demo-mode", kind: "Guided experience", title: "Orbix Demo Mode" },
-];
+  {
+    id: "review-presentation-workflow",
+    title: "Scenarios and review",
+    tools: [
+      tool("mission-scenario-builder"),
+      tool("scenario-library"),
+      tool("mission-briefing"),
+      tool("mission-trade-study"),
+      tool("mission-showcase"),
+      tool("demo-mode"),
+    ],
+  },
+] as const satisfies readonly LaboratoryToolGroup[];
+
+type WorkflowIndex = 0 | 1 | 2 | 3 | 4 | 5;
+
+function Module({ children, id }: { children: ReactNode; id: ModuleId }) {
+  const { description, title } = MODULES[id];
+
+  return (
+    <CalculatorCard description={description} id={id} title={title}>
+      {children}
+    </CalculatorCard>
+  );
+}
+
+function Workflow({
+  children,
+  index,
+}: {
+  children: ReactNode;
+  index: WorkflowIndex;
+}) {
+  const workflow = WORKFLOWS[index];
+
+  return (
+    <LaboratoryWorkflowSection
+      id={workflow.id}
+      title={workflow.title}
+      tools={workflow.tools}
+    >
+      {children}
+    </LaboratoryWorkflowSection>
+  );
+}
 
 export function EngineeringDashboard() {
+  const reentryEvaluation =
+    missionPreview.analysis.sourceAnalyses.vehicleReentryEvaluation;
+
   return (
     <>
-      <header className="orbix-brand-glow relative isolate overflow-hidden border-b border-laboratory/20 py-20 sm:py-28">
-        <OrbixEnvironmentBackdrop priority theme="laboratory" />
-        <Container>
-          <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_22rem] lg:items-end">
-            <div className="max-w-4xl">
-              <OrbixWordmark className="mb-7 h-10 w-40" priority />
-              <p className="flex items-center gap-3 font-mono text-xs tracking-[0.2em] text-accent uppercase">
-                <FlaskConical aria-hidden="true" size={16} strokeWidth={1.7} />
-                Applied engineering // Laboratory
-              </p>
-              <h1 className="font-display mt-6 text-5xl leading-[0.98] font-semibold tracking-[-0.05em] text-balance sm:text-6xl lg:text-7xl">
-                Engineering Laboratory
-              </h1>
-              <p className="mt-6 max-w-3xl text-lg leading-8 text-muted sm:text-xl">
-                Work directly with foundational aerospace equations using
-                explicit units, transparent assumptions, and validated inputs.
-              </p>
-            </div>
-
-            <aside className="orbix-premium-card border-laboratory/25 p-5 backdrop-blur-md">
-              <div className="flex items-center gap-3">
-                <span className="flex h-10 w-10 items-center justify-center border border-laboratory/25 bg-laboratory/10 text-laboratory">
-                  <Gauge aria-hidden="true" size={19} strokeWidth={1.7} />
-                </span>
-                <div>
-                  <p className="font-mono text-[0.62rem] tracking-[0.14em] text-muted uppercase">
-                    Laboratory scope
-                  </p>
-                  <p className="mt-1 text-sm font-semibold">
-                    Educational workspace
-                  </p>
-                </div>
-              </div>
-              <div className="mt-5 flex items-end justify-between border-t border-border pt-4">
-                <span className="text-sm text-muted">Available modules</span>
-                <span className="font-mono text-2xl text-accent">33</span>
-              </div>
-            </aside>
-          </div>
-
-          <div className="mt-10 max-w-4xl">
-            <EngineeringContextNote
-              label="How to use this laboratory"
-              title="Begin with the model closest to your engineering question."
+      <header className="border-b border-border pt-12 pb-8">
+        <Container wide>
+          <h1 className="orbix-h1 text-foreground">Engineering Lab</h1>
+          <p className="orbix-lead mt-4">
+            Calculators for rocket propulsion, aerodynamics, compressible flow,
+            atmospheric entry and orbital mechanics, each with its equation,
+            units and stated assumptions.
+          </p>
+          <p className="mt-4 max-w-[68ch] text-sm leading-6 text-muted">
+            For education only. The models are simplified and must not be used
+            for operational, safety or certification decisions. See the{" "}
+            <Link
+              className="text-accent underline underline-offset-4 hover:text-accent-strong"
+              href="/terms"
             >
-              Follow the workflow index for a guided sequence, or move directly
-              to any module. Each analyzer retains its documented assumptions,
-              validation behavior, and source calculations.
-            </EngineeringContextNote>
-          </div>
+              terms of use
+            </Link>
+            .
+          </p>
         </Container>
       </header>
 
-      <section
-        aria-label="ORBIX mission archive"
-        className="border-b border-border/70 py-16 sm:py-20"
-      >
-        <Container>
-          <MissionGallery
-            analyses={missionArchiveAnalyses}
-            missionControlHref="#mission-control-dashboard"
-            presets={missionArchivePresets}
-            reports={missionArchiveReports}
-          />
-        </Container>
-      </section>
+      <Container className="py-8 lg:py-12" wide>
+        <LaboratoryShell workflows={WORKFLOWS}>
+          <Workflow index={0}>
+            <Module id="rocket-equation">
+              <RocketEquationCalculator />
+            </Module>
+            <Module id="thrust-to-weight">
+              <ThrustToWeightCalculator />
+            </Module>
+            <Module id="lift-equation">
+              <LiftEquationCalculator />
+            </Module>
+            <Module id="drag-equation">
+              <DragEquationCalculator />
+            </Module>
+            <Module id="standard-atmosphere">
+              <AtmosphereCalculator />
+            </Module>
+            <Module id="flight-condition-analyzer">
+              <FlightConditionAnalyzer />
+            </Module>
+          </Workflow>
 
-      <LaboratoryShell workflows={laboratoryWorkflows}>
-        <LaboratoryWorkflowSection
-          code="Workflow 01 // Modules 01-06"
-          description="Begin with the propulsion, force-balance, aerodynamic, and atmospheric primitives that support later integrated analyses."
-          icon={FlaskConical}
-          id="foundations-workflow"
-          title="Engineering foundations"
-          tools={FOUNDATIONS_MODULES}
-        >
-          <CalculatorCard
-            headingLevel={3}
-            description="Estimate the ideal velocity change available from a rocket stage using mass ratio and propulsion efficiency."
-            eyebrow="Calculator 01 // Rocket propulsion"
-            icon={Sigma}
-            id="rocket-equation"
-            title="Tsiolkovsky Rocket Equation"
-          >
-            <RocketEquationCalculator />
-          </CalculatorCard>
+          <Workflow index={1}>
+            <Module id="stagnation-condition-analyzer">
+              <StagnationConditionAnalyzer />
+            </Module>
+            <Module id="shock-condition-analyzer">
+              <ShockConditionAnalyzer />
+            </Module>
+            <Module id="oblique-shock-condition-analyzer">
+              <ObliqueShockConditionAnalyzer />
+            </Module>
+            <Module id="shock-pressure-loss-analyzer">
+              <ShockPressureLossAnalyzer />
+            </Module>
+            <Module id="multi-shock-recovery-analyzer">
+              <MultiShockRecoveryAnalyzer />
+            </Module>
+            <Module id="inlet-compression-analyzer">
+              <InletCompressionAnalyzer />
+            </Module>
+          </Workflow>
 
-          <CalculatorCard
-            headingLevel={3}
-            description="Evaluate whether available thrust exceeds vehicle weight at a specified instantaneous mass."
-            eyebrow="Calculator 02 // Force balance"
-            icon={Scale}
-            id="thrust-to-weight"
-            title="Thrust-to-Weight Ratio"
-          >
-            <ThrustToWeightCalculator />
-          </CalculatorCard>
+          <Workflow index={2}>
+            <Module id="hypersonic-heating-analyzer">
+              <HypersonicHeatingAnalyzer />
+            </Module>
+            <Module id="reentry-deceleration-analyzer">
+              <ReentryDecelerationAnalyzer />
+            </Module>
+            <Module id="reentry-trajectory-analyzer">
+              <ReentryTrajectoryAnalyzer />
+            </Module>
+            <Module id="material-tps-sizing-analyzer">
+              <MaterialTPSSizingAnalyzer />
+            </Module>
+            <Module id="tps-material-comparison-analyzer">
+              <TPSMaterialComparisonAnalyzer />
+            </Module>
+            <Module id="vehicle-reentry-evaluation-analyzer">
+              <VehicleReentryEvaluationAnalyzer />
+            </Module>
+            <Module id="vehicle-reentry-comparison-analyzer">
+              <VehicleReentryComparisonAnalyzer />
+            </Module>
+          </Workflow>
 
-          <CalculatorCard
-            headingLevel={3}
-            description="Estimate lift force from atmospheric density, airspeed, reference wing area, and lift coefficient."
-            eyebrow="Calculator 03 // Aerodynamics"
-            icon={Wind}
-            id="lift-equation"
-            title="Lift Equation"
-          >
-            <LiftEquationCalculator />
-          </CalculatorCard>
+          {/* The preset/profile handoff is a context provider with no markup
+              of its own, hoisted above the section so every module stays a
+              direct child of the workspace and can be shown on its own. */}
+          <MissionPresetIntegration>
+            <Workflow index={3}>
+              <Module id="hohmann-transfer-analyzer">
+                <HohmannTransferAnalyzer />
+              </Module>
+              <Module id="orbital-plane-change-analyzer">
+                <OrbitalPlaneChangeAnalyzer />
+              </Module>
+              <Module id="mission-profile-analyzer">
+                <MissionPresetProfileTarget />
+              </Module>
+              <Module id="mission-preset-launcher">
+                <MissionPresetLauncher />
+              </Module>
+              <Module id="mission-report-viewer">
+                <MissionReportViewer report={missionPreview.report} />
+              </Module>
+            </Workflow>
+          </MissionPresetIntegration>
 
-          <CalculatorCard
-            headingLevel={3}
-            description="Estimate aerodynamic drag from dynamic pressure, reference area, and drag coefficient."
-            eyebrow="Calculator 04 // Aerodynamics"
-            icon={MoveRight}
-            id="drag-equation"
-            title="Drag Equation"
-          >
-            <DragEquationCalculator />
-          </CalculatorCard>
-
-          <CalculatorCard
-            headingLevel={3}
-            description="Estimate temperature, pressure, and density through the standard-atmosphere troposphere model."
-            eyebrow="Calculator 05 // Atmospheric modeling"
-            icon={CloudSun}
-            id="standard-atmosphere"
-            title="Standard Atmosphere"
-          >
-            <AtmosphereCalculator />
-          </CalculatorCard>
-
-          <CalculatorCard
-            headingLevel={3}
-            description="Compose atmosphere, dynamic pressure, lift, and drag into one integrated flight-condition analysis."
-            eyebrow="Analyzer 06 // Integrated flight performance"
-            icon={Plane}
-            id="flight-condition-analyzer"
-            title="Flight Condition Analyzer"
-          >
-            <FlightConditionAnalyzer />
-          </CalculatorCard>
-        </LaboratoryWorkflowSection>
-
-        <LaboratoryWorkflowSection
-          code="Workflow 02 // Modules 07-12"
-          description="Move from static atmospheric conditions through stagnation states, shock systems, pressure recovery, and staged inlet compression."
-          icon={Wind}
-          id="compressible-flow-workflow"
-          title="Compressible flow and shock systems"
-          tools={COMPRESSIBLE_FLOW_MODULES}
-        >
-          <CalculatorCard
-            headingLevel={3}
-            description="Convert static atmospheric properties into stagnation conditions using validated isentropic-flow ratios."
-            eyebrow="Analyzer 07 // Compressible flow"
-            icon={Gauge}
-            id="stagnation-condition-analyzer"
-            title="Stagnation Condition Analyzer"
-          >
-            <StagnationConditionAnalyzer />
-          </CalculatorCard>
-
-          <CalculatorCard
-            headingLevel={3}
-            description="Resolve upstream atmospheric properties through a one-dimensional normal shock into the downstream flow state."
-            eyebrow="Analyzer 08 // Normal shock"
-            icon={MoveRight}
-            id="shock-condition-analyzer"
-            title="Shock Condition Analyzer"
-          >
-            <ShockConditionAnalyzer />
-          </CalculatorCard>
-
-          <CalculatorCard
-            headingLevel={3}
-            description="Analyze an attached weak oblique shock using upstream atmosphere, Mach number, and flow-deflection geometry."
-            eyebrow="Analyzer 09 // Oblique shock"
-            icon={Wind}
-            id="oblique-shock-condition-analyzer"
-            title="Oblique Shock Condition Analyzer"
-          >
-            <ObliqueShockConditionAnalyzer />
-          </CalculatorCard>
-
-          <CalculatorCard
-            headingLevel={3}
-            description="Compare stagnation-pressure recovery across normal and attached weak oblique shocks using validated shock geometry."
-            eyebrow="Analyzer 10 // Pressure recovery"
-            icon={Gauge}
-            id="shock-pressure-loss-analyzer"
-            title="Shock Pressure Loss Analyzer"
-          >
-            <ShockPressureLossAnalyzer />
-          </CalculatorCard>
-
-          <CalculatorCard
-            headingLevel={3}
-            description="Construct an ordered sequence of normal and attached weak oblique shocks to inspect cumulative total-pressure recovery."
-            eyebrow="Analyzer 11 // Staged compression"
-            icon={Layers}
-            id="multi-shock-recovery-analyzer"
-            title="Multi-Shock Recovery Analyzer"
-          >
-            <MultiShockRecoveryAnalyzer />
-          </CalculatorCard>
-
-          <CalculatorCard
-            headingLevel={3}
-            description="Model staged external compression followed by a terminal normal shock and inspect complete inlet pressure recovery."
-            eyebrow="Analyzer 12 // Supersonic inlet"
-            icon={Wind}
-            id="inlet-compression-analyzer"
-            title="Supersonic Inlet Compression Analyzer"
-          >
-            <InletCompressionAnalyzer />
-          </CalculatorCard>
-        </LaboratoryWorkflowSection>
-
-        <LaboratoryWorkflowSection
-          code="Workflow 03 // Modules 13-19"
-          description="Connect hypersonic heating, drag deceleration, trajectory history, thermal protection sizing, and vehicle-level reentry comparisons."
-          icon={Flame}
-          id="entry-systems-workflow"
-          title="Atmospheric entry and thermal systems"
-          tools={ENTRY_SYSTEMS_MODULES}
-        >
-          <CalculatorCard
-            headingLevel={3}
-            description="Combine standard-atmosphere conditions, local Mach classification, and stagnation-point convective heating in one thermal workflow."
-            eyebrow="Analyzer 13 // Hypersonic thermal analysis"
-            icon={Flame}
-            id="hypersonic-heating-analyzer"
-            title="Hypersonic Heating Analyzer"
-          >
-            <HypersonicHeatingAnalyzer />
-          </CalculatorCard>
-
-          <CalculatorCard
-            headingLevel={3}
-            description="Combine atmosphere, ballistic coefficient, and dynamic pressure to estimate instantaneous spacecraft drag deceleration."
-            eyebrow="Analyzer 14 // Reentry dynamics"
-            icon={Gauge}
-            id="reentry-deceleration-analyzer"
-            title="Reentry Deceleration Analyzer"
-          >
-            <ReentryDecelerationAnalyzer />
-          </CalculatorCard>
-
-          <CalculatorCard
-            headingLevel={3}
-            description="Integrate a simplified point-mass descent and inspect velocity, altitude, dynamic pressure, and deceleration throughout the trajectory."
-            eyebrow="Analyzer 15 // Reentry trajectory"
-            icon={Plane}
-            id="reentry-trajectory-analyzer"
-            title="Reentry Trajectory Analyzer"
-          >
-            <ReentryTrajectoryAnalyzer />
-          </CalculatorCard>
-
-          <CalculatorCard
-            headingLevel={3}
-            description="Connect the educational TPS material catalog to reentry thermal history and preliminary protection-system sizing."
-            eyebrow="Analyzer 16 // Thermal protection"
-            icon={Shield}
-            id="material-tps-sizing-analyzer"
-            title="TPS Material Selection Analyzer"
-          >
-            <MaterialTPSSizingAnalyzer />
-          </CalculatorCard>
-
-          <CalculatorCard
-            headingLevel={3}
-            description="Compare catalog TPS materials under one shared reentry scenario using the existing educational ranking analysis."
-            eyebrow="Analyzer 17 // TPS comparison"
-            icon={Shield}
-            id="tps-material-comparison-analyzer"
-            title="TPS Material Comparison Analyzer"
-          >
-            <TPSMaterialComparisonAnalyzer />
-          </CalculatorCard>
-
-          <CalculatorCard
-            headingLevel={3}
-            description="Evaluate one vehicle configuration through the integrated reentry trajectory, thermal history, and TPS material-comparison workflow."
-            eyebrow="Analyzer 18 // Vehicle reentry"
-            icon={Plane}
-            id="vehicle-reentry-evaluation-analyzer"
-            title="Vehicle Reentry Evaluation Analyzer"
-          >
-            <VehicleReentryEvaluationAnalyzer />
-          </CalculatorCard>
-
-          <CalculatorCard
-            headingLevel={3}
-            description="Compare up to five vehicle configurations under identical reentry conditions using the existing evaluation and ranking workflow."
-            eyebrow="Analyzer 19 // Vehicle comparison"
-            icon={Scale}
-            id="vehicle-reentry-comparison-analyzer"
-            title="Vehicle Reentry Comparison Analyzer"
-          >
-            <VehicleReentryComparisonAnalyzer />
-          </CalculatorCard>
-        </LaboratoryWorkflowSection>
-
-        {/* The preset/profile handoff is a context provider that renders no
-            markup of its own, hoisted above the section so every module is a
-            direct child of the workspace and can be revealed individually.
-            Wrapping two cards, as it did before, made them one child. */}
-        <MissionPresetIntegration>
-          <LaboratoryWorkflowSection
-            code="Workflow 04 // Modules 20-24"
-            description="Build ideal orbital transfers and plane changes into mission profiles, reusable presets, and structured engineering reports."
-            icon={Orbit}
-            id="orbital-mission-workflow"
-            title="Orbital and mission architecture"
-            tools={ORBITAL_MISSION_MODULES}
-          >
-            <CalculatorCard
-              headingLevel={3}
-              description="Resolve an ideal two-impulse transfer between circular, coplanar orbits using altitude-based orbital context."
-              eyebrow="Analyzer 20 // Orbital mechanics"
-              icon={CircleDot}
-              id="hohmann-transfer-analyzer"
-              title="Hohmann Transfer Analyzer"
-            >
-              <HohmannTransferAnalyzer />
-            </CalculatorCard>
-
-            <CalculatorCard
-              headingLevel={3}
-              description="Resolve circular-orbit velocity from altitude and estimate the ideal delta-v for an impulsive inclination change."
-              eyebrow="Analyzer 21 // Orbital mechanics"
-              icon={Orbit}
-              id="orbital-plane-change-analyzer"
-              title="Orbital Plane Change Analyzer"
-            >
-              <OrbitalPlaneChangeAnalyzer />
-            </CalculatorCard>
-
-            <CalculatorCard
-              headingLevel={3}
-              description="Integrate orbital maneuver budgeting, vehicle reentry evaluation, comparison, and TPS recommendations into one educational mission profile."
-              eyebrow="Analyzer 22 // Mission integration"
-              icon={Layers}
-              id="mission-profile-analyzer"
-              title="Mission Profile Analyzer"
-            >
-              <MissionPresetProfileTarget />
-            </CalculatorCard>
-
-            <CalculatorCard
-              headingLevel={3}
-              description="Select an immutable educational mission template and load its existing input configuration into the Mission Profile Analyzer."
-              eyebrow="Launcher 23 // Mission presets"
-              icon={Orbit}
-              id="mission-preset-launcher"
-              title="Mission Preset Launcher"
-            >
-              <MissionPresetLauncher />
-            </CalculatorCard>
-
-            <CalculatorCard
-              headingLevel={3}
-              description="Review a structured engineering report produced by the existing mission-report domain from completed mission-profile results."
-              eyebrow="Viewer 24 // Mission reporting"
-              icon={FileText}
-              id="mission-report-viewer"
-              title="Mission Report Viewer"
-            >
-              <MissionReportViewer report={missionPreview.report} />
-            </CalculatorCard>
-          </LaboratoryWorkflowSection>
-        </MissionPresetIntegration>
-
-        <LaboratoryWorkflowSection
-          code="Workflow 05 // Modules 25-27"
-          description="Inspect completed mission outputs through orbital and reentry visualizations, integrated telemetry, and the Mission Control workspace."
-          icon={Radar}
-          id="mission-operations-workflow"
-          title="Mission operations and visualization"
-          tools={MISSION_OPERATIONS_MODULES}
-        >
-          <CalculatorCard
-            headingLevel={3}
-            description="Inspect existing orbital-transfer and vehicle-reentry outputs through reusable, accessible mission-control visualizations."
-            eyebrow="Visualization 25 // Mission telemetry"
-            icon={Orbit}
-            id="mission-visualization"
-            title="Mission Visualization"
-          >
-            <div className="space-y-6">
-              <MissionOrbitVisualization analysis={missionPreview.analysis} />
-              <ReentryProfileVisualization
-                analysis={
-                  missionPreview.analysis.sourceAnalyses
-                    .vehicleReentryEvaluation
-                }
+          <Workflow index={4}>
+            <Module id="mission-visualization">
+              <div className="space-y-6">
+                <MissionOrbitVisualization analysis={missionPreview.analysis} />
+                <ReentryProfileVisualization analysis={reentryEvaluation} />
+              </div>
+            </Module>
+            <Module id="interactive-mission-viewer">
+              <MissionViewer
+                missionProfileAnalysis={missionPreview.analysis}
+                missionReport={missionPreview.report}
+                vehicleReentryEvaluation={reentryEvaluation}
               />
-            </div>
-          </CalculatorCard>
-
-          <CalculatorCard
-            headingLevel={3}
-            description="Unify the reported mission sequence, orbital and reentry views, and engineering telemetry in one interactive mission-control workspace."
-            eyebrow="Viewer 26 // Integrated mission control"
-            icon={Gauge}
-            id="interactive-mission-viewer"
-            title="Interactive Mission Viewer"
-          >
-            <MissionViewer
-              missionProfileAnalysis={missionPreview.analysis}
-              missionReport={missionPreview.report}
-              vehicleReentryEvaluation={
-                missionPreview.analysis.sourceAnalyses.vehicleReentryEvaluation
-              }
-            />
-          </CalculatorCard>
-
-          <CalculatorCard
-            headingLevel={3}
-            description="Review the complete mission-profile, visualization, telemetry, status, and engineering-report workflow in a polished aerospace command interface."
-            eyebrow="Dashboard 27 // Mission operations"
-            icon={Radar}
-            id="mission-control-dashboard"
-            title="Mission Control Dashboard"
-          >
-            <MissionControlDashboard
-              missionCategory={missionPreview.category}
-              missionProfileAnalysis={missionPreview.analysis}
-              missionPreset={missionPreview.preset}
-              missionReport={missionPreview.report}
-              missionScenario={missionPreview.scenario}
-              tradeStudyAnalyses={tradeStudyPreview.analyses}
-              tradeStudyReports={tradeStudyPreview.reports}
-              tradeStudyScenarios={tradeStudyPreview.scenarios}
-              vehicleReentryEvaluation={
-                missionPreview.analysis.sourceAnalyses.vehicleReentryEvaluation
-              }
-            />
-          </CalculatorCard>
-        </LaboratoryWorkflowSection>
-
-        {/* Same reason as the preset provider above: a markup-free context
-            wrapper hoisted out so its two cards become separate modules. */}
-        <ScenarioLibraryIntegration>
-          <LaboratoryWorkflowSection
-            code="Workflow 06 // Modules 28-33"
-            description="Manage educational scenarios, compare architectures, and present completed source analyses through briefings, showcases, and guided review."
-            icon={FileText}
-            id="review-presentation-workflow"
-            title="Scenario review and presentation"
-            tools={REVIEW_PRESENTATION_MODULES}
-          >
-            <CalculatorCard
-              headingLevel={3}
-              description="Assemble existing orbital, vehicle, reentry, and TPS inputs into a custom educational mission profile without introducing a separate analysis path."
-              eyebrow="Builder 28 // Mission planning"
-              icon={Layers}
-              id="mission-scenario-builder"
-              title="Mission Scenario Builder"
-            >
-              <ScenarioLibraryBuilderTarget />
-            </CalculatorCard>
-
-            <CalculatorCard
-              headingLevel={3}
-              description="Save, browse, duplicate, delete, and reload educational mission-profile inputs through a persistent device library."
-              eyebrow="Library 29 // Scenario management"
-              icon={FileText}
-              id="scenario-library"
-              title="Mission Scenario Library"
-            >
-              <ScenarioLibrary />
-            </CalculatorCard>
-
-            <CalculatorCard
-              headingLevel={3}
-              description="Present completed mission-profile and report outputs through a cinematic aerospace briefing without adding calculations or feasibility claims."
-              eyebrow="Briefing 30 // Mission presentation"
-              icon={Radar}
-              id="mission-briefing"
-              title="Mission Briefing"
-            >
-              <MissionBriefing
-                missionProfile={missionPreview.analysis}
-                preset={missionPreview.preset}
-                report={missionPreview.report}
-              />
-            </CalculatorCard>
-
-            <CalculatorCard
-              headingLevel={3}
-              description="Compare saved educational mission architectures through supplied orbital, vehicle, and thermal outputs without scoring or selecting a winner."
-              eyebrow="Trade study 31 // Architecture review"
-              icon={Scale}
-              id="mission-trade-study"
-              title="Mission Trade Study Center"
-            >
-              <MissionTradeStudy
-                analyses={tradeStudyPreview.analyses}
-                reports={tradeStudyPreview.reports}
-                scenarios={tradeStudyPreview.scenarios}
-              />
-            </CalculatorCard>
-
-            <CalculatorCard
-              headingLevel={3}
-              description="Present completed mission outputs as a cinematic, phase-based aerospace review with direct telemetry and presentation-only controls."
-              eyebrow="Showcase 32 // Mission presentation"
-              icon={Radar}
-              id="mission-showcase"
-              title="Cinematic Mission Showcase"
-            >
-              <MissionShowcase
-                missionProfile={missionPreview.analysis}
-                report={missionPreview.report}
-              />
-            </CalculatorCard>
-
-            <CalculatorCard
-              headingLevel={3}
-              description="Guide reviewers, professors, recruiters, and students through the supplied Orbix mission workflow without requiring manual configuration."
-              eyebrow="Demo 33 // Guided experience"
-              icon={Radar}
-              id="demo-mode"
-              title="Orbix Demo Mode"
-            >
-              <DemoMode
-                missionProfile={missionPreview.analysis}
+            </Module>
+            <Module id="mission-control-dashboard">
+              <MissionControlDashboard
+                missionCategory={missionPreview.category}
+                missionProfileAnalysis={missionPreview.analysis}
+                missionPreset={missionPreview.preset}
+                missionReport={missionPreview.report}
                 missionScenario={missionPreview.scenario}
-                report={missionPreview.report}
+                tradeStudyAnalyses={tradeStudyPreview.analyses}
+                tradeStudyReports={tradeStudyPreview.reports}
+                tradeStudyScenarios={tradeStudyPreview.scenarios}
+                vehicleReentryEvaluation={reentryEvaluation}
               />
-            </CalculatorCard>
-          </LaboratoryWorkflowSection>
-        </ScenarioLibraryIntegration>
-      </LaboratoryShell>
+            </Module>
+          </Workflow>
+
+          {/* Same reason as the preset provider above. */}
+          <ScenarioLibraryIntegration>
+            <Workflow index={5}>
+              <Module id="mission-scenario-builder">
+                <ScenarioLibraryBuilderTarget />
+              </Module>
+              <Module id="scenario-library">
+                <ScenarioLibrary />
+              </Module>
+              <Module id="mission-briefing">
+                <MissionBriefing
+                  missionProfile={missionPreview.analysis}
+                  preset={missionPreview.preset}
+                  report={missionPreview.report}
+                />
+              </Module>
+              <Module id="mission-trade-study">
+                <MissionTradeStudy
+                  analyses={tradeStudyPreview.analyses}
+                  reports={tradeStudyPreview.reports}
+                  scenarios={tradeStudyPreview.scenarios}
+                />
+              </Module>
+              <Module id="mission-showcase">
+                <MissionShowcase
+                  missionProfile={missionPreview.analysis}
+                  report={missionPreview.report}
+                />
+              </Module>
+              <Module id="demo-mode">
+                <DemoMode
+                  missionProfile={missionPreview.analysis}
+                  missionScenario={missionPreview.scenario}
+                  report={missionPreview.report}
+                />
+              </Module>
+            </Workflow>
+          </ScenarioLibraryIntegration>
+        </LaboratoryShell>
+      </Container>
     </>
   );
 }

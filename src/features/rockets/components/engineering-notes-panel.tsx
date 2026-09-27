@@ -1,17 +1,13 @@
-import { FileText } from "lucide-react";
+import { ChevronDown } from "lucide-react";
 
-import { ProfileSection } from "@/features/rockets/components/profile-section";
 import { formatRocketEngineeringDomain } from "@/features/rockets/utils";
+import { VehicleProfileSection } from "@/features/vehicles/components/vehicle-profile-section";
 import type { EngineeringNote } from "@/features/vehicles/types";
 
 /**
- * A launch vehicle's engineering observations.
- *
- * The rockets twin of the aircraft panel, and it must stay in step with it:
- * both once rendered each note's `status` as a badge, so every profile
- * advertised "PLACEHOLDER" in warning amber. `status` still exists on the data
- * and in the formatter, because it remains useful for authoring; it is simply
- * not something a reader needs to see.
+ * A vehicle's engineering observations, one disclosure per topic with the
+ * first open. Each note's authoring `status` is deliberately not shown: it is
+ * useful while writing, not to a reader.
  */
 
 interface EngineeringNotesPanelProps {
@@ -20,40 +16,34 @@ interface EngineeringNotesPanelProps {
 
 export function EngineeringNotesPanel({ notes }: EngineeringNotesPanelProps) {
   return (
-    <ProfileSection
+    <VehicleProfileSection
       description="Concise engineering observations based on public aerospace specifications and documented design characteristics."
-      eyebrow="Engineering analysis"
-      mode="editorial"
       id="engineering-notes"
-      title="Engineering Notes"
+      title="Engineering analysis"
     >
-      <div className="grid gap-4">
+      <div className="border-t border-border-subtle">
         {notes.map((note, index) => (
-          <article
-            className="orbix-frame border-atmosphere/20 bg-surface/70 p-5 sm:p-6"
+          <details
+            className="group border-b border-border-subtle"
             key={note.id}
+            open={index === 0}
           >
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-              <div className="flex items-center gap-3">
-                <span className="flex h-10 w-10 items-center justify-center border border-atmosphere/25 bg-background/45 text-accent">
-                  <FileText aria-hidden="true" size={18} strokeWidth={1.7} />
-                </span>
-                <div>
-                  <p className="font-mono text-[0.62rem] tracking-[0.14em] text-muted uppercase">
-                    Analysis note {String(index + 1).padStart(2, "0")}
-                  </p>
-                  <h3 className="font-display mt-1 text-xl font-semibold">
-                    {formatRocketEngineeringDomain(note.topic)}
-                  </h3>
-                </div>
-              </div>
+            <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-4 py-3 [&::-webkit-details-marker]:hidden">
+              <h3 className="orbix-h3 text-foreground">
+                {formatRocketEngineeringDomain(note.topic)}
+              </h3>
+              <ChevronDown
+                aria-hidden="true"
+                className="shrink-0 text-muted transition-transform duration-150 group-open:rotate-180 motion-reduce:transition-none"
+                size={16}
+              />
+            </summary>
+            <div className="orbix-prose pb-6">
+              <p>{note.summary}</p>
             </div>
-            <p className="mt-5 border-t border-border pt-5 text-sm leading-6 text-muted">
-              {note.summary}
-            </p>
-          </article>
+          </details>
         ))}
       </div>
-    </ProfileSection>
+    </VehicleProfileSection>
   );
 }

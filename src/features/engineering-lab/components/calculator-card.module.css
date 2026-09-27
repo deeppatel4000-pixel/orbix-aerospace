@@ -1,68 +1,57 @@
 /**
- * The Engineering Laboratory module shell.
+ * The Engineering Laboratory module shell (spec 7 and 14).
  *
- * Every one of the 33 modules renders through this, so the styling here is the
- * laboratory's visual grammar. It was built when the laboratory rendered every
- * module stacked and each card had to fight for attention: a coloured top rule,
- * an inset highlight, a 28px drop shadow, a printed-circuit header gradient, a
- * repeating tick strip under the header, a vertical "LAB" index down the left
- * edge, a grid-lined workspace and a glowing spine. One module is now active at
- * a time, so none of that has to distinguish it from a neighbour.
- *
- * What remains is a bordered workspace with a divided header. Every colour is
- * derived from a semantic token, replacing the eighteen literal `rgb(...)`
- * values this file used to carry — those were invisible to the raw-colour
- * ratchet, which only scans `.ts`/`.tsx`, so they were debt no check could see.
+ * One flat panel per module: surface fill, a 1px border, the 6px maximum
+ * radius, and a divided header. No shadow, no gradient, no accent rule. Every
+ * colour comes from a semantic token.
  */
 
 .card {
-  background-color: color-mix(
-    in srgb,
-    var(--orbix-bg-surface) 45%,
-    transparent
-  );
-  border: 1px solid var(--orbix-border-subtle);
-  border-radius: var(--radius-sm);
-  isolation: isolate;
+  background-color: var(--orbix-surface);
+  border: 1px solid var(--orbix-border);
+  border-radius: var(--radius-3);
+  min-width: 0;
   overflow: hidden;
   position: relative;
-  scroll-margin-top: 7rem;
+  scroll-margin-top: 5rem;
 }
 
 .header {
   border-bottom: 1px solid var(--orbix-border-subtle);
-  padding: clamp(1.25rem, 3vw, 2rem);
-  position: relative;
+  padding: var(--space-5);
 }
 
 .headerLayout {
   align-items: start;
   display: grid;
-  gap: 1rem;
+  gap: var(--space-4);
   grid-template-columns: auto minmax(0, 1fr);
-  position: relative;
 }
 
-/* A quiet marker for the module's discipline rather than an instrument well:
- * square, one hairline, no inner glow and no corner bracket. */
+/* A quiet marker for the module's discipline: square, one hairline in a
+ * neutral tone, the icon in secondary text. */
 .iconWell {
   align-items: center;
-  border: 1px solid color-mix(in srgb, var(--orbix-accent) 30%, transparent);
-  color: var(--orbix-accent);
+  border: 1px solid var(--orbix-border-strong);
+  border-radius: var(--radius-2);
+  color: var(--orbix-text-secondary);
   display: flex;
-  height: 2.75rem;
+  height: 2.5rem;
   justify-content: center;
-  width: 2.75rem;
+  width: 2.5rem;
 }
 
 .workspace {
-  padding: clamp(1.25rem, 3vw, 2rem);
-  position: relative;
+  padding: var(--space-5);
 }
 
 @media (max-width: 39.999rem) {
+  .header,
+  .workspace {
+    padding: var(--space-4);
+  }
+
   .headerLayout {
-    gap: 1rem;
     grid-template-columns: 1fr;
   }
 }

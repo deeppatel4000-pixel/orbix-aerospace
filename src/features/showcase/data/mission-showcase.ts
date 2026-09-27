@@ -1,35 +1,69 @@
+import { EARTH_MEAN_RADIUS_METRES } from "@/features/engineering-lab/calculators/orbital-elements";
 import { getMissionPresetById } from "@/features/engineering-lab/missions";
 import type {
   MissionPreset,
   MissionPresetCategory,
+  VehicleReentryConfiguration,
 } from "@/features/engineering-lab/types";
 
 /**
- * One mission's own photograph.
+ * Showcase mission data.
  *
- * Deliberately separate from `OrbixEnvironmentTheme`. That type describes a
- * shared *setting* — four backdrops covering every ORBIX surface — so three of
- * them had to serve five missions and two pairs of cards showed the same
- * picture. `getShowcaseMissionEnvironment` still drives the capture view, where
- * a setting is the right idea; the gallery now names its image directly.
- *
- * `objectPosition` is a Tailwind class and is omitted unless a responsive
- * review shows `object-cover` cropping the subject at some width.
+ * Everything here is read from the typed mission presets or is fixed
+ * descriptive copy. Nothing is calculated for display: altitudes, allowances
+ * and vehicle inputs are the preset's own input values, converted to display
+ * units only. The showcase uses no photographs; the diagrams are drawn from
+ * these numbers.
  */
-export interface ShowcaseMissionImage {
-  readonly alt: string;
-  readonly objectPosition?: string;
-  readonly src: string;
+
+/** One preset input value, already converted to its display unit. */
+export interface PresetInputRow {
+  readonly label: string;
+  readonly unit: string;
+  readonly value: number;
 }
+
+export interface PresetInputGroup {
+  readonly rows: readonly PresetInputRow[];
+  readonly title: string;
+}
+
+/**
+ * The diagram a mission's own inputs support.
+ *
+ * `transfer`: two circular orbits and the half ellipse between them, drawn to
+ * scale around Earth. `allowances`: the ordered maneuver allowances as bars.
+ * `none`: the preset has no orbital geometry (reentry only).
+ */
+export type MissionDiagram =
+  | {
+      readonly finalAltitudeKilometres: number;
+      readonly initialAltitudeKilometres: number;
+      readonly kind: "transfer";
+      readonly planetRadiusKilometres: number;
+    }
+  | {
+      readonly kind: "allowances";
+      readonly maneuvers: readonly {
+        readonly deltaVMetresPerSecond: number;
+        readonly id: string;
+        readonly name: string;
+      }[];
+      /** Sum of the preset's own allowances, as entered. */
+      readonly sumMetresPerSecond: number;
+    }
+  | { readonly kind: "none" };
 
 export interface ShowcaseMission {
   readonly analysisAvailability: readonly string[];
   readonly availableVisualizations: readonly string[];
   readonly categoryLabel: string;
+  readonly diagram: MissionDiagram;
   readonly engineeringFocus: readonly string[];
-  readonly image: ShowcaseMissionImage;
   readonly includedSystems: readonly string[];
+  readonly inputGroups: readonly PresetInputGroup[];
   readonly preset: MissionPreset;
+  readonly vehicles: readonly VehicleReentryConfiguration[];
 }
 
 interface ShowcaseMissionDetails {
@@ -130,38 +164,6 @@ const showcaseMissionDetails = {
   },
 } as const satisfies Record<string, ShowcaseMissionDetails>;
 
-/**
- * Every mission's image, written out by hand.
- *
- * There is no rule deriving a filename from a mission id, and there must not
- * be: a convention would silently hand a mission the wrong photograph the
- * moment an id changed, and nothing would fail. Spelled out, a wrong pairing is
- * visible in this file. `showcase-mission-images.test.ts` holds the set to five
- * unique, existing files.
- */
-const showcaseMissionImages = {
-  "iss-style-resupply": {
-    alt: "Cargo spacecraft approaching an orbital station above Earth.",
-    src: "/images/missions/iss-style-resupply.webp",
-  },
-  "leo-satellite-deployment": {
-    alt: "Satellite separating from an upper stage above Earth.",
-    src: "/images/missions/leo-satellite-deployment.webp",
-  },
-  "lunar-transfer-concept": {
-    alt: "Spacecraft crossing cislunar space, with the Moon ahead and Earth distant.",
-    src: "/images/missions/lunar-transfer-concept.webp",
-  },
-  "mars-transfer-concept": {
-    alt: "Deep-space spacecraft cruising toward distant Mars.",
-    src: "/images/missions/mars-transfer-concept.webp",
-  },
-  "reentry-demonstrator": {
-    alt: "Capsule descending through atmospheric plasma above Earth.",
-    src: "/images/missions/reentry-demonstrator.webp",
-  },
-} as const satisfies Record<string, ShowcaseMissionImage>;
-
 const showcaseMissionIds = [
   "leo-satellite-deployment",
   "iss-style-resupply",
@@ -189,23 +191,153 @@ function getIncludedSystems(preset: MissionPreset): readonly string[] {
   return systems;
 }
 
+function metresToKilometres(metres: number): number {
+  return metres / 1_000;
+}
+
+function getInputGroups(preset: MissionPreset): readonly PresetInputGroup[] {
+  const groups: PresetInputGroup[] = [];
+  const { deltaVBudget, vehicleComparison, vehicleReentryEvaluation } =
+    preset.missionProfileInputs;
+
+  if (deltaVBudget?.hohmannTransfer) {
+    const transfer = deltaVBudget.hohmannTransfer;
+    groups.push({
+      rows: [
+        {
+          label: "Initial circular orbit altitude",
+          unit: "km",
+          value: metresToKilometres(transfer.initialAltitudeMetres),
+        },
+        {
+          label: "Target circular orbit altitude",
+          unit: "km",
+          value: metresToKilometres(transfer.finalAltitudeMetres),
+        },
+      ],
+      title: "Two-impulse transfer",
+    });
+  }
+
+  if (deltaVBudget?.orbitalPlaneChange) {
+    const planeChange = deltaVBudget.orbitalPlaneChange;
+    groups.push({
+      rows: [
+        {
+          label: "Inclination change",
+          unit: "deg",
+          value: planeChange.inclinationChangeDegrees,
+        },
+        {
+          label: "Altitude of the plane change",
+          unit: "km",
+          value: metresToKilometres(planeChange.orbitalAltitudeMetres),
+        },
+      ],
+      title: "Plane change",
+    });
+  }
+
+  // Maneuver allowances are not repeated here: the allowance diagram lists
+  // each one with its value as text.
+
+  const entry = vehicleReentryEvaluation ?? vehicleComparison;
+
+  if (entry) {
+    groups.push({
+      rows: [
+        {
+          label: "Initial altitude",
+          unit: "km",
+          value: metresToKilometres(entry.initialAltitudeMeters),
+        },
+        {
+          label: "Initial velocity",
+          unit: "m/s",
+          value: entry.initialVelocityMetersPerSecond,
+        },
+        {
+          label: "Thermal protection safety factor",
+          unit: "ratio",
+          value: entry.safetyFactor,
+        },
+      ],
+      title: "Entry conditions",
+    });
+  }
+
+  return groups;
+}
+
+function getVehicles(
+  preset: MissionPreset,
+): readonly VehicleReentryConfiguration[] {
+  const { vehicleComparison, vehicleReentryEvaluation } =
+    preset.missionProfileInputs;
+  const vehicles: VehicleReentryConfiguration[] = [];
+  const candidates = [
+    ...(vehicleReentryEvaluation ? [vehicleReentryEvaluation.vehicle] : []),
+    ...(vehicleComparison?.vehicles ?? []),
+  ];
+
+  for (const vehicle of candidates) {
+    if (!vehicles.some((known) => known.vehicleName === vehicle.vehicleName)) {
+      vehicles.push(vehicle);
+    }
+  }
+
+  return vehicles;
+}
+
+function getDiagram(preset: MissionPreset): MissionDiagram {
+  const budget = preset.missionProfileInputs.deltaVBudget;
+
+  if (budget?.hohmannTransfer) {
+    return {
+      finalAltitudeKilometres: metresToKilometres(
+        budget.hohmannTransfer.finalAltitudeMetres,
+      ),
+      initialAltitudeKilometres: metresToKilometres(
+        budget.hohmannTransfer.initialAltitudeMetres,
+      ),
+      kind: "transfer",
+      planetRadiusKilometres: metresToKilometres(
+        budget.hohmannTransfer.planetRadiusMetres ?? EARTH_MEAN_RADIUS_METRES,
+      ),
+    };
+  }
+
+  if (budget?.maneuvers && budget.maneuvers.length > 0) {
+    return {
+      kind: "allowances",
+      maneuvers: budget.maneuvers,
+      sumMetresPerSecond: budget.maneuvers.reduce(
+        (sum, maneuver) => sum + maneuver.deltaVMetresPerSecond,
+        0,
+      ),
+    };
+  }
+
+  return { kind: "none" };
+}
+
 function createShowcaseMission(
   id: (typeof showcaseMissionIds)[number],
 ): ShowcaseMission {
   const preset = getMissionPresetById(id);
 
   if (!preset) {
-    throw new RangeError(`Showcase mission preset \"${id}\" is unavailable.`);
+    throw new RangeError(`Showcase mission preset "${id}" is unavailable.`);
   }
 
-  const details = showcaseMissionDetails[id];
-
   return {
-    ...details,
+    ...showcaseMissionDetails[id],
     categoryLabel: categoryLabels[preset.category],
-    image: showcaseMissionImages[id],
+    diagram: getDiagram(preset),
     includedSystems: getIncludedSystems(preset),
+    inputGroups: getInputGroups(preset),
     preset,
+    vehicles: getVehicles(preset),
   };
 }
 

@@ -39,7 +39,7 @@ const MIGRATED_FILES = [
 
 /**
  * Matches the same literal forms the repository ratchet looks for. `color-mix`
- * and `var(--token)` compositions are deliberately not matched — those are the
+ * and `var(--token)` compositions are deliberately not matched; those are the
  * correct way to derive a colour from a token.
  */
 const COLOUR_LITERAL = /#[0-9a-fA-F]{3,8}\b|\brgba?\(\s*\d|\bhsla?\(\s*\d/g;

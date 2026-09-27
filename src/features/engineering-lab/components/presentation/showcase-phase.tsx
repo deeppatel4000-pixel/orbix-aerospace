@@ -1,19 +1,8 @@
-import type { LucideIcon } from "lucide-react";
-import {
-  CircleDot,
-  ClipboardCheck,
-  Flame,
-  Orbit,
-  Rocket,
-  Send,
-} from "lucide-react";
-
 export type ShowcaseScene =
   "arrival" | "entry" | "launch" | "orbit" | "review" | "transfer";
 
 export interface ShowcasePresentationPhase {
   readonly description: string;
-  readonly icon: LucideIcon;
   readonly id: string;
   readonly label: string;
   readonly scene: ShowcaseScene;
@@ -26,55 +15,48 @@ export const SHOWCASE_PHASES: readonly [
 ] = [
   {
     description:
-      "Mission inputs and completed outputs are staged for educational review.",
-    icon: Rocket,
+      "The mission inputs and the completed results that the rest of the walkthrough draws on.",
     id: "launch-preparation",
-    label: "Launch Preparation",
+    label: "Launch preparation",
     scene: "launch",
     shortLabel: "Launch",
   },
   {
     description:
-      "Existing orbital outputs are introduced without propagating a new orbit.",
-    icon: CircleDot,
+      "The starting orbit from the completed orbital analysis. No new orbit is propagated.",
     id: "orbit-insertion",
-    label: "Orbit Insertion",
+    label: "Orbit insertion",
     scene: "orbit",
     shortLabel: "Orbit",
   },
   {
     description:
-      "The resolved transfer is presented as a mission architecture milestone.",
-    icon: Send,
+      "The transfer between orbits, with the delta-v and transfer time already calculated.",
     id: "orbital-transfer",
-    label: "Orbital Transfer",
+    label: "Orbital transfer",
     scene: "transfer",
     shortLabel: "Transfer",
   },
   {
     description:
-      "Arrival and mission operations are storytelling labels for supplied results.",
-    icon: Orbit,
+      "Arrival at the target orbit. This phase is a label for the supplied results, not a separate calculation.",
     id: "arrival-mission-phase",
-    label: "Arrival / Mission Phase",
+    label: "Arrival and mission phase",
     scene: "arrival",
     shortLabel: "Arrival",
   },
   {
     description:
-      "Existing vehicle and thermal outputs are displayed as atmospheric-entry telemetry.",
-    icon: Flame,
+      "The vehicle and heating results from the completed reentry evaluation.",
     id: "atmospheric-entry",
-    label: "Atmospheric Entry",
+    label: "Atmospheric entry",
     scene: "entry",
     shortLabel: "Entry",
   },
   {
-    description:
-      "The sequence concludes with a presentation-only review of completed mission objects.",
-    icon: ClipboardCheck,
+    description: "A summary of the completed results for the whole mission.",
     id: "mission-review",
-    label: "Mission Review",
+    label: "Mission review",
     scene: "review",
     shortLabel: "Review",
   },
@@ -87,37 +69,30 @@ export interface ShowcasePhaseProps {
   readonly phase: ShowcasePresentationPhase;
 }
 
+/** One step in the walkthrough's phase list. The number is a real sequence. */
 export function ShowcasePhase({
   active,
   index,
   onSelect,
   phase,
 }: ShowcasePhaseProps) {
-  const Icon = phase.icon;
-
   return (
-    <li className="min-w-[9rem] flex-1">
+    <li className="min-w-0">
       <button
         aria-current={active ? "step" : undefined}
         aria-label={`Show phase ${index + 1}: ${phase.label}`}
         className={
-          "group w-full rounded-xl border px-3 py-3 text-left transition-colors outline-none focus-visible:ring-2 focus-visible:ring-accent motion-reduce:transition-none " +
-          (active
-            ? "border-accent/50 bg-accent/10 text-accent"
-            : "hover:text-muted-strong border-white/10 bg-surface text-muted hover:border-accent/25")
+          active
+            ? "flex min-h-10 w-full items-center gap-2 border-l-2 border-accent bg-accent/12 px-3 py-2 text-left text-sm font-medium text-foreground"
+            : "flex min-h-10 w-full items-center gap-2 border-l-2 border-transparent px-3 py-2 text-left text-sm text-text-secondary transition-colors duration-150 hover:border-border-strong hover:text-foreground"
         }
         onClick={() => onSelect(index)}
         type="button"
       >
-        <span className="flex items-center justify-between gap-3">
-          <span className="font-mono text-[0.57rem] tracking-[0.1em] uppercase">
-            {String(index + 1).padStart(2, "0")}
-          </span>
-          <Icon aria-hidden="true" size={14} />
+        <span aria-hidden="true" className="orbix-data text-muted">
+          {index + 1}
         </span>
-        <span className="mt-2 block font-mono text-[0.64rem] font-semibold tracking-[0.08em] uppercase">
-          {phase.shortLabel}
-        </span>
+        {phase.label}
       </button>
     </li>
   );

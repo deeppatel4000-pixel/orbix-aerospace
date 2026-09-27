@@ -1,7 +1,10 @@
 "use client";
 
+import { Button } from "@/components/ui";
 import { useMemo, useState, type FormEvent } from "react";
 import {
+  ChevronDown,
+  CircleAlert,
   AlertTriangle,
   Flame,
   RotateCcw,
@@ -16,7 +19,10 @@ import {
 } from "@/features/engineering-lab/analysis";
 import {
   CalculatorNumberField,
+  focusFirstInvalidField,
+  focusFirstInvalidFieldOnEnter,
   CalculatorResultSection,
+  NotCalculated,
   ValidationErrorSummary,
 } from "@/features/engineering-lab/components/shared";
 import {
@@ -177,11 +183,11 @@ function formatMaterialOption(material: TPSMaterial): string {
 
   return (
     material.name +
-    " — " +
+    ", " +
     integerFormatter.format(material.densityKilogramsPerCubicMetre) +
-    " kg/m³ — " +
+    " kg/m³, " +
     maximumTemperature +
-    " — " +
+    ", " +
     reuseStatus
   );
 }
@@ -203,6 +209,7 @@ export function MaterialTPSSizingAnalyzer() {
 
   function preventSubmission(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    focusFirstInvalidField(event.currentTarget);
   }
 
   function resetAnalyzer() {
@@ -212,9 +219,15 @@ export function MaterialTPSSizingAnalyzer() {
   return (
     <div className="grid gap-8 xl:grid-cols-[minmax(0,0.9fr)_minmax(24rem,1.1fr)] xl:gap-10">
       <div>
-        <form noValidate onSubmit={preventSubmission}>
+        <form
+          noValidate
+          onKeyDown={focusFirstInvalidFieldOnEnter}
+          onSubmit={preventSubmission}
+        >
           <fieldset>
-            <legend className="orbix-label text-accent">Reentry inputs</legend>
+            <legend className="text-base font-semibold text-foreground">
+              Reentry inputs
+            </legend>
             <div className="mt-5 grid gap-5 sm:grid-cols-2">
               <CalculatorNumberField
                 error={errors.initialAltitudeMeters}
@@ -286,44 +299,51 @@ export function MaterialTPSSizingAnalyzer() {
           </fieldset>
 
           <fieldset className="mt-8 border-t border-border pt-7">
-            <legend className="orbix-label text-accent">
+            <legend className="text-base font-semibold text-foreground">
               TPS sizing inputs
             </legend>
             <div className="mt-5 grid gap-5 sm:grid-cols-2">
               <div className="sm:col-span-2">
                 <label
-                  className="text-sm font-semibold"
+                  className="orbix-field__label block"
                   htmlFor="material-tps-sizing-materialId"
                 >
                   TPS material
                 </label>
-                <select
-                  aria-describedby={
-                    errors.materialId
-                      ? "material-tps-sizing-materialId-hint material-tps-sizing-materialId-error"
-                      : "material-tps-sizing-materialId-hint"
-                  }
-                  aria-errormessage={
-                    errors.materialId
-                      ? "material-tps-sizing-materialId-error"
-                      : undefined
-                  }
-                  aria-invalid={Boolean(errors.materialId)}
-                  className="mt-2 min-h-12 w-full rounded-xl border border-border bg-background/55 px-4 py-3 text-sm text-foreground transition-colors outline-none focus:border-accent focus:ring-2 focus:ring-accent/15"
-                  id="material-tps-sizing-materialId"
-                  onChange={(event) =>
-                    updateValue("materialId", event.target.value)
-                  }
-                  value={values.materialId}
-                >
-                  {tpsMaterials.map((material) => (
-                    <option key={material.id} value={material.id}>
-                      {formatMaterialOption(material)}
-                    </option>
-                  ))}
-                </select>
+                <div className="orbix-field__control mt-2">
+                  <select
+                    aria-describedby={
+                      errors.materialId
+                        ? "material-tps-sizing-materialId-hint material-tps-sizing-materialId-error"
+                        : "material-tps-sizing-materialId-hint"
+                    }
+                    aria-errormessage={
+                      errors.materialId
+                        ? "material-tps-sizing-materialId-error"
+                        : undefined
+                    }
+                    aria-invalid={Boolean(errors.materialId)}
+                    className="orbix-select"
+                    id="material-tps-sizing-materialId"
+                    onChange={(event) =>
+                      updateValue("materialId", event.target.value)
+                    }
+                    value={values.materialId}
+                  >
+                    {tpsMaterials.map((material) => (
+                      <option key={material.id} value={material.id}>
+                        {formatMaterialOption(material)}
+                      </option>
+                    ))}
+                  </select>
+                  <ChevronDown
+                    aria-hidden="true"
+                    className="orbix-field__icon orbix-field__icon--end"
+                    size={16}
+                  />
+                </div>
                 <p
-                  className="mt-2 text-xs leading-5 text-muted"
+                  className="orbix-field__help mt-2"
                   id="material-tps-sizing-materialId-hint"
                 >
                   Options come directly from the educational TPS material
@@ -332,9 +352,14 @@ export function MaterialTPSSizingAnalyzer() {
                 </p>
                 {errors.materialId ? (
                   <p
-                    className="mt-1.5 text-xs leading-5 text-signal"
+                    className="orbix-field__error mt-1"
                     id="material-tps-sizing-materialId-error"
                   >
+                    <CircleAlert
+                      aria-hidden="true"
+                      className="shrink-0"
+                      size={14}
+                    />
                     {errors.materialId}
                   </p>
                 ) : null}
@@ -352,47 +377,48 @@ export function MaterialTPSSizingAnalyzer() {
               />
             </div>
 
-            <div className="mt-5 grid gap-3 rounded-2xl border border-border bg-background/35 p-4 sm:grid-cols-3">
+            <div className="mt-5 grid gap-3 rounded-md border border-border-subtle bg-surface-raised p-4 sm:grid-cols-3">
               <div>
-                <p className="text-xs text-muted">Allowable heat load</p>
+                <p className="orbix-label">Allowable heat load</p>
                 <output
-                  className="mt-1 block font-mono text-sm font-semibold"
+                  className="orbix-data mt-1 block"
                   htmlFor="material-tps-sizing-materialId"
                 >
                   {selectedMaterial
                     ? standardFormatter.format(
                         selectedMaterial.allowableHeatLoadMegajoulesPerSquareMetre,
-                      )
-                    : "—"}{" "}
-                  MJ/m²
+                      ) + " MJ/m²"
+                    : "No material selected"}
                 </output>
-                <p className="mt-1 text-[0.68rem] leading-4 text-muted">
+                <p className="orbix-label mt-1">
                   Resolved from the selected catalog material.
                 </p>
               </div>
               <div>
-                <p className="text-xs text-muted">Material efficiency factor</p>
+                <p className="orbix-label">Material efficiency factor</p>
                 <output
-                  className="mt-1 block font-mono text-sm font-semibold"
+                  className="orbix-data mt-1 block"
                   htmlFor="material-tps-sizing-materialId"
                 >
                   {standardFormatter.format(
                     DEFAULT_TPS_MATERIAL_EFFICIENCY_FACTOR,
                   )}
                 </output>
-                <p className="mt-1 text-[0.68rem] leading-4 text-muted">
+                <p className="orbix-label mt-1">
                   Current analysis default; not overridden by this workflow.
                 </p>
               </div>
               <div>
-                <p className="text-xs text-muted">Reference TPS area</p>
+                <p className="orbix-label">Reference TPS area</p>
                 <output
-                  className="mt-1 block font-mono text-sm font-semibold"
+                  className="orbix-data mt-1 block"
                   htmlFor="material-tps-sizing-referenceAreaSquareMetres"
                 >
-                  {values.referenceAreaSquareMetres || "—"} m²
+                  {values.referenceAreaSquareMetres
+                    ? values.referenceAreaSquareMetres + " m²"
+                    : "Not entered"}
                 </output>
-                <p className="mt-1 text-[0.68rem] leading-4 text-muted">
+                <p className="orbix-label mt-1">
                   Shared with the aerodynamic reference-area input.
                 </p>
               </div>
@@ -414,18 +440,18 @@ export function MaterialTPSSizingAnalyzer() {
           />
 
           <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:items-center">
-            <p className="text-xs leading-5 text-muted">
+            <p className="text-sm leading-6 text-muted">
               Valid changes rerun material lookup, thermal history, and TPS
               sizing immediately.
             </p>
-            <button
-              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-border bg-surface/60 px-5 py-2.5 text-sm font-semibold text-foreground transition-colors hover:border-accent/60 hover:text-accent sm:ml-auto"
+            <Button
+              className="shrink-0 whitespace-nowrap sm:ml-auto"
+              variant="secondary"
               onClick={resetAnalyzer}
-              type="button"
             >
               <RotateCcw aria-hidden="true" size={16} />
-              Reset example
-            </button>
+              Reset inputs
+            </Button>
           </div>
         </form>
 
@@ -433,34 +459,34 @@ export function MaterialTPSSizingAnalyzer() {
           aria-labelledby="material-tps-sizing-comparison-title"
           className="mt-8 border-t border-border pt-7"
         >
-          <p className="orbix-label text-accent">Engineering comparison</p>
+          <p className="orbix-label">Engineering comparison</p>
           <h3
             className="mt-1 text-lg font-semibold"
             id="material-tps-sizing-comparison-title"
           >
             Material trade space
           </h3>
-          <div className="mt-5 grid gap-4 sm:grid-cols-3">
-            <article className="rounded-2xl border border-border bg-background/40 p-4">
-              <Flame aria-hidden="true" className="text-accent" size={18} />
+          <div className="mt-5 grid gap-4 sm:grid-cols-3 xl:grid-cols-1">
+            <article className="rounded-md border border-border-subtle bg-surface-raised p-4">
+              <Flame aria-hidden="true" className="text-muted" size={18} />
               <h4 className="mt-3 text-sm font-semibold">Heat capacity</h4>
-              <p className="mt-2 text-xs leading-5 text-muted">
+              <p className="mt-2 text-sm leading-6 text-muted">
                 All else equal, higher allowable heat capacity reduces the
                 required areal density and resulting thickness.
               </p>
             </article>
-            <article className="rounded-2xl border border-border bg-background/40 p-4">
-              <Scale aria-hidden="true" className="text-accent" size={18} />
+            <article className="rounded-md border border-border-subtle bg-surface-raised p-4">
+              <Scale aria-hidden="true" className="text-muted" size={18} />
               <h4 className="mt-3 text-sm font-semibold">Density and mass</h4>
-              <p className="mt-2 text-xs leading-5 text-muted">
+              <p className="mt-2 text-sm leading-6 text-muted">
                 Lower density reduces mass for a fixed volume. In this model,
                 areal density sets mass while material density sets thickness.
               </p>
             </article>
-            <article className="rounded-2xl border border-border bg-background/40 p-4">
-              <Shield aria-hidden="true" className="text-accent" size={18} />
+            <article className="rounded-md border border-border-subtle bg-surface-raised p-4">
+              <Shield aria-hidden="true" className="text-muted" size={18} />
               <h4 className="mt-3 text-sm font-semibold">System tradeoff</h4>
-              <p className="mt-2 text-xs leading-5 text-muted">
+              <p className="mt-2 text-sm leading-6 text-muted">
                 Material choice balances simplified thermal protection,
                 thickness, reuse behavior, and estimated vehicle mass.
               </p>
@@ -480,7 +506,7 @@ export function MaterialTPSSizingAnalyzer() {
             <div className="space-y-6">
               <section aria-labelledby="material-tps-sizing-material-title">
                 <h4
-                  className="orbix-label text-accent"
+                  className="text-sm font-semibold text-foreground"
                   id="material-tps-sizing-material-title"
                 >
                   Selected material
@@ -496,10 +522,10 @@ export function MaterialTPSSizingAnalyzer() {
                 </p>
                 <dl className="mt-4 grid gap-4 sm:grid-cols-3">
                   <div>
-                    <dt className="text-xs text-muted">Density</dt>
+                    <dt className="orbix-label">Density</dt>
                     <dd className="mt-1">
                       <output
-                        className="font-mono text-sm font-semibold"
+                        className="orbix-data"
                         htmlFor="material-tps-sizing-materialId"
                       >
                         {integerFormatter.format(
@@ -510,10 +536,10 @@ export function MaterialTPSSizingAnalyzer() {
                     </dd>
                   </div>
                   <div>
-                    <dt className="text-xs text-muted">Maximum temperature</dt>
+                    <dt className="orbix-label">Maximum temperature</dt>
                     <dd className="mt-1">
                       <output
-                        className="font-mono text-sm font-semibold"
+                        className="orbix-data"
                         htmlFor="material-tps-sizing-materialId"
                       >
                         {result.material.maximumTemperatureKelvin === undefined
@@ -525,10 +551,10 @@ export function MaterialTPSSizingAnalyzer() {
                     </dd>
                   </div>
                   <div>
-                    <dt className="text-xs text-muted">Reusability</dt>
+                    <dt className="orbix-label">Reusability</dt>
                     <dd className="mt-1">
                       <output
-                        className="font-mono text-sm font-semibold"
+                        className="orbix-data"
                         htmlFor="material-tps-sizing-materialId"
                       >
                         {result.material.reusable ? "Reusable" : "Single-use"}
@@ -543,17 +569,17 @@ export function MaterialTPSSizingAnalyzer() {
                 className="border-t border-border pt-5"
               >
                 <h4
-                  className="orbix-label text-accent"
+                  className="text-sm font-semibold text-foreground"
                   id="material-tps-sizing-thermal-title"
                 >
                   Thermal results
                 </h4>
                 <dl className="mt-3 grid gap-4 sm:grid-cols-2">
                   <div>
-                    <dt className="text-xs text-muted">Peak heat flux</dt>
+                    <dt className="orbix-label">Peak heat flux</dt>
                     <dd className="mt-1">
                       <output
-                        className="font-mono text-lg font-semibold text-accent"
+                        className="orbix-data-lg"
                         htmlFor={reentryOutputIds}
                       >
                         {heatFluxFormatter.format(
@@ -565,10 +591,10 @@ export function MaterialTPSSizingAnalyzer() {
                     </dd>
                   </div>
                   <div>
-                    <dt className="text-xs text-muted">Total heat load</dt>
+                    <dt className="orbix-label">Total heat load</dt>
                     <dd className="mt-1">
                       <output
-                        className="font-mono text-lg font-semibold text-accent"
+                        className="orbix-data-lg"
                         htmlFor={reentryOutputIds}
                       >
                         {preciseFormatter.format(
@@ -580,10 +606,8 @@ export function MaterialTPSSizingAnalyzer() {
                     </dd>
                   </div>
                   <div className="sm:col-span-2">
-                    <dt className="text-xs text-muted">
-                      Peak heating location
-                    </dt>
-                    <dd className="mt-2 grid gap-3 rounded-xl border border-border bg-background/35 p-4 sm:grid-cols-3">
+                    <dt className="orbix-label">Peak heating location</dt>
+                    <dd className="mt-2 grid gap-3 rounded-md border border-border-subtle bg-surface-raised p-4 sm:grid-cols-3">
                       <output
                         className="font-mono text-xs"
                         htmlFor={reentryOutputIds}
@@ -621,21 +645,16 @@ export function MaterialTPSSizingAnalyzer() {
                 className="border-t border-border pt-5"
               >
                 <h4
-                  className="orbix-label text-accent"
+                  className="text-sm font-semibold text-foreground"
                   id="material-tps-sizing-sizing-title"
                 >
                   TPS sizing
                 </h4>
                 <dl className="mt-3 grid gap-4 sm:grid-cols-2">
                   <div>
-                    <dt className="text-xs text-muted">
-                      Required areal density
-                    </dt>
+                    <dt className="orbix-label">Required areal density</dt>
                     <dd className="mt-1">
-                      <output
-                        className="font-mono text-lg font-semibold text-accent"
-                        htmlFor={allOutputIds}
-                      >
+                      <output className="orbix-data-lg" htmlFor={allOutputIds}>
                         {preciseFormatter.format(
                           result.estimatedTPSMassForArea
                             .arealDensityKilogramsPerSquareMetre,
@@ -645,19 +664,16 @@ export function MaterialTPSSizingAnalyzer() {
                     </dd>
                   </div>
                   <div>
-                    <dt className="text-xs text-muted">Estimated thickness</dt>
+                    <dt className="orbix-label">Estimated thickness</dt>
                     <dd className="mt-1">
-                      <output
-                        className="font-mono text-lg font-semibold text-accent"
-                        htmlFor={allOutputIds}
-                      >
+                      <output className="orbix-data-lg" htmlFor={allOutputIds}>
                         {preciseFormatter.format(
                           result.tpsSizing.estimatedThickness.millimetres,
                         )}{" "}
                         mm
                       </output>
                     </dd>
-                    <p className="mt-1 font-mono text-[0.68rem] text-muted">
+                    <p className="orbix-data mt-1 text-muted">
                       {preciseFormatter.format(
                         result.tpsSizing.estimatedThickness.metres,
                       )}{" "}
@@ -665,12 +681,9 @@ export function MaterialTPSSizingAnalyzer() {
                     </p>
                   </div>
                   <div>
-                    <dt className="text-xs text-muted">Estimated TPS mass</dt>
+                    <dt className="orbix-label">Estimated TPS mass</dt>
                     <dd className="mt-1">
-                      <output
-                        className="font-mono text-lg font-semibold text-accent"
-                        htmlFor={allOutputIds}
-                      >
+                      <output className="orbix-data-lg" htmlFor={allOutputIds}>
                         {preciseFormatter.format(
                           result.estimatedTPSMassForArea.totalTPSMassKilograms,
                         )}{" "}
@@ -679,19 +692,16 @@ export function MaterialTPSSizingAnalyzer() {
                     </dd>
                   </div>
                   <div>
-                    <dt className="text-xs text-muted">Safety margin</dt>
+                    <dt className="orbix-label">Safety margin</dt>
                     <dd className="mt-1">
-                      <output
-                        className="font-mono text-lg font-semibold text-accent"
-                        htmlFor={allOutputIds}
-                      >
+                      <output className="orbix-data-lg" htmlFor={allOutputIds}>
                         {standardFormatter.format(
                           result.tpsSizing.safetyMargin.marginPercentage,
                         )}
                         %
                       </output>
                     </dd>
-                    <p className="mt-1 font-mono text-[0.68rem] text-muted">
+                    <p className="orbix-data mt-1 text-muted">
                       {preciseFormatter.format(
                         result.tpsSizing.safetyMargin
                           .heatLoadMarginMegajoulesPerSquareMetre,
@@ -699,8 +709,8 @@ export function MaterialTPSSizingAnalyzer() {
                       MJ/m² heat-load margin
                     </p>
                   </div>
-                  <div className="rounded-xl border border-accent/25 bg-accent/8 p-4 sm:col-span-2">
-                    <dt className="flex items-center gap-2 text-xs text-muted">
+                  <div className="rounded-md border border-border-strong bg-surface-raised p-4 sm:col-span-2">
+                    <dt className="orbix-label flex items-center gap-2">
                       <Thermometer
                         aria-hidden="true"
                         className="text-accent"
@@ -709,10 +719,7 @@ export function MaterialTPSSizingAnalyzer() {
                       Margin classification
                     </dt>
                     <dd className="mt-2">
-                      <output
-                        className="font-mono text-base font-semibold text-accent"
-                        htmlFor={allOutputIds}
-                      >
+                      <output className="orbix-data-lg" htmlFor={allOutputIds}>
                         {result.suitabilitySummary}
                       </output>
                     </dd>
@@ -721,13 +728,10 @@ export function MaterialTPSSizingAnalyzer() {
               </section>
             </div>
           ) : (
-            <div className="py-5">
-              <p className="font-mono text-3xl text-muted">—</p>
-              <p className="mt-3 text-sm leading-6 text-muted">
-                Enter valid reentry, material, and safety inputs to resolve the
-                thermal history and preliminary TPS estimate.
-              </p>
-            </div>
+            <NotCalculated invalid={Object.values(errors).some(Boolean)}>
+              Enter valid reentry, material, and safety inputs to resolve the
+              thermal history and preliminary TPS estimate.
+            </NotCalculated>
           )}
         </CalculatorResultSection>
 
@@ -736,7 +740,7 @@ export function MaterialTPSSizingAnalyzer() {
             <AlertTriangle aria-hidden="true" size={17} />
             Engineering assumptions
           </p>
-          <ul className="mt-4 grid list-disc gap-2 pl-5 text-xs leading-5 text-muted sm:grid-cols-2">
+          <ul className="mt-4 grid list-disc gap-2 pl-5 text-sm leading-6 text-muted sm:grid-cols-2">
             <li>Educational TPS sizing model only</li>
             <li>Material properties are simplified catalog estimates</li>
             <li>No ablation modeling</li>

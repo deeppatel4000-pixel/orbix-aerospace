@@ -11,6 +11,12 @@ interface ShowcaseCapturePageProps {
   readonly params: Promise<{ id: string }>;
 }
 
+/**
+ * Internal presentation view used for portfolio screenshots. It has no site
+ * chrome and duplicates content from `/showcase`, so it is never indexed.
+ */
+const robots: Metadata["robots"] = { follow: false, index: false };
+
 export function generateStaticParams() {
   return SHOWCASE_MISSIONS.map((mission) => ({ id: mission.preset.id }));
 }
@@ -22,13 +28,17 @@ export async function generateMetadata({
   const mission = getShowcaseMissionById(id);
 
   if (!mission) {
-    return { title: "Mission Capture" };
+    return { robots, title: "Mission preset not found" };
   }
 
+  const title = `${mission.preset.name} presentation view`;
+  const description = `The ${mission.preset.name} educational mission preset on one screen: its inputs, a diagram drawn from them, and the Engineering Lab analyses that use it.`;
+
   return {
-    description: `Capture-ready portfolio presentation for the ${mission.preset.name} educational mission preset.`,
-    robots: { follow: false, index: false },
-    title: `${mission.preset.name} Capture`,
+    description,
+    openGraph: { description, title: `${title} | ORBIX` },
+    robots,
+    title,
   };
 }
 

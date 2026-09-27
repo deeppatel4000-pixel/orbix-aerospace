@@ -25,7 +25,7 @@ export const f35LightningII = {
       id: "f-35-systems-placeholder",
       status: "reviewed",
       summary:
-        "The F-35 treats sensors, avionics and networking as one mission system. Onboard fusion combines data before presenting it to the pilot, while the aircraft can share that picture with other forces—making information integration a vehicle-level design requirement.",
+        "The F-35 treats sensors, avionics and networking as one mission system. Onboard fusion combines data before presenting it to the pilot, while the aircraft can share that picture with other forces, making information integration a vehicle-level design requirement.",
       topic: "systems-engineering",
     },
     {

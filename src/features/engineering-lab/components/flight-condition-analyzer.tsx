@@ -1,5 +1,6 @@
 "use client";
 
+import { Button } from "@/components/ui";
 import { useState, type FormEvent } from "react";
 import {
   AlertTriangle,
@@ -12,7 +13,10 @@ import {
 import { analyzeFlightCondition } from "@/features/engineering-lab/analysis";
 import {
   CalculatorNumberField,
+  focusFirstInvalidField,
   CalculatorResultSection,
+  NotCalculated,
+  toSentenceCase,
   ValidationErrorSummary,
 } from "@/features/engineering-lab/components/shared";
 import type {
@@ -97,6 +101,7 @@ export function FlightConditionAnalyzer() {
     setErrors(validationErrors);
 
     if (hasFlightConditionValidationErrors(validationErrors)) {
+      focusFirstInvalidField(event.currentTarget);
       setResult(null);
       return;
     }
@@ -118,7 +123,7 @@ export function FlightConditionAnalyzer() {
             <CalculatorNumberField
               error={errors.altitudeMetres}
               field="altitudeMetres"
-              hint="Geometric altitude within the 0–11,000 metre atmosphere model."
+              hint="Geometric altitude within the 0 to 11,000 metre atmosphere model."
               idPrefix="flight-condition"
               label="Altitude"
               onChange={updateValue}
@@ -167,24 +172,17 @@ export function FlightConditionAnalyzer() {
             />
           </div>
 
-          <ValidationErrorSummary errors={Object.values(errors)} />
+          <ValidationErrorSummary errors={errors} idPrefix="flight-condition" />
 
           <div className="mt-7 flex flex-col gap-3 sm:flex-row">
-            <button
-              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-accent px-5 py-2.5 text-sm font-semibold text-background shadow-[0_12px_40px_rgb(87_215_255/0.18)] transition-colors hover:bg-foreground"
-              type="submit"
-            >
+            <Button variant="primary" type="submit">
               <Calculator aria-hidden="true" size={16} />
               Analyze condition
-            </button>
-            <button
-              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-border bg-surface/60 px-5 py-2.5 text-sm font-semibold text-foreground transition-colors hover:border-accent/60 hover:text-accent"
-              onClick={resetAnalyzer}
-              type="button"
-            >
+            </Button>
+            <Button variant="secondary" onClick={resetAnalyzer}>
               <RotateCcw aria-hidden="true" size={16} />
-              Reset example
-            </button>
+              Reset inputs
+            </Button>
           </div>
         </form>
       </div>
@@ -200,15 +198,15 @@ export function FlightConditionAnalyzer() {
             <div className="space-y-6">
               <section aria-labelledby="flight-atmosphere-title">
                 <h4
-                  className="orbix-label text-accent"
+                  className="text-sm font-semibold text-foreground"
                   id="flight-atmosphere-title"
                 >
                   Atmosphere
                 </h4>
                 <dl className="mt-3 grid gap-4 sm:grid-cols-2">
                   <div>
-                    <dt className="text-xs text-muted">Temperature</dt>
-                    <dd className="mt-1 font-mono text-sm font-semibold">
+                    <dt className="orbix-label">Temperature</dt>
+                    <dd className="orbix-data mt-1">
                       {numberFormatter.format(
                         result.atmosphere.temperatureKelvin,
                       )}{" "}
@@ -216,8 +214,8 @@ export function FlightConditionAnalyzer() {
                     </dd>
                   </div>
                   <div>
-                    <dt className="text-xs text-muted">Pressure</dt>
-                    <dd className="mt-1 font-mono text-sm font-semibold">
+                    <dt className="orbix-label">Pressure</dt>
+                    <dd className="orbix-data mt-1">
                       {numberFormatter.format(
                         result.atmosphere.pressurePascals,
                       )}{" "}
@@ -225,8 +223,8 @@ export function FlightConditionAnalyzer() {
                     </dd>
                   </div>
                   <div>
-                    <dt className="text-xs text-muted">Density</dt>
-                    <dd className="mt-1 font-mono text-sm font-semibold">
+                    <dt className="orbix-label">Density</dt>
+                    <dd className="orbix-data mt-1">
                       {densityFormatter.format(
                         result.atmosphere.densityKilogramsPerCubicMetre,
                       )}{" "}
@@ -234,8 +232,8 @@ export function FlightConditionAnalyzer() {
                     </dd>
                   </div>
                   <div>
-                    <dt className="text-xs text-muted">Speed of sound</dt>
-                    <dd className="mt-1 font-mono text-sm font-semibold">
+                    <dt className="orbix-label">Speed of sound</dt>
+                    <dd className="orbix-data mt-1">
                       {numberFormatter.format(
                         result.atmosphere.speedOfSoundMetersPerSecond,
                       )}{" "}
@@ -249,20 +247,23 @@ export function FlightConditionAnalyzer() {
                 aria-labelledby="flight-state-title"
                 className="border-t border-border pt-5"
               >
-                <h4 className="orbix-label text-accent" id="flight-state-title">
+                <h4
+                  className="text-sm font-semibold text-foreground"
+                  id="flight-state-title"
+                >
                   Flight
                 </h4>
                 <dl className="mt-3 grid gap-4 sm:grid-cols-2">
                   <div>
-                    <dt className="text-xs text-muted">Mach number</dt>
-                    <dd className="mt-1 font-mono text-xl font-semibold text-accent">
+                    <dt className="orbix-label">Mach number</dt>
+                    <dd className="orbix-data-lg mt-1">
                       {ratioFormatter.format(result.flight.machNumber)}
                     </dd>
                   </div>
                   <div>
-                    <dt className="text-xs text-muted">Flow regime</dt>
-                    <dd className="mt-1 text-sm font-semibold capitalize">
-                      {result.flight.flowRegime}
+                    <dt className="orbix-label">Flow regime</dt>
+                    <dd className="mt-1 text-sm font-semibold">
+                      {toSentenceCase(result.flight.flowRegime)}
                     </dd>
                   </div>
                 </dl>
@@ -273,15 +274,15 @@ export function FlightConditionAnalyzer() {
                 className="border-t border-border pt-5"
               >
                 <h4
-                  className="orbix-label text-accent"
+                  className="text-sm font-semibold text-foreground"
                   id="flight-aerodynamics-title"
                 >
                   Aerodynamics
                 </h4>
                 <dl className="mt-3 grid gap-4 sm:grid-cols-3">
                   <div>
-                    <dt className="text-xs text-muted">Dynamic pressure</dt>
-                    <dd className="mt-1 font-mono text-sm font-semibold">
+                    <dt className="orbix-label">Dynamic pressure</dt>
+                    <dd className="orbix-data mt-1">
                       {numberFormatter.format(
                         result.aerodynamics.dynamicPressurePascals,
                       )}{" "}
@@ -289,8 +290,8 @@ export function FlightConditionAnalyzer() {
                     </dd>
                   </div>
                   <div>
-                    <dt className="text-xs text-muted">Lift</dt>
-                    <dd className="mt-1 font-mono text-sm font-semibold">
+                    <dt className="orbix-label">Lift</dt>
+                    <dd className="orbix-data mt-1">
                       {numberFormatter.format(
                         result.aerodynamics.liftForceNewtons,
                       )}{" "}
@@ -298,8 +299,8 @@ export function FlightConditionAnalyzer() {
                     </dd>
                   </div>
                   <div>
-                    <dt className="text-xs text-muted">Drag</dt>
-                    <dd className="mt-1 font-mono text-sm font-semibold">
+                    <dt className="orbix-label">Drag</dt>
+                    <dd className="orbix-data mt-1">
                       {numberFormatter.format(
                         result.aerodynamics.dragForceNewtons,
                       )}{" "}
@@ -314,14 +315,14 @@ export function FlightConditionAnalyzer() {
                 className="border-t border-border pt-5"
               >
                 <h4
-                  className="orbix-label text-accent"
+                  className="text-sm font-semibold text-foreground"
                   id="flight-performance-title"
                 >
                   Performance
                 </h4>
-                <p className="mt-2 text-xs text-muted">Lift-to-drag ratio</p>
+                <p className="orbix-label mt-2">Lift-to-drag ratio</p>
                 <output
-                  className="mt-1 block font-mono text-4xl font-semibold tracking-[-0.04em] text-accent"
+                  className="orbix-data-lg mt-1 block"
                   htmlFor="flight-condition-altitudeMetres flight-condition-velocityMetresPerSecond flight-condition-wingAreaSquareMetres flight-condition-liftCoefficient flight-condition-dragCoefficient"
                 >
                   {ratioFormatter.format(result.performance.liftToDragRatio)}
@@ -329,18 +330,15 @@ export function FlightConditionAnalyzer() {
               </section>
             </div>
           ) : (
-            <div className="py-5">
-              <p className="font-mono text-3xl text-muted">—</p>
-              <p className="mt-3 text-sm leading-6 text-muted">
-                Validate the inputs and run the analysis to compose atmospheric,
-                aerodynamic, and performance results.
-              </p>
-            </div>
+            <NotCalculated invalid={Object.values(errors).some(Boolean)}>
+              Validate the inputs and run the analysis to compose atmospheric,
+              aerodynamic, and performance results.
+            </NotCalculated>
           )}
         </CalculatorResultSection>
 
-        <section className="rounded-2xl border border-border bg-surface/55 p-5 sm:p-6">
-          <p className="orbix-label flex items-center gap-2 text-accent">
+        <section className="rounded-md border border-border bg-surface p-4 sm:p-6">
+          <p className="orbix-label flex items-center gap-2">
             <GitBranch aria-hidden="true" size={15} />
             Analysis flow
           </p>
@@ -368,12 +366,12 @@ export function FlightConditionAnalyzer() {
               ],
             ].map(([step, title, description]) => (
               <li
-                className="rounded-xl border border-border bg-background/30 p-4"
+                className="rounded-md border border-border-subtle bg-surface-raised p-4"
                 key={step}
               >
-                <p className="font-mono text-[0.65rem] text-accent">{step}</p>
+                <p className="orbix-data text-foreground">{step}</p>
                 <p className="mt-1 font-semibold">{title}</p>
-                <p className="mt-1 text-xs leading-5 text-muted">
+                <p className="mt-1 text-sm leading-6 text-muted">
                   {description}
                 </p>
               </li>
@@ -386,7 +384,7 @@ export function FlightConditionAnalyzer() {
             <AlertTriangle aria-hidden="true" size={17} />
             Engineering notes
           </p>
-          <ul className="mt-4 list-disc space-y-2 pl-5 text-xs leading-5 text-muted">
+          <ul className="mt-4 list-disc space-y-2 pl-5 text-sm leading-6 text-muted">
             <li>
               The atmosphere model is limited to the standard troposphere from 0
               through 11,000 metres.

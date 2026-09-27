@@ -1,5 +1,6 @@
 "use client";
 
+import { Button } from "@/components/ui";
 import { useMemo, useState, type FormEvent } from "react";
 import {
   AlertTriangle,
@@ -14,7 +15,10 @@ import { analyzeReentryDeceleration } from "@/features/engineering-lab/analysis"
 import { calculateDynamicPressure } from "@/features/engineering-lab/calculators";
 import {
   CalculatorNumberField,
+  focusFirstInvalidField,
+  focusFirstInvalidFieldOnEnter,
   CalculatorResultSection,
+  NotCalculated,
   ValidationErrorSummary,
 } from "@/features/engineering-lab/components/shared";
 import type {
@@ -163,6 +167,7 @@ export function ReentryDecelerationAnalyzer() {
 
   function preventSubmission(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    focusFirstInvalidField(event.currentTarget);
   }
 
   function resetAnalyzer() {
@@ -172,9 +177,13 @@ export function ReentryDecelerationAnalyzer() {
   return (
     <div className="grid gap-8 xl:grid-cols-[minmax(0,0.95fr)_minmax(22rem,1.05fr)] xl:gap-10">
       <div>
-        <form noValidate onSubmit={preventSubmission}>
+        <form
+          noValidate
+          onKeyDown={focusFirstInvalidFieldOnEnter}
+          onSubmit={preventSubmission}
+        >
           <fieldset>
-            <legend className="orbix-label text-accent">
+            <legend className="text-base font-semibold text-foreground">
               Reentry condition inputs
             </legend>
             <div className="mt-5 grid gap-5 sm:grid-cols-2">
@@ -243,18 +252,18 @@ export function ReentryDecelerationAnalyzer() {
           />
 
           <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:items-center">
-            <p className="text-xs leading-5 text-muted">
+            <p className="text-sm leading-6 text-muted">
               Valid changes update the atmosphere, vehicle, and deceleration
               states immediately.
             </p>
-            <button
-              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-border bg-surface/60 px-5 py-2.5 text-sm font-semibold text-foreground transition-colors hover:border-accent/60 hover:text-accent sm:ml-auto"
+            <Button
+              className="shrink-0 whitespace-nowrap sm:ml-auto"
+              variant="secondary"
               onClick={resetAnalyzer}
-              type="button"
             >
               <RotateCcw aria-hidden="true" size={16} />
-              Reset example
-            </button>
+              Reset inputs
+            </Button>
           </div>
         </form>
 
@@ -262,40 +271,40 @@ export function ReentryDecelerationAnalyzer() {
           aria-labelledby="reentry-deceleration-relationships-title"
           className="mt-8 border-t border-border pt-7"
         >
-          <p className="orbix-label text-accent">Educational visualization</p>
+          <p className="orbix-label">Educational visualization</p>
           <h3
             className="mt-1 text-lg font-semibold"
             id="reentry-deceleration-relationships-title"
           >
             What controls drag deceleration?
           </h3>
-          <div className="mt-5 grid gap-4 sm:grid-cols-3">
-            <article className="rounded-2xl border border-border bg-background/40 p-4">
-              <Scale aria-hidden="true" className="text-accent" size={18} />
+          <div className="mt-5 grid gap-4 sm:grid-cols-3 xl:grid-cols-1">
+            <article className="rounded-md border border-border-subtle bg-surface-raised p-4">
+              <Scale aria-hidden="true" className="text-muted" size={18} />
               <h4 className="mt-3 text-sm font-semibold">
                 Ballistic coefficient
               </h4>
-              <p className="mt-2 text-xs leading-5 text-muted">
+              <p className="mt-2 text-sm leading-6 text-muted">
                 A higher ballistic coefficient places more vehicle mass behind
                 each unit of aerodynamic drag area, reducing instantaneous
                 deceleration.
               </p>
             </article>
-            <article className="rounded-2xl border border-border bg-background/40 p-4">
-              <Gauge aria-hidden="true" className="text-accent" size={18} />
+            <article className="rounded-md border border-border-subtle bg-surface-raised p-4">
+              <Gauge aria-hidden="true" className="text-muted" size={18} />
               <h4 className="mt-3 text-sm font-semibold">Velocity</h4>
-              <p className="mt-2 text-xs leading-5 text-muted">
+              <p className="mt-2 text-sm leading-6 text-muted">
                 Dynamic pressure rises strongly with velocity, so faster entry
                 conditions produce substantially greater drag force and
                 deceleration.
               </p>
             </article>
-            <article className="rounded-2xl border border-border bg-background/40 p-4">
-              <CloudSun aria-hidden="true" className="text-accent" size={18} />
+            <article className="rounded-md border border-border-subtle bg-surface-raised p-4">
+              <CloudSun aria-hidden="true" className="text-muted" size={18} />
               <h4 className="mt-3 text-sm font-semibold">
                 Atmospheric density
               </h4>
-              <p className="mt-2 text-xs leading-5 text-muted">
+              <p className="mt-2 text-sm leading-6 text-muted">
                 Density controls how much air interacts with the vehicle. As
                 denser air is encountered, drag deceleration grows rapidly.
               </p>
@@ -306,7 +315,7 @@ export function ReentryDecelerationAnalyzer() {
 
       <div className="space-y-5">
         <CalculatorResultSection
-          eyebrow="Atmosphere + Vehicle + Flight"
+          eyebrow="Atmosphere, vehicle and flight"
           icon={Wind}
           id="reentry-deceleration-result"
           title="Reentry deceleration analysis"
@@ -315,17 +324,17 @@ export function ReentryDecelerationAnalyzer() {
             <div className="space-y-6">
               <section aria-labelledby="reentry-deceleration-atmosphere-title">
                 <h4
-                  className="orbix-label text-accent"
+                  className="text-sm font-semibold text-foreground"
                   id="reentry-deceleration-atmosphere-title"
                 >
                   Atmospheric state
                 </h4>
                 <dl className="mt-3 grid gap-4 sm:grid-cols-2">
                   <div>
-                    <dt className="text-xs text-muted">Temperature</dt>
+                    <dt className="orbix-label">Temperature</dt>
                     <dd className="mt-1">
                       <output
-                        className="font-mono text-sm font-semibold"
+                        className="orbix-data"
                         htmlFor={atmosphereOutputIds}
                       >
                         {stateFormatter.format(
@@ -336,10 +345,10 @@ export function ReentryDecelerationAnalyzer() {
                     </dd>
                   </div>
                   <div>
-                    <dt className="text-xs text-muted">Pressure</dt>
+                    <dt className="orbix-label">Pressure</dt>
                     <dd className="mt-1">
                       <output
-                        className="font-mono text-sm font-semibold"
+                        className="orbix-data"
                         htmlFor={atmosphereOutputIds}
                       >
                         {stateFormatter.format(
@@ -350,10 +359,10 @@ export function ReentryDecelerationAnalyzer() {
                     </dd>
                   </div>
                   <div>
-                    <dt className="text-xs text-muted">Density</dt>
+                    <dt className="orbix-label">Density</dt>
                     <dd className="mt-1">
                       <output
-                        className="font-mono text-sm font-semibold"
+                        className="orbix-data"
                         htmlFor={atmosphereOutputIds}
                       >
                         {densityFormatter.format(
@@ -372,19 +381,17 @@ export function ReentryDecelerationAnalyzer() {
                 className="border-t border-border pt-5"
               >
                 <h4
-                  className="orbix-label text-accent"
+                  className="text-sm font-semibold text-foreground"
                   id="reentry-deceleration-vehicle-title"
                 >
                   Vehicle state
                 </h4>
                 <dl className="mt-3">
                   <div>
-                    <dt className="text-xs text-muted">
-                      Ballistic coefficient
-                    </dt>
+                    <dt className="orbix-label">Ballistic coefficient</dt>
                     <dd className="mt-1">
                       <output
-                        className="font-mono text-lg font-semibold text-accent"
+                        className="orbix-data-lg"
                         htmlFor={vehicleOutputIds}
                       >
                         {engineeringFormatter.format(
@@ -403,17 +410,17 @@ export function ReentryDecelerationAnalyzer() {
                 className="border-t border-border pt-5"
               >
                 <h4
-                  className="orbix-label text-accent"
+                  className="text-sm font-semibold text-foreground"
                   id="reentry-deceleration-flight-title"
                 >
                   Flight state
                 </h4>
                 <dl className="mt-3 grid gap-4 sm:grid-cols-2">
                   <div>
-                    <dt className="text-xs text-muted">Dynamic pressure</dt>
+                    <dt className="orbix-label">Dynamic pressure</dt>
                     <dd className="mt-1">
                       <output
-                        className="font-mono text-sm font-semibold"
+                        className="orbix-data"
                         htmlFor={dynamicPressureOutputIds}
                       >
                         {engineeringFormatter.format(
@@ -427,13 +434,11 @@ export function ReentryDecelerationAnalyzer() {
                     <dt className="text-xs font-semibold text-foreground">
                       Drag deceleration
                     </dt>
-                    <dd className="mt-3 grid gap-4 rounded-xl border border-border bg-background/35 p-4 sm:grid-cols-2">
+                    <dd className="mt-3 grid gap-4 rounded-md border border-border-subtle bg-surface-raised p-4 sm:grid-cols-2">
                       <div>
-                        <span className="block text-xs text-muted">
-                          Deceleration
-                        </span>
+                        <span className="orbix-label block">Deceleration</span>
                         <output
-                          className="mt-1 block font-mono text-lg font-semibold text-accent"
+                          className="orbix-data-lg mt-1 block"
                           htmlFor={decelerationOutputIds}
                         >
                           {engineeringFormatter.format(
@@ -444,11 +449,11 @@ export function ReentryDecelerationAnalyzer() {
                         </output>
                       </div>
                       <div>
-                        <span className="block text-xs text-muted">
+                        <span className="orbix-label block">
                           Standard-gravity equivalent
                         </span>
                         <output
-                          className="mt-1 block font-mono text-lg font-semibold text-accent"
+                          className="orbix-data-lg mt-1 block"
                           htmlFor={decelerationOutputIds}
                         >
                           {engineeringFormatter.format(
@@ -464,13 +469,10 @@ export function ReentryDecelerationAnalyzer() {
               </section>
             </div>
           ) : (
-            <div className="py-5">
-              <p className="font-mono text-3xl text-muted">—</p>
-              <p className="mt-3 text-sm leading-6 text-muted">
-                Enter valid atmospheric and vehicle conditions to estimate
-                instantaneous drag deceleration.
-              </p>
-            </div>
+            <NotCalculated invalid={Object.values(errors).some(Boolean)}>
+              Enter valid atmospheric and vehicle conditions to estimate
+              instantaneous drag deceleration.
+            </NotCalculated>
           )}
         </CalculatorResultSection>
 
@@ -479,7 +481,7 @@ export function ReentryDecelerationAnalyzer() {
             <AlertTriangle aria-hidden="true" size={17} />
             Engineering assumptions
           </p>
-          <ul className="mt-4 grid list-disc gap-2 pl-5 text-xs leading-5 text-muted sm:grid-cols-2">
+          <ul className="mt-4 grid list-disc gap-2 pl-5 text-sm leading-6 text-muted sm:grid-cols-2">
             <li>Instantaneous drag deceleration estimate</li>
             <li>Constant vehicle properties</li>
             <li>No trajectory integration</li>

@@ -1,6 +1,8 @@
 export {
   formatAircraftEngineType,
+  formatAircraftFleetStatus,
   formatAircraftMeasurement,
+  formatAircraftMetaDescription,
   formatAircraftRole,
   formatAircraftRoles,
   formatAircraftVariantStatus,

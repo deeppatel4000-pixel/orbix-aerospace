@@ -1,58 +1,39 @@
-import { ArrowUpRight } from "lucide-react";
 import Link from "next/link";
 import type { ReactNode } from "react";
 
 import { cn } from "@/lib/cn";
 
 /**
- * The shared vehicle discovery card.
- *
- * Aircraft and launch vehicles use ONE visual architecture and differ only in
- * what they put in the domain slots — the classification line, the media
- * aspect, and two key specifications. A shared schema is deliberately not
- * imposed on the specifications: showing an aircraft's service ceiling beside
- * a rocket's stage count in the same labelled row would force one domain to
- * carry the other's vocabulary.
- *
- * ## Reading order
- *
- * media -> classification -> name -> description -> key specs -> explore
- *
- * The name sits BELOW the media. It was previously absolutely positioned over
- * the bottom of the image, which is why long names collided with the subject
- * on short media boxes.
- *
- * ## Interaction
- *
- * The whole card is a single link. The visible "Open engineering profile" row
- * is styled text inside that same anchor rather than a second control, so
- * there is exactly one tab stop and one screen-reader announcement per card —
- * no nested interactive elements.
+ * The vehicle card link (spec 10): a flat panel with the photograph on top,
+ * the name as an `.orbix-h3`, one line of classification and a short list of
+ * key values. The whole card is one link, so each card is one tab stop with
+ * no nested controls. There is no "Explore" pseudo-button inside it.
  */
 export interface VehicleSpec {
   /** Formatted, already-qualified value. Never fabricated or defaulted. */
-  readonly value: string;
+  readonly value: ReactNode;
   readonly label: string;
 }
 
 /**
- * `default` is the discovery-index card. `compact` is the related-vehicle
- * card used at the end of a profile: same primitive, same media frame, same
- * accent — it simply drops the description and shows a single specification,
- * so a profile does not end with five full-height index cards.
- *
- * Adding this variant must not alter `default` rendering; the discovery
- * indexes are finished work.
+ * `default` is the registry card. `compact` is the related-vehicle card at
+ * the end of a profile: same card, one key value, smaller title.
  */
 export type VehicleRecordCardVariant = "compact" | "default";
 
 interface VehicleRecordCardProps {
   className?: string;
-  /** Short classification line, e.g. roles or supported orbits. */
+  /** One line, for example the roles or the stage arrangement. */
   classification: string;
-  description: string;
+  /**
+   * Deprecated and not rendered: the card shows name, classification and key
+   * values only (spec 10). Accepted so existing callers keep compiling.
+   */
+  description?: string;
+  /** Heading level for the name. Registries use 3; a list under an h3 uses 4. */
+  headingLevel?: 3 | 4;
   href: string;
-  /** Rendered inside the canonical media frame. */
+  /** Rendered at the top of the card, normally a `VehicleMediaFrame`. */
   media: ReactNode;
   name: string;
   specs: readonly VehicleSpec[];
@@ -62,7 +43,7 @@ interface VehicleRecordCardProps {
 export function VehicleRecordCard({
   className,
   classification,
-  description,
+  headingLevel = 3,
   href,
   media,
   name,
@@ -70,48 +51,33 @@ export function VehicleRecordCard({
   variant = "default",
 }: VehicleRecordCardProps) {
   const isCompact = variant === "compact";
-  // Compact shows one specification. More than that and the card stops being
-  // compact; fewer and it carries no technical signal at all.
   const visibleSpecs = isCompact ? specs.slice(0, 1) : specs;
+  const Heading = headingLevel === 4 ? "h4" : "h3";
 
   return (
     <article className={cn("h-full", className)}>
-      <Link
-        className="orbix-vehicle-card group"
-        data-variant={variant}
-        href={href}
-      >
-        {media}
+      <Link className="orbix-vehicle-card" data-variant={variant} href={href}>
+        <div className="border-b border-border">{media}</div>
 
-        <div
-          className={cn(
-            "flex flex-1 flex-col",
-            isCompact ? "p-4" : "p-5 sm:p-6",
-          )}
-        >
-          <p className="orbix-vehicle-card__classification">{classification}</p>
-          <h3 className="orbix-vehicle-card__name">{name}</h3>
+        <div className={cn("flex flex-1 flex-col", isCompact ? "p-4" : "p-6")}>
+          <Heading className="orbix-vehicle-card__name">{name}</Heading>
+          <p className="orbix-vehicle-card__classification mt-1">
+            {classification}
+          </p>
 
-          {isCompact ? null : (
-            <p className="mt-3 text-sm leading-6 text-muted">{description}</p>
-          )}
-
-          <dl className="orbix-vehicle-card__specs">
+          <dl className="mt-4 grid gap-2 border-t border-border-subtle pt-4">
             {visibleSpecs.map((spec) => (
-              <div key={spec.label}>
+              <div
+                className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1"
+                key={spec.label}
+              >
                 <dt className="orbix-vehicle-card__spec-label">{spec.label}</dt>
-                {/* Values are the one place monospace earns its keep here:
-                    they are machine-produced figures, and tabular numerals
-                    keep them aligned between cards. */}
-                <dd className="orbix-vehicle-card__spec-value">{spec.value}</dd>
+                <dd className="orbix-vehicle-card__spec-value mt-0 text-right">
+                  {spec.value}
+                </dd>
               </div>
             ))}
           </dl>
-
-          <span className="orbix-vehicle-card__cta">
-            Open engineering profile
-            <ArrowUpRight aria-hidden="true" size={15} />
-          </span>
         </div>
       </Link>
     </article>

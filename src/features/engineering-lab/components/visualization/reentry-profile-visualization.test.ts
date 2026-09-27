@@ -28,13 +28,14 @@ describe("ReentryProfileVisualization", () => {
       }),
     );
 
-    expect(markup).toContain("Reentry Profile Visualization");
+    expect(markup).toContain("Reentry profile");
     expect(markup).toContain("Visualization Reference Vehicle");
-    expect(markup).toContain("ALTITUDE PROFILE");
-    expect(markup).toContain("VELOCITY");
-    expect(markup).toContain("PEAK HEATING");
-    expect(markup).toContain("PEAK DECELERATION");
+    expect(markup).toContain("Altitude profile");
+    expect(markup).toContain("Velocity (km/s)");
+    expect(markup).toContain("Peak heating");
+    expect(markup).toContain("Peak deceleration");
     expect(markup).toContain("<svg");
+    expect(markup).not.toContain("animateMotion");
   });
 
   it("retains the trajectory when thermal points are unavailable", () => {
@@ -51,9 +52,10 @@ describe("ReentryProfileVisualization", () => {
       }),
     );
 
-    expect(markup).toContain("ALTITUDE PROFILE");
+    expect(markup).toContain("Altitude profile");
     expect(markup).toContain("Thermal profile unavailable");
-    expect(markup).not.toContain("PEAK HEATING");
+    // No peak-heating marker in the legend when there is no thermal data.
+    expect(markup).not.toContain("</svg>Peak heating");
   });
 
   it("renders an accessible empty state for a missing analysis", () => {

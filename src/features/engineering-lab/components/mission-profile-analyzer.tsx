@@ -1,7 +1,9 @@
 "use client";
 
+import { Button, Tag } from "@/components/ui";
 import { useEffect, useMemo, useState, type FormEvent } from "react";
 import {
+  CircleAlert,
   AlertTriangle,
   Gauge,
   Layers,
@@ -14,6 +16,9 @@ import {
 import { analyzeMissionProfile } from "@/features/engineering-lab/analysis";
 import {
   CalculatorNumberField,
+  NotCalculated,
+  focusFirstInvalidField,
+  focusFirstInvalidFieldOnEnter,
   CalculatorResultSection,
   ValidationErrorSummary,
 } from "@/features/engineering-lab/components/shared";
@@ -716,15 +721,16 @@ function OptionalNumberField({
 
   return (
     <div>
-      <label className="text-sm font-semibold" htmlFor={inputId}>
+      <label className="orbix-field__label block" htmlFor={inputId}>
         {label}
+        <span className="sr-only"> ({unit})</span>
       </label>
-      <div className="relative mt-2">
+      <div className="orbix-field__control mt-2">
         <input
           aria-describedby={error ? hintId + " " + errorId : hintId}
           aria-errormessage={error ? errorId : undefined}
           aria-invalid={Boolean(error)}
-          className="min-h-12 w-full rounded-xl border border-border bg-background/55 px-4 py-3 pr-20 font-mono text-base text-foreground transition-colors outline-none placeholder:text-muted/55 focus:border-accent focus:ring-2 focus:ring-accent/15"
+          className="orbix-input"
           id={inputId}
           inputMode="decimal"
           onChange={(event) => onChange(field, event.target.value)}
@@ -732,15 +738,16 @@ function OptionalNumberField({
           type="number"
           value={value}
         />
-        <span className="pointer-events-none absolute top-1/2 right-4 -translate-y-1/2 font-mono text-xs text-muted">
+        <span aria-hidden="true" className="orbix-field__unit">
           {unit}
         </span>
       </div>
-      <p className="mt-2 text-xs leading-5 text-muted" id={hintId}>
+      <p className="orbix-field__help mt-2" id={hintId}>
         {hint}
       </p>
       {error ? (
-        <p className="mt-1.5 text-xs leading-5 text-signal" id={errorId}>
+        <p className="orbix-field__error mt-1" id={errorId}>
+          <CircleAlert aria-hidden="true" className="shrink-0" size={14} />
           {error}
         </p>
       ) : null}
@@ -782,12 +789,10 @@ function VehicleFields({
     "primaryNoseRadiusMetres" | "alternativeNoseRadiusMetres";
 
   return (
-    <fieldset className="rounded-2xl border border-border bg-background/30 p-4 sm:p-5">
-      <legend className="px-2 font-mono text-[0.65rem] tracking-[0.13em] text-accent uppercase">
-        {label}
-      </legend>
+    <fieldset className="rounded-md border border-border-subtle bg-surface-raised p-4 sm:p-6">
+      <legend className="px-2 text-base font-semibold">{label}</legend>
       <div>
-        <label className="text-sm font-semibold" htmlFor={nameId}>
+        <label className="orbix-field__label block" htmlFor={nameId}>
           Vehicle name
         </label>
         <input
@@ -796,18 +801,19 @@ function VehicleFields({
           }
           aria-errormessage={nameError ? nameErrorId : undefined}
           aria-invalid={Boolean(nameError)}
-          className="mt-2 min-h-12 w-full rounded-xl border border-border bg-background/55 px-4 py-3 text-base text-foreground transition-colors outline-none focus:border-accent focus:ring-2 focus:ring-accent/15"
+          className="orbix-input mt-2"
           id={nameId}
           onChange={(event) => onChange(nameField, event.target.value)}
           required
           type="text"
           value={values[nameField]}
         />
-        <p className="mt-2 text-xs leading-5 text-muted" id={nameHintId}>
+        <p className="orbix-field__help mt-2" id={nameHintId}>
           Identifies this caller-supplied vehicle configuration.
         </p>
         {nameError ? (
-          <p className="mt-1.5 text-xs leading-5 text-signal" id={nameErrorId}>
+          <p className="orbix-field__error mt-1" id={nameErrorId}>
+            <CircleAlert aria-hidden="true" className="shrink-0" size={14} />
             {nameError}
           </p>
         ) : null}
@@ -943,6 +949,7 @@ export function MissionProfileAnalyzer({
 
   function preventSubmission(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    focusFirstInvalidField(event.currentTarget);
   }
 
   function resetAnalyzer() {
@@ -952,14 +959,18 @@ export function MissionProfileAnalyzer({
   return (
     <div className="grid gap-8 xl:grid-cols-[minmax(0,0.9fr)_minmax(34rem,1.1fr)] xl:gap-10">
       <div>
-        <form noValidate onSubmit={preventSubmission}>
+        <form
+          noValidate
+          onKeyDown={focusFirstInvalidFieldOnEnter}
+          onSubmit={preventSubmission}
+        >
           <fieldset>
-            <legend className="orbix-label text-accent">
+            <legend className="text-base font-semibold text-foreground">
               Mission identity
             </legend>
             <div className="mt-5">
               <label
-                className="text-sm font-semibold"
+                className="orbix-field__label block"
                 htmlFor="mission-profile-missionName"
               >
                 Mission name
@@ -976,7 +987,7 @@ export function MissionProfileAnalyzer({
                     : undefined
                 }
                 aria-invalid={Boolean(errors.missionName)}
-                className="mt-2 min-h-12 w-full rounded-xl border border-border bg-background/55 px-4 py-3 text-base text-foreground transition-colors outline-none focus:border-accent focus:ring-2 focus:ring-accent/15"
+                className="orbix-input mt-2"
                 id="mission-profile-missionName"
                 onChange={(event) =>
                   updateValue("missionName", event.target.value)
@@ -986,16 +997,21 @@ export function MissionProfileAnalyzer({
                 value={values.missionName}
               />
               <p
-                className="mt-2 text-xs leading-5 text-muted"
+                className="orbix-field__help mt-2"
                 id="mission-profile-missionName-hint"
               >
                 Identifies the integrated educational mission profile.
               </p>
               {errors.missionName ? (
                 <p
-                  className="mt-1.5 text-xs leading-5 text-signal"
+                  className="orbix-field__error mt-1"
                   id="mission-profile-missionName-error"
                 >
+                  <CircleAlert
+                    aria-hidden="true"
+                    className="shrink-0"
+                    size={14}
+                  />
                   {errors.missionName}
                 </p>
               ) : null}
@@ -1003,7 +1019,7 @@ export function MissionProfileAnalyzer({
           </fieldset>
 
           <fieldset className="mt-7 border-t border-border pt-7">
-            <legend className="orbix-label text-accent">
+            <legend className="text-base font-semibold text-foreground">
               Optional systems
             </legend>
             <div className="mt-5 grid gap-3 sm:grid-cols-3">
@@ -1028,7 +1044,7 @@ export function MissionProfileAnalyzer({
                 },
               ].map((system) => (
                 <label
-                  className="flex min-h-12 cursor-pointer items-center gap-3 rounded-xl border border-border bg-background/40 px-4 py-3 text-sm font-semibold transition-colors hover:border-accent/50"
+                  className="flex min-h-12 cursor-pointer items-center gap-3 rounded border border-border-control bg-surface-input px-4 py-3 text-sm font-medium transition-colors hover:border-muted"
                   key={system.field}
                 >
                   <input
@@ -1051,11 +1067,11 @@ export function MissionProfileAnalyzer({
               className="mt-7 border-t border-border pt-7"
               id="mission-profile-delta-system"
             >
-              <legend className="orbix-label text-accent">
+              <legend className="text-base font-semibold text-foreground">
                 Delta-v budget
               </legend>
               <div className="mt-5 flex flex-wrap gap-3">
-                <label className="flex min-h-11 cursor-pointer items-center gap-3 rounded-xl border border-border bg-background/40 px-4 py-2.5 text-sm font-semibold">
+                <label className="flex min-h-11 cursor-pointer items-center gap-3 rounded border border-border-control bg-surface-input px-4 py-2 text-sm font-medium hover:border-muted has-checked:border-accent has-checked:bg-surface-raised">
                   <input
                     aria-controls="mission-profile-hohmann-inputs"
                     checked={values.includeHohmannTransfer}
@@ -1070,7 +1086,7 @@ export function MissionProfileAnalyzer({
                   />
                   Hohmann transfer
                 </label>
-                <label className="flex min-h-11 cursor-pointer items-center gap-3 rounded-xl border border-border bg-background/40 px-4 py-2.5 text-sm font-semibold">
+                <label className="flex min-h-11 cursor-pointer items-center gap-3 rounded border border-border-control bg-surface-input px-4 py-2 text-sm font-medium hover:border-muted has-checked:border-accent has-checked:bg-surface-raised">
                   <input
                     aria-controls="mission-profile-plane-change-inputs"
                     checked={values.includeOrbitalPlaneChange}
@@ -1175,7 +1191,7 @@ export function MissionProfileAnalyzer({
               id="mission-profile-reentry-system"
             >
               <fieldset>
-                <legend className="orbix-label text-accent">
+                <legend className="text-base font-semibold text-foreground">
                   Shared reentry scenario
                 </legend>
                 <div className="mt-5 grid gap-5 sm:grid-cols-2">
@@ -1231,9 +1247,9 @@ export function MissionProfileAnalyzer({
                     error={errors.heatingCoefficient}
                     field="heatingCoefficient"
                     hint="Leave blank to preserve the heating-model default."
-                    label="Heating coefficient (optional)"
+                    label="Heating coefficient k (optional)"
                     onChange={updateValue}
-                    unit="k"
+                    unit="kg½/m"
                     value={values.heatingCoefficient}
                   />
                 </div>
@@ -1266,17 +1282,17 @@ export function MissionProfileAnalyzer({
           <ValidationErrorSummary errors={[...Object.values(errors)]} />
 
           <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:items-center">
-            <p className="text-xs leading-5 text-muted">
+            <p className="text-sm leading-6 text-muted">
               Valid changes update the integrated mission profile immediately.
             </p>
-            <button
-              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-border bg-surface/60 px-5 py-2.5 text-sm font-semibold text-foreground transition-colors hover:border-accent/60 hover:text-accent sm:ml-auto"
+            <Button
+              className="shrink-0 whitespace-nowrap sm:ml-auto"
+              variant="secondary"
               onClick={resetAnalyzer}
-              type="button"
             >
               <RotateCcw aria-hidden="true" size={16} />
-              Reset example
-            </button>
+              Reset inputs
+            </Button>
           </div>
         </form>
 
@@ -1284,7 +1300,7 @@ export function MissionProfileAnalyzer({
           aria-labelledby="mission-profile-explanation-title"
           className="mt-8 border-t border-border pt-7"
         >
-          <p className="orbix-label text-accent">Educational integration</p>
+          <p className="orbix-label">Educational integration</p>
           <h3
             className="mt-1 text-lg font-semibold"
             id="mission-profile-explanation-title"
@@ -1297,7 +1313,7 @@ export function MissionProfileAnalyzer({
             budgeting. Each source analysis remains independent and retains
             ownership of its equations, assumptions, and validation.
           </p>
-          <p className="mt-3 text-xs leading-5 text-muted">
+          <p className="mt-3 text-sm leading-6 text-muted">
             This integration is educational and does not determine mission
             feasibility, flight readiness, or certification status.
           </p>
@@ -1306,7 +1322,7 @@ export function MissionProfileAnalyzer({
 
       <div className="space-y-5">
         <CalculatorResultSection
-          eyebrow="Mission // Integrated systems"
+          eyebrow="Mission: integrated systems"
           icon={Layers}
           id="mission-profile-overview-result"
           title="Mission overview"
@@ -1314,7 +1330,7 @@ export function MissionProfileAnalyzer({
           {result ? (
             <dl className="grid gap-4 sm:grid-cols-2">
               <div>
-                <dt className="text-xs text-muted">Mission name</dt>
+                <dt className="orbix-label">Mission name</dt>
                 <dd className="mt-1">
                   <output
                     className="text-lg font-semibold"
@@ -1325,29 +1341,21 @@ export function MissionProfileAnalyzer({
                 </dd>
               </div>
               <div>
-                <dt className="text-xs text-muted">Integrated analyses</dt>
+                <dt className="orbix-label">Integrated analyses</dt>
                 <dd className="mt-1">
-                  <output
-                    className="font-mono text-lg font-semibold"
-                    htmlFor={allOutputIds}
-                  >
+                  <output className="orbix-data-lg" htmlFor={allOutputIds}>
                     {result.missionSummaryState.analysesResolved}
                   </output>
                 </dd>
               </div>
               <div className="sm:col-span-2">
-                <dt className="text-xs text-muted">Systems resolved</dt>
+                <dt className="orbix-label">Systems resolved</dt>
                 <dd className="mt-2">
                   <output htmlFor={allOutputIds}>
                     {systemsResolved.length > 0 ? (
                       <span className="flex flex-wrap gap-2">
                         {systemsResolved.map((system) => (
-                          <span
-                            className="rounded-full border border-accent/30 bg-accent/7 px-3 py-1 text-xs font-semibold text-accent"
-                            key={system}
-                          >
-                            {system}
-                          </span>
+                          <Tag key={system}>{system}</Tag>
                         ))}
                       </span>
                     ) : (
@@ -1360,14 +1368,14 @@ export function MissionProfileAnalyzer({
               </div>
             </dl>
           ) : (
-            <p className="text-sm leading-6 text-muted">
+            <NotCalculated invalid={Object.values(errors).some(Boolean)}>
               Enter a valid mission configuration to resolve the profile.
-            </p>
+            </NotCalculated>
           )}
         </CalculatorResultSection>
 
         <CalculatorResultSection
-          eyebrow="Mission // Velocity budget"
+          eyebrow="Mission: velocity budget"
           icon={Orbit}
           id="mission-profile-delta-v-result"
           title="Delta-v summary"
@@ -1375,12 +1383,9 @@ export function MissionProfileAnalyzer({
           {deltaVBudget ? (
             <dl className="grid gap-4 sm:grid-cols-3">
               <div>
-                <dt className="text-xs text-muted">Total mission delta-v</dt>
+                <dt className="orbix-label">Total mission delta-v</dt>
                 <dd className="mt-1">
-                  <output
-                    className="font-mono text-lg font-semibold"
-                    htmlFor={deltaOutputIds}
-                  >
+                  <output className="orbix-data-lg" htmlFor={deltaOutputIds}>
                     {standardFormatter.format(
                       deltaVBudget.totalDeltaVMetresPerSecond,
                     )}{" "}
@@ -1389,18 +1394,15 @@ export function MissionProfileAnalyzer({
                 </dd>
               </div>
               <div>
-                <dt className="text-xs text-muted">Maneuver count</dt>
+                <dt className="orbix-label">Maneuver count</dt>
                 <dd className="mt-1">
-                  <output
-                    className="font-mono text-lg font-semibold"
-                    htmlFor={deltaOutputIds}
-                  >
+                  <output className="orbix-data-lg" htmlFor={deltaOutputIds}>
                     {deltaVBudget.numberOfManeuvers}
                   </output>
                 </dd>
               </div>
               <div>
-                <dt className="text-xs text-muted">Largest contributor</dt>
+                <dt className="orbix-label">Largest contributor</dt>
                 <dd className="mt-1">
                   <output
                     className="text-sm font-semibold"
@@ -1408,7 +1410,7 @@ export function MissionProfileAnalyzer({
                   >
                     {deltaVBudget.largestDeltaVContributor
                       ? deltaVBudget.largestDeltaVContributor.name +
-                        " · " +
+                        ", " +
                         standardFormatter.format(
                           deltaVBudget.largestDeltaVContributor
                             .deltaVMetresPerSecond,
@@ -1420,14 +1422,14 @@ export function MissionProfileAnalyzer({
               </div>
             </dl>
           ) : (
-            <p className="text-sm leading-6 text-muted">
+            <NotCalculated>
               Enable the delta-v budget to integrate orbital maneuver costs.
-            </p>
+            </NotCalculated>
           )}
         </CalculatorResultSection>
 
         <CalculatorResultSection
-          eyebrow="Mission // Vehicle performance"
+          eyebrow="Mission: vehicle performance"
           icon={Plane}
           id="mission-profile-vehicle-result"
           title="Selected vehicle"
@@ -1435,7 +1437,7 @@ export function MissionProfileAnalyzer({
           {selectedVehicleName && flightSummary && peakDeceleration ? (
             <div className="space-y-5">
               <div>
-                <p className="text-xs text-muted">
+                <p className="orbix-label">
                   {selectedComparisonVehicle
                     ? "Comparison recommendation"
                     : "Evaluated vehicle"}
@@ -1449,10 +1451,10 @@ export function MissionProfileAnalyzer({
               </div>
               <dl className="grid gap-4 sm:grid-cols-2">
                 <div>
-                  <dt className="text-xs text-muted">Final velocity</dt>
+                  <dt className="orbix-label">Final velocity</dt>
                   <dd className="mt-1">
                     <output
-                      className="font-mono text-sm font-semibold"
+                      className="orbix-data"
                       htmlFor={reentryOutputIds + " " + primaryVehicleOutputIds}
                     >
                       {standardFormatter.format(
@@ -1463,10 +1465,10 @@ export function MissionProfileAnalyzer({
                   </dd>
                 </div>
                 <div>
-                  <dt className="text-xs text-muted">Reentry duration</dt>
+                  <dt className="orbix-label">Reentry duration</dt>
                   <dd className="mt-1">
                     <output
-                      className="font-mono text-sm font-semibold"
+                      className="orbix-data"
                       htmlFor={reentryOutputIds + " " + primaryVehicleOutputIds}
                     >
                       {standardFormatter.format(
@@ -1477,16 +1479,13 @@ export function MissionProfileAnalyzer({
                   </dd>
                 </div>
                 <div>
-                  <dt className="text-xs text-muted">Peak deceleration</dt>
+                  <dt className="orbix-label">Peak deceleration</dt>
                   <dd className="mt-1">
-                    <output
-                      className="font-mono text-sm font-semibold"
-                      htmlFor={allOutputIds}
-                    >
+                    <output className="orbix-data" htmlFor={allOutputIds}>
                       {standardFormatter.format(
                         peakDeceleration.decelerationMetersPerSecondSquared,
                       )}{" "}
-                      m/s² ·{" "}
+                      m/s²,{" "}
                       {standardFormatter.format(
                         peakDeceleration.decelerationGs,
                       )}{" "}
@@ -1495,12 +1494,9 @@ export function MissionProfileAnalyzer({
                   </dd>
                 </div>
                 <div>
-                  <dt className="text-xs text-muted">Peak heat flux</dt>
+                  <dt className="orbix-label">Peak heat flux</dt>
                   <dd className="mt-1">
-                    <output
-                      className="font-mono text-sm font-semibold"
-                      htmlFor={allOutputIds}
-                    >
+                    <output className="orbix-data" htmlFor={allOutputIds}>
                       {peakHeatFluxWattsPerSquareMetre === undefined
                         ? "Unavailable"
                         : heatFluxFormatter.format(
@@ -1512,15 +1508,15 @@ export function MissionProfileAnalyzer({
               </dl>
             </div>
           ) : (
-            <p className="text-sm leading-6 text-muted">
+            <NotCalculated>
               Enable vehicle evaluation or comparison to inspect reentry
               performance.
-            </p>
+            </NotCalculated>
           )}
         </CalculatorResultSection>
 
         <CalculatorResultSection
-          eyebrow="Mission // Thermal protection"
+          eyebrow="Mission: thermal protection"
           icon={Shield}
           id="mission-profile-tps-result"
           title="TPS recommendation"
@@ -1531,51 +1527,42 @@ export function MissionProfileAnalyzer({
           thermalMargin ? (
             <div className="space-y-5">
               <div>
-                <p className="text-xs text-muted">Recommended material</p>
+                <p className="orbix-label">Recommended material</p>
                 <output
                   className="mt-1 block text-xl font-semibold"
                   htmlFor={allOutputIds}
                 >
                   {result.tpsRecommendation.name}
                 </output>
-                <p className="mt-2 text-xs leading-5 text-muted">
+                <p className="mt-2 text-sm leading-6 text-muted">
                   {result.tpsRecommendation.description}
                 </p>
               </div>
               <dl className="grid gap-4 sm:grid-cols-3">
                 <div>
-                  <dt className="text-xs text-muted">Required thickness</dt>
+                  <dt className="orbix-label">Required thickness</dt>
                   <dd className="mt-1">
-                    <output
-                      className="font-mono text-sm font-semibold"
-                      htmlFor={allOutputIds}
-                    >
+                    <output className="orbix-data" htmlFor={allOutputIds}>
                       {preciseFormatter.format(tpsThickness.millimetres)} mm
                     </output>
                   </dd>
                 </div>
                 <div>
-                  <dt className="text-xs text-muted">Estimated TPS mass</dt>
+                  <dt className="orbix-label">Estimated TPS mass</dt>
                   <dd className="mt-1">
-                    <output
-                      className="font-mono text-sm font-semibold"
-                      htmlFor={allOutputIds}
-                    >
+                    <output className="orbix-data" htmlFor={allOutputIds}>
                       {preciseFormatter.format(tpsMassKilograms)} kg
                     </output>
                   </dd>
                 </div>
                 <div>
-                  <dt className="text-xs text-muted">Thermal margin</dt>
+                  <dt className="orbix-label">Thermal margin</dt>
                   <dd className="mt-1">
-                    <output
-                      className="font-mono text-sm font-semibold"
-                      htmlFor={allOutputIds}
-                    >
+                    <output className="orbix-data" htmlFor={allOutputIds}>
                       {standardFormatter.format(thermalMargin.marginPercentage)}
                       %
                     </output>
-                    <p className="mt-1 text-xs text-accent">
+                    <p className="orbix-label mt-1">
                       {thermalMargin.classification}
                     </p>
                   </dd>
@@ -1583,10 +1570,10 @@ export function MissionProfileAnalyzer({
               </dl>
             </div>
           ) : (
-            <p className="text-sm leading-6 text-muted">
+            <NotCalculated>
               Enable a vehicle system to resolve the educational TPS material
               recommendation.
-            </p>
+            </NotCalculated>
           )}
         </CalculatorResultSection>
 
@@ -1595,7 +1582,7 @@ export function MissionProfileAnalyzer({
             <AlertTriangle aria-hidden="true" size={17} />
             Modeling boundary
           </p>
-          <ul className="mt-4 grid list-disc gap-2 pl-5 text-xs leading-5 text-muted sm:grid-cols-2">
+          <ul className="mt-4 grid list-disc gap-2 pl-5 text-sm leading-6 text-muted sm:grid-cols-2">
             <li>Educational mission integration only</li>
             <li>No mission-feasibility determination</li>
             <li>Source-analysis assumptions remain in force</li>
@@ -1603,7 +1590,7 @@ export function MissionProfileAnalyzer({
             <li>No certified vehicle or TPS qualification data</li>
             <li>No coupling beyond existing analysis outputs</li>
           </ul>
-          <p className="mt-4 flex items-center gap-2 text-xs leading-5 text-muted">
+          <p className="mt-4 flex items-center gap-2 text-sm leading-6 text-muted">
             <Gauge aria-hidden="true" size={15} />
             Use the individual laboratory modules to inspect each source model
             in detail.

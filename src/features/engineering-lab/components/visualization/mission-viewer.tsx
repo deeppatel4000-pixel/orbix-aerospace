@@ -1,14 +1,5 @@
 "use client";
 
-import {
-  Activity,
-  ArrowDown,
-  FileText,
-  Gauge,
-  Orbit,
-  Shield,
-} from "lucide-react";
-
 import type {
   MissionProfileAnalysis,
   MissionReport,
@@ -18,6 +9,7 @@ import type {
 import { MissionOrbitVisualization } from "./mission-orbit-visualization";
 import { MissionTimeline } from "./mission-timeline";
 import { ReentryProfileVisualization } from "./reentry-profile-visualization";
+import { formatLabValue } from "./format-lab-value";
 
 export interface MissionViewerProps {
   readonly missionProfileAnalysis: MissionProfileAnalysis;
@@ -31,25 +23,21 @@ interface TelemetryCardProps {
   readonly value: number | string | undefined;
 }
 
-const telemetryFormatter = new Intl.NumberFormat("en-US", {
-  maximumFractionDigits: 3,
-  minimumFractionDigits: 2,
-});
-
 function TelemetryCard({ label, unit, value }: TelemetryCardProps) {
   const displayedValue =
-    typeof value === "number" ? telemetryFormatter.format(value) : value;
+    typeof value === "number" ? formatLabValue(value) : value;
 
   return (
-    <div className="border-b border-white/10 p-4 last:border-b-0 sm:border-r sm:border-b-0 sm:last:border-r-0">
-      <dt className="font-mono text-[0.59rem] tracking-[0.12em] text-[#789097] uppercase">
-        {label}
-      </dt>
-      <dd className="mt-2">
+    <div className="flex items-baseline justify-between gap-4 border-t border-border-subtle py-2 text-sm">
+      <dt className="text-muted">{label}</dt>
+      <dd className="text-right">
         <output
           className={
-            "font-mono text-base font-semibold " +
-            (value === undefined ? "text-[#667b81]" : "text-accent")
+            value === undefined
+              ? "text-muted"
+              : typeof value === "number"
+                ? "orbix-data text-foreground"
+                : "text-foreground"
           }
         >
           {displayedValue ?? "Not reported"}
@@ -72,116 +60,57 @@ export function MissionViewer({
   return (
     <article
       aria-labelledby="unified-mission-viewer-title"
-      className="technical-grid overflow-hidden rounded-2xl border border-white/12 bg-[#050d11] text-[#e3ebec]"
+      className="min-w-0 text-foreground"
     >
-      <header className="relative overflow-hidden border-b border-white/10 p-5 sm:p-7">
-        <div
-          aria-hidden="true"
-          className="absolute top-0 right-0 h-40 w-40 rounded-full bg-accent/5 blur-3xl"
-        />
-        <div className="relative flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
-          <div>
-            <p className="flex items-center gap-2 font-mono text-[0.65rem] tracking-[0.2em] text-accent uppercase">
-              <Activity aria-hidden="true" size={15} />
-              Mission Control
-            </p>
-            <h3
-              className="mt-3 max-w-3xl text-3xl font-semibold tracking-[-0.04em] sm:text-4xl"
-              id="unified-mission-viewer-title"
-            >
-              {missionReport.missionSummary.missionName}
-            </h3>
-            <p className="mt-3 max-w-3xl text-sm leading-6 text-[#94a9ae]">
-              {missionReport.missionSummary.description}
-            </p>
-          </div>
-          <div className="shrink-0 rounded-xl border border-accent/20 bg-accent/6 px-4 py-3">
-            <p className="font-mono text-[0.58rem] tracking-[0.14em] text-[#7f999f] uppercase">
-              Data link
-            </p>
-            <p className="mt-1 flex items-center gap-2 font-mono text-xs text-accent uppercase">
-              <span
-                aria-hidden="true"
-                className="h-2 w-2 rounded-full bg-accent motion-safe:animate-pulse motion-reduce:animate-none"
-              />
-              Analysis outputs loaded
-            </p>
-          </div>
-        </div>
+      <header className="border-b border-border-subtle pb-4">
+        <p className="orbix-label">Mission control viewer</p>
+        <h3
+          className="orbix-h3 mt-1 text-foreground"
+          id="unified-mission-viewer-title"
+        >
+          {missionReport.missionSummary.missionName}
+        </h3>
+        <p className="mt-2 max-w-[68ch] text-sm leading-6 text-muted">
+          {missionReport.missionSummary.description}
+        </p>
       </header>
 
-      <div className="space-y-8 p-5 sm:p-7">
+      <div className="space-y-8 pt-6">
         <section aria-labelledby="mission-control-summary-title">
-          <div className="flex items-center gap-3">
-            <span className="flex h-9 w-9 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-accent">
-              <FileText aria-hidden="true" size={17} />
-            </span>
-            <div>
-              <p className="font-mono text-[0.59rem] tracking-[0.14em] text-[#789097] uppercase">
-                Mission definition
-              </p>
-              <h4
-                className="mt-0.5 text-lg font-semibold"
-                id="mission-control-summary-title"
-              >
-                Mission Summary
-              </h4>
+          <h4
+            className="orbix-h4 text-foreground"
+            id="mission-control-summary-title"
+          >
+            Mission summary
+          </h4>
+          <p className="mt-2 max-w-[68ch] text-sm leading-6 text-text-secondary">
+            {missionReport.missionAssessment.educationalSummary}
+          </p>
+          <dl className="mt-3 grid gap-x-8 sm:grid-cols-3">
+            <div className="border-t border-border-subtle py-2 text-sm sm:col-span-1">
+              <dt className="text-muted">Analyses resolved</dt>
+              <dd className="orbix-data mt-1 text-foreground">
+                <output>
+                  {missionProfileAnalysis.missionSummaryState.analysesResolved}
+                </output>
+              </dd>
             </div>
-          </div>
-
-          <div className="mt-4 grid gap-4 rounded-xl border border-white/10 bg-black/10 p-4 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center">
-            <div>
-              <p className="text-sm leading-6 text-[#a8babf]">
-                {missionReport.missionAssessment.educationalSummary}
-              </p>
-              {missionReport.missionSummary.systemsUsed.length > 0 ? (
-                <ul className="mt-3 flex flex-wrap gap-2">
-                  {missionReport.missionSummary.systemsUsed.map((system) => (
-                    <li
-                      className="rounded-full border border-white/10 bg-white/4 px-3 py-1 font-mono text-[0.61rem] text-[#a8bdc1]"
-                      key={system}
-                    >
-                      {system}
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <p className="mt-3 font-mono text-xs text-[#71868c]">
-                  No optional mission systems reported.
-                </p>
-              )}
+            <div className="border-t border-border-subtle py-2 text-sm sm:col-span-2">
+              <dt className="text-muted">
+                Systems used ({missionReport.missionSummary.systemsUsed.length})
+              </dt>
+              <dd className="mt-1 text-foreground">
+                {missionReport.missionSummary.systemsUsed.length > 0
+                  ? missionReport.missionSummary.systemsUsed.join(", ")
+                  : "No optional mission systems reported."}
+              </dd>
             </div>
-            <dl className="grid grid-cols-2 gap-3 text-center">
-              <div className="rounded-lg border border-white/10 bg-[#08151a] px-4 py-3">
-                <dt className="font-mono text-[0.55rem] text-[#71868c] uppercase">
-                  Analyses
-                </dt>
-                <dd className="mt-1">
-                  <output className="font-mono text-lg text-accent">
-                    {
-                      missionProfileAnalysis.missionSummaryState
-                        .analysesResolved
-                    }
-                  </output>
-                </dd>
-              </div>
-              <div className="rounded-lg border border-white/10 bg-[#08151a] px-4 py-3">
-                <dt className="font-mono text-[0.55rem] text-[#71868c] uppercase">
-                  Systems
-                </dt>
-                <dd className="mt-1">
-                  <output className="font-mono text-lg text-accent">
-                    {missionReport.missionSummary.systemsUsed.length}
-                  </output>
-                </dd>
-              </div>
-            </dl>
-          </div>
+          </dl>
         </section>
 
         <section
           aria-label="Interactive mission timeline"
-          className="border-t border-white/10 pt-8"
+          className="border-t border-border-subtle pt-8"
         >
           <MissionTimeline
             missionProfileAnalysis={missionProfileAnalysis}
@@ -192,64 +121,31 @@ export function MissionViewer({
 
         <section
           aria-labelledby="mission-control-visualization-title"
-          className="border-t border-white/10 pt-8"
+          className="border-t border-border-subtle pt-8"
         >
-          <div className="flex items-center gap-3">
-            <span className="flex h-9 w-9 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-accent">
-              <Orbit aria-hidden="true" size={17} />
-            </span>
-            <div>
-              <p className="font-mono text-[0.59rem] tracking-[0.14em] text-[#789097] uppercase">
-                Coupled mission views
-              </p>
-              <h4
-                className="mt-0.5 text-lg font-semibold"
-                id="mission-control-visualization-title"
-              >
-                Visualization Panel
-              </h4>
-            </div>
-          </div>
-
-          <div className="mt-5 space-y-4">
+          <h4
+            className="orbix-h4 text-foreground"
+            id="mission-control-visualization-title"
+          >
+            Diagrams
+          </h4>
+          <div className="mt-3 space-y-4">
             <MissionOrbitVisualization analysis={missionProfileAnalysis} />
-            <div
-              aria-hidden="true"
-              className="flex items-center justify-center text-[#698087]"
-            >
-              <span className="h-5 w-px bg-white/12" />
-              <ArrowDown
-                className="mx-2 motion-safe:animate-bounce motion-reduce:animate-none"
-                size={17}
-              />
-              <span className="h-5 w-px bg-white/12" />
-            </div>
             <ReentryProfileVisualization analysis={vehicleReentryEvaluation} />
           </div>
         </section>
 
         <section
           aria-labelledby="mission-control-telemetry-title"
-          className="border-t border-white/10 pt-8"
+          className="border-t border-border-subtle pt-8"
         >
-          <div className="flex items-center gap-3">
-            <span className="flex h-9 w-9 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-accent">
-              <Gauge aria-hidden="true" size={17} />
-            </span>
-            <div>
-              <p className="font-mono text-[0.59rem] tracking-[0.14em] text-[#789097] uppercase">
-                Reported mission outputs
-              </p>
-              <h4
-                className="mt-0.5 text-lg font-semibold"
-                id="mission-control-telemetry-title"
-              >
-                Engineering Telemetry
-              </h4>
-            </div>
-          </div>
-
-          <dl className="mt-5 grid overflow-hidden rounded-xl border border-white/10 bg-black/10 sm:grid-cols-2 lg:grid-cols-5">
+          <h4
+            className="orbix-h4 text-foreground"
+            id="mission-control-telemetry-title"
+          >
+            Reported values
+          </h4>
+          <dl className="mt-2 grid gap-x-8 sm:grid-cols-2">
             <TelemetryCard
               label="Total delta-v"
               unit="m/s"
@@ -280,19 +176,11 @@ export function MissionViewer({
           </dl>
         </section>
 
-        <aside className="flex items-start gap-3 rounded-xl border border-signal/20 bg-signal/5 p-4">
-          <Shield
-            aria-hidden="true"
-            className="mt-0.5 shrink-0 text-signal"
-            size={16}
-          />
-          <p className="text-xs leading-5 text-[#91a5aa]">
-            Educational mission visualization only. Every telemetry value and
-            recommendation shown here is presented from the supplied report and
-            completed analysis objects; this interface performs no engineering
-            calculations.
-          </p>
-        </aside>
+        <p className="border-t border-border-subtle pt-4 text-sm leading-6 text-muted">
+          Educational mission viewer. Every value and recommendation shown here
+          comes from the supplied report and completed analysis objects; this
+          view performs no engineering calculations.
+        </p>
       </div>
     </article>
   );

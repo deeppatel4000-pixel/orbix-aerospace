@@ -22,12 +22,13 @@ describe("MissionOrbitVisualization", () => {
       createElement(MissionOrbitVisualization, { analysis }),
     );
 
-    expect(markup).toContain("Mission Orbit Visualization");
+    expect(markup).toContain("Mission orbit diagram");
     expect(markup).toContain("Orbit raising");
-    expect(markup).toContain("INITIAL ORBIT");
-    expect(markup).toContain("TARGET ORBIT");
-    expect(markup).toContain("TRANSFER PATH");
+    expect(markup).toContain("Initial orbit");
+    expect(markup).toContain("Target orbit");
+    expect(markup).toContain("Transfer path");
     expect(markup).toContain("<svg");
+    expect(markup).not.toContain("animateMotion");
   });
 
   it("supports an orbit-lowering transfer", () => {
@@ -65,8 +66,10 @@ describe("MissionOrbitVisualization", () => {
     );
 
     expect(markup).toContain("Circular orbit");
-    expect(markup).toContain("MANEUVER ORBIT");
-    expect(markup).toContain("5 deg plane change");
+    expect(markup).toContain("Maneuver orbit");
+    expect(markup).toContain(
+      '<span class="orbix-data">5 deg</span> plane change',
+    );
   });
 
   it("renders an accessible empty state when orbital analyses are absent", () => {

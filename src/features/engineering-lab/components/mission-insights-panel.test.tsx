@@ -61,8 +61,7 @@ describe("MissionInsightsPanel", () => {
       <MissionInsightsPanel analysis={insights} />,
     );
 
-    expect(markup).toContain("Aerospace Mission Analyst");
-    expect(markup).toContain("Mission Engineering Insights");
+    expect(markup).toContain("Mission engineering insights");
     expect(markup).toContain("Mission Insights Panel Test");
     expect(markup).toContain("Insight sections");
     expect(markup).toContain("Systems interpreted");
@@ -118,7 +117,7 @@ describe("MissionInsightsPanel", () => {
 
     expect(markup).toContain("Mission insights unavailable");
     expect(markup).toContain(
-      "Completed mission-profile and report objects are required",
+      "Insights need a completed mission-profile calculation",
     );
   });
 });

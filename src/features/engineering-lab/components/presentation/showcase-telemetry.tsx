@@ -1,9 +1,8 @@
-import { Activity, Flame, Gauge, Orbit, Shield } from "lucide-react";
-
 import type {
   MissionProfileAnalysis,
   MissionReport,
 } from "@/features/engineering-lab/types";
+import { formatLabValue } from "../visualization/format-lab-value";
 
 export interface ShowcaseTelemetryProps {
   readonly missionProfile: MissionProfileAnalysis;
@@ -16,26 +15,25 @@ interface TelemetryValue {
   readonly value?: number | string;
 }
 
-const telemetryFormatter = new Intl.NumberFormat("en-US", {
-  maximumFractionDigits: 2,
-  minimumFractionDigits: 0,
-});
-
 function TelemetryCard({ label, unit, value }: TelemetryValue) {
   return (
-    <div className="rounded-xl border border-white/10 bg-surface/90 p-4">
-      <dt className="font-mono text-[0.55rem] tracking-[0.12em] text-muted uppercase">
-        {label}
-      </dt>
-      <dd className="mt-2">
-        <output className="font-mono text-sm font-semibold text-foreground">
+    <div className="flex items-baseline justify-between gap-4 border-t border-border-subtle py-2 text-sm">
+      <dt className="text-muted">{label}</dt>
+      <dd className="text-right">
+        <output
+          className={
+            value === undefined
+              ? "text-muted"
+              : typeof value === "number"
+                ? "orbix-data text-foreground"
+                : "text-foreground"
+          }
+        >
           {typeof value === "number"
-            ? telemetryFormatter.format(value)
+            ? formatLabValue(value)
             : (value ?? "Not reported")}
           {value !== undefined && unit ? (
-            <span className="ml-1 text-[0.65rem] font-normal text-muted">
-              {unit}
-            </span>
+            <span className="ml-1 text-muted">{unit}</span>
           ) : null}
         </output>
       </dd>
@@ -60,13 +58,11 @@ export function ShowcaseTelemetry({
   const tps = report?.thermalAnalysis?.tpsRecommendation;
   const fallbackTps = evaluation?.summary.tps;
   const telemetryGroups: readonly {
-    icon: typeof Orbit;
     id: string;
     label: string;
     values: readonly TelemetryValue[];
   }[] = [
     {
-      icon: Orbit,
       id: "orbital",
       label: "Orbital",
       values: [
@@ -85,7 +81,6 @@ export function ShowcaseTelemetry({
       ],
     },
     {
-      icon: Gauge,
       id: "vehicle",
       label: "Vehicle",
       values: [
@@ -97,7 +92,6 @@ export function ShowcaseTelemetry({
       ],
     },
     {
-      icon: Flame,
       id: "thermal",
       label: "Thermal",
       values: [
@@ -123,49 +117,32 @@ export function ShowcaseTelemetry({
 
   return (
     <section aria-labelledby="showcase-telemetry-title">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <p className="flex items-center gap-2 font-mono text-[0.6rem] tracking-[0.16em] text-accent uppercase">
-            <Activity aria-hidden="true" size={14} />
-            Telemetry overlay // Supplied values
-          </p>
-          <h3
-            className="mt-1 text-xl font-semibold"
-            id="showcase-telemetry-title"
-          >
-            Mission Telemetry
-          </h3>
-        </div>
-        <p className="flex items-center gap-2 text-xs text-muted">
-          <Shield aria-hidden="true" size={14} />
-          No values recalculated
-        </p>
-      </div>
+      <h4 className="orbix-h4 text-foreground" id="showcase-telemetry-title">
+        Mission values
+      </h4>
+      <p className="mt-1 text-sm leading-6 text-muted">
+        Values from the completed calculation. No values recalculated.
+      </p>
 
-      <div className="mt-5 grid gap-4 xl:grid-cols-3">
-        {telemetryGroups.map((group) => {
-          const Icon = group.icon;
-          return (
-            <section
-              aria-labelledby={`showcase-telemetry-${group.id}`}
-              className="rounded-2xl border border-white/10 bg-black/15 p-4"
-              key={group.id}
+      <div className="mt-3 grid gap-x-8 gap-y-4 xl:grid-cols-3">
+        {telemetryGroups.map((group) => (
+          <section
+            aria-labelledby={`showcase-telemetry-${group.id}`}
+            key={group.id}
+          >
+            <h5
+              className="text-sm font-semibold text-foreground"
+              id={`showcase-telemetry-${group.id}`}
             >
-              <h4
-                className="text-muted-strong flex items-center gap-2 font-mono text-[0.62rem] tracking-[0.12em] uppercase"
-                id={`showcase-telemetry-${group.id}`}
-              >
-                <Icon aria-hidden="true" className="text-accent" size={14} />
-                {group.label}
-              </h4>
-              <dl className="mt-3 grid gap-2 sm:grid-cols-2 xl:grid-cols-1 2xl:grid-cols-2">
-                {group.values.map((value) => (
-                  <TelemetryCard key={value.label} {...value} />
-                ))}
-              </dl>
-            </section>
-          );
-        })}
+              {group.label}
+            </h5>
+            <dl className="mt-2">
+              {group.values.map((value) => (
+                <TelemetryCard key={value.label} {...value} />
+              ))}
+            </dl>
+          </section>
+        ))}
       </div>
     </section>
   );

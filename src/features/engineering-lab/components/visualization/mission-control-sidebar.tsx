@@ -1,19 +1,6 @@
 "use client";
 
 import { useRef, type KeyboardEvent } from "react";
-import {
-  Box,
-  Clapperboard,
-  ClipboardList,
-  FileText,
-  Flame,
-  GitCompareArrows,
-  LayoutDashboard,
-  MapPinned,
-  Orbit,
-  Radar,
-  type LucideIcon,
-} from "lucide-react";
 
 export type MissionControlWorkspaceView =
   | "briefing"
@@ -31,7 +18,6 @@ export type MissionControlWorkspaceView =
 
 export interface MissionControlWorkspaceDefinition {
   readonly accessibleLabel: string;
-  readonly icon: LucideIcon;
   readonly id: MissionControlWorkspaceView;
   readonly label: string;
 }
@@ -39,76 +25,64 @@ export interface MissionControlWorkspaceDefinition {
 export const MISSION_CONTROL_WORKSPACES: readonly MissionControlWorkspaceDefinition[] =
   [
     {
-      accessibleLabel: "Overview - Mission Timeline summary",
-      icon: LayoutDashboard,
+      accessibleLabel: "Overview: mission timeline summary",
       id: "overview",
       label: "Overview",
     },
     {
-      accessibleLabel: "Unified View - Unified Mission presentation",
-      icon: Box,
+      accessibleLabel: "Unified view: unified mission presentation",
       id: "unified",
-      label: "Unified View",
+      label: "Unified view",
     },
     {
-      accessibleLabel: "Orbit - Orbital View",
-      icon: Orbit,
+      accessibleLabel: "Orbit: orbital view",
       id: "orbit",
       label: "Orbit",
     },
     {
-      accessibleLabel: "Reentry - Reentry View",
-      icon: Flame,
+      accessibleLabel: "Reentry: reentry view",
       id: "reentry",
       label: "Reentry",
     },
     {
-      accessibleLabel: "Ground Track - Planetary orbital projection",
-      icon: MapPinned,
+      accessibleLabel: "Ground track: illustrative orbital projection",
       id: "ground-track",
-      label: "Ground Track",
+      label: "Ground track",
     },
     {
-      accessibleLabel: "Design Review - Mission constraints and considerations",
-      icon: ClipboardList,
+      accessibleLabel: "Design review: mission constraints and considerations",
       id: "design-review",
-      label: "Design Review",
+      label: "Design review",
     },
     {
       accessibleLabel: "Replay",
-      icon: Clapperboard,
       id: "replay",
       label: "Replay",
     },
     {
       accessibleLabel: "Insights",
-      icon: Radar,
       id: "insights",
       label: "Insights",
     },
     {
       accessibleLabel: "Briefing",
-      icon: FileText,
       id: "briefing",
       label: "Briefing",
     },
     {
-      accessibleLabel: "Trade Study",
-      icon: GitCompareArrows,
+      accessibleLabel: "Trade study",
       id: "trade-study",
-      label: "Trade Study",
+      label: "Trade study",
     },
     {
       accessibleLabel: "Showcase",
-      icon: Clapperboard,
       id: "showcase",
       label: "Showcase",
     },
     {
-      accessibleLabel: "Demo Mode",
-      icon: Radar,
+      accessibleLabel: "Demo mode",
       id: "demo-mode",
-      label: "Demo Mode",
+      label: "Demo mode",
     },
   ];
 
@@ -209,61 +183,29 @@ export function MissionControlSidebar({
   return (
     <aside
       aria-labelledby="mission-control-navigation-title"
-      className="min-w-0 border-b border-white/10 bg-[#061116]/95 p-4 xl:border-r xl:border-b-0 xl:p-5"
+      className="min-w-0 border-b border-border-subtle py-4 xl:border-b-0 xl:pr-4"
     >
-      <div className="flex items-start justify-between gap-3 border-b border-white/8 pb-4 xl:block">
-        <div>
-          <p className="font-mono text-[0.55rem] tracking-[0.15em] text-accent uppercase">
-            Mission systems
-          </p>
-          <h3
-            className="mt-1.5 text-sm font-semibold tracking-[0.01em] text-[#e5eef0]"
-            id="mission-control-navigation-title"
-          >
-            Mission Workspaces
-          </h3>
-          <p className="mt-1 hidden max-w-48 text-[0.64rem] leading-4 text-[#71868c] xl:block">
-            Mission planning, engineering review, and presentation systems.
-          </p>
-        </div>
-        <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-accent/15 bg-accent/5 px-2.5 py-1 font-mono text-[0.52rem] tracking-[0.1em] text-[#8ba1a6] uppercase xl:mt-3">
-          <span
-            aria-hidden="true"
-            className="size-1.5 rounded-full bg-accent shadow-[0_0_8px_rgba(100,220,255,0.55)]"
-          />
-          {MISSION_CONTROL_WORKSPACES.length} workspaces
-        </span>
-      </div>
+      <h4
+        className="text-sm font-semibold text-foreground"
+        id="mission-control-navigation-title"
+      >
+        Mission workspaces
+      </h4>
 
-      <nav aria-label="Mission Control sections" className="mt-4">
+      <nav aria-label="Mission control sections" className="mt-3">
         <div
           aria-label="Mission systems workspaces"
-          className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-1 xl:gap-4"
+          aria-orientation="vertical"
+          className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-1"
           role="tablist"
         >
-          {MISSION_CONTROL_WORKSPACE_GROUPS.map((group, groupIndex) => (
-            <div
-              className="min-w-0 rounded-xl border border-white/[0.07] bg-[#08151b]/70 p-2.5 xl:rounded-none xl:border-0 xl:bg-transparent xl:p-0"
-              key={group.id}
-              role="presentation"
-            >
-              <div
-                aria-hidden="true"
-                className="mb-2 flex items-center gap-2 px-1.5"
-              >
-                <span className="font-mono text-[0.5rem] tracking-[0.12em] text-accent/70">
-                  {String(groupIndex + 1).padStart(2, "0")}
-                </span>
-                <span className="font-mono text-[0.55rem] font-semibold tracking-[0.14em] text-[#9dafb3] uppercase">
-                  {group.label}
-                </span>
-                <span className="h-px flex-1 bg-white/8" />
-              </div>
+          {MISSION_CONTROL_WORKSPACE_GROUPS.map((group) => (
+            <div className="min-w-0" key={group.id} role="presentation">
+              <p aria-hidden="true" className="orbix-caps mb-1 text-muted">
+                {group.label}
+              </p>
 
-              <div
-                className="grid grid-cols-2 gap-1.5 sm:grid-cols-1"
-                role="presentation"
-              >
+              <div className="grid gap-0.5" role="presentation">
                 {group.workspaceIds.map((workspaceId) => {
                   const index = workspaceIndexById.get(workspaceId);
                   const workspace =
@@ -273,7 +215,6 @@ export function MissionControlSidebar({
 
                   if (!workspace || index === undefined) return null;
 
-                  const Icon = workspace.icon;
                   const isActive = workspace.id === activeWorkspace;
 
                   return (
@@ -282,10 +223,9 @@ export function MissionControlSidebar({
                       aria-label={workspace.accessibleLabel}
                       aria-selected={isActive}
                       className={
-                        "group relative flex min-h-11 cursor-pointer items-center gap-2.5 rounded-lg border px-2.5 py-2.5 text-left text-xs font-semibold transition-[color,background-color,border-color,box-shadow] duration-150 outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-[#061116] motion-reduce:transition-none " +
-                        (isActive
-                          ? "border-accent/30 bg-accent/[0.09] text-[#dffaff] shadow-[inset_0_0_18px_rgba(71,211,255,0.035)]"
-                          : "border-transparent bg-transparent text-[#81969b] hover:border-white/10 hover:bg-white/[0.045] hover:text-[#dce6e7]")
+                        isActive
+                          ? "flex min-h-10 items-center border-l-2 border-accent bg-accent/12 px-3 py-2 text-left text-sm font-medium text-foreground"
+                          : "flex min-h-10 items-center border-l-2 border-transparent px-3 py-2 text-left text-sm text-text-secondary transition-colors duration-150 hover:border-border-strong hover:text-foreground"
                       }
                       id={`mission-workspace-${workspace.id}-tab`}
                       key={workspace.id}
@@ -298,29 +238,7 @@ export function MissionControlSidebar({
                       tabIndex={isActive ? 0 : -1}
                       type="button"
                     >
-                      {isActive ? (
-                        <span
-                          aria-hidden="true"
-                          className="absolute top-2 bottom-2 left-0 w-0.5 rounded-full bg-accent shadow-[0_0_8px_rgba(71,211,255,0.45)]"
-                        />
-                      ) : null}
-                      <span
-                        aria-hidden="true"
-                        className={
-                          "grid size-7 shrink-0 place-items-center rounded-md border transition-colors duration-150 motion-reduce:transition-none " +
-                          (isActive
-                            ? "border-accent/20 bg-accent/10 text-accent"
-                            : "border-white/[0.07] bg-white/[0.025] text-[#6f878d] group-hover:border-white/10 group-hover:text-[#b5c8cc]")
-                        }
-                      >
-                        <Icon size={14} />
-                      </span>
-                      <span className="min-w-0 truncate">
-                        {workspace.label}
-                      </span>
-                      <span className="ml-auto hidden font-mono text-[0.48rem] tracking-[0.08em] text-[#526970] xl:block">
-                        {String(index + 1).padStart(2, "0")}
-                      </span>
+                      {workspace.label}
                     </button>
                   );
                 })}
@@ -330,15 +248,10 @@ export function MissionControlSidebar({
         </div>
       </nav>
 
-      <div className="mt-4 hidden border-t border-white/8 pt-4 xl:block">
-        <p className="font-mono text-[0.5rem] tracking-[0.12em] text-[#526970] uppercase">
-          Navigation protocol
-        </p>
-        <p className="mt-1.5 text-[0.64rem] leading-4 text-[#6f858a]">
-          Arrow keys move between systems. Home and End jump to the first or
-          last workspace.
-        </p>
-      </div>
+      <p className="mt-4 border-t border-border-subtle pt-3 text-sm leading-5 text-muted">
+        Arrow keys move between workspaces. Home and End jump to the first or
+        last.
+      </p>
     </aside>
   );
 }

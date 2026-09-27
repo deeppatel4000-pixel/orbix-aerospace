@@ -1,5 +1,4 @@
-import { Archive } from "lucide-react";
-
+import { EmptyState } from "@/components/ui/empty-state";
 import type {
   MissionPreset,
   MissionProfileAnalysis,
@@ -25,12 +24,12 @@ export function MissionGallery({
   return (
     <section
       aria-labelledby="mission-gallery-title"
-      className="technical-grid overflow-hidden rounded-3xl border border-white/12 bg-[#030a0e] text-[#e1eaeb] shadow-[0_30px_90px_rgba(0,0,0,0.24)]"
+      className="min-w-0 text-foreground"
     >
       <GalleryHeader missionCount={presets.length} />
 
       {presets.length ? (
-        <div className="grid gap-4 p-5 sm:p-8 md:grid-cols-2 xl:grid-cols-3">
+        <div className="grid gap-4 pt-4 md:grid-cols-2 xl:grid-cols-3">
           {presets.map((preset) => {
             const analysis = analyses?.find(
               (item) =>
@@ -54,26 +53,16 @@ export function MissionGallery({
           })}
         </div>
       ) : (
-        <div className="p-5 sm:p-8">
-          <div className="rounded-2xl border border-dashed border-white/15 bg-black/10 px-6 py-14 text-center">
-            <Archive
-              aria-hidden="true"
-              className="mx-auto text-[#60777d]"
-              size={28}
-            />
-            <h3 className="mt-4 text-lg font-semibold">
-              No mission concepts available
-            </h3>
-            <p className="mx-auto mt-2 max-w-xl text-sm leading-6 text-[#7f9499]">
-              The archive has not received any existing mission preset objects.
-              No replacement concepts were generated.
-            </p>
-          </div>
+        <div className="pt-4">
+          <EmptyState
+            description="The archive has not received any existing mission preset objects. No replacement concepts were generated."
+            title="No mission concepts available"
+          />
         </div>
       )}
 
-      <footer className="border-t border-white/10 bg-[#040c10] px-5 py-4 text-xs leading-5 text-[#71868c] sm:px-8">
-        Archive cards present existing educational mission configurations and
+      <footer className="mt-6 border-t border-border-subtle pt-4 text-sm leading-6 text-muted">
+        These cards show existing educational mission configurations and their
         supplied outputs only. They do not rank, recommend, or evaluate mission
         concepts.
       </footer>

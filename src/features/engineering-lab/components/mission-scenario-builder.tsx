@@ -1,7 +1,9 @@
 "use client";
 
 import { useState, type FormEvent } from "react";
-import { CheckCircle2, RotateCcw, Send } from "lucide-react";
+import { ChevronDown, CircleAlert, CircleCheck, RotateCcw } from "lucide-react";
+
+import { Button } from "@/components/ui/button";
 
 import { MissionProfileAnalyzer } from "@/features/engineering-lab/components/mission-profile-analyzer";
 import {
@@ -195,14 +197,14 @@ function OptionalNumberField({
   const hintId = `${id}-hint`;
 
   return (
-    <div>
-      <label className="text-sm font-semibold" htmlFor={id}>
-        {label}
+    <div className="orbix-field">
+      <label className="orbix-field__label" htmlFor={id}>
+        {label} (optional)
       </label>
-      <div className="relative mt-2">
+      <div className="orbix-field__control">
         <input
           aria-describedby={hintId}
-          className="min-h-12 w-full rounded-xl border border-border bg-background/55 px-4 py-3 pr-20 font-mono text-base text-foreground transition-colors outline-none placeholder:text-muted/55 focus:border-accent focus:ring-2 focus:ring-accent/15"
+          className="orbix-input"
           id={id}
           inputMode="decimal"
           onChange={(event) => onChange(field, event.target.value)}
@@ -210,19 +212,26 @@ function OptionalNumberField({
           type="number"
           value={value}
         />
-        <span className="pointer-events-none absolute top-1/2 right-4 -translate-y-1/2 font-mono text-xs text-muted">
+        <span aria-hidden="true" className="orbix-field__unit">
           {unit}
         </span>
       </div>
-      <p className="mt-2 text-xs leading-5 text-muted" id={hintId}>
+      <p className="orbix-field__help" id={hintId}>
         {hint}
       </p>
     </div>
   );
 }
 
+function formatCategoryLabel(category: MissionPresetCategory): string {
+  return (
+    categoryOptions.find((option) => option.value === category)?.label ??
+    category
+  );
+}
+
 function PanelHeading({ children }: { readonly children: string }) {
-  return <legend className="orbix-label text-accent">{children}</legend>;
+  return <legend className="text-foreground">{children}</legend>;
 }
 
 export function MissionScenarioBuilder({
@@ -233,6 +242,7 @@ export function MissionScenarioBuilder({
   const [errors, setErrors] = useState<IdentityErrors>({});
   const [generatedScenario, setGeneratedScenario] =
     useState<GeneratedScenario | null>(null);
+  const hasErrors = Object.values(errors).some(Boolean);
   const usesOrbit = values.enableOrbitalTransfer || values.enablePlaneChange;
   const usesVehicle =
     values.enableReentryAnalysis || values.enableVehicleComparison;
@@ -290,7 +300,7 @@ export function MissionScenarioBuilder({
   }
 
   return (
-    <div className="space-y-10">
+    <div className="space-y-8">
       <div className="grid gap-8 xl:grid-cols-[minmax(0,1.12fr)_minmax(18rem,0.88fr)]">
         <form
           aria-label="Custom mission scenario"
@@ -298,25 +308,29 @@ export function MissionScenarioBuilder({
           noValidate
           onSubmit={analyzeScenario}
         >
-          <fieldset className="rounded-2xl border border-border bg-background/35 p-5 sm:p-6">
+          <fieldset className="orbix-fieldset border-t border-border-subtle pt-6 first:border-t-0 first:pt-0">
             <PanelHeading>Mission briefing</PanelHeading>
-            <div className="mt-5 grid gap-5 sm:grid-cols-2">
-              <div>
+            <div className="grid gap-6 md:grid-cols-2">
+              <div className="orbix-field">
                 <label
-                  className="text-sm font-semibold"
+                  className="orbix-field__label"
                   htmlFor="mission-scenario-missionName"
                 >
                   Mission name
                 </label>
                 <input
-                  aria-describedby="mission-scenario-missionName-hint"
+                  aria-describedby={
+                    errors.missionName
+                      ? "mission-scenario-missionName-hint mission-scenario-missionName-error"
+                      : "mission-scenario-missionName-hint"
+                  }
                   aria-errormessage={
                     errors.missionName
                       ? "mission-scenario-missionName-error"
                       : undefined
                   }
                   aria-invalid={Boolean(errors.missionName)}
-                  className="mt-2 min-h-12 w-full rounded-xl border border-border bg-background/55 px-4 py-3 text-foreground outline-none focus:border-accent focus:ring-2 focus:ring-accent/15"
+                  className="orbix-input"
                   id="mission-scenario-missionName"
                   onChange={(event) =>
                     updateTextField("missionName", event.target.value)
@@ -326,77 +340,102 @@ export function MissionScenarioBuilder({
                   value={values.missionName}
                 />
                 <p
-                  className="mt-2 text-xs leading-5 text-muted"
+                  className="orbix-field__help"
                   id="mission-scenario-missionName-hint"
                 >
                   Identifies this educational mission configuration.
                 </p>
                 {errors.missionName ? (
                   <p
-                    className="mt-1.5 text-xs text-signal"
+                    className="orbix-field__error"
                     id="mission-scenario-missionName-error"
                   >
+                    <CircleAlert aria-hidden="true" size={14} />
                     {errors.missionName}
                   </p>
                 ) : null}
               </div>
 
-              <div>
+              <div className="orbix-field">
                 <label
-                  className="text-sm font-semibold"
+                  className="orbix-field__label"
                   htmlFor="mission-scenario-category"
                 >
                   Mission category
                 </label>
-                <select
-                  aria-describedby="mission-scenario-category-hint"
-                  aria-errormessage={
-                    errors.category
-                      ? "mission-scenario-category-error"
-                      : undefined
-                  }
-                  aria-invalid={Boolean(errors.category)}
-                  className="mt-2 min-h-12 w-full rounded-xl border border-border bg-background/55 px-4 py-3 text-foreground outline-none focus:border-accent focus:ring-2 focus:ring-accent/15"
-                  id="mission-scenario-category"
-                  onChange={(event) => {
-                    setValues((current) => ({
-                      ...current,
-                      category: event.target.value as MissionPresetCategory,
-                    }));
-                    markConfigurationChanged();
-                  }}
-                  value={values.category}
-                >
-                  {categoryOptions.map((option) => (
-                    <option key={option.value} value={option.value}>
-                      {option.label}
-                    </option>
-                  ))}
-                </select>
+                <div className="orbix-field__control">
+                  <select
+                    aria-describedby={
+                      errors.category
+                        ? "mission-scenario-category-hint mission-scenario-category-error"
+                        : "mission-scenario-category-hint"
+                    }
+                    aria-errormessage={
+                      errors.category
+                        ? "mission-scenario-category-error"
+                        : undefined
+                    }
+                    aria-invalid={Boolean(errors.category)}
+                    className="orbix-select"
+                    id="mission-scenario-category"
+                    onChange={(event) => {
+                      setValues((current) => ({
+                        ...current,
+                        category: event.target.value as MissionPresetCategory,
+                      }));
+                      markConfigurationChanged();
+                    }}
+                    value={values.category}
+                  >
+                    {categoryOptions.map((option) => (
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
+                  <ChevronDown
+                    aria-hidden="true"
+                    className="orbix-field__icon orbix-field__icon--end"
+                    size={16}
+                  />
+                </div>
                 <p
-                  className="mt-2 text-xs leading-5 text-muted"
+                  className="orbix-field__help"
                   id="mission-scenario-category-hint"
                 >
                   Organizes the briefing; it does not change engineering logic.
                 </p>
+                {errors.category ? (
+                  <p
+                    className="orbix-field__error"
+                    id="mission-scenario-category-error"
+                  >
+                    <CircleAlert aria-hidden="true" size={14} />
+                    {errors.category}
+                  </p>
+                ) : null}
               </div>
 
-              <div className="sm:col-span-2">
+              <div className="orbix-field md:col-span-2">
                 <label
-                  className="text-sm font-semibold"
+                  className="orbix-field__label"
                   htmlFor="mission-scenario-description"
                 >
                   Mission description
                 </label>
                 <textarea
-                  aria-describedby="mission-scenario-description-hint"
+                  aria-describedby={
+                    errors.description
+                      ? "mission-scenario-description-hint mission-scenario-description-error"
+                      : "mission-scenario-description-hint"
+                  }
                   aria-errormessage={
                     errors.description
                       ? "mission-scenario-description-error"
                       : undefined
                   }
                   aria-invalid={Boolean(errors.description)}
-                  className="mt-2 min-h-28 w-full rounded-xl border border-border bg-background/55 px-4 py-3 text-foreground outline-none focus:border-accent focus:ring-2 focus:ring-accent/15"
+                  className="orbix-input h-auto min-h-28"
                   id="mission-scenario-description"
                   onChange={(event) =>
                     updateTextField("description", event.target.value)
@@ -405,18 +444,27 @@ export function MissionScenarioBuilder({
                   value={values.description}
                 />
                 <p
-                  className="mt-2 text-xs leading-5 text-muted"
+                  className="orbix-field__help"
                   id="mission-scenario-description-hint"
                 >
                   Summarizes the educational purpose of the scenario.
                 </p>
+                {errors.description ? (
+                  <p
+                    className="orbix-field__error"
+                    id="mission-scenario-description-error"
+                  >
+                    <CircleAlert aria-hidden="true" size={14} />
+                    {errors.description}
+                  </p>
+                ) : null}
               </div>
             </div>
           </fieldset>
 
-          <fieldset className="rounded-2xl border border-border bg-background/35 p-5 sm:p-6">
+          <fieldset className="orbix-fieldset border-t border-border-subtle pt-6 first:border-t-0 first:pt-0">
             <PanelHeading>Mission systems checklist</PanelHeading>
-            <div className="mt-5 grid gap-3 sm:grid-cols-2">
+            <div className="grid gap-2 md:grid-cols-2">
               {[
                 [
                   "enableOrbitalTransfer",
@@ -440,13 +488,13 @@ export function MissionScenarioBuilder({
                 ],
               ].map(([field, label, controls]) => (
                 <label
-                  className="flex min-h-12 cursor-pointer items-center gap-3 rounded-xl border border-border bg-background/45 px-4 py-3 text-sm font-semibold transition-colors focus-within:border-accent hover:border-accent/50"
+                  className="orbix-check min-h-10 cursor-pointer text-sm text-foreground"
                   key={field}
                 >
                   <input
                     aria-controls={controls}
                     checked={values[field as SystemField]}
-                    className="h-4 w-4 accent-accent"
+
                     onChange={(event) =>
                       updateSystem(field as SystemField, event.target.checked)
                     }
@@ -460,11 +508,11 @@ export function MissionScenarioBuilder({
 
           {usesOrbit ? (
             <fieldset
-              className="rounded-2xl border border-border bg-background/35 p-5 sm:p-6"
+              className="orbix-fieldset border-t border-border-subtle pt-6"
               id="mission-scenario-orbital-panel"
             >
               <PanelHeading>Orbital parameters</PanelHeading>
-              <div className="mt-5 grid gap-5 sm:grid-cols-3">
+              <div className="grid gap-6 md:grid-cols-2">
                 <CalculatorNumberField
                   field="initialAltitudeMetres"
                   hint="Starting circular-orbit altitude."
@@ -499,21 +547,21 @@ export function MissionScenarioBuilder({
           {usesVehicle ? (
             <>
               <fieldset
-                className="rounded-2xl border border-border bg-background/35 p-5 sm:p-6"
+                className="orbix-fieldset border-t border-border-subtle pt-6"
                 id="mission-scenario-vehicle-panel"
               >
                 <PanelHeading>Spacecraft configuration</PanelHeading>
-                <div className="mt-5 grid gap-5 sm:grid-cols-2">
-                  <div>
+                <div className="grid gap-6 md:grid-cols-2">
+                  <div className="orbix-field">
                     <label
-                      className="text-sm font-semibold"
+                      className="orbix-field__label"
                       htmlFor="mission-scenario-vehicleName"
                     >
                       Vehicle name
                     </label>
                     <input
                       aria-describedby="mission-scenario-vehicleName-hint"
-                      className="mt-2 min-h-12 w-full rounded-xl border border-border bg-background/55 px-4 py-3 text-foreground outline-none focus:border-accent focus:ring-2 focus:ring-accent/15"
+                      className="orbix-input"
                       id="mission-scenario-vehicleName"
                       onChange={(event) =>
                         updateTextField("vehicleName", event.target.value)
@@ -523,7 +571,7 @@ export function MissionScenarioBuilder({
                       value={values.vehicleName}
                     />
                     <p
-                      className="mt-2 text-xs leading-5 text-muted"
+                      className="orbix-field__help"
                       id="mission-scenario-vehicleName-hint"
                     >
                       Labels the editable vehicle configuration.
@@ -560,11 +608,11 @@ export function MissionScenarioBuilder({
               </fieldset>
 
               <fieldset
-                className="rounded-2xl border border-border bg-background/35 p-5 sm:p-6"
+                className="orbix-fieldset border-t border-border-subtle pt-6"
                 id="mission-scenario-reentry-panel"
               >
                 <PanelHeading>Reentry conditions</PanelHeading>
-                <div className="mt-5 grid gap-5 sm:grid-cols-3">
+                <div className="grid gap-6 md:grid-cols-2">
                   <CalculatorNumberField
                     field="initialVelocityMetersPerSecond"
                     hint="Starting atmospheric-entry velocity."
@@ -594,9 +642,9 @@ export function MissionScenarioBuilder({
                 </div>
               </fieldset>
 
-              <fieldset className="rounded-2xl border border-border bg-background/35 p-5 sm:p-6">
+              <fieldset className="orbix-fieldset border-t border-border-subtle pt-6 first:border-t-0 first:pt-0">
                 <PanelHeading>Thermal protection inputs</PanelHeading>
-                <div className="mt-5 grid gap-5 sm:grid-cols-3">
+                <div className="grid gap-6 md:grid-cols-2">
                   <CalculatorNumberField
                     field="safetyFactor"
                     hint="Safety factor passed to existing TPS workflows."
@@ -631,68 +679,66 @@ export function MissionScenarioBuilder({
           <ValidationErrorSummary errors={Object.values(errors)} />
 
           <div className="flex flex-wrap gap-3">
-            <button
-              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-accent px-5 py-3 text-sm font-semibold text-background transition-colors hover:bg-accent/85 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
-              type="submit"
-            >
-              <Send aria-hidden="true" size={16} />
-              Analyze Mission
-            </button>
-            <button
-              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-border px-5 py-3 text-sm font-semibold transition-colors hover:border-accent/60 hover:text-accent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
-              onClick={resetScenario}
-              type="button"
-            >
+            <Button type="submit">Analyze mission</Button>
+            <Button onClick={resetScenario} variant="ghost">
               <RotateCcw aria-hidden="true" size={16} />
               Reset scenario
-            </button>
+            </Button>
           </div>
         </form>
 
-        <aside className="h-fit rounded-2xl border border-accent/25 bg-accent/5 p-5 sm:p-6 xl:sticky xl:top-24">
-          <p className="orbix-label text-accent">Scenario assembly status</p>
-          <h3 className="mt-3 text-xl font-semibold">Mission input pipeline</h3>
-          <p className="mt-3 text-sm leading-6 text-muted">
-            This workstation creates the existing mission-profile input object.
+        <aside className="h-fit rounded-md border border-border bg-surface p-4 sm:p-6 xl:sticky xl:top-6">
+          <h3 className="orbix-h3 text-foreground">What this builder does</h3>
+          <p className="mt-2 text-sm leading-6 text-muted">
+            This builder creates the existing mission-profile input object.
             Engineering calculations begin only inside the Mission Profile
-            Analyzer after the scenario is loaded.
+            Analyzer, which runs below once you select Analyze mission.
           </p>
           <div
             aria-live="polite"
-            className="mt-5 rounded-xl border border-border bg-background/45 p-4"
+            className="mt-4 border-t border-border-subtle pt-4"
             role="status"
           >
-            <div className="flex items-center gap-2 text-sm font-semibold">
-              <CheckCircle2
-                aria-hidden="true"
-                className="text-accent"
-                size={16}
-              />
-              {generatedScenario
-                ? "Mission profile loaded"
-                : "Configuration ready"}
-            </div>
-            <p className="mt-2 text-xs leading-5 text-muted">
-              {generatedScenario
-                ? "The existing analyzer now owns validation and all engineering outputs."
-                : "Choose systems, review inputs, then analyze the mission."}
-            </p>
+            {generatedScenario ? (
+              <p className="flex items-start gap-2 text-sm leading-6 text-status-success">
+                <CircleCheck
+                  aria-hidden="true"
+                  className="mt-1 shrink-0"
+                  size={16}
+                />
+                Mission profile created. Results are shown below, and the
+                scenario can now be saved in the scenario library.
+              </p>
+            ) : hasErrors ? (
+              <p className="flex items-start gap-2 text-sm leading-6 text-status-danger">
+                <CircleAlert
+                  aria-hidden="true"
+                  className="mt-1 shrink-0"
+                  size={16}
+                />
+                Not created. Check the inputs marked in the form.
+              </p>
+            ) : (
+              <p className="text-sm leading-6 text-muted">
+                Choose systems, review the inputs, then select Analyze mission.
+              </p>
+            )}
           </div>
-          <dl className="mt-5 space-y-3 text-sm">
-            <div className="flex items-center justify-between gap-4 border-b border-border/70 pb-3">
+          <dl className="mt-4 text-sm">
+            <div className="flex items-center justify-between gap-4 border-t border-border-subtle py-2">
               <dt className="text-muted">Orbital systems</dt>
-              <dd className="font-mono">{usesOrbit ? "Enabled" : "Off"}</dd>
+              <dd className="text-foreground">{usesOrbit ? "On" : "Off"}</dd>
             </div>
-            <div className="flex items-center justify-between gap-4 border-b border-border/70 pb-3">
+            <div className="flex items-center justify-between gap-4 border-t border-border-subtle py-2">
               <dt className="text-muted">Reentry analysis</dt>
-              <dd className="font-mono">
-                {values.enableReentryAnalysis ? "Enabled" : "Off"}
+              <dd className="text-foreground">
+                {values.enableReentryAnalysis ? "On" : "Off"}
               </dd>
             </div>
-            <div className="flex items-center justify-between gap-4">
+            <div className="flex items-center justify-between gap-4 border-t border-border-subtle py-2">
               <dt className="text-muted">Vehicle comparison</dt>
-              <dd className="font-mono">
-                {values.enableVehicleComparison ? "Enabled" : "Off"}
+              <dd className="text-foreground">
+                {values.enableVehicleComparison ? "On" : "Off"}
               </dd>
             </div>
           </dl>
@@ -702,20 +748,19 @@ export function MissionScenarioBuilder({
       {generatedScenario ? (
         <section
           aria-labelledby="custom-mission-analysis-title"
-          className="border-t border-border pt-10"
+          className="border-t border-border-subtle pt-8"
         >
-          <div className="mb-7 max-w-3xl">
-            <p className="orbix-label text-accent">
-              Loaded profile //{" "}
-              {generatedScenario.category.replaceAll("-", " ")}
+          <div className="mb-6 max-w-[68ch]">
+            <p className="orbix-label">
+              {formatCategoryLabel(generatedScenario.category)}
             </p>
             <h3
-              className="mt-3 text-2xl font-semibold"
+              className="orbix-h3 mt-1 text-foreground"
               id="custom-mission-analysis-title"
             >
-              Existing Mission Profile Analyzer
+              Mission profile analyzer: {generatedScenario.profile.missionName}
             </h3>
-            <p className="mt-3 text-sm leading-6 text-muted">
+            <p className="mt-2 text-sm leading-6 text-muted">
               {generatedScenario.description}
             </p>
           </div>

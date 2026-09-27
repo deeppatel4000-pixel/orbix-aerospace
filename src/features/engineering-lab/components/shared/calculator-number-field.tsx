@@ -1,18 +1,18 @@
 "use client";
 
+import { CircleAlert } from "lucide-react";
+
 /**
- * One numeric parameter — 23 modules render every input through this.
+ * One numeric parameter, rendered with the shared field pattern (spec 9).
  *
- * The accessibility contract was already right and is untouched: a real
- * `<label htmlFor>`, `aria-describedby` pointing at the hint (and the error
- * when present), `aria-errormessage`, `aria-invalid`, `inputMode="decimal"`,
- * `step="any"`, and a 48px target. Parsing and validation are unchanged; this
- * component has never done either.
+ * The label sits above the control and stays the accessible name on its own,
+ * so a field can be found by its plain name ("Thrust"). The unit is shown as a
+ * joined suffix beside the value and is also announced through
+ * `aria-describedby`, together with the help text and, when present, the error
+ * message. The invalid state marks the border and prints a message with an
+ * icon, so colour is never the only signal.
  *
- * What changed is legibility. The unit moved out of the field and up beside
- * the label, hint and error text moved from 12px to 14px, and the invalid
- * state now marks the field border as well as printing a message, so the
- * error is not carried by the message alone.
+ * Parsing and validation stay in each calculator; this component does neither.
  */
 
 interface CalculatorNumberFieldProps<Field extends string> {
@@ -37,42 +37,49 @@ export function CalculatorNumberField<Field extends string>({
   value,
 }: CalculatorNumberFieldProps<Field>) {
   const inputId = idPrefix + "-" + field;
+  const unitId = inputId + "-unit";
   const hintId = inputId + "-hint";
   const errorId = inputId + "-error";
+  const describedBy = [unit ? unitId : null, hintId, error ? errorId : null]
+    .filter(Boolean)
+    .join(" ");
 
   return (
-    <div>
-      <div className="flex items-baseline justify-between gap-3">
-        <label className="text-sm font-semibold" htmlFor={inputId}>
-          {label}
-        </label>
-        {/* The unit sits with the label rather than floating inside the input.
-         * Inside, it had to be dodged with 5rem of right padding, and a long
-         * value ran underneath it; here it is legible at normal size and the
-         * field keeps its full width for the number. */}
-        <span className="font-mono text-xs text-muted">{unit}</span>
-      </div>
-      <div className="relative mt-2">
+    <div className="orbix-field">
+      <label className="orbix-field__label" htmlFor={inputId}>
+        {label}
+      </label>
+      <div className="orbix-field__control">
         <input
-          aria-describedby={error ? hintId + " " + errorId : hintId}
+          aria-describedby={describedBy}
           aria-errormessage={error ? errorId : undefined}
-          aria-invalid={Boolean(error)}
-          className="min-h-12 w-full rounded-md border border-border bg-background/55 px-4 py-3 font-mono text-base text-foreground tabular-nums transition-colors outline-none placeholder:text-muted/55 focus:border-accent focus:ring-2 focus:ring-accent/15 aria-[invalid=true]:border-signal/70"
+          aria-invalid={error ? true : undefined}
+          className="orbix-input"
           id={inputId}
           inputMode="decimal"
-          min="0"
           onChange={(event) => onChange(field, event.target.value)}
           required
           step="any"
           type="number"
           value={value}
         />
+        {unit ? (
+          <span className="orbix-field__unit" aria-hidden="true">
+            {unit}
+          </span>
+        ) : null}
       </div>
-      <p className="mt-2 text-sm leading-6 text-muted" id={hintId}>
+      {unit ? (
+        <span className="sr-only" id={unitId}>
+          Unit: {unit}
+        </span>
+      ) : null}
+      <p className="orbix-field__help" id={hintId}>
         {hint}
       </p>
       {error ? (
-        <p className="mt-1.5 text-sm leading-6 text-signal" id={errorId}>
+        <p className="orbix-field__error" id={errorId}>
+          <CircleAlert aria-hidden="true" className="shrink-0" size={14} />
           {error}
         </p>
       ) : null}

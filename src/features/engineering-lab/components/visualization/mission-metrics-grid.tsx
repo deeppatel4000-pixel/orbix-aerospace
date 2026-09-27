@@ -1,10 +1,9 @@
-import { Flame, Gauge, Orbit, Plane, Shield } from "lucide-react";
-
 import type {
   MissionProfileAnalysis,
   MissionReport,
   VehicleReentryEvaluationAnalysis,
 } from "@/features/engineering-lab/types";
+import { formatLabValue } from "./format-lab-value";
 
 export interface MissionMetricsGridProps {
   readonly missionProfileAnalysis?: MissionProfileAnalysis | null;
@@ -19,27 +18,21 @@ interface MissionMetric {
 }
 
 interface MetricGroup {
-  readonly icon: typeof Orbit;
   readonly id: string;
   readonly label: string;
   readonly metrics: readonly MissionMetric[];
 }
 
-const metricFormatter = new Intl.NumberFormat("en-US", {
-  maximumFractionDigits: 3,
-  minimumFractionDigits: 2,
-});
-
 function MissionMetricReadout({ label, unit, value }: MissionMetric) {
   const displayValue =
-    typeof value === "number" ? metricFormatter.format(value) : value;
+    typeof value === "number" ? formatLabValue(value) : value;
 
   return (
     /* Stacked, not two competing columns.
      *
      * This row used `grid-cols-[minmax(0,1fr)_auto]`: a long value grew the
-     * `auto` track, squeezed the label track toward zero, and the label — a
-     * grid item, so still `min-width: auto` — painted past its own box under
+     * `auto` track, squeezed the label track toward zero, and the label (a
+     * grid item, so still `min-width: auto`) painted past its own box under
      * the value. Two attempts to rebalance those tracks each fixed one side
      * and broke the other: giving the label `min-w-0` with `break-words` split
      * it one character per line, and putting a floor under the label column
@@ -52,22 +45,22 @@ function MissionMetricReadout({ label, unit, value }: MissionMetric) {
      * `mission-telemetry-legibility.spec.ts`, which checks label fit, value
      * fit, intersection, row containment and word-boundary wrapping together.
      */
-    <div className="min-h-12 border-b border-white/7 px-3 py-2.5 last:border-b-0 sm:px-4">
-      <dt className="font-mono text-[0.56rem] leading-4 tracking-[0.11em] text-[#7f9499] uppercase">
-        {label}
-      </dt>
-      <dd className="mt-1.5">
+    <div className="border-t border-border-subtle py-2">
+      <dt className="text-sm text-muted">{label}</dt>
+      <dd className="mt-0.5">
         <output
           className={
-            "block font-mono text-sm font-semibold break-words tabular-nums " +
-            (value === undefined ? "text-[#657a80]" : "text-[#dfe9ea]")
+            "block break-words " +
+            (value === undefined
+              ? "text-sm text-muted"
+              : typeof value === "number"
+                ? "orbix-data text-foreground"
+                : "text-sm text-foreground")
           }
         >
           {displayValue ?? "Not reported"}
           {value !== undefined && unit ? (
-            <span className="ml-1 text-[0.61rem] font-normal text-[#82979c]">
-              {unit}
-            </span>
+            <span className="ml-1 text-muted">{unit}</span>
           ) : null}
         </output>
       </dd>
@@ -87,7 +80,6 @@ export function MissionMetricsGrid({
 
   const metricGroups: readonly MetricGroup[] = [
     {
-      icon: Orbit,
       id: "orbital",
       label: "Orbital",
       metrics: [
@@ -116,7 +108,6 @@ export function MissionMetricsGrid({
       ],
     },
     {
-      icon: Plane,
       id: "vehicle",
       label: "Vehicle",
       metrics: [
@@ -142,7 +133,6 @@ export function MissionMetricsGrid({
       ],
     },
     {
-      icon: Flame,
       id: "thermal",
       label: "Thermal",
       metrics: [
@@ -176,47 +166,33 @@ export function MissionMetricsGrid({
 
   return (
     <section aria-labelledby="mission-metrics-title" className="min-w-0">
-      <div className="flex flex-col gap-2 border-b border-white/10 pb-3 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <p className="flex items-center gap-2 font-mono text-[0.61rem] tracking-[0.16em] text-accent uppercase">
-            <Gauge aria-hidden="true" size={14} />
-            Engineering telemetry // Supplied values
-          </p>
-          <h3 className="mt-1 text-xl font-semibold" id="mission-metrics-title">
-            Mission Metrics
-          </h3>
-        </div>
-        <p className="flex items-center gap-2 text-xs text-[#7c9297]">
-          <Shield aria-hidden="true" size={14} />
-          No feasibility assessment
-        </p>
+      <div className="flex flex-col gap-1 sm:flex-row sm:items-baseline sm:justify-between">
+        <h4 className="orbix-h4 text-foreground" id="mission-metrics-title">
+          Mission metrics
+        </h4>
+        <p className="text-sm text-muted">No feasibility assessment</p>
       </div>
 
-      <div className="mt-4 grid gap-3 lg:grid-cols-3">
-        {metricGroups.map((group) => {
-          const Icon = group.icon;
-
-          return (
-            <section
-              aria-labelledby={`mission-metrics-${group.id}`}
-              className="overflow-hidden rounded-xl border border-white/10 bg-[#061015]/[0.78]"
-              key={group.id}
+      <div className="mt-3 grid gap-x-8 gap-y-4 lg:grid-cols-3">
+        {metricGroups.map((group) => (
+          <section
+            aria-labelledby={`mission-metrics-${group.id}`}
+            className="min-w-0"
+            key={group.id}
+          >
+            <h5
+              className="text-sm font-semibold text-foreground"
+              id={`mission-metrics-${group.id}`}
             >
-              <h4
-                className="flex min-h-10 items-center gap-2 border-b border-white/10 bg-white/[0.025] px-3 font-mono text-[0.62rem] tracking-[0.14em] text-[#a9babd] uppercase sm:px-4"
-                id={`mission-metrics-${group.id}`}
-              >
-                <Icon aria-hidden="true" className="text-accent" size={15} />
-                {group.label}
-              </h4>
-              <dl>
-                {group.metrics.map((metric) => (
-                  <MissionMetricReadout key={metric.label} {...metric} />
-                ))}
-              </dl>
-            </section>
-          );
-        })}
+              {group.label}
+            </h5>
+            <dl className="mt-1">
+              {group.metrics.map((metric) => (
+                <MissionMetricReadout key={metric.label} {...metric} />
+              ))}
+            </dl>
+          </section>
+        ))}
       </div>
     </section>
   );

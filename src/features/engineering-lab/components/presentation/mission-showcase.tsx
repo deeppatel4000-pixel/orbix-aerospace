@@ -1,16 +1,15 @@
 "use client";
 
-import { useEffect, useReducer, useState, type KeyboardEvent } from "react";
+import { useEffect, useReducer, type KeyboardEvent } from "react";
 import {
   ChevronLeft,
   ChevronRight,
-  Clapperboard,
   Pause,
   Play,
   RotateCcw,
-  ShieldCheck,
 } from "lucide-react";
 
+import { Button } from "@/components/ui/button";
 import type {
   MissionInsightsAnalysis,
   MissionProfileAnalysis,
@@ -24,7 +23,6 @@ import { ShowcaseTelemetry } from "./showcase-telemetry";
 export interface MissionShowcaseProps {
   readonly insights?: MissionInsightsAnalysis;
   readonly missionProfile: MissionProfileAnalysis;
-  readonly reducedMotionOverride?: boolean;
   readonly report?: MissionReport;
 }
 
@@ -80,33 +78,15 @@ export function missionShowcaseReducer(
   };
 }
 
-function useReducedMotion(override: boolean | undefined) {
-  const [reducedMotion, setReducedMotion] = useState(override ?? false);
-
-  useEffect(() => {
-    if (override !== undefined || typeof window === "undefined") return;
-
-    const query = window.matchMedia("(prefers-reduced-motion: reduce)");
-    const updatePreference = () => setReducedMotion(query.matches);
-    updatePreference();
-    query.addEventListener("change", updatePreference);
-    return () => query.removeEventListener("change", updatePreference);
-  }, [override]);
-
-  return reducedMotion;
-}
-
 export function MissionShowcase({
   insights,
   missionProfile,
-  reducedMotionOverride,
   report,
 }: MissionShowcaseProps) {
   const [state, dispatch] = useReducer(
     missionShowcaseReducer,
     INITIAL_SHOWCASE_STATE,
   );
-  const reducedMotion = useReducedMotion(reducedMotionOverride);
   const activePhase =
     SHOWCASE_PHASES[state.currentPhaseIndex] ?? SHOWCASE_PHASES[0];
   const reviewInsight =
@@ -135,174 +115,124 @@ export function MissionShowcase({
       event.preventDefault();
       dispatch({ type: "restart" });
     }
-    if (event.key === " ") {
-      event.preventDefault();
-      dispatch({ type: state.isPlaying ? "pause" : "play" });
-    }
   }
+
+  const isLastPhase = state.currentPhaseIndex === SHOWCASE_PHASES.length - 1;
 
   return (
     <article
       aria-describedby="mission-showcase-keyboard-help"
-      aria-label={`Cinematic mission showcase for ${missionProfile.missionName}`}
-      className="technical-grid min-h-[80vh] overflow-hidden rounded-2xl border border-white/12 bg-surface text-foreground shadow-[0_30px_90px_rgba(0,0,0,0.34)] outline-none focus-visible:ring-2 focus-visible:ring-accent"
-      data-reduced-motion={reducedMotion ? "true" : "false"}
+      aria-label={`Mission walkthrough for ${missionProfile.missionName}`}
+      className="min-w-0 text-foreground"
       onKeyDown={handleKeyboard}
-      tabIndex={0}
     >
-      <header className="relative overflow-hidden border-b border-white/10 px-5 py-8 sm:px-8 sm:py-10">
-        <div
-          aria-hidden="true"
-          className="absolute -top-28 right-0 h-80 w-80 rounded-full bg-accent/8 blur-3xl"
-        />
-        <div className="relative flex flex-col gap-7 lg:flex-row lg:items-end lg:justify-between">
-          <div>
-            <p className="flex items-center gap-2 font-mono text-[0.64rem] tracking-[0.22em] text-accent uppercase">
-              <Clapperboard aria-hidden="true" size={15} />
-              ORBIX Mission Showcase
-            </p>
-            <h2 className="mt-4 max-w-4xl text-3xl font-semibold tracking-[-0.045em] sm:text-5xl">
-              {missionProfile.missionName}
-            </h2>
-            <p className="mt-4 font-mono text-[0.65rem] tracking-[0.15em] text-muted uppercase">
-              Educational simulation review
-            </p>
-          </div>
-          <div className="flex items-center gap-2 rounded-xl border border-signal/20 bg-signal/5 px-4 py-3 text-signal">
-            <ShieldCheck aria-hidden="true" size={16} />
-            <span className="font-mono text-[0.61rem] tracking-[0.08em] uppercase">
-              Visual sequence only
-            </span>
-          </div>
-        </div>
+      <header className="border-b border-border-subtle pb-4">
+        <p className="orbix-label">Mission walkthrough</p>
+        <h3 className="orbix-h3 mt-1 text-foreground">
+          {missionProfile.missionName}
+        </h3>
+        <p className="mt-2 max-w-[68ch] text-sm leading-6 text-muted">
+          Steps through the completed results one phase at a time. It is a
+          presentation of existing values, not a flight simulation.
+        </p>
       </header>
 
-      <div className="space-y-7 p-5 sm:p-8">
-        <section
-          aria-label="Mission showcase controls"
-          className="rounded-2xl border border-white/10 bg-surface/90 p-4"
+      <div className="space-y-6 pt-6">
+        <div
+          aria-label="Walkthrough controls"
+          className="flex flex-wrap items-center gap-2"
+          role="group"
         >
-          <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
-            <div className="flex flex-wrap gap-2">
-              <button
-                aria-label="Play mission showcase"
-                className="inline-flex min-h-10 items-center gap-2 rounded-lg border border-accent/30 bg-accent/10 px-3 py-2 text-xs font-semibold text-accent outline-none hover:bg-accent/15 focus-visible:ring-2 focus-visible:ring-accent disabled:opacity-40 motion-reduce:transition-none"
-                disabled={state.isPlaying}
-                onClick={() => dispatch({ type: "play" })}
-                type="button"
-              >
-                <Play aria-hidden="true" fill="currentColor" size={14} />
-                Play showcase
-              </button>
-              <button
-                aria-label="Pause mission showcase"
-                className="text-muted-strong inline-flex min-h-10 items-center gap-2 rounded-lg border border-white/12 bg-white/5 px-3 py-2 text-xs font-semibold outline-none hover:border-accent/30 hover:text-accent focus-visible:ring-2 focus-visible:ring-accent disabled:opacity-40 motion-reduce:transition-none"
-                disabled={!state.isPlaying}
-                onClick={() => dispatch({ type: "pause" })}
-                type="button"
-              >
-                <Pause aria-hidden="true" fill="currentColor" size={14} />
-                Pause
-              </button>
-              <button
-                aria-label="Previous showcase phase"
-                className="text-muted-strong inline-flex min-h-10 items-center gap-2 rounded-lg border border-white/12 bg-white/5 px-3 py-2 text-xs font-semibold outline-none hover:border-accent/30 hover:text-accent focus-visible:ring-2 focus-visible:ring-accent disabled:opacity-40 motion-reduce:transition-none"
-                disabled={state.currentPhaseIndex === 0}
-                onClick={() => dispatch({ type: "previous" })}
-                type="button"
-              >
-                <ChevronLeft aria-hidden="true" size={14} />
-                Previous
-              </button>
-              <button
-                aria-label="Next showcase phase"
-                className="text-muted-strong inline-flex min-h-10 items-center gap-2 rounded-lg border border-white/12 bg-white/5 px-3 py-2 text-xs font-semibold outline-none hover:border-accent/30 hover:text-accent focus-visible:ring-2 focus-visible:ring-accent disabled:opacity-40 motion-reduce:transition-none"
-                disabled={
-                  state.currentPhaseIndex === SHOWCASE_PHASES.length - 1
-                }
-                onClick={() => dispatch({ type: "next" })}
-                type="button"
-              >
-                Next
-                <ChevronRight aria-hidden="true" size={14} />
-              </button>
-              <button
-                aria-label="Restart mission showcase"
-                className="text-muted-strong inline-flex min-h-10 items-center gap-2 rounded-lg border border-white/12 bg-white/5 px-3 py-2 text-xs font-semibold outline-none hover:border-accent/30 hover:text-accent focus-visible:ring-2 focus-visible:ring-accent motion-reduce:transition-none"
-                onClick={() => dispatch({ type: "restart" })}
-                type="button"
-              >
-                <RotateCcw aria-hidden="true" size={14} />
-                Restart
-              </button>
-            </div>
+          {state.isPlaying ? (
+            <Button
+              aria-label="Pause mission showcase"
+              onClick={() => dispatch({ type: "pause" })}
+              variant="secondary"
+            >
+              <Pause aria-hidden="true" size={16} />
+              Pause
+            </Button>
+          ) : (
+            <Button
+              aria-label="Play mission showcase"
+              disabled={isLastPhase}
+              onClick={() => dispatch({ type: "play" })}
+              variant="secondary"
+            >
+              <Play aria-hidden="true" size={16} />
+              Play
+            </Button>
+          )}
+          <Button
+            aria-label="Previous showcase phase"
+            disabled={state.currentPhaseIndex === 0}
+            onClick={() => dispatch({ type: "previous" })}
+            variant="ghost"
+          >
+            <ChevronLeft aria-hidden="true" size={16} />
+            Previous
+          </Button>
+          <Button
+            aria-label="Next showcase phase"
+            disabled={isLastPhase}
+            onClick={() => dispatch({ type: "next" })}
+            variant="ghost"
+          >
+            Next
+            <ChevronRight aria-hidden="true" size={16} />
+          </Button>
+          <Button
+            aria-label="Restart mission showcase"
+            onClick={() => dispatch({ type: "restart" })}
+            variant="ghost"
+          >
+            <RotateCcw aria-hidden="true" size={16} />
+            Restart
+          </Button>
+        </div>
 
-            <div className="min-w-48">
-              <div className="mb-2 flex justify-between gap-4 font-mono text-[0.57rem] tracking-[0.1em] text-muted uppercase">
-                <span>Presentation sequence</span>
-                <span>
-                  {String(state.currentPhaseIndex + 1).padStart(2, "0")} / 06
-                </span>
-              </div>
-              <progress
-                aria-label="Mission showcase progress"
-                className="h-1.5 w-full accent-[var(--color-accent)]"
-                max={SHOWCASE_PHASES.length}
-                value={state.currentPhaseIndex + 1}
-              />
-            </div>
-          </div>
-        </section>
+        <div className="grid gap-6 lg:grid-cols-[14rem_minmax(0,1fr)]">
+          <nav aria-label="Walkthrough phases">
+            <ol className="space-y-0.5">
+              {SHOWCASE_PHASES.map((phase, index) => (
+                <ShowcasePhase
+                  active={index === state.currentPhaseIndex}
+                  index={index}
+                  key={phase.id}
+                  onSelect={(phaseIndex) =>
+                    dispatch({ phaseIndex, type: "select" })
+                  }
+                  phase={phase}
+                />
+              ))}
+            </ol>
+          </nav>
 
-        <nav aria-label="Mission showcase timeline">
-          <ol className="flex gap-2 overflow-x-auto pb-2">
-            {SHOWCASE_PHASES.map((phase, index) => (
-              <ShowcasePhase
-                active={index === state.currentPhaseIndex}
-                index={index}
-                key={phase.id}
-                onSelect={(phaseIndex) =>
-                  dispatch({ phaseIndex, type: "select" })
-                }
-                phase={phase}
-              />
-            ))}
-          </ol>
-        </nav>
+          <ShowcaseStage
+            insight={reviewInsight}
+            phase={activePhase}
+            phaseNumber={state.currentPhaseIndex + 1}
+            phaseTotal={SHOWCASE_PHASES.length}
+          />
+        </div>
 
-        <ShowcaseStage
-          insight={reviewInsight}
-          isPlaying={state.isPlaying}
-          phase={activePhase}
-          reducedMotion={reducedMotion}
-        />
-
-        <div className="border-t border-white/10 pt-7">
+        <div className="border-t border-border-subtle pt-6">
           <ShowcaseTelemetry missionProfile={missionProfile} report={report} />
         </div>
 
-        {reducedMotion ? (
-          <p className="rounded-lg border border-white/10 bg-white/3 px-3 py-2 text-xs text-muted">
-            Reduced motion mode is active. Decorative spacecraft and star motion
-            is suppressed while phase controls remain available.
-          </p>
-        ) : null}
-
-        <p className="sr-only" id="mission-showcase-keyboard-help">
-          Use left and right arrow keys to change phase, Space to play or pause,
-          and Home to restart.
+        <p
+          className="text-sm leading-6 text-muted"
+          id="mission-showcase-keyboard-help"
+        >
+          Play advances one phase every few seconds and stops at the last phase.
+          With focus inside the walkthrough, the left and right arrow keys
+          change phase and Home restarts.
         </p>
         <p aria-live="polite" className="sr-only" role="status">
           Mission showcase phase {state.currentPhaseIndex + 1}:{" "}
           {activePhase.label}.
           {state.isPlaying ? " Showcase playing." : " Showcase paused."}
         </p>
-
-        <footer className="border-t border-white/10 pt-6 text-xs leading-5 text-muted">
-          This cinematic sequence presents existing Orbix outputs. It is not a
-          trajectory propagation, flight simulation, mission clock, or readiness
-          assessment.
-        </footer>
       </div>
     </article>
   );

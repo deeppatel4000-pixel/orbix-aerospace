@@ -63,15 +63,9 @@ export {
   missionReplayReducer,
   type MissionReplayState,
 } from "./mission-replay";
-export {
-  type MissionControlStatus,
-  MissionStatusPanel,
-  type MissionStatusPanelProps,
-} from "./mission-status-panel";
 export { MissionTimeline, type MissionTimelineProps } from "./mission-timeline";
 export { MissionViewer, type MissionViewerProps } from "./mission-viewer";
-export { EarthModel, type EarthModelProps } from "./earth-model";
-export { OrbitPath3D, type OrbitPath3DProps } from "./orbit-path-3d";
+export { OrbitDiagram, type OrbitDiagramProps } from "./orbit-diagram";
 export {
   ReplayControls,
   type ReplayControlsProps,
@@ -85,10 +79,7 @@ export {
   type ReplaySceneMode,
 } from "./replay-phase-indicator";
 export {
+  ReentryProfileChart,
   ReentryProfileVisualization,
   type ReentryProfileVisualizationProps,
 } from "./reentry-profile-visualization";
-export {
-  SpacecraftMarker,
-  type SpacecraftMarkerProps,
-} from "./spacecraft-marker";

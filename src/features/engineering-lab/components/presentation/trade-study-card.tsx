@@ -1,5 +1,3 @@
-import { CheckCircle2, Layers3 } from "lucide-react";
-
 import type { MissionScenario } from "@/features/engineering-lab/missions";
 
 export interface TradeStudyCardProps {
@@ -8,10 +6,8 @@ export interface TradeStudyCardProps {
 }
 
 function formatCategory(category: MissionScenario["category"]): string {
-  return category
-    .split("-")
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(" ");
+  const text = category.replaceAll("-", " ");
+  return text.charAt(0).toUpperCase() + text.slice(1);
 }
 
 function getIncludedSystems(scenario: MissionScenario): readonly string[] {
@@ -28,58 +24,24 @@ export function TradeStudyCard({ index, scenario }: TradeStudyCardProps) {
   return (
     <article
       aria-labelledby={`trade-study-scenario-${scenario.id}-title`}
-      className="rounded-2xl border border-white/10 bg-surface/90 p-5"
+      className="rounded-md border border-border p-4"
     >
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <p className="font-mono text-[0.58rem] tracking-[0.16em] text-accent uppercase">
-            Architecture {String(index + 1).padStart(2, "0")}
-          </p>
-          <h3
-            className="mt-2 text-xl font-semibold tracking-[-0.025em]"
-            id={`trade-study-scenario-${scenario.id}-title`}
-          >
-            {scenario.name}
-          </h3>
-          <p className="mt-2 font-mono text-[0.62rem] tracking-[0.1em] text-muted uppercase">
-            {formatCategory(scenario.category)}
-          </p>
-        </div>
-        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-accent/20 bg-accent/6 text-accent">
-          <Layers3 aria-hidden="true" size={18} />
-        </span>
-      </div>
-
-      <p className="mt-4 min-h-18 text-sm leading-6 text-muted">
+      <p className="orbix-label">
+        Architecture {index + 1}: {formatCategory(scenario.category)}
+      </p>
+      <h5
+        className="orbix-h4 mt-1 text-foreground"
+        id={`trade-study-scenario-${scenario.id}-title`}
+      >
+        {scenario.name}
+      </h5>
+      <p className="mt-2 text-sm leading-6 text-muted">
         {scenario.description}
       </p>
-
-      <div className="mt-5 border-t border-white/10 pt-4">
-        <p className="font-mono text-[0.57rem] tracking-[0.13em] text-muted uppercase">
-          Included systems
-        </p>
-        {systems.length > 0 ? (
-          <ul className="mt-3 space-y-2">
-            {systems.map((system) => (
-              <li
-                className="text-muted-strong flex items-center gap-2 text-xs"
-                key={system}
-              >
-                <CheckCircle2
-                  aria-hidden="true"
-                  className="shrink-0 text-accent"
-                  size={14}
-                />
-                {system}
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <p className="mt-3 text-xs leading-5 text-muted">
-            Mission identity only
-          </p>
-        )}
-      </div>
+      <p className="mt-3 border-t border-border-subtle pt-3 text-sm text-text-secondary">
+        <span className="text-muted">Included systems: </span>
+        {systems.length > 0 ? systems.join(", ") : "Mission identity only"}
+      </p>
     </article>
   );
 }

@@ -2,67 +2,91 @@
 
 import {
   Children,
+  createContext,
   type ReactNode,
   useCallback,
+  useContext,
   useEffect,
   useMemo,
   useState,
 } from "react";
 
-import { Container } from "@/components/layout/container";
 import {
-  LaboratoryWorkflowNavigation,
-  type LaboratoryWorkflowNavigationItem,
-} from "@/features/engineering-lab/components/laboratory-workflow-navigation";
+  LaboratoryToolNavigation,
+  type LaboratoryToolGroup,
+} from "@/features/engineering-lab/components/laboratory-tool-navigation";
 
 interface LaboratoryShellProps {
   children: ReactNode;
-  workflows: readonly LaboratoryWorkflowNavigationItem[];
+  /**
+   * The workflows in render order, each with its tools in render order.
+   * Paired by index with `children` (one `LaboratoryWorkflowSection` each).
+   */
+  workflows: readonly LaboratoryToolGroup[];
 }
 
-function getWorkflowIdFromHref(href: `#${string}`): string {
-  return href.slice(1);
+const ActiveToolContext = createContext<string | null>(null);
+
+/** The id of the tool the shell is currently showing. */
+export function useActiveLaboratoryTool(): string | null {
+  return useContext(ActiveToolContext);
 }
 
+/**
+ * The Engineering Lab workspace: the tool index on the left from 1024px and
+ * exactly one active tool on the right.
+ *
+ * The URL hash is the single source of truth for navigation. Index links,
+ * the compact select and deep links from Learn, Compare and the homepage all
+ * set the hash; this shell resolves it to a tool. A hash may name a tool, a
+ * workflow (its first tool opens) or any element inside a tool.
+ *
+ * Tools are hidden rather than unmounted, so deep links can be resolved by
+ * looking the target up in the document and so a reader's inputs survive a
+ * glance at another tool.
+ */
 export function LaboratoryShell({ children, workflows }: LaboratoryShellProps) {
   const workflowChildren = useMemo(
     () => Children.toArray(children),
     [children],
   );
-  const firstWorkflowId = getWorkflowIdFromHref(workflows[0]?.href ?? "#");
-  const [activeWorkflowId, setActiveWorkflowId] = useState(firstWorkflowId);
+  const firstToolId = workflows[0]?.tools[0]?.id ?? "";
+  const [activeToolId, setActiveToolId] = useState(firstToolId);
 
   const resolveHash = useCallback(() => {
     const hashId = decodeURIComponent(window.location.hash.slice(1));
 
     if (hashId.length === 0) {
-      setActiveWorkflowId(firstWorkflowId);
+      setActiveToolId(firstToolId);
       return;
     }
 
-    const directWorkflow = workflows.find(
-      ({ href }) => getWorkflowIdFromHref(href) === hashId,
-    );
-    const nestedTarget = document.getElementById(hashId);
-    const containingWorkflow = nestedTarget?.closest<HTMLElement>(
-      "[data-laboratory-workflow]",
-    );
-    const nextWorkflowId = directWorkflow
-      ? getWorkflowIdFromHref(directWorkflow.href)
-      : containingWorkflow?.dataset.laboratoryWorkflow;
-
-    if (nextWorkflowId !== undefined) {
-      setActiveWorkflowId(nextWorkflowId);
+    for (const workflow of workflows) {
+      if (workflow.id === hashId) {
+        setActiveToolId(workflow.tools[0]?.id ?? firstToolId);
+        return;
+      }
+      if (workflow.tools.some((tool) => tool.id === hashId)) {
+        setActiveToolId(hashId);
+        return;
+      }
     }
-  }, [firstWorkflowId, workflows]);
+
+    // The hash names something inside a tool: an input, a result, a nested
+    // anchor. Open the tool that contains it.
+    const target = document.getElementById(hashId);
+    const containingTool = target?.closest<HTMLElement>(
+      "[data-laboratory-tool]",
+    )?.dataset.laboratoryTool;
+
+    if (containingTool !== undefined) {
+      setActiveToolId(containingTool);
+    }
+  }, [firstToolId, workflows]);
 
   useEffect(() => {
-    // `resolveHash` reads `window.location.hash` and queries the DOM, neither
-    // of which exists during SSR. This is the "synchronize with an external
-    // system" case that effects exist for, not derivable state. Flagged only
-    // because eslint-plugin-react-hooks 5 -> 7 (pulled in by
-    // eslint-config-next 16) added `set-state-in-effect` to its recommended
-    // set; this code is unchanged from the Next 15 baseline. See docs/upgrades/.
+    // Reads `window.location.hash` and the DOM, neither of which exists during
+    // SSR: the "synchronize with an external system" case effects exist for.
     // eslint-disable-next-line react-hooks/set-state-in-effect
     resolveHash();
     window.addEventListener("hashchange", resolveHash);
@@ -71,6 +95,8 @@ export function LaboratoryShell({ children, workflows }: LaboratoryShellProps) {
   }, [resolveHash]);
 
   useEffect(() => {
+    // Once the target is visible, bring it into view. The browser's own jump
+    // happens before React reveals a hidden tool, so it cannot do this alone.
     const hashId = decodeURIComponent(window.location.hash.slice(1));
     const target = hashId.length > 0 ? document.getElementById(hashId) : null;
 
@@ -83,86 +109,55 @@ export function LaboratoryShell({ children, workflows }: LaboratoryShellProps) {
     });
 
     return () => window.cancelAnimationFrame(frame);
-  }, [activeWorkflowId]);
+  }, [activeToolId]);
 
-  const selectWorkflow = useCallback((href: `#${string}`) => {
-    const workflowId = getWorkflowIdFromHref(href);
-    setActiveWorkflowId(workflowId);
-
-    if (window.location.hash === href) {
-      document.getElementById(workflowId)?.scrollIntoView({ block: "start" });
-      return;
-    }
-
-    window.location.hash = workflowId;
+  const selectTool = useCallback((toolId: string) => {
+    setActiveToolId(toolId);
+    window.location.hash = toolId;
   }, []);
 
-  const activeWorkflow = workflows.find(
-    ({ href }) => getWorkflowIdFromHref(href) === activeWorkflowId,
+  const activeWorkflowIndex = Math.max(
+    0,
+    workflows.findIndex((workflow) =>
+      workflow.tools.some((tool) => tool.id === activeToolId),
+    ),
   );
+  const activeTool = workflows
+    .flatMap((workflow) => workflow.tools)
+    .find((tool) => tool.id === activeToolId);
 
   return (
-    <section
-      aria-labelledby="laboratory-workflows-title"
-      className="relative overflow-clip py-16 sm:py-20"
-      id="laboratory-workflows"
-    >
-      <div
-        aria-hidden="true"
-        className="technical-grid absolute inset-0 -z-10 opacity-18"
-      />
-      <Container>
-        <div className="mb-10 max-w-4xl border-b border-border pb-8 sm:mb-12">
-          <p className="font-mono text-xs tracking-[0.18em] text-accent uppercase">
-            Module registry // Six engineering workflows
+    <ActiveToolContext.Provider value={activeToolId}>
+      <div className="grid gap-8 lg:grid-cols-[16rem_minmax(0,1fr)] lg:items-start">
+        <aside className="lg:sticky lg:top-[calc(57px+1.5rem)] lg:max-h-[calc(100vh-57px-3rem)] lg:overflow-y-auto lg:py-1 lg:pr-2 lg:pl-1">
+          <LaboratoryToolNavigation
+            activeToolId={activeToolId}
+            groups={workflows}
+            onSelect={selectTool}
+          />
+        </aside>
+
+        <div className="min-w-0 [&_[id]]:scroll-mt-[calc(57px+1.5rem)]">
+          <p aria-atomic="true" aria-live="polite" className="sr-only">
+            Current tool: {activeTool?.title ?? "None selected"}
           </p>
-          <h2
-            className="font-display mt-3 text-4xl font-semibold tracking-[-0.04em] sm:text-5xl"
-            id="laboratory-workflows-title"
-          >
-            Select an engineering workflow.
-          </h2>
-          <p className="mt-4 max-w-3xl text-base leading-7 text-muted">
-            Start with an isolated model, then move through integrated flow,
-            reentry, orbital, and mission-review systems without leaving the
-            laboratory.
-          </p>
+          {workflowChildren.map((workflow, index) => {
+            const workflowId =
+              workflows[index]?.id ?? `laboratory-workflow-${index + 1}`;
+            const isActive = index === activeWorkflowIndex;
+
+            return (
+              <div
+                data-laboratory-workflow={workflowId}
+                hidden={!isActive}
+                key={workflowId}
+              >
+                {workflow}
+              </div>
+            );
+          })}
         </div>
-
-        <div className="grid gap-8 lg:grid-cols-[17rem_minmax(0,1fr)] lg:items-start xl:gap-14">
-          <aside className="orbix-frame border-border bg-surface/75 p-4 backdrop-blur-md lg:sticky lg:top-24">
-            <LaboratoryWorkflowNavigation
-              activeWorkflowId={activeWorkflowId}
-              onSelect={selectWorkflow}
-              workflows={workflows}
-            />
-          </aside>
-
-          <div className="min-w-0 [&_[id]]:scroll-mt-28">
-            <p aria-atomic="true" aria-live="polite" className="sr-only">
-              Current laboratory workflow: {activeWorkflow?.title ?? "Unknown"}
-            </p>
-            {workflowChildren.map((workflow, index) => {
-              const workflowDefinition = workflows[index];
-              const workflowId = workflowDefinition
-                ? getWorkflowIdFromHref(workflowDefinition.href)
-                : `laboratory-workflow-${index + 1}`;
-              const isActive = workflowId === activeWorkflowId;
-
-              return (
-                <div
-                  aria-hidden={!isActive}
-                  data-laboratory-workflow={workflowId}
-                  hidden={!isActive}
-                  key={workflowId}
-                >
-                  {workflow}
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      </Container>
-    </section>
+      </div>
+    </ActiveToolContext.Provider>
   );
 }

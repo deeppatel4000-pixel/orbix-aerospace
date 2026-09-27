@@ -1,6 +1,5 @@
 import type { ReactNode } from "react";
 
-import { OrbixEnvironmentBackdrop } from "@/components/brand/orbix-environment";
 import type {
   MissionPreset,
   MissionPresetCategory,
@@ -46,22 +45,9 @@ export function MissionControlShell({
   return (
     <article
       aria-labelledby="mission-control-dashboard-title"
-      className="relative isolate overflow-hidden rounded-[1.35rem] border border-[#294451]/70 bg-[#02080c] text-[#e8f0f1] shadow-[0_38px_110px_rgba(0,0,0,0.48)] ring-1 ring-white/[0.025]"
+      className="min-w-0 text-foreground"
       data-active-workspace={activeWorkspace}
     >
-      <OrbixEnvironmentBackdrop className="z-0 opacity-24" theme="orbital" />
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-0 z-[1] bg-[linear-gradient(90deg,rgba(108,230,255,0.045)_1px,transparent_1px),linear-gradient(rgba(108,230,255,0.035)_1px,transparent_1px)] [mask-image:linear-gradient(to_bottom,black,transparent_72%)] bg-[size:48px_48px] opacity-35"
-      />
-      <span
-        aria-hidden="true"
-        className="pointer-events-none absolute top-0 left-0 z-20 h-px w-28 bg-gradient-to-r from-accent via-accent/70 to-transparent sm:w-48"
-      />
-      <span
-        aria-hidden="true"
-        className="pointer-events-none absolute top-0 right-0 z-20 h-12 w-12 border-t border-r border-accent/35"
-      />
       <MissionControlHeader
         currentWorkspace={currentWorkspace?.label ?? "Overview"}
         missionCategory={missionCategory}
@@ -70,14 +56,14 @@ export function MissionControlShell({
         missionReport={missionReport}
       />
 
-      <div className="relative z-10 grid min-w-0 xl:grid-cols-[16.5rem_minmax(0,1fr)]">
+      <div className="grid min-w-0 xl:grid-cols-[14rem_minmax(0,1fr)]">
         <MissionControlSidebar
           activeWorkspace={activeWorkspace}
           onWorkspaceChange={onWorkspaceChange}
         />
         <section
-          aria-label="Mission Control workspace content"
-          className="min-w-0 border-white/[0.035] bg-[#030b10]/86 p-4 sm:p-6 lg:p-8 xl:border-l"
+          aria-label="Mission control workspace content"
+          className="min-w-0 border-border-subtle py-4 sm:py-6 xl:border-l xl:pl-6"
         >
           {children}
         </section>
@@ -95,7 +81,7 @@ export function MissionControlShell({
         className="sr-only"
         role="status"
       >
-        Active Mission Control workspace:{" "}
+        Active Mission control workspace:{" "}
         {currentWorkspace?.label ?? "Overview"}.
       </p>
     </article>

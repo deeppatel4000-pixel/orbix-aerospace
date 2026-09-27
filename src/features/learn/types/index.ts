@@ -1,7 +1,7 @@
 export type {
-  LearnAccent,
   LearnExplorationLink,
+  LearnKeyIdea,
   LearnLabAnchor,
   LearningArea,
-  LearnSurfaceVariant,
+  LearnReference,
 } from "./learning-area";

@@ -2,10 +2,28 @@ import type { Metadata } from "next";
 
 import { ShowcasePage } from "@/features/showcase";
 
+const description =
+  "How ORBIX is built: typed data flowing through calculators, analyses and reports into React, the five mission presets drawn from their inputs, and the checks that run in CI.";
+
+const socialTitle = "How ORBIX is built | ORBIX";
+
 export const metadata: Metadata = {
-  title: "Project Showcase",
-  description:
-    "Explore five ORBIX educational mission concepts, the mission-control experience, engineering systems, visualizations, and technical architecture.",
+  alternates: { canonical: "/showcase" },
+  description,
+  openGraph: {
+    description,
+    locale: "en_US",
+    siteName: "ORBIX",
+    title: socialTitle,
+    type: "website",
+    url: "/showcase",
+  },
+  title: "How ORBIX is built",
+  twitter: {
+    card: "summary",
+    description,
+    title: socialTitle,
+  },
 };
 
 export default function ProjectShowcasePage() {

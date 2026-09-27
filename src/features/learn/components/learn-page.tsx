@@ -1,29 +1,31 @@
 import { Container } from "@/components/layout/container";
-import { SectionNavigation } from "@/components/ui/section-navigation";
-import { LearnHero } from "@/features/learn/components/learn-hero";
+import { LearnContents } from "@/features/learn/components/learn-contents";
+import { LearnIntro } from "@/features/learn/components/learn-intro";
 import { LearningPathwaySection } from "@/features/learn/components/learning-pathway-section";
 import { listLearningAreas } from "@/features/learn/data";
 
+/**
+ * Reading layout (spec 14, `/learn`): intro, then from 1024px a sticky
+ * 3-column "Contents" list beside 9 columns of pathway text.
+ */
 export function LearnPage() {
   const learningAreas = listLearningAreas();
-  const navigationItems = learningAreas.map((area) => ({
-    id: area.id,
-    label: area.title,
-  }));
 
   return (
     <>
-      <LearnHero />
-      <SectionNavigation items={navigationItems} label="Learning pathways" />
+      <LearnIntro />
       <div className="orbix-section">
         <Container>
-          {learningAreas.map((area, index) => (
-            <LearningPathwaySection
-              area={area}
-              key={area.id}
-              sequence={index + 1}
-            />
-          ))}
+          <div className="lg:grid lg:grid-cols-12 lg:gap-x-6">
+            <div className="border-b border-border-subtle pb-8 lg:col-span-3 lg:border-b-0 lg:pb-0">
+              <LearnContents areas={learningAreas} />
+            </div>
+            <div className="mt-8 min-w-0 lg:col-span-9 lg:mt-0">
+              {learningAreas.map((area) => (
+                <LearningPathwaySection area={area} key={area.id} />
+              ))}
+            </div>
+          </div>
         </Container>
       </div>
     </>

@@ -1,12 +1,23 @@
 "use client";
 
+import { Button, Tag } from "@/components/ui";
 import { useMemo, useRef, useState, type FormEvent } from "react";
-import { AlertTriangle, Plus, RotateCcw, Trash2, Wind } from "lucide-react";
+import {
+  ChevronDown,
+  AlertTriangle,
+  Plus,
+  RotateCcw,
+  Trash2,
+  Wind,
+} from "lucide-react";
 
 import { analyzeInletCompression } from "@/features/engineering-lab/analysis";
 import {
   CalculatorNumberField,
+  focusFirstInvalidField,
+  focusFirstInvalidFieldOnEnter,
   CalculatorResultSection,
+  NotCalculated,
   ValidationErrorSummary,
 } from "@/features/engineering-lab/components/shared";
 import type {
@@ -330,6 +341,7 @@ export function InletCompressionAnalyzer() {
 
   function preventSubmission(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    focusFirstInvalidField(event.currentTarget);
   }
 
   function resetAnalyzer() {
@@ -345,9 +357,13 @@ export function InletCompressionAnalyzer() {
   return (
     <div className="grid gap-8 xl:grid-cols-[minmax(0,0.95fr)_minmax(25rem,1.05fr)] xl:gap-10">
       <div>
-        <form noValidate onSubmit={preventSubmission}>
+        <form
+          noValidate
+          onKeyDown={focusFirstInvalidFieldOnEnter}
+          onSubmit={preventSubmission}
+        >
           <fieldset>
-            <legend className="orbix-label text-accent">
+            <legend className="text-base font-semibold text-foreground">
               Inlet entry conditions
             </legend>
             <div className="mt-4 grid gap-5 sm:grid-cols-2">
@@ -365,7 +381,7 @@ export function InletCompressionAnalyzer() {
                 error={errors.altitudeMeters}
                 field="altitudeMeters"
                 hint={
-                  "Optional compatibility check from 0–" +
+                  "Optional compatibility check from 0 to " +
                   STANDARD_ATMOSPHERE_MAX_ALTITUDE_METRES.toLocaleString(
                     "en-US",
                   ) +
@@ -396,7 +412,7 @@ export function InletCompressionAnalyzer() {
           >
             <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
               <div>
-                <p className="orbix-label text-accent">External compression</p>
+                <p className="orbix-label">External compression</p>
                 <h3
                   className="mt-1 text-lg font-semibold"
                   id="inlet-external-sequence-title"
@@ -404,23 +420,22 @@ export function InletCompressionAnalyzer() {
                   Shock sequence
                 </h3>
               </div>
-              <button
+              <Button
                 aria-describedby="inlet-compression-stage-limit"
-                className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-accent/45 bg-accent/8 px-4 py-2.5 text-sm font-semibold text-accent transition-colors hover:border-accent hover:bg-accent/12 disabled:cursor-not-allowed disabled:border-border disabled:bg-surface/50 disabled:text-muted"
+                variant="secondary"
                 disabled={hasReachedStageLimit}
                 onClick={addShockStage}
-                type="button"
               >
                 <Plus aria-hidden="true" size={16} />
                 Add external stage
-              </button>
+              </Button>
             </div>
 
             <p
               aria-live="polite"
               className={
                 "mt-3 text-xs leading-5 " +
-                (hasReachedStageLimit ? "text-signal" : "text-muted")
+                (hasReachedStageLimit ? "text-status-warning" : "text-muted")
               }
               id="inlet-compression-stage-limit"
             >
@@ -445,7 +460,7 @@ export function InletCompressionAnalyzer() {
                           ? `${typeHintId} ${stageErrorId}`
                           : typeHintId
                       }
-                      className="rounded-2xl border border-border bg-background/40 p-4 sm:p-5"
+                      className="rounded-md border border-border-subtle bg-surface-raised p-4 sm:p-6"
                       key={shock.id}
                     >
                       <legend className="sr-only">
@@ -453,59 +468,60 @@ export function InletCompressionAnalyzer() {
                       </legend>
                       <div className="flex items-center justify-between gap-4">
                         <div>
-                          <p className="font-mono text-[0.64rem] tracking-[0.14em] text-muted uppercase">
-                            External compression
-                          </p>
+                          <p className="orbix-label">External compression</p>
                           <h4 className="mt-1 text-base font-semibold">
                             Stage {stageNumber}
                           </h4>
                         </div>
-                        <button
+                        <Button
                           aria-label={`Remove external shock stage ${stageNumber}`}
-                          className="inline-flex min-h-10 items-center justify-center gap-2 rounded-full border border-border px-3.5 py-2 text-xs font-semibold text-muted transition-colors hover:border-signal/50 hover:text-signal"
+                          variant="secondary"
                           onClick={() => removeShockStage(shock.id)}
-                          type="button"
                         >
                           <Trash2 aria-hidden="true" size={15} />
                           Remove
-                        </button>
+                        </Button>
                       </div>
 
                       <div className="mt-5 grid gap-5 sm:grid-cols-2">
                         <div>
                           <label
-                            className="text-sm font-semibold"
+                            className="orbix-field__label block"
                             htmlFor={typeInputId}
                           >
                             Shock type
                           </label>
-                          <select
-                            aria-describedby={
-                              stageError?.stage
-                                ? `${typeHintId} ${stageErrorId}`
-                                : typeHintId
-                            }
-                            aria-errormessage={
-                              stageError?.stage ? stageErrorId : undefined
-                            }
-                            aria-invalid={Boolean(stageError?.stage)}
-                            className="mt-2 min-h-12 w-full rounded-xl border border-border bg-background/55 px-4 py-3 text-sm text-foreground transition-colors outline-none focus:border-accent focus:ring-2 focus:ring-accent/15"
-                            id={typeInputId}
-                            onChange={(event) =>
-                              updateShockType(
-                                shock.id,
-                                event.target.value as ShockStageType,
-                              )
-                            }
-                            value={shock.type}
-                          >
-                            <option value="normal">Normal shock</option>
-                            <option value="oblique">Oblique shock</option>
-                          </select>
-                          <p
-                            className="mt-2 text-xs leading-5 text-muted"
-                            id={typeHintId}
-                          >
+                          <div className="orbix-field__control mt-2">
+                            <select
+                              aria-describedby={
+                                stageError?.stage
+                                  ? `${typeHintId} ${stageErrorId}`
+                                  : typeHintId
+                              }
+                              aria-errormessage={
+                                stageError?.stage ? stageErrorId : undefined
+                              }
+                              aria-invalid={Boolean(stageError?.stage)}
+                              className="orbix-select"
+                              id={typeInputId}
+                              onChange={(event) =>
+                                updateShockType(
+                                  shock.id,
+                                  event.target.value as ShockStageType,
+                                )
+                              }
+                              value={shock.type}
+                            >
+                              <option value="normal">Normal shock</option>
+                              <option value="oblique">Oblique shock</option>
+                            </select>
+                            <ChevronDown
+                              aria-hidden="true"
+                              className="orbix-field__icon orbix-field__icon--end"
+                              size={16}
+                            />
+                          </div>
+                          <p className="orbix-field__help mt-2" id={typeHintId}>
                             Each stage receives the preceding downstream Mach.
                           </p>
                         </div>
@@ -528,7 +544,7 @@ export function InletCompressionAnalyzer() {
 
                       {stageError?.stage ? (
                         <p
-                          className="mt-4 rounded-xl border border-signal/35 bg-signal/8 p-3 text-xs leading-5 text-signal"
+                          className="mt-4 border-l-2 border-status-warning pl-3 text-sm leading-6 text-status-warning"
                           id={stageErrorId}
                           role="alert"
                         >
@@ -540,11 +556,11 @@ export function InletCompressionAnalyzer() {
                 })}
               </div>
             ) : (
-              <div className="mt-5 rounded-2xl border border-dashed border-border p-5 text-center">
+              <div className="mt-5 rounded-md border border-dashed border-border-strong p-4">
                 <p className="text-sm font-semibold">
                   No external shock stages
                 </p>
-                <p className="mt-2 text-xs leading-5 text-muted">
+                <p className="mt-2 text-sm leading-6 text-muted">
                   Add an external compression stage before applying the terminal
                   normal shock.
                 </p>
@@ -553,7 +569,7 @@ export function InletCompressionAnalyzer() {
 
             {errors.terminalShock ? (
               <p
-                className="mt-4 rounded-xl border border-signal/35 bg-signal/8 p-3 text-xs leading-5 text-signal"
+                className="mt-4 border-l-2 border-status-warning pl-3 text-sm leading-6 text-status-warning"
                 id="inlet-compression-terminal-error"
                 role="alert"
               >
@@ -565,17 +581,17 @@ export function InletCompressionAnalyzer() {
           <ValidationErrorSummary errors={validationMessages} />
 
           <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:items-center">
-            <p className="text-xs leading-5 text-muted">
+            <p className="text-sm leading-6 text-muted">
               Valid changes update the complete inlet workflow immediately.
             </p>
-            <button
-              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-border bg-surface/60 px-5 py-2.5 text-sm font-semibold text-foreground transition-colors hover:border-accent/60 hover:text-accent sm:ml-auto"
+            <Button
+              className="shrink-0 whitespace-nowrap sm:ml-auto"
+              variant="secondary"
               onClick={resetAnalyzer}
-              type="button"
             >
               <RotateCcw aria-hidden="true" size={16} />
-              Reset example
-            </button>
+              Reset inputs
+            </Button>
           </div>
         </form>
       </div>
@@ -591,30 +607,24 @@ export function InletCompressionAnalyzer() {
             <div className="space-y-6">
               <section aria-labelledby="inlet-initial-flow-title">
                 <h4
-                  className="orbix-label text-accent"
+                  className="text-sm font-semibold text-foreground"
                   id="inlet-initial-flow-title"
                 >
                   Initial flow
                 </h4>
                 <dl className="mt-3 grid gap-4 sm:grid-cols-2">
                   <div>
-                    <dt className="text-xs text-muted">Mach number</dt>
+                    <dt className="orbix-label">Mach number</dt>
                     <dd className="mt-1">
-                      <output
-                        className="font-mono text-sm font-semibold"
-                        htmlFor={outputIds}
-                      >
+                      <output className="orbix-data" htmlFor={outputIds}>
                         {precisionFormatter.format(result.initialMach)}
                       </output>
                     </dd>
                   </div>
                   <div>
-                    <dt className="text-xs text-muted">Altitude</dt>
+                    <dt className="orbix-label">Altitude</dt>
                     <dd className="mt-1">
-                      <output
-                        className="font-mono text-sm font-semibold"
-                        htmlFor={outputIds}
-                      >
+                      <output className="orbix-data" htmlFor={outputIds}>
                         {displayedAltitude}
                       </output>
                     </dd>
@@ -627,7 +637,7 @@ export function InletCompressionAnalyzer() {
                 className="border-t border-border pt-5"
               >
                 <h4
-                  className="orbix-label text-accent"
+                  className="text-sm font-semibold text-foreground"
                   id="inlet-external-results-title"
                 >
                   External compression
@@ -635,51 +645,40 @@ export function InletCompressionAnalyzer() {
                 <ol className="mt-4 space-y-4">
                   {result.externalShockStages.map((shock, index) => (
                     <li
-                      className="rounded-xl border border-border bg-background/35 p-4"
+                      className="rounded-md border border-border-subtle bg-surface-raised p-4"
                       key={values.externalShocks[index]?.id ?? index}
                     >
                       <div className="flex items-center justify-between gap-4">
                         <p className="text-sm font-semibold">
                           Stage {index + 1}
                         </p>
-                        <span className="rounded-full border border-accent/25 bg-accent/8 px-2.5 py-1 font-mono text-[0.62rem] tracking-[0.1em] text-accent uppercase">
+                        <Tag>
                           {shock.shockType === "normal" ? "Normal" : "Oblique"}
-                        </span>
+                        </Tag>
                       </div>
                       <dl className="mt-4 grid gap-4 sm:grid-cols-2">
                         <div>
-                          <dt className="text-xs text-muted">Upstream Mach</dt>
+                          <dt className="orbix-label">Upstream Mach</dt>
                           <dd className="mt-1">
-                            <output
-                              className="font-mono text-sm font-semibold"
-                              htmlFor={outputIds}
-                            >
+                            <output className="orbix-data" htmlFor={outputIds}>
                               {precisionFormatter.format(shock.upstreamMach)}
                             </output>
                           </dd>
                         </div>
                         <div>
-                          <dt className="text-xs text-muted">
-                            Downstream Mach
-                          </dt>
+                          <dt className="orbix-label">Downstream Mach</dt>
                           <dd className="mt-1">
-                            <output
-                              className="font-mono text-sm font-semibold"
-                              htmlFor={outputIds}
-                            >
+                            <output className="orbix-data" htmlFor={outputIds}>
                               {precisionFormatter.format(shock.downstreamMach)}
                             </output>
                           </dd>
                         </div>
                         <div>
-                          <dt className="text-xs text-muted">
+                          <dt className="orbix-label">
                             Individual pressure recovery
                           </dt>
                           <dd className="mt-1">
-                            <output
-                              className="font-mono text-sm font-semibold text-accent"
-                              htmlFor={outputIds}
-                            >
+                            <output className="orbix-data" htmlFor={outputIds}>
                               {precisionFormatter.format(
                                 shock.pressureRecoveryRatio,
                               )}
@@ -697,19 +696,16 @@ export function InletCompressionAnalyzer() {
                 className="border-t border-border pt-5"
               >
                 <h4
-                  className="orbix-label text-accent"
+                  className="text-sm font-semibold text-foreground"
                   id="inlet-terminal-shock-title"
                 >
                   Terminal normal shock
                 </h4>
                 <dl className="mt-3 grid gap-4 sm:grid-cols-2">
                   <div>
-                    <dt className="text-xs text-muted">Upstream Mach</dt>
+                    <dt className="orbix-label">Upstream Mach</dt>
                     <dd className="mt-1">
-                      <output
-                        className="font-mono text-sm font-semibold"
-                        htmlFor={outputIds}
-                      >
+                      <output className="orbix-data" htmlFor={outputIds}>
                         {precisionFormatter.format(
                           result.terminalShock.upstreamMach,
                         )}
@@ -717,12 +713,9 @@ export function InletCompressionAnalyzer() {
                     </dd>
                   </div>
                   <div>
-                    <dt className="text-xs text-muted">Downstream Mach</dt>
+                    <dt className="orbix-label">Downstream Mach</dt>
                     <dd className="mt-1">
-                      <output
-                        className="font-mono text-sm font-semibold"
-                        htmlFor={outputIds}
-                      >
+                      <output className="orbix-data" htmlFor={outputIds}>
                         {precisionFormatter.format(
                           result.terminalShock.downstreamMach,
                         )}
@@ -730,12 +723,9 @@ export function InletCompressionAnalyzer() {
                     </dd>
                   </div>
                   <div>
-                    <dt className="text-xs text-muted">Pressure recovery</dt>
+                    <dt className="orbix-label">Pressure recovery</dt>
                     <dd className="mt-1">
-                      <output
-                        className="font-mono text-lg font-semibold text-accent"
-                        htmlFor={outputIds}
-                      >
+                      <output className="orbix-data-lg" htmlFor={outputIds}>
                         {precisionFormatter.format(
                           result.terminalShockPressureRecoveryRatio,
                         )}
@@ -750,21 +740,16 @@ export function InletCompressionAnalyzer() {
                 className="border-t border-border pt-5"
               >
                 <h4
-                  className="orbix-label text-accent"
+                  className="text-sm font-semibold text-foreground"
                   id="inlet-complete-performance-title"
                 >
                   Complete inlet performance
                 </h4>
                 <dl className="mt-3 grid gap-4 sm:grid-cols-2">
                   <div>
-                    <dt className="text-xs text-muted">
-                      Overall pressure recovery
-                    </dt>
+                    <dt className="orbix-label">Overall pressure recovery</dt>
                     <dd className="mt-1">
-                      <output
-                        className="font-mono text-lg font-semibold text-accent"
-                        htmlFor={outputIds}
-                      >
+                      <output className="orbix-data-lg" htmlFor={outputIds}>
                         {precisionFormatter.format(
                           result.overallPressureRecoveryRatio,
                         )}
@@ -772,14 +757,9 @@ export function InletCompressionAnalyzer() {
                     </dd>
                   </div>
                   <div>
-                    <dt className="text-xs text-muted">
-                      Total pressure loss (ratio)
-                    </dt>
+                    <dt className="orbix-label">Total pressure loss (ratio)</dt>
                     <dd className="mt-1">
-                      <output
-                        className="font-mono text-lg font-semibold text-accent"
-                        htmlFor={outputIds}
-                      >
+                      <output className="orbix-data-lg" htmlFor={outputIds}>
                         1 −{" "}
                         {precisionFormatter.format(
                           result.overallPressureRecoveryRatio,
@@ -788,18 +768,15 @@ export function InletCompressionAnalyzer() {
                     </dd>
                   </div>
                   <div>
-                    <dt className="text-xs text-muted">Final exit Mach</dt>
+                    <dt className="orbix-label">Final exit Mach</dt>
                     <dd className="mt-1">
-                      <output
-                        className="font-mono text-lg font-semibold text-accent"
-                        htmlFor={outputIds}
-                      >
+                      <output className="orbix-data-lg" htmlFor={outputIds}>
                         {precisionFormatter.format(result.finalExitMach)}
                       </output>
                     </dd>
                   </div>
                 </dl>
-                <p className="mt-4 text-xs leading-5 text-muted">
+                <p className="mt-4 text-sm leading-6 text-muted">
                   Pressure loss is displayed as the exact complement of the
                   analysis-layer recovery ratio; the interface does not
                   recalculate inlet physics.
@@ -807,13 +784,10 @@ export function InletCompressionAnalyzer() {
               </section>
             </div>
           ) : (
-            <div className="py-5">
-              <p className="font-mono text-3xl text-muted">—</p>
-              <p className="mt-3 text-sm leading-6 text-muted">
-                Configure valid external compression that remains supersonic
-                before the terminal normal shock.
-              </p>
-            </div>
+            <NotCalculated invalid={validationMessages.some(Boolean)}>
+              Configure valid external compression that remains supersonic
+              before the terminal normal shock.
+            </NotCalculated>
           )}
         </CalculatorResultSection>
 
@@ -822,7 +796,7 @@ export function InletCompressionAnalyzer() {
             <AlertTriangle aria-hidden="true" size={17} />
             Engineering assumptions
           </p>
-          <ul className="mt-4 grid list-disc gap-2 pl-5 text-xs leading-5 text-muted sm:grid-cols-2">
+          <ul className="mt-4 grid list-disc gap-2 pl-5 text-sm leading-6 text-muted sm:grid-cols-2">
             <li>Ideal gas flow</li>
             <li>Perfectly controlled shock sequence</li>
             <li>No boundary-layer losses</li>

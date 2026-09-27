@@ -1,46 +1,28 @@
-import { Cloud, Gauge, Navigation } from "lucide-react";
-
-import { ProfileSection } from "@/features/aircraft/components/profile-section";
-import { SpecificationGrid } from "@/features/aircraft/components/specification-grid";
-import { formatAircraftMeasurement } from "@/features/aircraft/utils";
+import { MeasurementTable } from "@/features/vehicles/components/measurement-table";
+import { VehicleProfileSection } from "@/features/vehicles/components/vehicle-profile-section";
 import type { AircraftPerformance } from "@/features/vehicles/types";
 
 interface PerformancePanelProps {
+  name: string;
   performance: AircraftPerformance;
 }
 
-export function PerformancePanel({ performance }: PerformancePanelProps) {
-  const maxSpeed = formatAircraftMeasurement(performance.maxSpeed);
-  const range = formatAircraftMeasurement(performance.range);
-  const serviceCeiling = formatAircraftMeasurement(performance.serviceCeiling);
-
+/** Performance (spec 14): speed, range and ceiling as published. */
+export function PerformancePanel({ name, performance }: PerformancePanelProps) {
   return (
-    <ProfileSection
-      description="Published performance characteristics with their source-data qualifiers preserved."
-      eyebrow="Flight envelope"
-      mode="data"
+    <VehicleProfileSection
+      description="Published figures for the baseline aircraft. Range depends on load and fuel, so it is a reference value rather than a mission figure."
       id="performance"
       title="Performance"
     >
-      <SpecificationGrid
-        items={[
-          {
-            icon: Gauge,
-            label: "Maximum speed",
-            ...maxSpeed,
-          },
-          {
-            icon: Navigation,
-            label: "Range",
-            ...range,
-          },
-          {
-            icon: Cloud,
-            label: "Service ceiling",
-            ...serviceCeiling,
-          },
+      <MeasurementTable
+        caption={`${name} performance`}
+        rows={[
+          { label: "Maximum speed", measurement: performance.maxSpeed },
+          { label: "Range", measurement: performance.range },
+          { label: "Service ceiling", measurement: performance.serviceCeiling },
         ]}
       />
-    </ProfileSection>
+    </VehicleProfileSection>
   );
 }

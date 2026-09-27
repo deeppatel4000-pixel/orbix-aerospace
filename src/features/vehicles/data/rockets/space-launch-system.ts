@@ -27,7 +27,7 @@ export const spaceLaunchSystem = {
       id: "sls-evolvability-placeholder",
       status: "reviewed",
       summary:
-        "SLS is deliberately evolvable. Block 1 uses the Interim Cryogenic Propulsion Stage; Block 1B replaces it with the more capable Exploration Upper Stage, and Block 2 adds evolved boosters—raising deep-space payload capability without discarding the core architecture.",
+        "SLS is deliberately evolvable. Block 1 uses the Interim Cryogenic Propulsion Stage; Block 1B replaces it with the more capable Exploration Upper Stage, and Block 2 adds evolved boosters, raising deep-space payload capability without discarding the core architecture.",
       topic: "systems-engineering",
     },
   ],

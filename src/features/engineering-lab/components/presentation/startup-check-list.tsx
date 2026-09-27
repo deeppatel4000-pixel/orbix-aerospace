@@ -1,4 +1,4 @@
-import { CheckCircle2, CircleDashed } from "lucide-react";
+import { CircleCheck, CircleMinus } from "lucide-react";
 
 export interface StartupCheckItem {
   readonly available: boolean;
@@ -10,48 +10,37 @@ export interface StartupCheckListProps {
   readonly items: readonly StartupCheckItem[];
 }
 
+/** A static list of which inputs were supplied, with text and icon. */
 export function StartupCheckList({ items }: StartupCheckListProps) {
   return (
     <ul
-      aria-label="Mission Control startup system checks"
-      className="mt-6 grid gap-2 sm:grid-cols-2"
+      aria-label="Supplied analyses"
+      className="mt-3 grid gap-x-8 sm:grid-cols-2"
     >
       {items.map((item) => (
         <li
-          className={
-            "flex min-h-14 items-center gap-3 rounded-xl border px-4 py-3 " +
-            (item.available
-              ? "border-accent/20 bg-accent/5"
-              : "border-white/10 bg-black/15")
-          }
+          className="flex items-center gap-2 border-t border-border-subtle py-2 text-sm"
           data-check-availability={
             item.available ? "available" : "not-supplied"
           }
           key={item.id}
         >
           {item.available ? (
-            <CheckCircle2
+            <CircleCheck
               aria-hidden="true"
-              className="shrink-0 text-accent"
-              size={17}
+              className="shrink-0 text-status-success"
+              size={16}
             />
           ) : (
-            <CircleDashed
+            <CircleMinus
               aria-hidden="true"
-              className="shrink-0 text-[#60777d]"
-              size={17}
+              className="shrink-0 text-muted"
+              size={16}
             />
           )}
-          <span className="min-w-0 flex-1 text-sm text-[#c4d1d3]">
-            {item.label}
-          </span>
-          <span
-            className={
-              "font-mono text-[0.52rem] tracking-[0.08em] uppercase " +
-              (item.available ? "text-accent" : "text-[#6f858a]")
-            }
-          >
-            {item.available ? "Available" : "Not supplied"}
+          <span className="min-w-0 flex-1 text-foreground">{item.label}</span>
+          <span className={item.available ? "text-foreground" : "text-muted"}>
+            {item.available ? "Supplied" : "Not supplied"}
           </span>
         </li>
       ))}

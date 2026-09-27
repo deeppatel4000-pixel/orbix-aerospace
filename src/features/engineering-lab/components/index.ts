@@ -10,9 +10,10 @@ export { InletCompressionAnalyzer } from "./inlet-compression-analyzer";
 export { LiftEquationCalculator } from "./lift-equation-calculator";
 export { LaboratoryShell } from "./laboratory-shell";
 export {
-  LaboratoryWorkflowNavigation,
-  type LaboratoryWorkflowNavigationItem,
-} from "./laboratory-workflow-navigation";
+  LaboratoryToolNavigation,
+  type LaboratoryToolGroup,
+  type LaboratoryToolNavigationItem,
+} from "./laboratory-tool-navigation";
 export { LaboratoryWorkflowSection } from "./laboratory-workflow-section";
 export { MaterialTPSSizingAnalyzer } from "./material-tps-sizing-analyzer";
 export {
@@ -82,13 +83,8 @@ export {
   type MissionShowcaseState,
 } from "./presentation/mission-showcase";
 export {
-  INITIAL_MISSION_STARTUP_STATE,
   MissionStartupSequence,
-  type MissionStartupSequenceAction,
   type MissionStartupSequenceProps,
-  type MissionStartupSequenceState,
-  missionStartupSequenceReducer,
-  STARTUP_PRESENTATION_INTERVAL_MILLISECONDS,
 } from "./presentation/mission-startup-sequence";
 export {
   MissionTradeStudy,
@@ -106,11 +102,6 @@ export {
   type StartupCheckItem,
   type StartupCheckListProps,
 } from "./presentation/startup-check-list";
-export {
-  MISSION_STARTUP_STEPS,
-  StartupProgress,
-  type StartupProgressProps,
-} from "./presentation/startup-progress";
 export {
   ShowcaseStage,
   type ShowcaseStageProps,
@@ -167,8 +158,6 @@ export { TPSMaterialComparisonAnalyzer } from "./tps-material-comparison-analyze
 export { VehicleReentryComparisonAnalyzer } from "./vehicle-reentry-comparison-analyzer";
 export { VehicleReentryEvaluationAnalyzer } from "./vehicle-reentry-evaluation-analyzer";
 export {
-  EarthModel,
-  type EarthModelProps,
   GroundTrackControls,
   type GroundTrackControlsProps,
   type GroundTrackPresentationAction,
@@ -191,7 +180,6 @@ export {
   type MissionControlShellProps,
   MissionControlSidebar,
   type MissionControlSidebarProps,
-  type MissionControlStatus,
   MissionControlStatusBar,
   type MissionControlStatusBarProps,
   type MissionControlWorkspaceDefinition,
@@ -203,18 +191,17 @@ export {
   type MissionOrbitVisualizationProps,
   MissionReplay,
   type MissionReplayProps,
-  MissionStatusPanel,
-  type MissionStatusPanelProps,
   MissionTimeline,
   type MissionTimelineProps,
   MissionViewer,
   type MissionViewerProps,
-  OrbitPath3D,
-  type OrbitPath3DProps,
+  OrbitDiagram,
+  type OrbitDiagramProps,
   OrbitGroundPath,
   type OrbitGroundPathProps,
   PlanetMap,
   type PlanetMapProps,
+  ReentryProfileChart,
   ReentryProfileVisualization,
   type ReentryProfileVisualizationProps,
   ReplayControls,
@@ -224,7 +211,5 @@ export {
   type ReplayPresentationPhase,
   type ReplaySpeed,
   resolveWorkspaceNavigationIndex,
-  SpacecraftMarker,
-  type SpacecraftMarkerProps,
 } from "./visualization";
 export * from "./shared";

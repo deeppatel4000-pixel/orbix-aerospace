@@ -1,7 +1,9 @@
 "use client";
 
+import { Button, Tag } from "@/components/ui";
 import { useMemo, useState, type FormEvent } from "react";
 import {
+  CircleAlert,
   AlertTriangle,
   Award,
   RotateCcw,
@@ -13,7 +15,10 @@ import {
 import { analyzeTPSMaterialComparison } from "@/features/engineering-lab/analysis";
 import {
   CalculatorNumberField,
+  focusFirstInvalidField,
+  focusFirstInvalidFieldOnEnter,
   CalculatorResultSection,
+  NotCalculated,
   ValidationErrorSummary,
 } from "@/features/engineering-lab/components/shared";
 import { listTPSMaterials } from "@/features/engineering-lab/materials";
@@ -218,6 +223,7 @@ export function TPSMaterialComparisonAnalyzer() {
 
   function preventSubmission(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    focusFirstInvalidField(event.currentTarget);
   }
 
   function resetAnalyzer() {
@@ -228,9 +234,13 @@ export function TPSMaterialComparisonAnalyzer() {
   return (
     <div className="grid gap-8 xl:grid-cols-[minmax(0,0.82fr)_minmax(32rem,1.18fr)] xl:gap-10">
       <div>
-        <form noValidate onSubmit={preventSubmission}>
+        <form
+          noValidate
+          onKeyDown={focusFirstInvalidFieldOnEnter}
+          onSubmit={preventSubmission}
+        >
           <fieldset>
-            <legend className="orbix-label text-accent">
+            <legend className="text-base font-semibold text-foreground">
               Shared reentry conditions
             </legend>
             <div className="mt-5 grid gap-5 sm:grid-cols-2">
@@ -304,7 +314,9 @@ export function TPSMaterialComparisonAnalyzer() {
           </fieldset>
 
           <fieldset className="mt-8 border-t border-border pt-7">
-            <legend className="orbix-label text-accent">TPS design</legend>
+            <legend className="text-base font-semibold text-foreground">
+              TPS design
+            </legend>
             <div className="mt-5">
               <CalculatorNumberField
                 error={errors.safetyFactor}
@@ -333,11 +345,11 @@ export function TPSMaterialComparisonAnalyzer() {
             aria-invalid={Boolean(errors.materialSelection)}
             className="mt-8 border-t border-border pt-7"
           >
-            <legend className="orbix-label text-accent">
+            <legend className="text-base font-semibold text-foreground">
               Material selection
             </legend>
             <p
-              className="mt-4 text-xs leading-5 text-muted"
+              className="mt-4 text-sm leading-6 text-muted"
               id="tps-material-comparison-selection-hint"
             >
               Compare the complete catalog or pass a selected catalog subset to
@@ -345,7 +357,7 @@ export function TPSMaterialComparisonAnalyzer() {
             </p>
 
             <div className="mt-4 grid gap-3 sm:grid-cols-2">
-              <label className="flex min-h-12 cursor-pointer items-center gap-3 rounded-xl border border-border bg-background/45 px-4 py-3 text-sm font-semibold transition-colors has-checked:border-accent/55 has-checked:bg-accent/7">
+              <label className="flex min-h-12 cursor-pointer items-center gap-3 rounded border border-border-control bg-surface-input px-4 py-3 text-sm font-medium transition-colors hover:border-muted has-checked:border-accent has-checked:bg-surface-raised">
                 <input
                   checked={selectionMode === "all"}
                   className="h-4 w-4 accent-current"
@@ -357,7 +369,7 @@ export function TPSMaterialComparisonAnalyzer() {
                 />
                 Compare all materials
               </label>
-              <label className="flex min-h-12 cursor-pointer items-center gap-3 rounded-xl border border-border bg-background/45 px-4 py-3 text-sm font-semibold transition-colors has-checked:border-accent/55 has-checked:bg-accent/7">
+              <label className="flex min-h-12 cursor-pointer items-center gap-3 rounded border border-border-control bg-surface-input px-4 py-3 text-sm font-medium transition-colors hover:border-muted has-checked:border-accent has-checked:bg-surface-raised">
                 <input
                   checked={selectionMode === "subset"}
                   className="h-4 w-4 accent-current"
@@ -381,7 +393,7 @@ export function TPSMaterialComparisonAnalyzer() {
 
                 return (
                   <label
-                    className="flex cursor-pointer items-start gap-3 rounded-xl border border-border bg-background/35 p-4 transition-colors has-checked:border-accent/40"
+                    className="flex cursor-pointer items-start gap-3 rounded-md border border-border-control bg-surface-input p-4 transition-colors hover:border-muted has-checked:border-accent has-checked:bg-surface-raised"
                     htmlFor={inputId}
                     key={material.id}
                   >
@@ -398,17 +410,17 @@ export function TPSMaterialComparisonAnalyzer() {
                       <span className="block text-sm font-semibold">
                         {material.name}
                       </span>
-                      <span className="mt-1 block text-xs leading-5 text-muted">
+                      <span className="mt-1 block text-sm leading-6 text-muted">
                         {integerFormatter.format(
                           material.densityKilogramsPerCubicMetre,
                         )}{" "}
-                        kg/m³ ·{" "}
+                        kg/m³,{" "}
                         {material.maximumTemperatureKelvin === undefined
                           ? "temperature unavailable"
                           : integerFormatter.format(
                               material.maximumTemperatureKelvin,
-                            ) + " K"}{" "}
-                        · {material.reusable ? "reusable" : "single-use"}
+                            ) + " K"}
+                        , {material.reusable ? "reusable" : "single-use"}
                       </span>
                     </span>
                   </label>
@@ -425,24 +437,18 @@ export function TPSMaterialComparisonAnalyzer() {
                 if (!material) return null;
 
                 return (
-                  <span
-                    className="inline-flex items-center gap-2 rounded-full border border-border bg-surface/70 py-1.5 pr-1.5 pl-3 text-xs"
+                  <Button
                     key={material.id}
+                    onClick={() => removeMaterial(material.id)}
+                    variant="secondary"
                   >
-                    {material.name}
-                    <button
-                      aria-label={"Remove " + material.name}
-                      className="inline-flex h-7 w-7 items-center justify-center rounded-full text-muted transition-colors hover:bg-signal/10 hover:text-signal"
-                      onClick={() => removeMaterial(material.id)}
-                      type="button"
-                    >
-                      <X aria-hidden="true" size={14} />
-                    </button>
-                  </span>
+                    <X aria-hidden="true" size={16} />
+                    Remove {material.name}
+                  </Button>
                 );
               })}
               {displayedSelection.length === 0 ? (
-                <span className="text-xs text-signal">
+                <span className="orbix-field__error">
                   No materials selected
                 </span>
               ) : null}
@@ -450,21 +456,26 @@ export function TPSMaterialComparisonAnalyzer() {
 
             {errors.materialSelection ? (
               <p
-                className="mt-3 text-xs leading-5 text-signal"
+                className="orbix-field__error mt-3"
                 id="tps-material-comparison-selection-error"
               >
+                <CircleAlert
+                  aria-hidden="true"
+                  className="shrink-0"
+                  size={14}
+                />
                 {errors.materialSelection}
               </p>
             ) : null}
 
-            <button
-              className="mt-4 inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-border bg-surface/60 px-5 py-2.5 text-sm font-semibold text-foreground transition-colors hover:border-accent/60 hover:text-accent"
+            <Button
+              className="mt-4"
+              variant="secondary"
               onClick={compareAllMaterials}
-              type="button"
             >
               <RotateCcw aria-hidden="true" size={16} />
               Reset to all materials
-            </button>
+            </Button>
           </fieldset>
 
           <ValidationErrorSummary
@@ -482,17 +493,17 @@ export function TPSMaterialComparisonAnalyzer() {
           />
 
           <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:items-center">
-            <p className="text-xs leading-5 text-muted">
+            <p className="text-sm leading-6 text-muted">
               Valid changes rerun the complete catalog comparison immediately.
             </p>
-            <button
-              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-border bg-surface/60 px-5 py-2.5 text-sm font-semibold text-foreground transition-colors hover:border-accent/60 hover:text-accent sm:ml-auto"
+            <Button
+              className="shrink-0 whitespace-nowrap sm:ml-auto"
+              variant="secondary"
               onClick={resetAnalyzer}
-              type="button"
             >
               <RotateCcw aria-hidden="true" size={16} />
-              Reset example
-            </button>
+              Reset inputs
+            </Button>
           </div>
         </form>
 
@@ -500,40 +511,40 @@ export function TPSMaterialComparisonAnalyzer() {
           aria-labelledby="tps-material-comparison-education-title"
           className="mt-8 border-t border-border pt-7"
         >
-          <p className="orbix-label text-accent">Educational comparison</p>
+          <p className="orbix-label">Educational comparison</p>
           <h3
             className="mt-1 text-lg font-semibold"
             id="tps-material-comparison-education-title"
           >
             Reading the trade space
           </h3>
-          <div className="mt-5 grid gap-4 sm:grid-cols-3">
-            <article className="rounded-2xl border border-border bg-background/40 p-4">
-              <Scale aria-hidden="true" className="text-accent" size={18} />
+          <div className="mt-5 grid gap-4 sm:grid-cols-3 xl:grid-cols-1">
+            <article className="rounded-md border border-border-subtle bg-surface-raised p-4">
+              <Scale aria-hidden="true" className="text-muted" size={18} />
               <h4 className="mt-3 text-sm font-semibold">Vehicle mass</h4>
-              <p className="mt-2 text-xs leading-5 text-muted">
+              <p className="mt-2 text-sm leading-6 text-muted">
                 A lighter TPS estimate reduces the protected system mass carried
                 by the vehicle.
               </p>
             </article>
-            <article className="rounded-2xl border border-border bg-background/40 p-4">
-              <Shield aria-hidden="true" className="text-accent" size={18} />
+            <article className="rounded-md border border-border-subtle bg-surface-raised p-4">
+              <Shield aria-hidden="true" className="text-muted" size={18} />
               <h4 className="mt-3 text-sm font-semibold">Layer thickness</h4>
-              <p className="mt-2 text-xs leading-5 text-muted">
+              <p className="mt-2 text-sm leading-6 text-muted">
                 A thicker layer can add protective material and volume, but may
                 also add mass and integration complexity.
               </p>
             </article>
-            <article className="rounded-2xl border border-border bg-background/40 p-4">
-              <Award aria-hidden="true" className="text-accent" size={18} />
+            <article className="rounded-md border border-border-subtle bg-surface-raised p-4">
+              <Award aria-hidden="true" className="text-muted" size={18} />
               <h4 className="mt-3 text-sm font-semibold">Ranking priority</h4>
-              <p className="mt-2 text-xs leading-5 text-muted">
+              <p className="mt-2 text-sm leading-6 text-muted">
                 Thermal margin is primary in this educational ranking, followed
                 by lower mass and then lower thickness.
               </p>
             </article>
           </div>
-          <p className="mt-4 text-xs leading-5 text-muted">
+          <p className="mt-4 text-sm leading-6 text-muted">
             Real spacecraft TPS selection requires many additional constraints,
             detailed thermal analysis, and qualification testing.
           </p>
@@ -551,7 +562,7 @@ export function TPSMaterialComparisonAnalyzer() {
             <div className="space-y-6">
               <section aria-labelledby="tps-material-comparison-recommended-title">
                 <h4
-                  className="orbix-label text-accent"
+                  className="text-sm font-semibold text-foreground"
                   id="tps-material-comparison-recommended-title"
                 >
                   Recommended material
@@ -564,12 +575,9 @@ export function TPSMaterialComparisonAnalyzer() {
                 </output>
                 <dl className="mt-4 grid gap-4 sm:grid-cols-2">
                   <div>
-                    <dt className="text-xs text-muted">Ranking score</dt>
+                    <dt className="orbix-label">Ranking score</dt>
                     <dd className="mt-1">
-                      <output
-                        className="font-mono text-lg font-semibold text-accent"
-                        htmlFor={allOutputIds}
-                      >
+                      <output className="orbix-data-lg" htmlFor={allOutputIds}>
                         {standardFormatter.format(
                           result.recommendedMaterial.rankingScore,
                         )}
@@ -577,27 +585,22 @@ export function TPSMaterialComparisonAnalyzer() {
                     </dd>
                   </div>
                   <div>
-                    <dt className="text-xs text-muted">Thermal margin</dt>
+                    <dt className="orbix-label">Thermal margin</dt>
                     <dd className="mt-1">
-                      <output
-                        className="font-mono text-sm font-semibold"
-                        htmlFor={allOutputIds}
-                      >
+                      <output className="orbix-data" htmlFor={allOutputIds}>
                         {standardFormatter.format(
                           result.recommendedMaterial.heatLoadMargin
                             .marginPercentage,
                         )}
-                        % · {result.recommendedMaterial.marginClassification}
+                        %,{" "}
+                        {result.recommendedMaterial.marginClassification.toLowerCase()}
                       </output>
                     </dd>
                   </div>
                   <div>
-                    <dt className="text-xs text-muted">Estimated TPS mass</dt>
+                    <dt className="orbix-label">Estimated TPS mass</dt>
                     <dd className="mt-1">
-                      <output
-                        className="font-mono text-sm font-semibold"
-                        htmlFor={allOutputIds}
-                      >
+                      <output className="orbix-data" htmlFor={allOutputIds}>
                         {preciseFormatter.format(
                           result.recommendedMaterial.estimatedTPSMass
                             .totalTPSMassKilograms,
@@ -607,12 +610,9 @@ export function TPSMaterialComparisonAnalyzer() {
                     </dd>
                   </div>
                   <div>
-                    <dt className="text-xs text-muted">Estimated thickness</dt>
+                    <dt className="orbix-label">Estimated thickness</dt>
                     <dd className="mt-1">
-                      <output
-                        className="font-mono text-sm font-semibold"
-                        htmlFor={allOutputIds}
-                      >
+                      <output className="orbix-data" htmlFor={allOutputIds}>
                         {preciseFormatter.format(
                           result.recommendedMaterial.thickness.millimetres,
                         )}{" "}
@@ -621,7 +621,7 @@ export function TPSMaterialComparisonAnalyzer() {
                     </dd>
                   </div>
                 </dl>
-                <p className="mt-4 rounded-xl border border-accent/25 bg-accent/7 p-4 text-xs leading-5 text-muted">
+                <p className="mt-4 rounded-md border border-border-subtle bg-surface-raised p-4 text-sm leading-6 text-muted">
                   {result.recommendedMaterial.rankingLogic.description}
                 </p>
               </section>
@@ -631,38 +631,28 @@ export function TPSMaterialComparisonAnalyzer() {
                 className="border-t border-border pt-5"
               >
                 <h4
-                  className="orbix-label text-accent"
+                  className="text-sm font-semibold text-foreground"
                   id="tps-material-comparison-table-title"
                 >
                   Comparison table
                 </h4>
                 <div
                   aria-label="Scrollable TPS material comparison table"
-                  className="mt-3 overflow-x-auto rounded-xl border border-border outline-none focus:ring-2 focus:ring-accent/25"
+                  className="orbix-table-wrap mt-3 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
                   role="region"
                   tabIndex={0}
                 >
-                  <table className="w-full min-w-[44rem] border-collapse text-left text-sm">
+                  <table className="orbix-table w-full min-w-[44rem]">
                     <caption className="sr-only">
                       TPS materials ranked for the shared reentry scenario
                     </caption>
-                    <thead className="bg-surface/85">
+                    <thead className="bg-surface-raised">
                       <tr>
-                        <th className="px-4 py-3 font-semibold" scope="col">
-                          Material
-                        </th>
-                        <th className="px-4 py-3 font-semibold" scope="col">
-                          TPS Mass
-                        </th>
-                        <th className="px-4 py-3 font-semibold" scope="col">
-                          Thickness
-                        </th>
-                        <th className="px-4 py-3 font-semibold" scope="col">
-                          Heat Margin
-                        </th>
-                        <th className="px-4 py-3 font-semibold" scope="col">
-                          Score
-                        </th>
+                        <th scope="col">Material</th>
+                        <th scope="col">TPS Mass</th>
+                        <th scope="col">Thickness</th>
+                        <th scope="col">Heat Margin</th>
+                        <th scope="col">Score</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -674,21 +664,17 @@ export function TPSMaterialComparisonAnalyzer() {
                         return (
                           <tr
                             className={
-                              recommended
-                                ? "border-t border-accent/30 bg-accent/7"
-                                : "border-t border-border"
+                              recommended ? "bg-surface-raised" : undefined
                             }
                             key={entry.material.id}
                           >
-                            <th className="px-4 py-3 font-semibold" scope="row">
+                            <th scope="row">
                               {entry.material.name}
                               {recommended ? (
-                                <span className="ml-2 rounded-full bg-accent/12 px-2 py-0.5 font-mono text-[0.62rem] tracking-wide text-accent uppercase">
-                                  Recommended
-                                </span>
+                                <Tag className="ml-2">Recommended</Tag>
                               ) : null}
                             </th>
-                            <td className="px-4 py-3 font-mono">
+                            <td className="orbix-num">
                               <output htmlFor={allOutputIds}>
                                 {preciseFormatter.format(
                                   entry.estimatedTPSMass.totalTPSMassKilograms,
@@ -696,7 +682,7 @@ export function TPSMaterialComparisonAnalyzer() {
                                 kg
                               </output>
                             </td>
-                            <td className="px-4 py-3 font-mono">
+                            <td className="orbix-num">
                               <output htmlFor={allOutputIds}>
                                 {preciseFormatter.format(
                                   entry.thickness.millimetres,
@@ -704,7 +690,7 @@ export function TPSMaterialComparisonAnalyzer() {
                                 mm
                               </output>
                             </td>
-                            <td className="px-4 py-3 font-mono">
+                            <td className="orbix-num">
                               <output htmlFor={allOutputIds}>
                                 {standardFormatter.format(
                                   entry.heatLoadMargin.marginPercentage,
@@ -712,7 +698,7 @@ export function TPSMaterialComparisonAnalyzer() {
                                 %
                               </output>
                             </td>
-                            <td className="px-4 py-3 font-mono font-semibold text-accent">
+                            <td className="orbix-num font-semibold">
                               <output htmlFor={allOutputIds}>
                                 {standardFormatter.format(entry.rankingScore)}
                               </output>
@@ -730,7 +716,7 @@ export function TPSMaterialComparisonAnalyzer() {
                 className="border-t border-border pt-5"
               >
                 <h4
-                  className="orbix-label text-accent"
+                  className="text-sm font-semibold text-foreground"
                   id="tps-material-comparison-details-title"
                 >
                   Material details
@@ -738,24 +724,22 @@ export function TPSMaterialComparisonAnalyzer() {
                 <div className="mt-3 grid gap-4">
                   {result.results.map((entry) => (
                     <article
-                      className="rounded-xl border border-border bg-background/35 p-4"
+                      className="rounded-md border border-border-subtle bg-surface-raised p-4"
                       key={entry.material.id}
                     >
                       <div className="flex flex-wrap items-center justify-between gap-2">
                         <h5 className="font-semibold">{entry.material.name}</h5>
                         {entry.material.id ===
                         result.recommendedMaterial.material.id ? (
-                          <span className="rounded-full bg-accent/12 px-2.5 py-1 font-mono text-[0.62rem] tracking-wide text-accent uppercase">
-                            Recommended
-                          </span>
+                          <Tag>Recommended</Tag>
                         ) : null}
                       </div>
-                      <p className="mt-2 text-xs leading-5 text-muted">
+                      <p className="mt-2 text-sm leading-6 text-muted">
                         {entry.material.description}
                       </p>
                       <dl className="mt-3 grid gap-3 sm:grid-cols-3">
                         <div>
-                          <dt className="text-[0.68rem] text-muted">Density</dt>
+                          <dt className="orbix-label">Density</dt>
                           <dd className="mt-1 font-mono text-xs">
                             {integerFormatter.format(
                               entry.material.densityKilogramsPerCubicMetre,
@@ -764,9 +748,7 @@ export function TPSMaterialComparisonAnalyzer() {
                           </dd>
                         </div>
                         <div>
-                          <dt className="text-[0.68rem] text-muted">
-                            Maximum temperature
-                          </dt>
+                          <dt className="orbix-label">Maximum temperature</dt>
                           <dd className="mt-1 font-mono text-xs">
                             {entry.material.maximumTemperatureKelvin ===
                             undefined
@@ -777,9 +759,7 @@ export function TPSMaterialComparisonAnalyzer() {
                           </dd>
                         </div>
                         <div>
-                          <dt className="text-[0.68rem] text-muted">
-                            Reusability
-                          </dt>
+                          <dt className="orbix-label">Reusability</dt>
                           <dd className="mt-1 font-mono text-xs">
                             {entry.material.reusable
                               ? "Reusable"
@@ -793,13 +773,10 @@ export function TPSMaterialComparisonAnalyzer() {
               </section>
             </div>
           ) : (
-            <div className="py-5">
-              <p className="font-mono text-3xl text-muted">—</p>
-              <p className="mt-3 text-sm leading-6 text-muted">
-                Enter valid shared conditions and select at least one material
-                to generate the ranked comparison.
-              </p>
-            </div>
+            <NotCalculated invalid={Object.values(errors).some(Boolean)}>
+              Enter valid shared conditions and select at least one material to
+              generate the ranked comparison.
+            </NotCalculated>
           )}
         </CalculatorResultSection>
 
@@ -808,7 +785,7 @@ export function TPSMaterialComparisonAnalyzer() {
             <AlertTriangle aria-hidden="true" size={17} />
             Engineering assumptions
           </p>
-          <ul className="mt-4 grid list-disc gap-2 pl-5 text-xs leading-5 text-muted sm:grid-cols-2">
+          <ul className="mt-4 grid list-disc gap-2 pl-5 text-sm leading-6 text-muted sm:grid-cols-2">
             <li>Material properties are simplified educational estimates</li>
             <li>Ranking is not spacecraft certification</li>
             <li>Manufacturing and cost are excluded</li>

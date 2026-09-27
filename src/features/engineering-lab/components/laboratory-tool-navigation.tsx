@@ -1,70 +1,149 @@
 "use client";
 
+import { ChevronDown } from "lucide-react";
+
 export interface LaboratoryToolNavigationItem {
   /** The tool's DOM id, which is also its deep-link anchor. */
   readonly id: string;
-  /** Short category line, reused from the tool's own eyebrow. */
+  /** Short discipline line shown under the title in the index. */
   readonly kind: string;
   readonly title: string;
 }
 
+export interface LaboratoryToolGroup {
+  /** The workflow section's DOM id. */
+  readonly id: string;
+  readonly title: string;
+  readonly tools: readonly LaboratoryToolNavigationItem[];
+}
+
 interface LaboratoryToolNavigationProps {
   activeToolId: string;
+  groups: readonly LaboratoryToolGroup[];
   onSelect: (toolId: string) => void;
-  tools: readonly LaboratoryToolNavigationItem[];
+}
+
+function ToolList({
+  activeToolId,
+  groups,
+  idPrefix,
+}: {
+  activeToolId: string;
+  groups: readonly LaboratoryToolGroup[];
+  idPrefix: string;
+}) {
+  return (
+    <div className="space-y-6">
+      {groups.map((group) => {
+        const headingId = `${idPrefix}-${group.id}`;
+
+        return (
+          <div key={group.id}>
+            <p className="orbix-caps text-muted" id={headingId}>
+              {group.title}
+            </p>
+            <ul aria-labelledby={headingId} className="mt-2 space-y-0.5">
+              {group.tools.map((tool) => {
+                const isActive = tool.id === activeToolId;
+
+                return (
+                  <li key={tool.id}>
+                    {/* Plain in-page links: the shell listens for the hash
+                     * change and reveals the module, so Tab reaches every tool
+                     * and Enter opens it, with no second mechanism to learn. */}
+                    <a
+                      aria-current={isActive ? "location" : undefined}
+                      className={
+                        isActive
+                          ? "block border-l-2 border-accent bg-[var(--orbix-accent-subtle)] px-3 py-1.5 text-sm leading-5 font-medium text-foreground"
+                          : "block border-l-2 border-transparent px-3 py-1.5 text-sm leading-5 text-text-secondary transition-colors duration-150 hover:border-border-strong hover:text-foreground"
+                      }
+                      data-active={isActive ? "true" : undefined}
+                      href={`#${tool.id}`}
+                    >
+                      {tool.title}
+                    </a>
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
+        );
+      })}
+    </div>
+  );
 }
 
 /**
- * The tool index inside one workflow.
+ * The Engineering Lab tool index (spec 14).
  *
- * The laboratory already chose one workflow at a time, but every module inside
- * that workflow rendered stacked — six to seven full calculators in a single
- * column, which is what made a workflow 10,745px tall on a desktop and 18,873px
- * for atmospheric entry. This picks one module, so the question "which model am
- * I using?" is answered by the page rather than by scrolling.
- *
- * Buttons rather than anchors: the selection is application state that the shell
- * mirrors into the URL hash, and a list of anchors would give two competing
- * mechanisms for the same thing. Keyboard behaviour is therefore the ordinary
- * tab-and-activate of a button list, not a roving tabindex — with this many
- * items, being able to Tab straight to a known module is more useful than
- * arrow-key traversal, and it is what the workflow index above already does.
+ * From 1024px it is a vertical list grouped by discipline, each tool a plain
+ * in-page link with `aria-current` on the active one. Below 1024px the same
+ * index becomes a labelled `<select>` plus the full list inside a native
+ * `<details>`, so a phone reader can either jump straight to a tool or scan
+ * the list. Every path ends in the URL hash, which `LaboratoryShell` resolves.
  */
 export function LaboratoryToolNavigation({
   activeToolId,
+  groups,
   onSelect,
-  tools,
 }: LaboratoryToolNavigationProps) {
   return (
-    <nav aria-label="Modules in this workflow">
-      <ul className="orbix-lab-tools">
-        {tools.map((tool, index) => {
-          const isActive = tool.id === activeToolId;
+    <nav aria-label="Engineering Lab tools">
+      <div className="lg:hidden">
+        <div className="orbix-field">
+          <label
+            className="orbix-field__label"
+            htmlFor="laboratory-tool-select"
+          >
+            Choose a tool
+          </label>
+          <div className="orbix-field__control">
+            <select
+              className="orbix-select"
+              id="laboratory-tool-select"
+              onChange={(event) => onSelect(event.target.value)}
+              value={activeToolId}
+            >
+              {groups.map((group) => (
+                <optgroup key={group.id} label={group.title}>
+                  {group.tools.map((tool) => (
+                    <option key={tool.id} value={tool.id}>
+                      {tool.title}
+                    </option>
+                  ))}
+                </optgroup>
+              ))}
+            </select>
+            <ChevronDown
+              aria-hidden="true"
+              className="orbix-field__icon orbix-field__icon--end"
+              size={16}
+            />
+          </div>
+        </div>
 
-          return (
-            <li key={tool.id}>
-              <button
-                aria-current={isActive ? "true" : undefined}
-                className="orbix-lab-tool"
-                data-active={isActive ? "true" : undefined}
-                onClick={() => onSelect(tool.id)}
-                type="button"
-              >
-                {/* The number is the module's position in this workflow, which
-                 * is the order the workflow is meant to be worked through. It
-                 * is real ordering information, not decoration. */}
-                <span aria-hidden="true" className="orbix-lab-tool__index">
-                  {String(index + 1).padStart(2, "0")}
-                </span>
-                <span className="orbix-lab-tool__body">
-                  <span className="orbix-lab-tool__title">{tool.title}</span>
-                  <span className="orbix-lab-tool__kind">{tool.kind}</span>
-                </span>
-              </button>
-            </li>
-          );
-        })}
-      </ul>
+        <details className="mt-3 rounded-md border border-border">
+          <summary className="flex min-h-10 cursor-pointer items-center px-3 text-sm font-medium text-text-secondary hover:text-foreground">
+            Show all tools
+          </summary>
+          <div className="border-t border-border-subtle p-3">
+            <ToolList
+              activeToolId={activeToolId}
+              groups={groups}
+              idPrefix="laboratory-tools-compact"
+            />
+          </div>
+        </details>
+      </div>
+
+      <div className="hidden lg:block">
+        <ToolList
+          activeToolId={activeToolId}
+          groups={groups}
+          idPrefix="laboratory-tools"
+        />
+      </div>
     </nav>
   );
 }

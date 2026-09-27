@@ -30,3 +30,42 @@ describe("showcase mission data", () => {
     expect(getShowcaseMissionById("unknown-mission")).toBeUndefined();
   });
 });
+
+describe("showcase mission diagrams", () => {
+  it("reads transfer altitudes straight from the preset", () => {
+    const mission = getShowcaseMissionById("lunar-transfer-concept");
+
+    expect(mission?.diagram).toEqual({
+      finalAltitudeKilometres: 384_400,
+      initialAltitudeKilometres: 200,
+      kind: "transfer",
+      planetRadiusKilometres: 6_371,
+    });
+  });
+
+  it("sums the allowances exactly as entered", () => {
+    const mission = getShowcaseMissionById("mars-transfer-concept");
+
+    expect(mission?.diagram.kind).toBe("allowances");
+    if (mission?.diagram.kind === "allowances") {
+      expect(mission.diagram.maneuvers).toHaveLength(4);
+      expect(mission.diagram.sumMetresPerSecond).toBe(5_400);
+    }
+  });
+
+  it("draws nothing for a reentry-only preset and lists both vehicles once", () => {
+    const mission = getShowcaseMissionById("reentry-demonstrator");
+
+    expect(mission?.diagram).toEqual({ kind: "none" });
+    expect(mission?.vehicles.map((vehicle) => vehicle.vehicleName)).toEqual([
+      "Baseline Demonstrator",
+      "Compact Demonstrator",
+    ]);
+  });
+
+  it("carries no image references", () => {
+    for (const mission of SHOWCASE_MISSIONS) {
+      expect(JSON.stringify(mission)).not.toMatch(/\/images\//);
+    }
+  });
+});

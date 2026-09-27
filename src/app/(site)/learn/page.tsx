@@ -1,11 +1,29 @@
 import type { Metadata } from "next";
 
+import { siteConfig } from "@/config/site";
 import { LearnPage } from "@/features/learn";
 
+const title = "Learn";
+const description =
+  "Six reading pathways on the physics behind the ORBIX Engineering Lab: aerodynamics, propulsion, compressible flow, atmospheric entry, orbital mechanics and engineering communication, with links to the calculators and to published references.";
+
 export const metadata: Metadata = {
-  title: "Learn",
-  description:
-    "Six conceptual learning pathways connecting core aerospace physics to the Engineering Laboratory modules that calculate them.",
+  alternates: { canonical: "/learn" },
+  description,
+  openGraph: {
+    description,
+    locale: "en_US",
+    siteName: siteConfig.wordmark,
+    title: `${title} | ${siteConfig.wordmark}`,
+    type: "website",
+    url: "/learn",
+  },
+  title,
+  twitter: {
+    card: "summary",
+    description,
+    title: `${title} | ${siteConfig.wordmark}`,
+  },
 };
 
 export default function Learn() {

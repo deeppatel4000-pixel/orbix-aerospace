@@ -5,6 +5,10 @@ import type { Rocket } from "@/features/vehicles/types";
 import { cn } from "@/lib/cn";
 
 interface RocketImageProps {
+  /**
+   * Deprecated and ignored: cards no longer zoom on hover (spec 11). Kept so
+   * existing callers compile.
+   */
   animateOnHover?: boolean;
   className?: string;
   fillContainer?: boolean;
@@ -14,8 +18,11 @@ interface RocketImageProps {
   sizes: string;
 }
 
+/**
+ * The launch vehicle's photograph from `rocket-visuals.ts`, shown as taken.
+ * When no photograph is recorded, a plain text panel says so.
+ */
 export function RocketImage({
-  animateOnHover = false,
   className,
   fillContainer = false,
   imageClassName,
@@ -28,17 +35,15 @@ export function RocketImage({
   if (!visual) {
     return (
       <div
-        aria-label={`No approved image is available for ${rocket.name}.`}
         className={cn(
-          "technical-grid grid place-items-center bg-background/80",
+          "grid place-items-center bg-surface-raised p-4",
           fillContainer ? "absolute inset-0" : "relative",
           className,
         )}
-        role="img"
       >
-        <span className="font-mono text-xs tracking-[0.14em] text-muted uppercase">
-          Visual not available
-        </span>
+        <p className="text-sm text-muted">
+          No photograph of {rocket.name} is available yet.
+        </p>
       </div>
     );
   }
@@ -53,12 +58,7 @@ export function RocketImage({
     >
       <Image
         alt={visual.alt}
-        className={cn(
-          "object-cover",
-          animateOnHover &&
-            "transition-transform duration-700 ease-out motion-safe:group-hover:scale-[1.025] motion-reduce:transition-none",
-          imageClassName,
-        )}
+        className={cn("object-cover", imageClassName)}
         fill
         fetchPriority={priority ? "high" : undefined}
         priority={priority}

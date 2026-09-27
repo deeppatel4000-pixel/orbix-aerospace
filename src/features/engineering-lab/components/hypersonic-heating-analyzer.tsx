@@ -1,5 +1,6 @@
 "use client";
 
+import { Button } from "@/components/ui";
 import { useMemo, useState, type FormEvent } from "react";
 import {
   AlertTriangle,
@@ -13,7 +14,10 @@ import {
 import { analyzeHypersonicHeating } from "@/features/engineering-lab/analysis";
 import {
   CalculatorNumberField,
+  focusFirstInvalidField,
+  focusFirstInvalidFieldOnEnter,
   CalculatorResultSection,
+  NotCalculated,
   ValidationErrorSummary,
 } from "@/features/engineering-lab/components/shared";
 import type {
@@ -161,6 +165,7 @@ export function HypersonicHeatingAnalyzer() {
 
   function preventSubmission(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    focusFirstInvalidField(event.currentTarget);
   }
 
   function resetAnalyzer() {
@@ -170,9 +175,13 @@ export function HypersonicHeatingAnalyzer() {
   return (
     <div className="grid gap-8 xl:grid-cols-[minmax(0,0.95fr)_minmax(22rem,1.05fr)] xl:gap-10">
       <div>
-        <form noValidate onSubmit={preventSubmission}>
+        <form
+          noValidate
+          onKeyDown={focusFirstInvalidFieldOnEnter}
+          onSubmit={preventSubmission}
+        >
           <fieldset>
-            <legend className="orbix-label text-accent">
+            <legend className="text-base font-semibold text-foreground">
               Thermal analysis inputs
             </legend>
             <div className="mt-5 grid gap-5 sm:grid-cols-2">
@@ -211,9 +220,9 @@ export function HypersonicHeatingAnalyzer() {
                 field="heatingCoefficient"
                 hint="Optional positive empirical coefficient. Leave blank to use the educational default."
                 idPrefix="hypersonic-heating"
-                label="Heating coefficient (optional)"
+                label="Heating coefficient k (optional)"
                 onChange={updateValue}
-                unit="k"
+                unit="kg½/m"
                 value={values.heatingCoefficient}
               />
             </div>
@@ -230,18 +239,18 @@ export function HypersonicHeatingAnalyzer() {
           />
 
           <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:items-center">
-            <p className="text-xs leading-5 text-muted">
+            <p className="text-sm leading-6 text-muted">
               Valid changes update the atmospheric, flow, and thermal states
               immediately.
             </p>
-            <button
-              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-border bg-surface/60 px-5 py-2.5 text-sm font-semibold text-foreground transition-colors hover:border-accent/60 hover:text-accent sm:ml-auto"
+            <Button
+              className="shrink-0 whitespace-nowrap sm:ml-auto"
+              variant="secondary"
               onClick={resetAnalyzer}
-              type="button"
             >
               <RotateCcw aria-hidden="true" size={16} />
-              Reset example
-            </button>
+              Reset inputs
+            </Button>
           </div>
         </form>
 
@@ -249,36 +258,36 @@ export function HypersonicHeatingAnalyzer() {
           aria-labelledby="hypersonic-heating-relationships-title"
           className="mt-8 border-t border-border pt-7"
         >
-          <p className="orbix-label text-accent">Educational visualization</p>
+          <p className="orbix-label">Educational visualization</p>
           <h3
             className="mt-1 text-lg font-semibold"
             id="hypersonic-heating-relationships-title"
           >
             What shapes stagnation heating?
           </h3>
-          <div className="mt-5 grid gap-4 sm:grid-cols-3">
-            <article className="rounded-2xl border border-border bg-background/40 p-4">
-              <Gauge aria-hidden="true" className="text-accent" size={18} />
+          <div className="mt-5 grid gap-4 sm:grid-cols-3 xl:grid-cols-1">
+            <article className="rounded-md border border-border-subtle bg-surface-raised p-4">
+              <Gauge aria-hidden="true" className="text-muted" size={18} />
               <h4 className="mt-3 text-sm font-semibold">Velocity</h4>
-              <p className="mt-2 text-xs leading-5 text-muted">
+              <p className="mt-2 text-sm leading-6 text-muted">
                 Velocity has the strongest influence in this approximation, so
                 modest speed increases can produce much larger heat flux.
               </p>
             </article>
-            <article className="rounded-2xl border border-border bg-background/40 p-4">
-              <CloudSun aria-hidden="true" className="text-accent" size={18} />
+            <article className="rounded-md border border-border-subtle bg-surface-raised p-4">
+              <CloudSun aria-hidden="true" className="text-muted" size={18} />
               <h4 className="mt-3 text-sm font-semibold">
                 Altitude and density
               </h4>
-              <p className="mt-2 text-xs leading-5 text-muted">
+              <p className="mt-2 text-sm leading-6 text-muted">
                 Standard-atmosphere density falls with altitude, leaving fewer
                 air particles available to transfer convective heat.
               </p>
             </article>
-            <article className="rounded-2xl border border-border bg-background/40 p-4">
-              <CircleDot aria-hidden="true" className="text-accent" size={18} />
+            <article className="rounded-md border border-border-subtle bg-surface-raised p-4">
+              <CircleDot aria-hidden="true" className="text-muted" size={18} />
               <h4 className="mt-3 text-sm font-semibold">Nose radius</h4>
-              <p className="mt-2 text-xs leading-5 text-muted">
+              <p className="mt-2 text-sm leading-6 text-muted">
                 A larger, blunter radius spreads the stagnation region and
                 lowers the model&apos;s predicted peak heating.
               </p>
@@ -289,7 +298,7 @@ export function HypersonicHeatingAnalyzer() {
 
       <div className="space-y-5">
         <CalculatorResultSection
-          eyebrow="Atmosphere + Flow + Thermal"
+          eyebrow="Atmosphere, flow and heating"
           icon={Flame}
           id="hypersonic-heating-result"
           title="Hypersonic heating analysis"
@@ -298,17 +307,17 @@ export function HypersonicHeatingAnalyzer() {
             <div className="space-y-6">
               <section aria-labelledby="hypersonic-heating-atmosphere-title">
                 <h4
-                  className="orbix-label text-accent"
+                  className="text-sm font-semibold text-foreground"
                   id="hypersonic-heating-atmosphere-title"
                 >
                   Atmospheric state
                 </h4>
                 <dl className="mt-3 grid gap-4 sm:grid-cols-2">
                   <div>
-                    <dt className="text-xs text-muted">Temperature</dt>
+                    <dt className="orbix-label">Temperature</dt>
                     <dd className="mt-1">
                       <output
-                        className="font-mono text-sm font-semibold"
+                        className="orbix-data"
                         htmlFor={atmosphericOutputIds}
                       >
                         {stateFormatter.format(
@@ -319,10 +328,10 @@ export function HypersonicHeatingAnalyzer() {
                     </dd>
                   </div>
                   <div>
-                    <dt className="text-xs text-muted">Pressure</dt>
+                    <dt className="orbix-label">Pressure</dt>
                     <dd className="mt-1">
                       <output
-                        className="font-mono text-sm font-semibold"
+                        className="orbix-data"
                         htmlFor={atmosphericOutputIds}
                       >
                         {stateFormatter.format(
@@ -333,10 +342,10 @@ export function HypersonicHeatingAnalyzer() {
                     </dd>
                   </div>
                   <div>
-                    <dt className="text-xs text-muted">Density</dt>
+                    <dt className="orbix-label">Density</dt>
                     <dd className="mt-1">
                       <output
-                        className="font-mono text-sm font-semibold"
+                        className="orbix-data"
                         htmlFor={atmosphericOutputIds}
                       >
                         {densityFormatter.format(
@@ -347,10 +356,10 @@ export function HypersonicHeatingAnalyzer() {
                     </dd>
                   </div>
                   <div>
-                    <dt className="text-xs text-muted">Speed of sound</dt>
+                    <dt className="orbix-label">Speed of sound</dt>
                     <dd className="mt-1">
                       <output
-                        className="font-mono text-sm font-semibold"
+                        className="orbix-data"
                         htmlFor={atmosphericOutputIds}
                       >
                         {stateFormatter.format(
@@ -368,19 +377,16 @@ export function HypersonicHeatingAnalyzer() {
                 className="border-t border-border pt-5"
               >
                 <h4
-                  className="orbix-label text-accent"
+                  className="text-sm font-semibold text-foreground"
                   id="hypersonic-heating-flow-title"
                 >
                   Flow state
                 </h4>
                 <dl className="mt-3 grid gap-4 sm:grid-cols-2">
                   <div>
-                    <dt className="text-xs text-muted">Velocity</dt>
+                    <dt className="orbix-label">Velocity</dt>
                     <dd className="mt-1">
-                      <output
-                        className="font-mono text-sm font-semibold"
-                        htmlFor={flowOutputIds}
-                      >
+                      <output className="orbix-data" htmlFor={flowOutputIds}>
                         {stateFormatter.format(
                           result.flow.velocityMetresPerSecond,
                         )}{" "}
@@ -389,21 +395,18 @@ export function HypersonicHeatingAnalyzer() {
                     </dd>
                   </div>
                   <div>
-                    <dt className="text-xs text-muted">Mach number</dt>
+                    <dt className="orbix-label">Mach number</dt>
                     <dd className="mt-1">
-                      <output
-                        className="font-mono text-sm font-semibold text-accent"
-                        htmlFor={flowOutputIds}
-                      >
+                      <output className="orbix-data" htmlFor={flowOutputIds}>
                         {machFormatter.format(result.flow.machNumber)}
                       </output>
                     </dd>
                   </div>
                   <div>
-                    <dt className="text-xs text-muted">Flow regime</dt>
+                    <dt className="orbix-label">Flow regime</dt>
                     <dd className="mt-1">
                       <output
-                        className="text-sm font-semibold text-accent"
+                        className="text-sm font-semibold"
                         htmlFor={flowOutputIds}
                       >
                         {flowRegimeLabels[result.flow.flowRegime]}
@@ -418,17 +421,17 @@ export function HypersonicHeatingAnalyzer() {
                 className="border-t border-border pt-5"
               >
                 <h4
-                  className="orbix-label text-accent"
+                  className="text-sm font-semibold text-foreground"
                   id="hypersonic-heating-thermal-title"
                 >
                   Thermal state
                 </h4>
                 <dl className="mt-3 grid gap-4 sm:grid-cols-2">
                   <div>
-                    <dt className="text-xs text-muted">Heat flux</dt>
+                    <dt className="orbix-label">Heat flux</dt>
                     <dd className="mt-1">
                       <output
-                        className="font-mono text-lg font-semibold text-accent"
+                        className="orbix-data-lg"
                         htmlFor={thermalOutputIds}
                       >
                         {heatFluxFormatter.format(
@@ -439,10 +442,10 @@ export function HypersonicHeatingAnalyzer() {
                     </dd>
                   </div>
                   <div>
-                    <dt className="text-xs text-muted">Heat flux</dt>
+                    <dt className="orbix-label">Heat flux</dt>
                     <dd className="mt-1">
                       <output
-                        className="font-mono text-lg font-semibold text-accent"
+                        className="orbix-data-lg"
                         htmlFor={thermalOutputIds}
                       >
                         {heatFluxFormatter.format(
@@ -453,17 +456,13 @@ export function HypersonicHeatingAnalyzer() {
                     </dd>
                   </div>
                   <div>
-                    <dt className="text-xs text-muted">
-                      Heating coefficient used
-                    </dt>
+                    <dt className="orbix-label">Heating coefficient used</dt>
                     <dd className="mt-1">
-                      <output
-                        className="font-mono text-sm font-semibold"
-                        htmlFor={thermalOutputIds}
-                      >
+                      <output className="orbix-data" htmlFor={thermalOutputIds}>
                         {coefficientFormatter.format(
                           result.thermal.heatingCoefficient,
-                        )}
+                        )}{" "}
+                        kg½/m
                       </output>
                     </dd>
                   </div>
@@ -471,13 +470,10 @@ export function HypersonicHeatingAnalyzer() {
               </section>
             </div>
           ) : (
-            <div className="py-5">
-              <p className="font-mono text-3xl text-muted">—</p>
-              <p className="mt-3 text-sm leading-6 text-muted">
-                Enter valid atmospheric and vehicle conditions to resolve the
-                flow regime and estimated stagnation-point heat flux.
-              </p>
-            </div>
+            <NotCalculated invalid={Object.values(errors).some(Boolean)}>
+              Enter valid atmospheric and vehicle conditions to resolve the flow
+              regime and estimated stagnation-point heat flux.
+            </NotCalculated>
           )}
         </CalculatorResultSection>
 
@@ -486,10 +482,10 @@ export function HypersonicHeatingAnalyzer() {
             <AlertTriangle aria-hidden="true" size={17} />
             Engineering assumptions
           </p>
-          <ul className="mt-4 grid list-disc gap-2 pl-5 text-xs leading-5 text-muted sm:grid-cols-2">
+          <ul className="mt-4 grid list-disc gap-2 pl-5 text-sm leading-6 text-muted sm:grid-cols-2">
             <li>Dry-air standard atmosphere</li>
             <li>Convective stagnation-point heating only</li>
-            <li>Sutton–Graves style approximation</li>
+            <li>Sutton-Graves style approximation</li>
             <li>No radiation</li>
             <li>No ablation</li>
             <li>No real-gas chemistry</li>

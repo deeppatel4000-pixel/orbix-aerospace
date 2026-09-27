@@ -2,9 +2,10 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
 import {
+  RocketProfile,
+  formatRocketMetaDescription,
   getRocketById,
   listRocketIds,
-  RocketProfile,
 } from "@/features/rockets";
 
 interface RocketDetailPageProps {
@@ -27,13 +28,27 @@ export async function generateMetadata({
 
   if (!rocket) {
     return {
-      title: "Rocket not found",
+      title: "Launch vehicle not found",
+      description: "No launch vehicle record exists at this address.",
     };
   }
 
+  const title = `${rocket.name} specifications`;
+  const description = formatRocketMetaDescription(rocket);
+  const url = `/rockets/${rocket.id}`;
+
   return {
-    title: rocket.name,
-    description: rocket.description,
+    alternates: { canonical: url },
+    description,
+    openGraph: {
+      description,
+      locale: "en_US",
+      siteName: "ORBIX",
+      title: `${title} | ORBIX`,
+      type: "article",
+      url,
+    },
+    title,
   };
 }
 

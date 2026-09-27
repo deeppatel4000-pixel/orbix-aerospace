@@ -1,7 +1,9 @@
 "use client";
 
+import { Button } from "@/components/ui";
 import { useMemo, useState, type FormEvent } from "react";
 import {
+  CircleAlert,
   AlertTriangle,
   Flame,
   Gauge,
@@ -14,7 +16,10 @@ import {
 import { analyzeVehicleReentryEvaluation } from "@/features/engineering-lab/analysis";
 import {
   CalculatorNumberField,
+  focusFirstInvalidField,
+  focusFirstInvalidFieldOnEnter,
   CalculatorResultSection,
+  NotCalculated,
   ValidationErrorSummary,
 } from "@/features/engineering-lab/components/shared";
 import type {
@@ -234,15 +239,16 @@ function OptionalNumberField({
 
   return (
     <div>
-      <label className="text-sm font-semibold" htmlFor={inputId}>
+      <label className="orbix-field__label block" htmlFor={inputId}>
         {label}
+        <span className="sr-only"> ({unit})</span>
       </label>
-      <div className="relative mt-2">
+      <div className="orbix-field__control mt-2">
         <input
           aria-describedby={error ? hintId + " " + errorId : hintId}
           aria-errormessage={error ? errorId : undefined}
           aria-invalid={Boolean(error)}
-          className="min-h-12 w-full rounded-xl border border-border bg-background/55 px-4 py-3 pr-20 font-mono text-base text-foreground transition-colors outline-none placeholder:text-muted/55 focus:border-accent focus:ring-2 focus:ring-accent/15"
+          className="orbix-input"
           id={inputId}
           inputMode="decimal"
           max={max}
@@ -252,15 +258,16 @@ function OptionalNumberField({
           type="number"
           value={value}
         />
-        <span className="pointer-events-none absolute top-1/2 right-4 -translate-y-1/2 font-mono text-xs text-muted">
+        <span aria-hidden="true" className="orbix-field__unit">
           {unit}
         </span>
       </div>
-      <p className="mt-2 text-xs leading-5 text-muted" id={hintId}>
+      <p className="orbix-field__help mt-2" id={hintId}>
         {hint}
       </p>
       {error ? (
-        <p className="mt-1.5 text-xs leading-5 text-signal" id={errorId}>
+        <p className="orbix-field__error mt-1" id={errorId}>
+          <CircleAlert aria-hidden="true" className="shrink-0" size={14} />
           {error}
         </p>
       ) : null}
@@ -284,6 +291,7 @@ export function VehicleReentryEvaluationAnalyzer() {
 
   function preventSubmission(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    focusFirstInvalidField(event.currentTarget);
   }
 
   function resetAnalyzer() {
@@ -293,15 +301,19 @@ export function VehicleReentryEvaluationAnalyzer() {
   return (
     <div className="grid gap-8 xl:grid-cols-[minmax(0,0.82fr)_minmax(30rem,1.18fr)] xl:gap-10">
       <div>
-        <form noValidate onSubmit={preventSubmission}>
+        <form
+          noValidate
+          onKeyDown={focusFirstInvalidFieldOnEnter}
+          onSubmit={preventSubmission}
+        >
           <fieldset>
-            <legend className="orbix-label text-accent">
+            <legend className="text-base font-semibold text-foreground">
               Vehicle configuration
             </legend>
             <div className="mt-5 grid gap-5 sm:grid-cols-2">
               <div className="sm:col-span-2">
                 <label
-                  className="text-sm font-semibold"
+                  className="orbix-field__label block"
                   htmlFor="vehicle-reentry-evaluation-vehicleName"
                 >
                   Vehicle name
@@ -318,7 +330,7 @@ export function VehicleReentryEvaluationAnalyzer() {
                       : undefined
                   }
                   aria-invalid={Boolean(errors.vehicleName)}
-                  className="mt-2 min-h-12 w-full rounded-xl border border-border bg-background/55 px-4 py-3 text-base text-foreground transition-colors outline-none focus:border-accent focus:ring-2 focus:ring-accent/15"
+                  className="orbix-input mt-2"
                   id="vehicle-reentry-evaluation-vehicleName"
                   onChange={(event) =>
                     updateValue("vehicleName", event.target.value)
@@ -328,7 +340,7 @@ export function VehicleReentryEvaluationAnalyzer() {
                   value={values.vehicleName}
                 />
                 <p
-                  className="mt-2 text-xs leading-5 text-muted"
+                  className="orbix-field__help mt-2"
                   id="vehicle-reentry-evaluation-vehicleName-hint"
                 >
                   Descriptive configuration name used only to identify this
@@ -336,9 +348,14 @@ export function VehicleReentryEvaluationAnalyzer() {
                 </p>
                 {errors.vehicleName ? (
                   <p
-                    className="mt-1.5 text-xs leading-5 text-signal"
+                    className="orbix-field__error mt-1"
                     id="vehicle-reentry-evaluation-vehicleName-error"
                   >
+                    <CircleAlert
+                      aria-hidden="true"
+                      className="shrink-0"
+                      size={14}
+                    />
                     {errors.vehicleName}
                   </p>
                 ) : null}
@@ -388,7 +405,7 @@ export function VehicleReentryEvaluationAnalyzer() {
           </fieldset>
 
           <fieldset className="mt-8 border-t border-border pt-7">
-            <legend className="orbix-label text-accent">
+            <legend className="text-base font-semibold text-foreground">
               Reentry conditions
             </legend>
             <div className="mt-5 grid gap-5 sm:grid-cols-2">
@@ -432,8 +449,8 @@ export function VehicleReentryEvaluationAnalyzer() {
           </fieldset>
 
           <fieldset className="mt-8 border-t border-border pt-7">
-            <legend className="orbix-label text-accent">
-              Analysis controls // Optional
+            <legend className="text-base font-semibold text-foreground">
+              Analysis controls (optional)
             </legend>
             <div className="mt-5 grid gap-5 sm:grid-cols-2">
               <OptionalNumberField
@@ -461,10 +478,10 @@ export function VehicleReentryEvaluationAnalyzer() {
                 error={errors.heatingCoefficient}
                 field="heatingCoefficient"
                 hint="Leave blank to use the heating calculator's educational default."
-                label="Heating coefficient"
+                label="Heating coefficient k (optional)"
                 min={0}
                 onChange={updateValue}
-                unit="k"
+                unit="kg½/m"
                 value={values.heatingCoefficient}
               />
             </div>
@@ -488,18 +505,18 @@ export function VehicleReentryEvaluationAnalyzer() {
           />
 
           <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:items-center">
-            <p className="text-xs leading-5 text-muted">
+            <p className="text-sm leading-6 text-muted">
               Valid changes rerun trajectory, thermal history, and TPS
               comparison immediately.
             </p>
-            <button
-              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-border bg-surface/60 px-5 py-2.5 text-sm font-semibold text-foreground transition-colors hover:border-accent/60 hover:text-accent sm:ml-auto"
+            <Button
+              className="shrink-0 whitespace-nowrap sm:ml-auto"
+              variant="secondary"
               onClick={resetAnalyzer}
-              type="button"
             >
               <RotateCcw aria-hidden="true" size={16} />
-              Reset example
-            </button>
+              Reset inputs
+            </Button>
           </div>
         </form>
 
@@ -507,46 +524,46 @@ export function VehicleReentryEvaluationAnalyzer() {
           aria-labelledby="vehicle-reentry-evaluation-education-title"
           className="mt-8 border-t border-border pt-7"
         >
-          <p className="orbix-label text-accent">Integrated engineering</p>
+          <p className="orbix-label">Integrated engineering</p>
           <h3
             className="mt-1 text-lg font-semibold"
             id="vehicle-reentry-evaluation-education-title"
           >
             Coupled reentry disciplines
           </h3>
-          <div className="mt-5 grid gap-4 sm:grid-cols-2">
-            <article className="rounded-2xl border border-border bg-background/40 p-4">
-              <Wind aria-hidden="true" className="text-accent" size={18} />
+          <div className="mt-5 grid gap-4 sm:grid-cols-2 xl:grid-cols-1">
+            <article className="rounded-md border border-border-subtle bg-surface-raised p-4">
+              <Wind aria-hidden="true" className="text-muted" size={18} />
               <h4 className="mt-3 text-sm font-semibold">Vehicle geometry</h4>
-              <p className="mt-2 text-xs leading-5 text-muted">
+              <p className="mt-2 text-sm leading-6 text-muted">
                 Reference area and nose radius strongly affect aerodynamic and
                 stagnation-heating behavior.
               </p>
             </article>
-            <article className="rounded-2xl border border-border bg-background/40 p-4">
-              <Gauge aria-hidden="true" className="text-accent" size={18} />
+            <article className="rounded-md border border-border-subtle bg-surface-raised p-4">
+              <Gauge aria-hidden="true" className="text-muted" size={18} />
               <h4 className="mt-3 text-sm font-semibold">
                 Ballistic coefficient
               </h4>
-              <p className="mt-2 text-xs leading-5 text-muted">
+              <p className="mt-2 text-sm leading-6 text-muted">
                 The relationship among vehicle mass, drag coefficient, and area
                 influences atmospheric deceleration.
               </p>
             </article>
-            <article className="rounded-2xl border border-border bg-background/40 p-4">
-              <Flame aria-hidden="true" className="text-accent" size={18} />
+            <article className="rounded-md border border-border-subtle bg-surface-raised p-4">
+              <Flame aria-hidden="true" className="text-muted" size={18} />
               <h4 className="mt-3 text-sm font-semibold">Thermal loading</h4>
-              <p className="mt-2 text-xs leading-5 text-muted">
+              <p className="mt-2 text-sm leading-6 text-muted">
                 Material selection depends on the integrated thermal history
                 produced for the vehicle and trajectory.
               </p>
             </article>
-            <article className="rounded-2xl border border-border bg-background/40 p-4">
-              <Shield aria-hidden="true" className="text-accent" size={18} />
+            <article className="rounded-md border border-border-subtle bg-surface-raised p-4">
+              <Shield aria-hidden="true" className="text-muted" size={18} />
               <h4 className="mt-3 text-sm font-semibold">
                 Multidisciplinary workflow
               </h4>
-              <p className="mt-2 text-xs leading-5 text-muted">
+              <p className="mt-2 text-sm leading-6 text-muted">
                 This analyzer combines flight dynamics, aerodynamics, thermal
                 analysis, and TPS evaluation in one educational workflow.
               </p>
@@ -557,7 +574,7 @@ export function VehicleReentryEvaluationAnalyzer() {
 
       <div className="space-y-5">
         <CalculatorResultSection
-          eyebrow="Vehicle + trajectory + thermal + TPS"
+          eyebrow="Vehicle, trajectory, heating and TPS"
           icon={Plane}
           id="vehicle-reentry-evaluation-result"
           title="Vehicle reentry evaluation"
@@ -566,7 +583,7 @@ export function VehicleReentryEvaluationAnalyzer() {
             <div className="space-y-6">
               <section aria-labelledby="vehicle-reentry-evaluation-vehicle-title">
                 <h4
-                  className="orbix-label text-accent"
+                  className="text-sm font-semibold text-foreground"
                   id="vehicle-reentry-evaluation-vehicle-title"
                 >
                   Vehicle
@@ -579,10 +596,10 @@ export function VehicleReentryEvaluationAnalyzer() {
                 </output>
                 <dl className="mt-4 grid gap-4 sm:grid-cols-2">
                   <div>
-                    <dt className="text-xs text-muted">Mass</dt>
+                    <dt className="orbix-label">Mass</dt>
                     <dd className="mt-1">
                       <output
-                        className="font-mono text-sm font-semibold"
+                        className="orbix-data"
                         htmlFor="vehicle-reentry-evaluation-massKilograms"
                       >
                         {standardFormatter.format(result.vehicle.massKilograms)}{" "}
@@ -591,10 +608,10 @@ export function VehicleReentryEvaluationAnalyzer() {
                     </dd>
                   </div>
                   <div>
-                    <dt className="text-xs text-muted">Drag coefficient</dt>
+                    <dt className="orbix-label">Drag coefficient</dt>
                     <dd className="mt-1">
                       <output
-                        className="font-mono text-sm font-semibold"
+                        className="orbix-data"
                         htmlFor="vehicle-reentry-evaluation-dragCoefficient"
                       >
                         {standardFormatter.format(
@@ -604,10 +621,10 @@ export function VehicleReentryEvaluationAnalyzer() {
                     </dd>
                   </div>
                   <div>
-                    <dt className="text-xs text-muted">Reference area</dt>
+                    <dt className="orbix-label">Reference area</dt>
                     <dd className="mt-1">
                       <output
-                        className="font-mono text-sm font-semibold"
+                        className="orbix-data"
                         htmlFor="vehicle-reentry-evaluation-referenceAreaSquareMetres"
                       >
                         {standardFormatter.format(
@@ -618,10 +635,10 @@ export function VehicleReentryEvaluationAnalyzer() {
                     </dd>
                   </div>
                   <div>
-                    <dt className="text-xs text-muted">Nose radius</dt>
+                    <dt className="orbix-label">Nose radius</dt>
                     <dd className="mt-1">
                       <output
-                        className="font-mono text-sm font-semibold"
+                        className="orbix-data"
                         htmlFor="vehicle-reentry-evaluation-noseRadiusMetres"
                       >
                         {standardFormatter.format(
@@ -639,19 +656,16 @@ export function VehicleReentryEvaluationAnalyzer() {
                 className="border-t border-border pt-5"
               >
                 <h4
-                  className="orbix-label text-accent"
+                  className="text-sm font-semibold text-foreground"
                   id="vehicle-reentry-evaluation-flight-title"
                 >
                   Flight summary
                 </h4>
                 <dl className="mt-3 grid gap-4 sm:grid-cols-2">
                   <div>
-                    <dt className="text-xs text-muted">Initial altitude</dt>
+                    <dt className="orbix-label">Initial altitude</dt>
                     <dd className="mt-1">
-                      <output
-                        className="font-mono text-sm font-semibold"
-                        htmlFor={reentryOutputIds}
-                      >
+                      <output className="orbix-data" htmlFor={reentryOutputIds}>
                         {standardFormatter.format(
                           result.summary.flight.initialAltitudeMeters,
                         )}{" "}
@@ -660,12 +674,9 @@ export function VehicleReentryEvaluationAnalyzer() {
                     </dd>
                   </div>
                   <div>
-                    <dt className="text-xs text-muted">Initial velocity</dt>
+                    <dt className="orbix-label">Initial velocity</dt>
                     <dd className="mt-1">
-                      <output
-                        className="font-mono text-sm font-semibold"
-                        htmlFor={reentryOutputIds}
-                      >
+                      <output className="orbix-data" htmlFor={reentryOutputIds}>
                         {standardFormatter.format(
                           result.summary.flight.initialVelocityMetersPerSecond,
                         )}{" "}
@@ -674,12 +685,9 @@ export function VehicleReentryEvaluationAnalyzer() {
                     </dd>
                   </div>
                   <div>
-                    <dt className="text-xs text-muted">Final altitude</dt>
+                    <dt className="orbix-label">Final altitude</dt>
                     <dd className="mt-1">
-                      <output
-                        className="font-mono text-sm font-semibold"
-                        htmlFor={allOutputIds}
-                      >
+                      <output className="orbix-data" htmlFor={allOutputIds}>
                         {standardFormatter.format(
                           result.summary.flight.finalState.altitudeMeters,
                         )}{" "}
@@ -688,12 +696,9 @@ export function VehicleReentryEvaluationAnalyzer() {
                     </dd>
                   </div>
                   <div>
-                    <dt className="text-xs text-muted">Final velocity</dt>
+                    <dt className="orbix-label">Final velocity</dt>
                     <dd className="mt-1">
-                      <output
-                        className="font-mono text-sm font-semibold"
-                        htmlFor={allOutputIds}
-                      >
+                      <output className="orbix-data" htmlFor={allOutputIds}>
                         {standardFormatter.format(
                           result.summary.flight.finalState
                             .velocityMetersPerSecond,
@@ -703,12 +708,9 @@ export function VehicleReentryEvaluationAnalyzer() {
                     </dd>
                   </div>
                   <div>
-                    <dt className="text-xs text-muted">Reentry duration</dt>
+                    <dt className="orbix-label">Reentry duration</dt>
                     <dd className="mt-1">
-                      <output
-                        className="font-mono text-lg font-semibold text-accent"
-                        htmlFor={allOutputIds}
-                      >
+                      <output className="orbix-data-lg" htmlFor={allOutputIds}>
                         {standardFormatter.format(
                           result.summary.flight.reentryDurationSeconds,
                         )}{" "}
@@ -724,19 +726,16 @@ export function VehicleReentryEvaluationAnalyzer() {
                 className="border-t border-border pt-5"
               >
                 <h4
-                  className="orbix-label text-accent"
+                  className="text-sm font-semibold text-foreground"
                   id="vehicle-reentry-evaluation-dynamics-title"
                 >
                   Dynamics
                 </h4>
                 <dl className="mt-3 grid gap-4 sm:grid-cols-2">
                   <div>
-                    <dt className="text-xs text-muted">Peak deceleration</dt>
+                    <dt className="orbix-label">Peak deceleration</dt>
                     <dd className="mt-1">
-                      <output
-                        className="font-mono text-lg font-semibold text-accent"
-                        htmlFor={allOutputIds}
-                      >
+                      <output className="orbix-data-lg" htmlFor={allOutputIds}>
                         {standardFormatter.format(
                           result.summary.dynamics.peakDeceleration
                             .decelerationMetersPerSecondSquared,
@@ -746,12 +745,9 @@ export function VehicleReentryEvaluationAnalyzer() {
                     </dd>
                   </div>
                   <div>
-                    <dt className="text-xs text-muted">Peak deceleration</dt>
+                    <dt className="orbix-label">Peak deceleration</dt>
                     <dd className="mt-1">
-                      <output
-                        className="font-mono text-lg font-semibold text-accent"
-                        htmlFor={allOutputIds}
-                      >
+                      <output className="orbix-data-lg" htmlFor={allOutputIds}>
                         {standardFormatter.format(
                           result.summary.dynamics.peakDeceleration
                             .decelerationGs,
@@ -761,14 +757,9 @@ export function VehicleReentryEvaluationAnalyzer() {
                     </dd>
                   </div>
                   <div>
-                    <dt className="text-xs text-muted">
-                      Peak deceleration altitude
-                    </dt>
+                    <dt className="orbix-label">Peak deceleration altitude</dt>
                     <dd className="mt-1">
-                      <output
-                        className="font-mono text-sm font-semibold"
-                        htmlFor={allOutputIds}
-                      >
+                      <output className="orbix-data" htmlFor={allOutputIds}>
                         {standardFormatter.format(
                           result.summary.dynamics.peakDeceleration
                             .altitudeMeters,
@@ -778,12 +769,9 @@ export function VehicleReentryEvaluationAnalyzer() {
                     </dd>
                   </div>
                   <div>
-                    <dt className="text-xs text-muted">Peak velocity state</dt>
+                    <dt className="orbix-label">Peak velocity state</dt>
                     <dd className="mt-1">
-                      <output
-                        className="font-mono text-sm font-semibold"
-                        htmlFor={allOutputIds}
-                      >
+                      <output className="orbix-data" htmlFor={allOutputIds}>
                         {standardFormatter.format(
                           result.summary.dynamics.peakVelocityState
                             .velocityMetersPerSecond,
@@ -805,19 +793,16 @@ export function VehicleReentryEvaluationAnalyzer() {
                 className="border-t border-border pt-5"
               >
                 <h4
-                  className="orbix-label text-accent"
+                  className="text-sm font-semibold text-foreground"
                   id="vehicle-reentry-evaluation-thermal-title"
                 >
                   Thermal
                 </h4>
                 <dl className="mt-3 grid gap-4 sm:grid-cols-2">
                   <div>
-                    <dt className="text-xs text-muted">Peak heat flux</dt>
+                    <dt className="orbix-label">Peak heat flux</dt>
                     <dd className="mt-1">
-                      <output
-                        className="font-mono text-lg font-semibold text-accent"
-                        htmlFor={allOutputIds}
-                      >
+                      <output className="orbix-data-lg" htmlFor={allOutputIds}>
                         {heatFluxFormatter.format(
                           result.summary.thermal
                             .peakHeatFluxWattsPerSquareMetre,
@@ -827,14 +812,9 @@ export function VehicleReentryEvaluationAnalyzer() {
                     </dd>
                   </div>
                   <div>
-                    <dt className="text-xs text-muted">
-                      Peak heating altitude
-                    </dt>
+                    <dt className="orbix-label">Peak heating altitude</dt>
                     <dd className="mt-1">
-                      <output
-                        className="font-mono text-sm font-semibold"
-                        htmlFor={allOutputIds}
-                      >
+                      <output className="orbix-data" htmlFor={allOutputIds}>
                         {standardFormatter.format(
                           result.summary.thermal.peakHeatingAltitudeMeters,
                         )}{" "}
@@ -843,12 +823,9 @@ export function VehicleReentryEvaluationAnalyzer() {
                     </dd>
                   </div>
                   <div>
-                    <dt className="text-xs text-muted">Total heat load</dt>
+                    <dt className="orbix-label">Total heat load</dt>
                     <dd className="mt-1">
-                      <output
-                        className="font-mono text-lg font-semibold text-accent"
-                        htmlFor={allOutputIds}
-                      >
+                      <output className="orbix-data-lg" htmlFor={allOutputIds}>
                         {preciseFormatter.format(
                           result.summary.thermal
                             .totalHeatLoadMegajoulesPerSquareMetre,
@@ -865,7 +842,7 @@ export function VehicleReentryEvaluationAnalyzer() {
                 className="border-t border-border pt-5"
               >
                 <h4
-                  className="orbix-label text-accent"
+                  className="text-sm font-semibold text-foreground"
                   id="vehicle-reentry-evaluation-tps-title"
                 >
                   TPS recommendation
@@ -878,25 +855,17 @@ export function VehicleReentryEvaluationAnalyzer() {
                 </output>
                 <dl className="mt-4 grid gap-4 sm:grid-cols-2">
                   <div>
-                    <dt className="text-xs text-muted">
-                      Margin classification
-                    </dt>
+                    <dt className="orbix-label">Margin classification</dt>
                     <dd className="mt-1">
-                      <output
-                        className="font-mono text-sm font-semibold text-accent"
-                        htmlFor={allOutputIds}
-                      >
+                      <output className="orbix-data" htmlFor={allOutputIds}>
                         {result.summary.tps.thermalMargin.classification}
                       </output>
                     </dd>
                   </div>
                   <div>
-                    <dt className="text-xs text-muted">Required thickness</dt>
+                    <dt className="orbix-label">Required thickness</dt>
                     <dd className="mt-1">
-                      <output
-                        className="font-mono text-lg font-semibold text-accent"
-                        htmlFor={allOutputIds}
-                      >
+                      <output className="orbix-data-lg" htmlFor={allOutputIds}>
                         {preciseFormatter.format(
                           result.summary.tps.requiredThickness.millimetres,
                         )}{" "}
@@ -905,12 +874,9 @@ export function VehicleReentryEvaluationAnalyzer() {
                     </dd>
                   </div>
                   <div>
-                    <dt className="text-xs text-muted">Estimated TPS mass</dt>
+                    <dt className="orbix-label">Estimated TPS mass</dt>
                     <dd className="mt-1">
-                      <output
-                        className="font-mono text-lg font-semibold text-accent"
-                        htmlFor={allOutputIds}
-                      >
+                      <output className="orbix-data-lg" htmlFor={allOutputIds}>
                         {preciseFormatter.format(
                           result.summary.tps.estimatedTPSMassKilograms,
                         )}{" "}
@@ -919,19 +885,16 @@ export function VehicleReentryEvaluationAnalyzer() {
                     </dd>
                   </div>
                   <div>
-                    <dt className="text-xs text-muted">Thermal margin</dt>
+                    <dt className="orbix-label">Thermal margin</dt>
                     <dd className="mt-1">
-                      <output
-                        className="font-mono text-lg font-semibold text-accent"
-                        htmlFor={allOutputIds}
-                      >
+                      <output className="orbix-data-lg" htmlFor={allOutputIds}>
                         {standardFormatter.format(
                           result.summary.tps.thermalMargin.marginPercentage,
                         )}
                         %
                       </output>
                     </dd>
-                    <p className="mt-1 font-mono text-[0.68rem] text-muted">
+                    <p className="orbix-data mt-1 text-muted">
                       {preciseFormatter.format(
                         result.summary.tps.thermalMargin
                           .heatLoadMarginMegajoulesPerSquareMetre,
@@ -943,13 +906,10 @@ export function VehicleReentryEvaluationAnalyzer() {
               </section>
             </div>
           ) : (
-            <div className="py-5">
-              <p className="font-mono text-3xl text-muted">—</p>
-              <p className="mt-3 text-sm leading-6 text-muted">
-                Enter a valid vehicle and reentry scenario to generate the
-                integrated evaluation.
-              </p>
-            </div>
+            <NotCalculated invalid={Object.values(errors).some(Boolean)}>
+              Enter a valid vehicle and reentry scenario to generate the
+              integrated evaluation.
+            </NotCalculated>
           )}
         </CalculatorResultSection>
 
@@ -958,7 +918,7 @@ export function VehicleReentryEvaluationAnalyzer() {
             <AlertTriangle aria-hidden="true" size={17} />
             Engineering assumptions
           </p>
-          <ul className="mt-4 grid list-disc gap-2 pl-5 text-xs leading-5 text-muted sm:grid-cols-2">
+          <ul className="mt-4 grid list-disc gap-2 pl-5 text-sm leading-6 text-muted sm:grid-cols-2">
             <li>Educational engineering model</li>
             <li>Constant vehicle properties</li>
             <li>Simplified atmosphere and heating</li>

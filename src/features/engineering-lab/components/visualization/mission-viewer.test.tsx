@@ -11,6 +11,8 @@ import type {
   VehicleReentryEvaluationInputs,
 } from "@/features/engineering-lab/types";
 
+import { formatLabValue } from "./format-lab-value";
+
 import { MissionViewer } from "./mission-viewer";
 
 const reentryInputs: VehicleReentryEvaluationInputs = {
@@ -60,12 +62,12 @@ describe("MissionViewer", () => {
       />,
     );
 
-    expect(markup).toContain("Mission Control");
+    expect(markup).toContain("Mission control viewer");
     expect(markup).toContain("Unified Mission Viewer Test");
-    expect(markup).toContain("Mission Summary");
-    expect(markup).toContain("Mission Phases");
-    expect(markup).toContain("Visualization Panel");
-    expect(markup).toContain("Engineering Telemetry");
+    expect(markup).toContain("Mission summary");
+    expect(markup).toContain("Mission phases");
+    expect(markup).toContain("Diagrams");
+    expect(markup).toContain("Reported values");
   });
 
   it("displays report-provided engineering telemetry", () => {
@@ -83,10 +85,7 @@ describe("MissionViewer", () => {
     expect(markup).toContain("TPS mass");
     expect(markup).toContain("Thermal margin");
     expect(markup).toContain(
-      new Intl.NumberFormat("en-US", {
-        maximumFractionDigits: 3,
-        minimumFractionDigits: 2,
-      }).format(
+      formatLabValue(
         completeReport.orbitalAnalysis?.totalDeltaVMetresPerSecond ?? 0,
       ),
     );
@@ -101,10 +100,10 @@ describe("MissionViewer", () => {
       />,
     );
 
-    expect(markup).toContain("Mission Orbit Visualization");
-    expect(markup).toContain("TRANSFER PATH");
-    expect(markup).toContain("Orbit Transfer");
-    expect(markup).toContain("Arrival Orbit");
+    expect(markup).toContain("Mission orbit diagram");
+    expect(markup).toContain("Transfer path");
+    expect(markup).toContain("Orbit transfer");
+    expect(markup).toContain("Arrival orbit");
   });
 
   it("renders the existing reentry visualization when evaluation output is available", () => {
@@ -116,10 +115,10 @@ describe("MissionViewer", () => {
       />,
     );
 
-    expect(markup).toContain("Reentry Profile Visualization");
+    expect(markup).toContain("Reentry profile");
     expect(markup).toContain("Unified Viewer Vehicle");
-    expect(markup).toContain("PEAK HEATING");
-    expect(markup).toContain("Thermal Protection");
+    expect(markup).toContain("Peak heating");
+    expect(markup).toContain("Thermal protection");
   });
 
   it("provides keyboard-navigable phase controls", () => {
@@ -135,7 +134,7 @@ describe("MissionViewer", () => {
     expect(markup).toContain('role="tab"');
     expect(markup).toContain('aria-selected="true"');
     expect(markup).toContain('tabindex="0"');
-    expect(markup).toContain("Arrow keys navigate phases");
+    expect(markup).toContain("Arrow keys move between phases");
   });
 
   it("handles missing optional mission, orbital, thermal, and reentry outputs", () => {
@@ -156,8 +155,8 @@ describe("MissionViewer", () => {
     expect(markup).toContain("No optional mission systems reported");
     expect(markup).toContain("Orbital visualization unavailable");
     expect(markup).toContain("Reentry visualization unavailable");
-    expect(markup).toContain("Orbit Transfer");
-    expect(markup).toContain("Educational");
+    expect(markup).toContain("Orbit transfer");
+    expect(markup).toContain("Label only");
     expect(markup).toContain("Not reported");
   });
 });

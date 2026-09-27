@@ -1,10 +1,9 @@
-import { Activity, BarChart3 } from "lucide-react";
-
 import type { MissionScenario } from "@/features/engineering-lab/missions";
 import type {
   MissionProfileAnalysis,
   MissionReport,
 } from "@/features/engineering-lab/types";
+import { formatLabValue } from "../visualization/format-lab-value";
 
 export interface MissionTradeStudyEntry {
   readonly analysis?: MissionProfileAnalysis;
@@ -28,11 +27,6 @@ interface ScenarioMetrics {
   readonly transferDurationHours?: number;
   readonly vehicleName?: string;
 }
-
-const metricFormatter = new Intl.NumberFormat("en-US", {
-  maximumFractionDigits: 2,
-  minimumFractionDigits: 0,
-});
 
 function getScenarioMetrics({
   analysis,
@@ -75,45 +69,16 @@ function getScenarioMetrics({
   };
 }
 
-function displayMetric(value: number | string | undefined, unit?: string) {
-  const displayed =
-    typeof value === "number" ? metricFormatter.format(value) : value;
-  return displayed === undefined ? "Not reported" : `${displayed}${unit ?? ""}`;
+function displayMetric(value: number | string | undefined) {
+  const displayed = typeof value === "number" ? formatLabValue(value) : value;
+  return displayed === undefined ? "Not reported" : displayed;
 }
 
-function TelemetryRail({
-  label,
-  unit,
-  value,
-}: {
-  readonly label: string;
-  readonly unit: string;
-  readonly value?: number;
-}) {
-  return (
-    <div aria-label={`${label}: ${displayMetric(value, unit)}`}>
-      <div className="flex items-center justify-between gap-4 text-xs">
-        <span className="text-muted-strong font-semibold">{label}</span>
-        <output className="font-mono text-accent">
-          {displayMetric(value, unit)}
-        </output>
-      </div>
-      <div
-        aria-hidden="true"
-        className="mt-2 h-2 overflow-hidden rounded-full border border-white/10 bg-black/25"
-      >
-        <div
-          className={
-            "h-full rounded-full transition-opacity motion-reduce:transition-none " +
-            (value === undefined
-              ? "w-0 bg-transparent"
-              : "w-full bg-[linear-gradient(90deg,color-mix(in_srgb,var(--orbix-accent)_35%,transparent),color-mix(in_srgb,var(--orbix-accent)_80%,transparent))]")
-          }
-        />
-      </div>
-    </div>
-  );
-}
+const NUMERIC_COLUMNS = [
+  { key: "deltaVMetresPerSecond", label: "Delta-v", unit: "m/s" },
+  { key: "transferDurationHours", label: "Transfer duration", unit: "h" },
+  { key: "maneuverCount", label: "Maneuvers" },
+] as const;
 
 export function buildTradeStudyExplanations(
   entries: readonly MissionTradeStudyEntry[],
@@ -170,6 +135,26 @@ export function buildTradeStudyExplanations(
   return explanations;
 }
 
+function NumberCell({ value }: { readonly value?: number }) {
+  return (
+    <td
+      className={
+        value === undefined ? "text-right text-muted" : "orbix-data text-right"
+      }
+    >
+      {displayMetric(value)}
+    </td>
+  );
+}
+
+function TextCell({ value }: { readonly value?: string }) {
+  return (
+    <td className={value === undefined ? "text-muted" : undefined}>
+      {displayMetric(value)}
+    </td>
+  );
+}
+
 export function TradeStudyMetrics({ entries }: TradeStudyMetricsProps) {
   const rows = entries.map((entry) => ({
     entry,
@@ -177,153 +162,71 @@ export function TradeStudyMetrics({ entries }: TradeStudyMetricsProps) {
   }));
 
   return (
-    <div className="space-y-9">
-      <section aria-labelledby="trade-study-metrics-title">
-        <p className="flex items-center gap-2 font-mono text-[0.6rem] tracking-[0.16em] text-accent uppercase">
-          <Activity aria-hidden="true" size={14} />
-          Comparison matrix // Supplied outputs
-        </p>
-        <h3
-          className="mt-1 text-xl font-semibold"
-          id="trade-study-metrics-title"
-        >
-          Mission Comparison Metrics
-        </h3>
+    <section aria-labelledby="trade-study-metrics-title">
+      <h4 className="orbix-h4 text-foreground" id="trade-study-metrics-title">
+        Mission comparison metrics
+      </h4>
+      <p className="mt-1 text-sm leading-6 text-muted">
+        Values as supplied by each completed analysis. The table scrolls
+        sideways on narrow screens.
+      </p>
 
-        <div
-          aria-label="Scrollable mission comparison table"
-          className="mt-5 overflow-x-auto rounded-2xl border border-white/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
-          tabIndex={0}
-        >
-          <table className="min-w-[78rem] border-collapse text-left text-xs">
-            <caption className="sr-only">
-              Existing orbital, vehicle, and thermal outputs for each mission
-              scenario; no ranking or feasibility result is provided.
-            </caption>
-            <thead className="bg-surface font-mono tracking-[0.08em] text-muted uppercase">
-              <tr>
-                <th className="px-4 py-3" scope="col">
-                  Mission
+      <div
+        aria-label="Scrollable mission comparison table"
+        className="orbix-table-wrap mt-3"
+        role="region"
+        tabIndex={0}
+      >
+        <table className="orbix-table">
+          <caption className="sr-only">
+            Existing orbital, vehicle, and thermal outputs for each mission
+            scenario; no ranking or feasibility result is provided.
+          </caption>
+          <thead>
+            <tr>
+              <th scope="col">Mission</th>
+              {NUMERIC_COLUMNS.map((column) => (
+                <th className="text-right" key={column.key} scope="col">
+                  {column.label}
+                  {"unit" in column ? ` (${column.unit})` : ""}
                 </th>
-                <th className="px-4 py-3" scope="col">
-                  Delta-v
-                </th>
-                <th className="px-4 py-3" scope="col">
-                  Transfer duration
-                </th>
-                <th className="px-4 py-3" scope="col">
-                  Maneuvers
-                </th>
-                <th className="px-4 py-3" scope="col">
-                  Vehicle
-                </th>
-                <th className="px-4 py-3" scope="col">
-                  Peak deceleration
-                </th>
-                <th className="px-4 py-3" scope="col">
-                  Reentry duration
-                </th>
-                <th className="px-4 py-3" scope="col">
-                  TPS material
-                </th>
-                <th className="px-4 py-3" scope="col">
-                  TPS mass
-                </th>
-                <th className="px-4 py-3" scope="col">
-                  Thickness
-                </th>
-                <th className="px-4 py-3" scope="col">
-                  Thermal margin
-                </th>
-              </tr>
-            </thead>
-            <tbody className="text-muted-strong divide-y divide-white/8 bg-surface">
-              {rows.map(({ entry, metrics }) => (
-                <tr key={entry.scenario.id}>
-                  <th className="px-4 py-4 font-semibold" scope="row">
-                    {entry.scenario.name}
-                  </th>
-                  <td className="px-4 py-4 font-mono">
-                    {displayMetric(metrics.deltaVMetresPerSecond, " m/s")}
-                  </td>
-                  <td className="px-4 py-4 font-mono">
-                    {displayMetric(metrics.transferDurationHours, " h")}
-                  </td>
-                  <td className="px-4 py-4 font-mono">
-                    {displayMetric(metrics.maneuverCount)}
-                  </td>
-                  <td className="px-4 py-4">
-                    {displayMetric(metrics.vehicleName)}
-                  </td>
-                  <td className="px-4 py-4 font-mono">
-                    {displayMetric(metrics.peakDecelerationGs, " g")}
-                  </td>
-                  <td className="px-4 py-4 font-mono">
-                    {displayMetric(metrics.reentryDurationSeconds, " s")}
-                  </td>
-                  <td className="px-4 py-4">
-                    {displayMetric(metrics.tpsMaterial)}
-                  </td>
-                  <td className="px-4 py-4 font-mono">
-                    {displayMetric(metrics.tpsMassKilograms, " kg")}
-                  </td>
-                  <td className="px-4 py-4 font-mono">
-                    {displayMetric(metrics.tpsThicknessMillimetres, " mm")}
-                  </td>
-                  <td className="px-4 py-4">
-                    {displayMetric(metrics.thermalMargin)}
-                  </td>
-                </tr>
               ))}
-            </tbody>
-          </table>
-        </div>
-      </section>
-
-      <section aria-labelledby="trade-study-visual-comparison-title">
-        <p className="flex items-center gap-2 font-mono text-[0.6rem] tracking-[0.16em] text-accent uppercase">
-          <BarChart3 aria-hidden="true" size={14} />
-          Visual comparison // Unscaled telemetry rails
-        </p>
-        <h3
-          className="mt-1 text-xl font-semibold"
-          id="trade-study-visual-comparison-title"
-        >
-          Reported Metric Availability
-        </h3>
-        <p className="mt-2 max-w-3xl text-xs leading-5 text-muted">
-          Rail length indicates that a value is available, not its relative
-          magnitude. Exact supplied values remain the comparison reference.
-        </p>
-
-        <div className="mt-5 grid gap-4 xl:grid-cols-3">
-          {rows.map(({ entry, metrics }) => (
-            <article
-              className="rounded-xl border border-white/10 bg-surface/80 p-4"
-              key={entry.scenario.id}
-            >
-              <h4 className="text-sm font-semibold">{entry.scenario.name}</h4>
-              <div className="mt-4 space-y-4">
-                <TelemetryRail
-                  label="Delta-v"
-                  unit=" m/s"
-                  value={metrics.deltaVMetresPerSecond}
-                />
-                <TelemetryRail
-                  label="Peak deceleration"
-                  unit=" g"
-                  value={metrics.peakDecelerationGs}
-                />
-                <TelemetryRail
-                  label="TPS mass"
-                  unit=" kg"
-                  value={metrics.tpsMassKilograms}
-                />
-              </div>
-            </article>
-          ))}
-        </div>
-      </section>
-    </div>
+              <th scope="col">Vehicle</th>
+              <th className="text-right" scope="col">
+                Peak deceleration (g)
+              </th>
+              <th className="text-right" scope="col">
+                Reentry duration (s)
+              </th>
+              <th scope="col">TPS material</th>
+              <th className="text-right" scope="col">
+                TPS mass (kg)
+              </th>
+              <th className="text-right" scope="col">
+                Thickness (mm)
+              </th>
+              <th scope="col">Thermal margin</th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map(({ entry, metrics }) => (
+              <tr key={entry.scenario.id}>
+                <th scope="row">{entry.scenario.name}</th>
+                {NUMERIC_COLUMNS.map((column) => (
+                  <NumberCell key={column.key} value={metrics[column.key]} />
+                ))}
+                <TextCell value={metrics.vehicleName} />
+                <NumberCell value={metrics.peakDecelerationGs} />
+                <NumberCell value={metrics.reentryDurationSeconds} />
+                <TextCell value={metrics.tpsMaterial} />
+                <NumberCell value={metrics.tpsMassKilograms} />
+                <NumberCell value={metrics.tpsThicknessMillimetres} />
+                <TextCell value={metrics.thermalMargin} />
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </section>
   );
 }

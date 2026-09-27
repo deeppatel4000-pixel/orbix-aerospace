@@ -1,117 +1,116 @@
-import { ArrowUpRight } from "lucide-react";
-import Link from "next/link";
+import { ArrowRight, ExternalLink } from "lucide-react";
+import Image from "next/image";
 
-import { OrbixEnvironmentBackdrop } from "@/components/brand/orbix-environment";
 import { OrbixWordmark } from "@/components/brand/orbix-wordmark";
 import { Container } from "@/components/layout/container";
+import { ButtonLink } from "@/components/ui";
 import { siteConfig } from "@/config/site";
+import { listAircraft } from "@/features/aircraft/data";
+import { listRockets } from "@/features/rockets/data";
+import { getRocketVisual } from "@/features/rockets/data/rocket-visuals";
 
 /**
- * The homepage hero.
+ * Homepage intro (spec 14, Home, steps 1 and 2).
  *
- * ## What changed and why
+ * Left: the wordmark as the `h1`, one lead paragraph that says plainly what
+ * ORBIX is, and two destinations. Right, from 1024px: one credited real
+ * photograph in a `<figure>`. No backdrop, no overlay, nothing behind text.
  *
- * The previous hero gave its most valuable space to a 3D-bevelled raster
- * wordmark, then rendered the same four discipline labels twice in one
- * viewport — once as `01`-`04` beneath the buttons and again as
- * `SYS-01`-`SYS-04` inside a panel — while three `aria-hidden` ellipses
- * orbited the mark and two "status" chips with glowing dots reported no state
- * at all.
- *
- * This states what ORBIX is in words, over real orbital photography, with two
- * destinations. The disciplines appear once. Nothing here pretends to be
- * telemetry.
- *
- * ## Calls to action
- *
- * Primary goes to the aircraft registry — the largest completed system, and
- * one the old homepage never linked to. Secondary goes to the Engineering
- * Laboratory, which is what distinguishes ORBIX from a catalogue. Neither is
- * a vague "Get started".
+ * The photograph, alt text, credit, licence and source page all come from the
+ * typed Saturn V record in `rocket-visuals.ts`, so a re-sourced file carries
+ * its own attribution here and a renamed field fails type checking.
  */
-const DISCIPLINES = [
-  "Orbital mechanics",
-  "Vehicle analysis",
-  "Atmospheric entry",
-  "Thermal protection",
-] as const;
+const HERO_ROCKET_ID = "saturn-v";
+
+const SOURCE_HOST_LABELS: Readonly<Record<string, string>> = {
+  "commons.wikimedia.org": "Wikimedia Commons",
+};
+
+function sourceLabel(sourceUrl: string): string {
+  const host = new URL(sourceUrl).hostname;
+  return SOURCE_HOST_LABELS[host] ?? host.replace(/^www\./, "");
+}
 
 export function Hero() {
+  const vehicleCount = listAircraft().length + listRockets().length;
+  const visual = getRocketVisual(HERO_ROCKET_ID);
+
   return (
-    <section
-      aria-labelledby="home-hero-title"
-      className="relative isolate overflow-hidden border-b border-border-subtle"
-    >
-      <OrbixEnvironmentBackdrop priority theme="orbital" />
-      {/* A single scrim. The previous hero stacked a brand glow, an
-          environment backdrop, a starfield and a grid overlay. */}
-      <div
-        aria-hidden="true"
-        className="absolute inset-0 -z-10 bg-[linear-gradient(90deg,var(--orbix-bg-page)_0%,color-mix(in_srgb,var(--orbix-bg-page)_78%,transparent)_52%,transparent_100%)]"
-      />
+    <section aria-labelledby="home-title" className="border-b border-border">
+      <Container className="grid gap-12 pt-12 pb-8 lg:grid-cols-12 lg:gap-6 lg:pb-12">
+        <div className="flex flex-col justify-center lg:col-span-7">
+          {/* The wordmark is the heading. Its accessible name comes from the
+              image alt, so no visually hidden duplicate sits beside it. */}
+          <h1 id="home-title">
+            <OrbixWordmark
+              alt={siteConfig.wordmark}
+              className="w-[clamp(10.5rem,23vw,15rem)]"
+              priority
+              sizes="(min-width: 1044px) 240px, (min-width: 731px) 23vw, 168px"
+            />
+          </h1>
 
-      <Container className="flex min-h-[calc(88svh-5.5rem)] flex-col justify-center py-20 lg:py-28">
-        <p className="orbix-profile-hero__classification">
-          Aerospace systems · Engineering · Research
-        </p>
+          <p className="orbix-lead mt-6">
+            ORBIX is an educational project about aircraft, launch vehicles and
+            the engineering behind them. It has records of {vehicleCount}{" "}
+            landmark vehicles, a side-by-side comparison, and calculators for
+            orbital mechanics, compressible flow and atmospheric entry.
+          </p>
 
-        {/*
-         * The wordmark is the logo, not type.
-         *
-         * `h1` is kept so the document still opens with a real level-one
-         * heading; its accessible name comes from the image's alt, which is the
-         * whole point of alt text on a logo that IS the heading. No `sr-only`
-         * duplicate sits beside it — that would announce "ORBIX ORBIX".
-         *
-         * The transparent PNG sits directly on the hero scrim: no plate, no
-         * glow, no box. Width is fluid and drives height through the
-         * component's own `aspect-[1055/400]`, so the mark tracks the clamp
-         * behaviour the display type had and never outgrows the copy beneath.
-         *
-         * `sizes` restates `clamp(168px, 23vw, 240px)` in media-query form, so
-         * the two odd breakpoints are derived rather than chosen: 23vw reaches
-         * 168px at a 730px viewport and 240px at a 1044px one, which is exactly
-         * where the clamp stops tracking the viewport at each end. It selects
-         * which rendition to download and changes no geometry.
-         */}
-        <h1 className="mt-6" id="home-hero-title">
-          <OrbixWordmark
-            alt={siteConfig.wordmark}
-            className="w-[clamp(10.5rem,23vw,15rem)]"
-            priority
-            sizes="(min-width: 1044px) 240px, (min-width: 731px) 23vw, 168px"
-          />
-        </h1>
-
-        <p className="text-muted-strong mt-7 max-w-[46rem] text-lg leading-9">
-          An educational aerospace platform that connects landmark aircraft and
-          launch vehicles to the orbital mechanics, entry physics and thermal
-          analysis behind them — with every value traced back to its published
-          source.
-        </p>
-
-        <div className="mt-10 flex flex-col gap-3 sm:flex-row">
-          <Link className="orbix-home-cta" href="/aircraft">
-            Explore the aircraft registry
-            <ArrowUpRight aria-hidden="true" size={16} />
-          </Link>
-          <Link
-            className="orbix-home-cta orbix-home-cta--secondary"
-            href="/engineering-lab"
-          >
-            Open the Engineering Laboratory
-            <ArrowUpRight aria-hidden="true" size={16} />
-          </Link>
+          <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+            <ButtonLink href="/aircraft" variant="primary">
+              Browse the aircraft registry
+              <ArrowRight aria-hidden="true" size={16} />
+            </ButtonLink>
+            <ButtonLink href="/engineering-lab" variant="secondary">
+              Open the Engineering Lab
+              <ArrowRight aria-hidden="true" size={16} />
+            </ButtonLink>
+          </div>
         </div>
 
-        {/* The disciplines, stated once. */}
-        <ul className="mt-16 grid max-w-3xl grid-cols-2 gap-x-8 gap-y-3 border-t border-border-subtle pt-6 sm:grid-cols-4">
-          {DISCIPLINES.map((discipline) => (
-            <li className="text-sm leading-6 text-muted" key={discipline}>
-              {discipline}
-            </li>
-          ))}
-        </ul>
+        {visual ? (
+          <figure className="w-full max-w-sm lg:col-span-5 lg:max-w-none">
+            <div className="relative aspect-[4/5] overflow-hidden rounded-md border border-border bg-surface">
+              <Image
+                alt={visual.alt}
+                className="object-cover"
+                fill
+                priority
+                sizes="(min-width: 1152px) 440px, (min-width: 1024px) 38vw, 384px"
+                src={visual.src}
+                style={{ objectPosition: visual.objectPosition }}
+              />
+            </div>
+            <figcaption className="orbix-label mt-3">
+              Apollo 11 Saturn V lifting off from Launch Complex 39A, 16 July
+              1969. Credit: {visual.credit}.{" "}
+              <a
+                className="orbix-link"
+                href={visual.licenseUrl}
+                rel="noreferrer"
+                target="_blank"
+              >
+                {visual.license}
+                <span className="sr-only">
+                  {" "}
+                  (licence terms, opens in a new tab)
+                </span>
+              </a>
+              .{" "}
+              <a
+                className="orbix-link inline-flex items-center gap-1"
+                href={visual.sourceUrl}
+                rel="noreferrer"
+                target="_blank"
+              >
+                Source: {sourceLabel(visual.sourceUrl)}
+                <span className="sr-only"> (opens in a new tab)</span>
+                <ExternalLink aria-hidden="true" size={14} />
+              </a>
+            </figcaption>
+          </figure>
+        ) : null}
       </Container>
     </section>
   );

@@ -1,24 +1,25 @@
 import type { ReactNode } from "react";
-import type { LucideIcon } from "lucide-react";
 
 import styles from "./calculator-card.module.css";
 
 interface CalculatorCardProps {
   children: ReactNode;
+  /** One sentence stating what the module calculates or shows. */
   description: string;
-  eyebrow: string;
   headingLevel?: 2 | 3;
-  icon: LucideIcon;
   id: string;
   title: string;
 }
 
+/**
+ * The frame every Engineering Lab module renders in (spec 14): the module
+ * name as a heading, one sentence of purpose, then the module itself. The
+ * visual treatment lives in `calculator-card.module.css`.
+ */
 export function CalculatorCard({
   children,
   description,
-  eyebrow,
   headingLevel = 2,
-  icon: Icon,
   id,
   title,
 }: CalculatorCardProps) {
@@ -28,23 +29,12 @@ export function CalculatorCard({
   return (
     <article aria-labelledby={titleId} className={styles.card} id={id}>
       <header className={styles.header}>
-        <div className={styles.headerLayout}>
-          <span className={styles.iconWell}>
-            <Icon aria-hidden="true" size={23} strokeWidth={1.7} />
-          </span>
-          <div className="min-w-0">
-            <p className="orbix-label">{eyebrow}</p>
-            <Heading
-              className="font-display mt-2.5 text-2xl leading-tight font-semibold tracking-[-0.035em] text-balance sm:text-3xl"
-              id={titleId}
-            >
-              {title}
-            </Heading>
-            <p className="mt-4 max-w-3xl text-sm leading-6 text-muted sm:text-[0.95rem] sm:leading-7">
-              {description}
-            </p>
-          </div>
-        </div>
+        <Heading className="orbix-h2 text-foreground" id={titleId}>
+          {title}
+        </Heading>
+        <p className="mt-2 max-w-[68ch] text-base leading-7 text-text-secondary">
+          {description}
+        </p>
       </header>
       <div className={styles.workspace}>{children}</div>
     </article>

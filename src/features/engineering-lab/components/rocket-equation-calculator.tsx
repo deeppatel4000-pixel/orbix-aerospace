@@ -1,5 +1,6 @@
 "use client";
 
+import { Button } from "@/components/ui";
 import { useState, type FormEvent } from "react";
 import {
   AlertTriangle,
@@ -15,7 +16,9 @@ import {
 } from "@/features/engineering-lab/calculators";
 import {
   CalculatorNumberField,
+  focusFirstInvalidField,
   CalculatorResultSection,
+  NotCalculated,
   ValidationErrorSummary,
 } from "@/features/engineering-lab/components/shared";
 import type {
@@ -84,6 +87,7 @@ export function RocketEquationCalculator() {
     setErrors(validationErrors);
 
     if (hasRocketEquationValidationErrors(validationErrors)) {
+      focusFirstInvalidField(event.currentTarget);
       setResult(null);
       return;
     }
@@ -134,24 +138,17 @@ export function RocketEquationCalculator() {
             />
           </div>
 
-          <ValidationErrorSummary errors={Object.values(errors)} />
+          <ValidationErrorSummary errors={errors} idPrefix="rocket-equation" />
 
           <div className="mt-7 flex flex-col gap-3 sm:flex-row">
-            <button
-              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-accent px-5 py-2.5 text-sm font-semibold text-background shadow-[0_12px_40px_rgb(87_215_255/0.18)] transition-colors hover:bg-foreground"
-              type="submit"
-            >
+            <Button variant="primary" type="submit">
               <Calculator aria-hidden="true" size={16} />
               Calculate delta-v
-            </button>
-            <button
-              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-border bg-surface/60 px-5 py-2.5 text-sm font-semibold text-foreground transition-colors hover:border-accent/60 hover:text-accent"
-              onClick={resetCalculator}
-              type="button"
-            >
+            </Button>
+            <Button variant="secondary" onClick={resetCalculator}>
               <RotateCcw aria-hidden="true" size={16} />
-              Reset example
-            </button>
+              Reset inputs
+            </Button>
           </div>
         </form>
       </div>
@@ -166,23 +163,21 @@ export function RocketEquationCalculator() {
           {result ? (
             <>
               <output
-                className="block font-mono text-4xl font-semibold tracking-[-0.04em] text-accent sm:text-5xl"
+                className="orbix-data-lg block"
                 htmlFor="rocket-equation-initialMassKg rocket-equation-finalMassKg rocket-equation-specificImpulseSeconds"
               >
                 {numberFormatter.format(result.deltaVMetresPerSecond)} m/s
               </output>
               <dl className="mt-6 grid gap-3 border-t border-border pt-5 sm:grid-cols-2">
                 <div>
-                  <dt className="text-xs text-muted">Mass ratio</dt>
-                  <dd className="mt-1 font-mono text-sm font-semibold">
+                  <dt className="orbix-label">Mass ratio</dt>
+                  <dd className="orbix-data mt-1">
                     {numberFormatter.format(result.massRatio)}
                   </dd>
                 </div>
                 <div>
-                  <dt className="text-xs text-muted">
-                    Effective exhaust velocity
-                  </dt>
-                  <dd className="mt-1 font-mono text-sm font-semibold">
+                  <dt className="orbix-label">Effective exhaust velocity</dt>
+                  <dd className="orbix-data mt-1">
                     {numberFormatter.format(
                       result.effectiveExhaustVelocityMetresPerSecond,
                     )}{" "}
@@ -192,18 +187,15 @@ export function RocketEquationCalculator() {
               </dl>
             </>
           ) : (
-            <div className="py-5">
-              <p className="font-mono text-3xl text-muted">— m/s</p>
-              <p className="mt-3 text-sm leading-6 text-muted">
-                Validate the inputs and run the calculation to produce an ideal
-                delta-v result.
-              </p>
-            </div>
+            <NotCalculated invalid={Object.values(errors).some(Boolean)}>
+              Validate the inputs and run the calculation to produce an ideal
+              delta-v result.
+            </NotCalculated>
           )}
         </CalculatorResultSection>
 
-        <section className="rounded-2xl border border-border bg-surface/55 p-5 sm:p-6">
-          <p className="orbix-label flex items-center gap-2 text-accent">
+        <section className="rounded-md border border-border bg-surface p-4 sm:p-6">
+          <p className="orbix-label flex items-center gap-2">
             <Sigma aria-hidden="true" size={15} />
             Equation model
           </p>
@@ -215,29 +207,29 @@ export function RocketEquationCalculator() {
           </p>
           <dl className="mt-5 grid gap-4 text-sm sm:grid-cols-2">
             <div>
-              <dt className="font-mono text-xs text-accent">Δv</dt>
+              <dt className="orbix-data text-foreground">Δv</dt>
               <dd className="mt-1 text-muted">Ideal velocity change</dd>
             </div>
             <div>
-              <dt className="font-mono text-xs text-accent">Isp</dt>
+              <dt className="orbix-data text-foreground">Isp</dt>
               <dd className="mt-1 text-muted">Specific impulse in seconds</dd>
             </div>
             <div>
-              <dt className="font-mono text-xs text-accent">g0</dt>
+              <dt className="orbix-data text-foreground">g0</dt>
               <dd className="mt-1 text-muted">
                 {STANDARD_GRAVITY_METRES_PER_SECOND_SQUARED} m/s²
               </dd>
             </div>
             <div>
-              <dt className="font-mono text-xs text-accent">ln</dt>
+              <dt className="orbix-data text-foreground">ln</dt>
               <dd className="mt-1 text-muted">Natural logarithm</dd>
             </div>
             <div>
-              <dt className="font-mono text-xs text-accent">m0</dt>
+              <dt className="orbix-data text-foreground">m0</dt>
               <dd className="mt-1 text-muted">Initial vehicle mass</dd>
             </div>
             <div>
-              <dt className="font-mono text-xs text-accent">mf</dt>
+              <dt className="orbix-data text-foreground">mf</dt>
               <dd className="mt-1 text-muted">Final vehicle mass</dd>
             </div>
           </dl>
@@ -248,7 +240,7 @@ export function RocketEquationCalculator() {
             <AlertTriangle aria-hidden="true" size={17} />
             Engineering notes
           </p>
-          <ul className="mt-4 list-disc space-y-2 pl-5 text-xs leading-5 text-muted">
+          <ul className="mt-4 list-disc space-y-2 pl-5 text-sm leading-6 text-muted">
             <li>
               This is an ideal, one-dimensional model with constant specific
               impulse.

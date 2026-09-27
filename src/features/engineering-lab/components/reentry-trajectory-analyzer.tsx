@@ -1,5 +1,6 @@
 "use client";
 
+import { Button } from "@/components/ui";
 import { useMemo, useState, type FormEvent } from "react";
 import {
   AlertTriangle,
@@ -13,7 +14,10 @@ import {
 import { analyzeReentryTrajectory } from "@/features/engineering-lab/analysis";
 import {
   CalculatorNumberField,
+  focusFirstInvalidField,
+  focusFirstInvalidFieldOnEnter,
   CalculatorResultSection,
+  NotCalculated,
   ValidationErrorSummary,
 } from "@/features/engineering-lab/components/shared";
 import type {
@@ -217,6 +221,7 @@ export function ReentryTrajectoryAnalyzer() {
 
   function preventSubmission(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    focusFirstInvalidField(event.currentTarget);
   }
 
   function resetAnalyzer() {
@@ -226,9 +231,13 @@ export function ReentryTrajectoryAnalyzer() {
   return (
     <div className="grid gap-8 xl:grid-cols-[minmax(0,0.9fr)_minmax(24rem,1.1fr)] xl:gap-10">
       <div>
-        <form noValidate onSubmit={preventSubmission}>
+        <form
+          noValidate
+          onKeyDown={focusFirstInvalidFieldOnEnter}
+          onSubmit={preventSubmission}
+        >
           <fieldset>
-            <legend className="orbix-label text-accent">
+            <legend className="text-base font-semibold text-foreground">
               Initial trajectory state
             </legend>
             <div className="mt-5 grid gap-5 sm:grid-cols-2">
@@ -286,8 +295,8 @@ export function ReentryTrajectoryAnalyzer() {
           </fieldset>
 
           <fieldset className="mt-8 border-t border-border pt-7">
-            <legend className="orbix-label text-accent">
-              Integration controls // Optional
+            <legend className="text-base font-semibold text-foreground">
+              Integration controls (optional)
             </legend>
             <div className="mt-5 grid gap-5 sm:grid-cols-2">
               <CalculatorNumberField
@@ -327,17 +336,17 @@ export function ReentryTrajectoryAnalyzer() {
           />
 
           <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:items-center">
-            <p className="text-xs leading-5 text-muted">
+            <p className="text-sm leading-6 text-muted">
               Valid changes rerun the complete trajectory immediately.
             </p>
-            <button
-              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-border bg-surface/60 px-5 py-2.5 text-sm font-semibold text-foreground transition-colors hover:border-accent/60 hover:text-accent sm:ml-auto"
+            <Button
+              className="shrink-0 whitespace-nowrap sm:ml-auto"
+              variant="secondary"
               onClick={resetAnalyzer}
-              type="button"
             >
               <RotateCcw aria-hidden="true" size={16} />
-              Reset example
-            </button>
+              Reset inputs
+            </Button>
           </div>
         </form>
 
@@ -345,34 +354,34 @@ export function ReentryTrajectoryAnalyzer() {
           aria-labelledby="reentry-trajectory-relationships-title"
           className="mt-8 border-t border-border pt-7"
         >
-          <p className="orbix-label text-accent">Educational visualization</p>
+          <p className="orbix-label">Educational visualization</p>
           <h3
             className="mt-1 text-lg font-semibold"
             id="reentry-trajectory-relationships-title"
           >
             Why the trajectory changes
           </h3>
-          <div className="mt-5 grid gap-4 sm:grid-cols-3">
-            <article className="rounded-2xl border border-border bg-background/40 p-4">
-              <Gauge aria-hidden="true" className="text-accent" size={18} />
+          <div className="mt-5 grid gap-4 sm:grid-cols-3 xl:grid-cols-1">
+            <article className="rounded-md border border-border-subtle bg-surface-raised p-4">
+              <Gauge aria-hidden="true" className="text-muted" size={18} />
               <h4 className="mt-3 text-sm font-semibold">Velocity</h4>
-              <p className="mt-2 text-xs leading-5 text-muted">
+              <p className="mt-2 text-sm leading-6 text-muted">
                 Aerodynamic drag opposes the flight direction, removing velocity
                 as the vehicle moves through the atmosphere.
               </p>
             </article>
-            <article className="rounded-2xl border border-border bg-background/40 p-4">
-              <CloudSun aria-hidden="true" className="text-accent" size={18} />
+            <article className="rounded-md border border-border-subtle bg-surface-raised p-4">
+              <CloudSun aria-hidden="true" className="text-muted" size={18} />
               <h4 className="mt-3 text-sm font-semibold">Density</h4>
-              <p className="mt-2 text-xs leading-5 text-muted">
+              <p className="mt-2 text-sm leading-6 text-muted">
                 Atmospheric density generally rises during descent, increasing
                 dynamic pressure and the drag acting on the vehicle.
               </p>
             </article>
-            <article className="rounded-2xl border border-border bg-background/40 p-4">
-              <Scale aria-hidden="true" className="text-accent" size={18} />
+            <article className="rounded-md border border-border-subtle bg-surface-raised p-4">
+              <Scale aria-hidden="true" className="text-muted" size={18} />
               <h4 className="mt-3 text-sm font-semibold">G-load</h4>
-              <p className="mt-2 text-xs leading-5 text-muted">
+              <p className="mt-2 text-sm leading-6 text-muted">
                 G-load changes as velocity and density evolve, so the strongest
                 deceleration can occur between the initial and final states.
               </p>
@@ -392,17 +401,17 @@ export function ReentryTrajectoryAnalyzer() {
             <div className="space-y-6">
               <section aria-labelledby="reentry-trajectory-initial-title">
                 <h4
-                  className="orbix-label text-accent"
+                  className="text-sm font-semibold text-foreground"
                   id="reentry-trajectory-initial-title"
                 >
                   Initial state
                 </h4>
                 <dl className="mt-3 grid gap-4 sm:grid-cols-2">
                   <div>
-                    <dt className="text-xs text-muted">Altitude</dt>
+                    <dt className="orbix-label">Altitude</dt>
                     <dd className="mt-1">
                       <output
-                        className="font-mono text-sm font-semibold"
+                        className="orbix-data"
                         htmlFor="reentry-trajectory-initialAltitudeMeters"
                       >
                         {stateFormatter.format(
@@ -413,10 +422,10 @@ export function ReentryTrajectoryAnalyzer() {
                     </dd>
                   </div>
                   <div>
-                    <dt className="text-xs text-muted">Velocity</dt>
+                    <dt className="orbix-label">Velocity</dt>
                     <dd className="mt-1">
                       <output
-                        className="font-mono text-sm font-semibold"
+                        className="orbix-data"
                         htmlFor="reentry-trajectory-initialVelocityMetersPerSecond"
                       >
                         {stateFormatter.format(
@@ -434,19 +443,16 @@ export function ReentryTrajectoryAnalyzer() {
                 className="border-t border-border pt-5"
               >
                 <h4
-                  className="orbix-label text-accent"
+                  className="text-sm font-semibold text-foreground"
                   id="reentry-trajectory-final-title"
                 >
                   Final state
                 </h4>
                 <dl className="mt-3 grid gap-4 sm:grid-cols-3">
                   <div>
-                    <dt className="text-xs text-muted">Altitude</dt>
+                    <dt className="orbix-label">Altitude</dt>
                     <dd className="mt-1">
-                      <output
-                        className="font-mono text-sm font-semibold"
-                        htmlFor={allOutputIds}
-                      >
+                      <output className="orbix-data" htmlFor={allOutputIds}>
                         {stateFormatter.format(
                           result.finalState.altitudeMeters,
                         )}{" "}
@@ -455,12 +461,9 @@ export function ReentryTrajectoryAnalyzer() {
                     </dd>
                   </div>
                   <div>
-                    <dt className="text-xs text-muted">Velocity</dt>
+                    <dt className="orbix-label">Velocity</dt>
                     <dd className="mt-1">
-                      <output
-                        className="font-mono text-sm font-semibold"
-                        htmlFor={allOutputIds}
-                      >
+                      <output className="orbix-data" htmlFor={allOutputIds}>
                         {stateFormatter.format(
                           result.finalState.velocityMetersPerSecond,
                         )}{" "}
@@ -469,12 +472,9 @@ export function ReentryTrajectoryAnalyzer() {
                     </dd>
                   </div>
                   <div>
-                    <dt className="text-xs text-muted">Elapsed time</dt>
+                    <dt className="orbix-label">Elapsed time</dt>
                     <dd className="mt-1">
-                      <output
-                        className="font-mono text-sm font-semibold"
-                        htmlFor={allOutputIds}
-                      >
+                      <output className="orbix-data" htmlFor={allOutputIds}>
                         {stateFormatter.format(result.durationSeconds)} s
                       </output>
                     </dd>
@@ -487,19 +487,16 @@ export function ReentryTrajectoryAnalyzer() {
                 className="border-t border-border pt-5"
               >
                 <h4
-                  className="orbix-label text-accent"
+                  className="text-sm font-semibold text-foreground"
                   id="reentry-trajectory-performance-title"
                 >
                   Performance summary
                 </h4>
                 <dl className="mt-3 grid gap-4 sm:grid-cols-2">
                   <div>
-                    <dt className="text-xs text-muted">Peak deceleration</dt>
+                    <dt className="orbix-label">Peak deceleration</dt>
                     <dd className="mt-1">
-                      <output
-                        className="font-mono text-lg font-semibold text-accent"
-                        htmlFor={allOutputIds}
-                      >
+                      <output className="orbix-data-lg" htmlFor={allOutputIds}>
                         {stateFormatter.format(
                           result.peakDeceleration
                             .decelerationMetersPerSecondSquared,
@@ -509,12 +506,9 @@ export function ReentryTrajectoryAnalyzer() {
                     </dd>
                   </div>
                   <div>
-                    <dt className="text-xs text-muted">Peak deceleration</dt>
+                    <dt className="orbix-label">Peak deceleration</dt>
                     <dd className="mt-1">
-                      <output
-                        className="font-mono text-lg font-semibold text-accent"
-                        htmlFor={allOutputIds}
-                      >
+                      <output className="orbix-data-lg" htmlFor={allOutputIds}>
                         {loadFormatter.format(
                           result.peakDeceleration.decelerationGs,
                         )}{" "}
@@ -523,31 +517,22 @@ export function ReentryTrajectoryAnalyzer() {
                     </dd>
                   </div>
                   <div className="sm:col-span-2">
-                    <dt className="text-xs text-muted">Peak velocity state</dt>
-                    <dd className="mt-2 grid gap-3 rounded-xl border border-border bg-background/35 p-4 sm:grid-cols-3">
-                      <output
-                        className="font-mono text-sm font-semibold"
-                        htmlFor={allOutputIds}
-                      >
+                    <dt className="orbix-label">Peak velocity state</dt>
+                    <dd className="mt-2 grid gap-3 rounded-md border border-border-subtle bg-surface-raised p-4 sm:grid-cols-3">
+                      <output className="orbix-data" htmlFor={allOutputIds}>
                         {stateFormatter.format(
                           result.peakHeatingVelocityState
                             .velocityMetersPerSecond,
                         )}{" "}
                         m/s
                       </output>
-                      <output
-                        className="font-mono text-sm font-semibold"
-                        htmlFor={allOutputIds}
-                      >
+                      <output className="orbix-data" htmlFor={allOutputIds}>
                         {stateFormatter.format(
                           result.peakHeatingVelocityState.altitudeMeters,
                         )}{" "}
                         m altitude
                       </output>
-                      <output
-                        className="font-mono text-sm font-semibold"
-                        htmlFor={allOutputIds}
-                      >
+                      <output className="orbix-data" htmlFor={allOutputIds}>
                         {stateFormatter.format(
                           result.peakHeatingVelocityState.timeSeconds,
                         )}{" "}
@@ -565,12 +550,12 @@ export function ReentryTrajectoryAnalyzer() {
                 <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
                   <div>
                     <h4
-                      className="orbix-label text-accent"
+                      className="text-sm font-semibold text-foreground"
                       id="reentry-trajectory-table-title"
                     >
                       Trajectory table
                     </h4>
-                    <p className="mt-2 text-xs leading-5 text-muted">
+                    <p className="mt-2 text-sm leading-6 text-muted">
                       Showing {visibleTrajectoryPoints.length} sampled points
                       from {result.trajectoryPoints.length} total simulation
                       points.
@@ -580,89 +565,69 @@ export function ReentryTrajectoryAnalyzer() {
 
                 <div
                   aria-label="Sampled reentry trajectory data"
-                  className="mt-4 overflow-x-auto rounded-xl border border-border focus:ring-2 focus:ring-accent/30 focus:outline-none"
+                  className="orbix-table-wrap mt-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
                   role="region"
                   tabIndex={0}
                 >
-                  <table className="w-full min-w-[62rem] border-collapse text-left text-xs">
+                  <table className="orbix-table w-full min-w-[62rem]">
                     <caption className="sr-only">
                       Evenly sampled states from the complete reentry trajectory
                       simulation
                     </caption>
-                    <thead className="bg-surface/80 text-muted">
+                    <thead>
                       <tr>
-                        <th className="px-3 py-3 font-semibold" scope="col">
-                          Time (s)
-                        </th>
-                        <th className="px-3 py-3 font-semibold" scope="col">
-                          Altitude (m)
-                        </th>
-                        <th className="px-3 py-3 font-semibold" scope="col">
-                          Velocity (m/s)
-                        </th>
-                        <th className="px-3 py-3 font-semibold" scope="col">
-                          Density (kg/m³)
-                        </th>
-                        <th className="px-3 py-3 font-semibold" scope="col">
-                          Dynamic pressure (Pa)
-                        </th>
-                        <th className="px-3 py-3 font-semibold" scope="col">
-                          Deceleration (m/s²)
-                        </th>
-                        <th className="px-3 py-3 font-semibold" scope="col">
-                          G-load
-                        </th>
+                        <th scope="col">Time (s)</th>
+                        <th scope="col">Altitude (m)</th>
+                        <th scope="col">Velocity (m/s)</th>
+                        <th scope="col">Density (kg/m³)</th>
+                        <th scope="col">Dynamic pressure (Pa)</th>
+                        <th scope="col">Deceleration (m/s²)</th>
+                        <th scope="col">G-load</th>
                       </tr>
                     </thead>
                     <tbody>
                       {visibleTrajectoryPoints.map(
                         ({ originalIndex, point }) => (
-                          <tr
-                            className="border-t border-border bg-background/30"
-                            key={originalIndex}
-                          >
-                            <th
-                              className="px-3 py-3 font-mono font-medium text-foreground"
-                              scope="row"
-                            >
+                          <tr key={originalIndex}>
+                            <th className="orbix-num" scope="row">
                               <output htmlFor={allOutputIds}>
                                 {stateFormatter.format(point.timeSeconds)}
                               </output>
                             </th>
-                            <td className="px-3 py-3 font-mono">
+                            <td className="orbix-num">
                               <output htmlFor={allOutputIds}>
                                 {stateFormatter.format(point.altitudeMeters)}
                               </output>
                             </td>
-                            <td className="px-3 py-3 font-mono">
+                            <td className="orbix-num">
                               <output htmlFor={allOutputIds}>
                                 {stateFormatter.format(
                                   point.velocityMetersPerSecond,
                                 )}
                               </output>
                             </td>
-                            <td className="px-3 py-3 font-mono">
+                            <td className="orbix-num">
                               <output htmlFor={allOutputIds}>
                                 {densityFormatter.format(
                                   point.densityKilogramsPerCubicMetre,
                                 )}
                               </output>
                             </td>
-                            <td className="px-3 py-3 font-mono">
+                            <td className="orbix-num">
                               <output htmlFor={allOutputIds}>
                                 {stateFormatter.format(
                                   point.dynamicPressurePascals,
                                 )}
                               </output>
                             </td>
-                            <td className="px-3 py-3 font-mono">
+                            <td className="orbix-num">
                               <output htmlFor={allOutputIds}>
                                 {stateFormatter.format(
                                   point.decelerationMetersPerSecondSquared,
                                 )}
                               </output>
                             </td>
-                            <td className="px-3 py-3 font-mono">
+                            <td className="orbix-num">
                               <output htmlFor={allOutputIds}>
                                 {loadFormatter.format(point.decelerationGs)}
                               </output>
@@ -676,13 +641,10 @@ export function ReentryTrajectoryAnalyzer() {
               </section>
             </div>
           ) : (
-            <div className="py-5">
-              <p className="font-mono text-3xl text-muted">—</p>
-              <p className="mt-3 text-sm leading-6 text-muted">
-                Enter a valid initial state and vehicle configuration to
-                integrate the descent trajectory.
-              </p>
-            </div>
+            <NotCalculated invalid={Object.values(errors).some(Boolean)}>
+              Enter a valid initial state and vehicle configuration to integrate
+              the descent trajectory.
+            </NotCalculated>
           )}
         </CalculatorResultSection>
 
@@ -691,7 +653,7 @@ export function ReentryTrajectoryAnalyzer() {
             <AlertTriangle aria-hidden="true" size={17} />
             Engineering assumptions
           </p>
-          <ul className="mt-4 grid list-disc gap-2 pl-5 text-xs leading-5 text-muted sm:grid-cols-2">
+          <ul className="mt-4 grid list-disc gap-2 pl-5 text-sm leading-6 text-muted sm:grid-cols-2">
             <li>Simplified point-mass model</li>
             <li>Constant vehicle properties</li>
             <li>Fixed flight-path angle</li>

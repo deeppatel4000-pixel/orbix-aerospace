@@ -1,17 +1,17 @@
 "use client";
 
-import { useRef, useState, type KeyboardEvent } from "react";
-import { Box, Flame, Orbit, Radar } from "lucide-react";
+import { useId, useRef, useState, type KeyboardEvent } from "react";
 
+import { EmptyState } from "@/components/ui/empty-state";
 import type {
   MissionProfileAnalysis,
   MissionReport,
   VehicleReentryEvaluationAnalysis,
 } from "@/features/engineering-lab/types";
 
-import { EarthModel } from "./earth-model";
-import { OrbitPath3D } from "./orbit-path-3d";
-import { SpacecraftMarker } from "./spacecraft-marker";
+import { OrbitDiagram } from "./orbit-diagram";
+import { ReentryProfileChart } from "./reentry-profile-visualization";
+import { formatLabValue } from "./format-lab-value";
 
 export type Mission3DMode = "orbital" | "reentry";
 
@@ -22,16 +22,12 @@ export interface Mission3DSceneProps {
   readonly vehicleReentryEvaluation?: VehicleReentryEvaluationAnalysis | null;
 }
 
-const sceneFormatter = new Intl.NumberFormat("en-US", {
-  maximumFractionDigits: 2,
-});
-
 const sceneModes = [
-  { icon: Orbit, id: "orbital", label: "Orbital Mission" },
-  { icon: Flame, id: "reentry", label: "Reentry Mission" },
+  { id: "orbital", label: "Orbital mission" },
+  { id: "reentry", label: "Reentry mission" },
 ] as const;
 
-function SceneTelemetry({
+function SceneValue({
   label,
   unit,
   value,
@@ -41,14 +37,20 @@ function SceneTelemetry({
   readonly value: number | string | undefined;
 }) {
   return (
-    <div className="rounded-lg border border-white/10 bg-[#03090d]/80 px-3 py-2 backdrop-blur-sm">
-      <dt className="font-mono text-[0.5rem] tracking-[0.1em] text-[#70878d] uppercase">
-        {label}
-      </dt>
-      <dd className="mt-1">
-        <output className="font-mono text-xs font-semibold text-[#d9e5e6]">
+    <div className="flex items-baseline justify-between gap-4 border-t border-border-subtle py-2 text-sm">
+      <dt className="text-muted">{label}</dt>
+      <dd className="text-right">
+        <output
+          className={
+            value === undefined
+              ? "text-muted"
+              : typeof value === "number"
+                ? "orbix-data text-foreground"
+                : "text-foreground"
+          }
+        >
           {typeof value === "number"
-            ? sceneFormatter.format(value)
+            ? formatLabValue(value)
             : (value ?? "Not reported")}
           {value !== undefined && unit ? ` ${unit}` : ""}
         </output>
@@ -57,12 +59,19 @@ function SceneTelemetry({
   );
 }
 
+/**
+ * The mission geometry in two views, as real tabs: the orbits drawn to scale
+ * from the computed altitudes, and the reentry altitude and velocity history.
+ * Nothing rotates or moves on its own. The export keeps its historical name
+ * so existing imports and deep links do not break.
+ */
 export function Mission3DScene({
   initialMode,
   missionProfileAnalysis,
   missionReport,
   vehicleReentryEvaluation,
 }: Mission3DSceneProps) {
+  const baseId = `mission-scene-${useId().replaceAll(":", "")}`;
   const deltaVBudget = missionProfileAnalysis?.sourceAnalyses.deltaVBudget;
   const transfer = deltaVBudget?.sourceAnalyses.hohmannTransfer;
   const planeChange = deltaVBudget?.sourceAnalyses.orbitalPlaneChange;
@@ -81,255 +90,169 @@ export function Mission3DScene({
 
   if (!hasOrbitalScene && !hasReentryScene) {
     return (
-      <section
-        aria-label="Interactive 3D mission scene"
-        className="rounded-2xl border border-white/10 bg-[#040b0f] p-6"
-      >
-        <div className="flex items-center gap-3">
-          <span className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-accent">
-            <Box aria-hidden="true" size={18} />
-          </span>
-          <div>
-            <p className="font-mono text-[0.62rem] tracking-[0.14em] text-accent uppercase">
-              Spatial mission view
-            </p>
-            <h3 className="mt-1 text-lg font-semibold">
-              3D mission visualization unavailable
-            </h3>
-          </div>
-        </div>
-        <p className="mt-4 max-w-2xl text-sm leading-6 text-[#83989d]">
-          A resolved orbital transfer, orbital maneuver, or vehicle reentry
-          evaluation is required to render the presentation scene.
-        </p>
-      </section>
+      <EmptyState
+        description="A resolved orbital transfer, orbital maneuver, or vehicle reentry evaluation is required to draw the mission scene."
+        title="Mission scene unavailable"
+      />
     );
   }
 
-  function selectMode(mode: Mission3DMode) {
-    const modeAvailable =
-      mode === "orbital" ? hasOrbitalScene : hasReentryScene;
-
-    if (modeAvailable) setActiveMode(mode);
-  }
-
-  function focusMode(index: number) {
-    const mode = sceneModes[index];
-
-    if (!mode) return;
-
-    const modeAvailable =
-      mode.id === "orbital" ? hasOrbitalScene : hasReentryScene;
-
-    if (!modeAvailable) return;
-
-    setActiveMode(mode.id);
-    modeRefs.current[index]?.focus();
-  }
+  const isAvailable = (mode: Mission3DMode) =>
+    mode === "orbital" ? hasOrbitalScene : hasReentryScene;
 
   function handleModeKeyDown(
     event: KeyboardEvent<HTMLButtonElement>,
     index: number,
   ) {
-    if (event.key === "ArrowRight" || event.key === "ArrowLeft") {
-      event.preventDefault();
-      const direction = event.key === "ArrowRight" ? 1 : -1;
-      const nextIndex =
-        (index + direction + sceneModes.length) % sceneModes.length;
-      focusMode(nextIndex);
+    if (event.key !== "ArrowRight" && event.key !== "ArrowLeft") return;
+
+    event.preventDefault();
+    const direction = event.key === "ArrowRight" ? 1 : -1;
+    const nextIndex =
+      (index + direction + sceneModes.length) % sceneModes.length;
+    const nextMode = sceneModes[nextIndex];
+
+    if (nextMode && isAvailable(nextMode.id)) {
+      setActiveMode(nextMode.id);
+      modeRefs.current[nextIndex]?.focus();
     }
   }
 
+  const activeLabel =
+    sceneModes.find((mode) => mode.id === activeMode)?.label ?? "";
+
   return (
-    <section
-      aria-labelledby="mission-3d-scene-title"
-      className="overflow-hidden rounded-2xl border border-white/12 bg-[#02070a]"
-    >
-      <header className="flex flex-col gap-4 border-b border-white/10 px-5 py-4 lg:flex-row lg:items-center lg:justify-between">
-        <div>
-          <p className="flex items-center gap-2 font-mono text-[0.61rem] tracking-[0.16em] text-accent uppercase">
-            <Radar aria-hidden="true" size={14} />
-            Spatial telemetry // Presentation geometry
-          </p>
-          <h3
-            className="mt-1 text-lg font-semibold"
-            id="mission-3d-scene-title"
-          >
-            Interactive 3D Mission Scene
-          </h3>
-          <p className="mt-1 text-xs text-[#748a90]">{missionName}</p>
-        </div>
-
-        <div
-          aria-label="3D mission mode"
-          className="grid grid-cols-2 gap-2 rounded-xl border border-white/10 bg-[#061015] p-1.5"
-          role="tablist"
-        >
-          {sceneModes.map((mode, index) => {
-            const Icon = mode.icon;
-            const available =
-              mode.id === "orbital" ? hasOrbitalScene : hasReentryScene;
-            const isActive = mode.id === activeMode;
-
-            return (
-              <button
-                aria-controls="mission-3d-scene-panel"
-                aria-selected={isActive}
-                className={
-                  "flex items-center justify-center gap-2 rounded-lg px-3 py-2 text-xs font-semibold transition-colors outline-none focus-visible:ring-2 focus-visible:ring-accent disabled:cursor-not-allowed disabled:opacity-35 motion-reduce:transition-none " +
-                  (isActive
-                    ? "bg-accent/12 text-accent"
-                    : "text-[#84999e] hover:bg-white/5 hover:text-[#dce6e7]")
-                }
-                disabled={!available}
-                id={`mission-3d-${mode.id}-tab`}
-                key={mode.id}
-                onClick={() => selectMode(mode.id)}
-                onKeyDown={(event) => handleModeKeyDown(event, index)}
-                ref={(element) => {
-                  modeRefs.current[index] = element;
-                }}
-                role="tab"
-                tabIndex={isActive ? 0 : -1}
-                type="button"
-              >
-                <Icon aria-hidden="true" size={14} />
-                {mode.label}
-              </button>
-            );
-          })}
-        </div>
+    <section aria-labelledby={`${baseId}-title`} className="min-w-0">
+      <header className="border-b border-border-subtle pb-4">
+        <h3 className="orbix-h3 text-foreground" id={`${baseId}-title`}>
+          Mission scene
+        </h3>
+        <p className="mt-1 text-sm text-muted">{missionName}</p>
       </header>
 
       <div
-        aria-labelledby={`mission-3d-${activeMode}-tab`}
-        className="relative min-h-[34rem] overflow-hidden"
-        id="mission-3d-scene-panel"
+        aria-label="Mission scene view"
+        className="orbix-tabs mt-4 overflow-visible"
+        role="tablist"
+      >
+        {sceneModes.map((mode, index) => {
+          const isActive = mode.id === activeMode;
+
+          return (
+            <button
+              aria-controls={`${baseId}-panel`}
+              aria-selected={isActive}
+              className="orbix-tab"
+              disabled={!isAvailable(mode.id)}
+              id={`${baseId}-${mode.id}-tab`}
+              key={mode.id}
+              onClick={() => setActiveMode(mode.id)}
+              onKeyDown={(event) => handleModeKeyDown(event, index)}
+              ref={(element) => {
+                modeRefs.current[index] = element;
+              }}
+              role="tab"
+              tabIndex={isActive ? 0 : -1}
+              type="button"
+            >
+              {mode.label}
+            </button>
+          );
+        })}
+      </div>
+
+      <div
+        aria-labelledby={`${baseId}-${activeMode}-tab`}
+        className="pt-4 sm:pt-6"
+        id={`${baseId}-panel`}
         role="tabpanel"
-        style={{ perspective: "1000px" }}
         tabIndex={0}
       >
-        <div
-          aria-hidden="true"
-          className="absolute inset-0 opacity-80"
-          style={{
-            backgroundImage:
-              "radial-gradient(circle at 12% 18%, rgba(255,255,255,0.8) 0 1px, transparent 1.5px), radial-gradient(circle at 78% 24%, rgba(255,255,255,0.7) 0 1px, transparent 1.5px), radial-gradient(circle at 42% 72%, rgba(125,213,218,0.65) 0 1px, transparent 1.5px), radial-gradient(circle at 88% 80%, rgba(255,255,255,0.55) 0 1px, transparent 1.5px), linear-gradient(180deg, #02070b 0%, #06131a 100%)",
-            backgroundSize:
-              "112px 112px, 173px 173px, 137px 137px, 209px 209px, 100% 100%",
-          }}
-        />
-        <div
-          aria-hidden="true"
-          className="technical-grid absolute inset-0 [mask-image:linear-gradient(to_bottom,black,transparent)] opacity-20"
-        />
-
         {activeMode === "orbital" ? (
-          <div aria-label="Orbital mission scene" className="absolute inset-0">
-            <div className="absolute inset-0 flex [transform:translateZ(30px)] items-center justify-center pb-10">
-              <EarthModel label="Earth with orbital mission paths" />
-            </div>
-            <OrbitPath3D
+          <div
+            aria-label="Orbital mission scene"
+            className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_16rem]"
+            role="group"
+          >
+            <OrbitDiagram
+              description={
+                transfer
+                  ? `Initial orbit at ${formatLabValue(transfer.initialOrbit.altitudeMetres)} m, target orbit at ${formatLabValue(transfer.finalOrbit.altitudeMetres)} m, joined by a Hohmann transfer.`
+                  : `Maneuver orbit of radius ${formatLabValue(planeChange?.orbitalRadiusMetres ?? 0)} m.`
+              }
               finalAltitudeMetres={transfer?.finalOrbit.altitudeMetres}
               initialAltitudeMetres={transfer?.initialOrbit.altitudeMetres}
-              transferAvailable={transfer !== undefined}
+              maneuverOrbitRadiusMetres={
+                transfer ? undefined : planeChange?.orbitalRadiusMetres
+              }
+              title="Earth with orbital mission paths"
             />
-
-            <dl className="absolute top-4 left-4 grid gap-2 sm:grid-cols-2">
-              <SceneTelemetry
+            <dl>
+              <SceneValue
                 label="Mission phase"
                 value={transfer ? "Orbit transfer" : "Orbital maneuver"}
               />
-              <SceneTelemetry
+              <SceneValue
                 label="Total delta-v"
                 unit="m/s"
                 value={
-                  missionReport?.orbitalAnalysis?.totalDeltaVMetresPerSecond
+                  missionReport?.orbitalAnalysis?.totalDeltaVMetresPerSecond ??
+                  missionProfileAnalysis?.totalDeltaVMetresPerSecond
                 }
               />
-              <SceneTelemetry
+              <SceneValue
                 label="Transfer duration"
                 unit="s"
                 value={transfer?.transfer.transferTimeSeconds}
               />
-              <SceneTelemetry
+              <SceneValue
                 label="Plane change"
                 unit="deg"
                 value={planeChange?.inclinationChangeDegrees}
               />
             </dl>
           </div>
-        ) : (
-          <div aria-label="Reentry mission scene" className="absolute inset-0">
-            <div className="absolute -bottom-24 -left-16 [transform:translateZ(20px)] sm:-bottom-20 sm:left-[6%]">
-              <EarthModel label="Earth atmospheric reentry target" />
-            </div>
-
-            <div className="absolute top-[18%] right-[8%] h-[55%] w-[68%] rotate-[24deg] border-t border-dashed border-signal/45 [transform-style:preserve-3d] sm:right-[12%] sm:w-[58%]">
-              <div className="absolute -top-[4.5rem] right-[8%] motion-safe:animate-bounce motion-reduce:animate-none">
-                <SpacecraftMarker
-                  phaseLabel="Atmospheric descent"
-                  thermalActive
-                />
-              </div>
-              <span className="absolute -top-7 left-1/2 rounded border border-signal/20 bg-[#071116]/90 px-2 py-1 font-mono text-[0.52rem] tracking-[0.08em] text-signal uppercase">
-                Reentry corridor
-              </span>
-            </div>
-
-            <div className="absolute right-0 bottom-0 left-0 h-[34%] border-t border-[#65cfd4]/20 bg-gradient-to-t from-[#0b4a58]/28 to-transparent shadow-[0_-24px_60px_rgba(45,164,174,0.08)]">
-              <span className="absolute top-3 right-4 font-mono text-[0.55rem] tracking-[0.12em] text-[#75aab0] uppercase">
-                Atmospheric interface
-              </span>
-            </div>
-
-            <div className="absolute top-4 right-4 flex items-center gap-2 rounded-lg border border-signal/20 bg-[#100e08]/80 px-3 py-2 text-signal backdrop-blur-sm">
-              <Flame aria-hidden="true" size={14} />
-              <span className="font-mono text-[0.57rem] tracking-[0.1em] uppercase">
-                Heating phase indicated
-              </span>
-            </div>
-
-            <dl className="absolute top-4 left-4 grid gap-2 sm:grid-cols-2">
-              <SceneTelemetry
+        ) : vehicleReentryEvaluation ? (
+          <div
+            aria-label="Reentry mission scene"
+            className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_16rem]"
+            role="group"
+          >
+            <ReentryProfileChart analysis={vehicleReentryEvaluation} />
+            <dl>
+              <SceneValue
                 label="Vehicle"
-                value={vehicleReentryEvaluation?.vehicle.vehicleName}
+                value={vehicleReentryEvaluation.vehicle.vehicleName}
               />
-              <SceneTelemetry
+              <SceneValue
                 label="Initial altitude"
                 unit="m"
                 value={
-                  vehicleReentryEvaluation?.summary.flight.initialAltitudeMeters
+                  vehicleReentryEvaluation.summary.flight.initialAltitudeMeters
                 }
               />
-              <SceneTelemetry
+              <SceneValue
                 label="Reentry duration"
                 unit="s"
                 value={
-                  vehicleReentryEvaluation?.summary.flight
-                    .reentryDurationSeconds
+                  vehicleReentryEvaluation.summary.flight.reentryDurationSeconds
                 }
               />
-              <SceneTelemetry
+              <SceneValue
                 label="Peak heating"
                 unit="kW/m²"
                 value={
-                  vehicleReentryEvaluation?.summary.thermal
+                  vehicleReentryEvaluation.summary.thermal
                     .peakHeatFluxKilowattsPerSquareMetre
                 }
               />
             </dl>
           </div>
-        )}
-
-        <p className="absolute right-4 bottom-3 left-4 text-center font-mono text-[0.52rem] tracking-[0.08em] text-[#61777d] uppercase">
-          Illustrative presentation geometry // Not to scale
-        </p>
+        ) : null}
       </div>
 
       <p aria-live="polite" className="sr-only" role="status">
-        Active 3D mission mode:{" "}
-        {activeMode === "orbital" ? "Orbital Mission" : "Reentry Mission"}.
+        Mission scene view: {activeLabel}.
       </p>
     </section>
   );

@@ -50,7 +50,7 @@ const report = generateMissionReport({
 const insights = generateMissionInsights(missionProfile, report);
 
 describe("MissionShowcase", () => {
-  it("renders the mission title and cinematic presentation shell", () => {
+  it("renders the mission title and walkthrough shell", () => {
     const markup = renderToStaticMarkup(
       <MissionShowcase
         insights={insights}
@@ -59,10 +59,9 @@ describe("MissionShowcase", () => {
       />,
     );
 
-    expect(markup).toContain("ORBIX Mission Showcase");
+    expect(markup).toContain("Mission walkthrough");
     expect(markup).toContain("Cinematic Showcase Mission");
-    expect(markup).toContain("Educational simulation review");
-    expect(markup).toContain("Visual sequence only");
+    expect(markup).toContain("not a flight simulation");
   });
 
   it("renders all six storytelling phases", () => {
@@ -71,12 +70,12 @@ describe("MissionShowcase", () => {
     );
 
     expect(SHOWCASE_PHASES).toHaveLength(6);
-    expect(markup).toContain("Launch Preparation");
-    expect(markup).toContain("Orbit Insertion");
-    expect(markup).toContain("Orbital Transfer");
-    expect(markup).toContain("Arrival / Mission Phase");
-    expect(markup).toContain("Atmospheric Entry");
-    expect(markup).toContain("Mission Review");
+    expect(markup).toContain("Launch preparation");
+    expect(markup).toContain("Orbit insertion");
+    expect(markup).toContain("Orbital transfer");
+    expect(markup).toContain("Arrival and mission phase");
+    expect(markup).toContain("Atmospheric entry");
+    expect(markup).toContain("Mission review");
   });
 
   it("supports phase navigation through presentation state", () => {
@@ -114,7 +113,7 @@ describe("MissionShowcase", () => {
       <MissionShowcase missionProfile={missionProfile} report={report} />,
     );
 
-    expect(markup).toContain("Mission Telemetry");
+    expect(markup).toContain("Mission values");
     expect(markup).toContain("Delta-v");
     expect(markup).toContain("Transfer time");
     expect(markup).toContain("Peak deceleration");
@@ -133,23 +132,23 @@ describe("MissionShowcase", () => {
     );
 
     expect(markup).toContain('aria-label="Play mission showcase"');
-    expect(markup).toContain('aria-label="Pause mission showcase"');
+    // Starts paused: Play is offered, Pause appears only while playing.
+    expect(markup).not.toContain('aria-label="Pause mission showcase"');
     expect(markup).toContain('aria-label="Previous showcase phase"');
     expect(markup).toContain('aria-label="Next showcase phase"');
     expect(markup).toContain('aria-label="Restart mission showcase"');
     expect(markup).toContain('aria-live="polite"');
-    expect(markup).toContain("Use left and right arrow keys");
+    expect(markup).toContain("the left and right arrow");
   });
 
-  it("provides an explicit reduced-motion presentation state", () => {
+  it("starts paused and uses no decorative motion", () => {
     const markup = renderToStaticMarkup(
-      <MissionShowcase missionProfile={missionProfile} reducedMotionOverride />,
+      <MissionShowcase missionProfile={missionProfile} />,
     );
 
-    expect(markup).toContain('data-reduced-motion="true"');
-    expect(markup).toContain("Reduced motion mode is active");
-    expect(markup).toContain("motion-reduce:animate-none");
-    expect(markup).toContain("motion-reduce:transition-none");
+    expect(markup).toContain("Showcase paused.");
+    expect(markup).not.toContain("animate-");
+    expect(markup).not.toContain("blur");
   });
 
   it("handles missing optional report and insight sections", () => {

@@ -8,17 +8,21 @@ import {
   useMemo,
   useRef,
   useState,
+  type KeyboardEvent,
   type ReactNode,
 } from "react";
 import {
   CheckCircle2,
+  CircleAlert,
   Copy,
-  Database,
   Save,
   Trash2,
   Upload,
 } from "lucide-react";
 
+import { Button } from "@/components/ui/button";
+import { buttonClass } from "@/components/ui/button-class";
+import { EmptyState } from "@/components/ui/empty-state";
 import { MissionProfileAnalyzer } from "@/features/engineering-lab/components/mission-profile-analyzer";
 import {
   MissionScenarioBuilder,
@@ -40,9 +44,16 @@ interface LoadedScenario {
   readonly scenario: MissionScenario;
 }
 
+interface LibraryMessage {
+  readonly text: string;
+  readonly tone: "error" | "success";
+}
+
 interface ScenarioLibraryContextValue {
   readonly currentScenario: MissionScenarioBuilderOutput | null;
   readonly library: MissionScenarioLibrary;
+  /** True once the library is backed by this browser's localStorage. */
+  readonly persistent: boolean;
   readonly scenarios: readonly MissionScenario[];
   readonly setCurrentScenario: (scenario: MissionScenarioBuilderOutput) => void;
   readonly setScenarios: (scenarios: readonly MissionScenario[]) => void;
@@ -67,6 +78,17 @@ function useScenarioLibraryContext(): ScenarioLibraryContextValue {
   return context;
 }
 
+const STORAGE_UNAVAILABLE_MESSAGE =
+  "Browser storage is not available, so scenarios can be saved for this visit only. They will be lost when you leave or reload the page.";
+
+function isQuotaError(error: unknown): boolean {
+  return (
+    error instanceof DOMException &&
+    (error.name === "QuotaExceededError" ||
+      error.name === "NS_ERROR_DOM_QUOTA_REACHED")
+  );
+}
+
 /** Coordinates input handoff and browser persistence without running analysis. */
 export function ScenarioLibraryIntegration({
   children,
@@ -80,6 +102,7 @@ export function ScenarioLibraryIntegration({
   );
   const [currentScenario, setCurrentScenarioState] =
     useState<MissionScenarioBuilderOutput | null>(null);
+  const [persistent, setPersistent] = useState(false);
   const [storageError, setStorageError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -91,17 +114,16 @@ export function ScenarioLibraryIntegration({
       });
       // Swaps the SSR-safe in-memory library for the localStorage-backed one
       // after mount. `window.localStorage` cannot be read during SSR, so this
-      // is the standard hydration-safe pattern, not derivable state. Newly
-      // flagged by eslint-plugin-react-hooks 7; code unchanged from the
-      // Next 15 baseline. See docs/upgrades/.
+      // is the hydration-safe pattern, not derivable state.
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setLibrary(persistentLibrary);
       setScenarios(listScenarios(persistentLibrary));
+      setPersistent(true);
     } catch (error) {
       setStorageError(
         error instanceof RangeError
-          ? error.message
-          : "Saved scenarios could not be loaded on this device.",
+          ? `Saved scenarios on this device could not be read: ${error.message} New saves last for this visit only.`
+          : STORAGE_UNAVAILABLE_MESSAGE,
       );
     }
   }, [initialScenarios]);
@@ -116,12 +138,20 @@ export function ScenarioLibraryIntegration({
     () => ({
       currentScenario,
       library,
+      persistent,
       scenarios,
       setCurrentScenario,
       setScenarios,
       storageError,
     }),
-    [currentScenario, library, scenarios, setCurrentScenario, storageError],
+    [
+      currentScenario,
+      library,
+      persistent,
+      scenarios,
+      setCurrentScenario,
+      storageError,
+    ],
   );
 
   return (
@@ -131,17 +161,15 @@ export function ScenarioLibraryIntegration({
   );
 }
 
-/** Connects the Day 69 builder output to the library workspace. */
+/** Connects the scenario builder output to the library. */
 export function ScenarioLibraryBuilderTarget() {
   const { setCurrentScenario } = useScenarioLibraryContext();
   return <MissionScenarioBuilder onScenarioCreated={setCurrentScenario} />;
 }
 
 function formatCategory(category: MissionScenario["category"]): string {
-  return category
-    .split("-")
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(" ");
+  const text = category.replaceAll("-", " ");
+  return text.charAt(0).toUpperCase() + text.slice(1);
 }
 
 function formatTimestamp(timestamp: string): string {
@@ -160,44 +188,106 @@ function getIncludedSystems(scenario: MissionScenario): readonly string[] {
 }
 
 export function ScenarioLibrary() {
-  const { currentScenario, library, scenarios, setScenarios, storageError } =
-    useScenarioLibraryContext();
+  const {
+    currentScenario,
+    library,
+    persistent,
+    scenarios,
+    setScenarios,
+    storageError,
+  } = useScenarioLibraryContext();
   const [loadedScenario, setLoadedScenario] = useState<LoadedScenario | null>(
     null,
   );
-  const [announcement, setAnnouncement] = useState("Scenario library ready.");
+  const [message, setMessage] = useState<LibraryMessage | null>(null);
+  const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
   const libraryHeadingRef = useRef<HTMLHeadingElement>(null);
   const loadedHeadingRef = useRef<HTMLHeadingElement>(null);
+  const keepButtonRef = useRef<HTMLButtonElement>(null);
+  const deleteTriggerRefs = useRef(new Map<string, HTMLButtonElement>());
+
+  useEffect(() => {
+    if (pendingDeleteId !== null) keepButtonRef.current?.focus();
+  }, [pendingDeleteId]);
 
   function refreshScenarios() {
     setScenarios(listScenarios(library));
   }
 
+  /**
+   * Runs a library write. If the browser refuses to store it (quota full,
+   * storage blocked), the in-memory entries the write added are rolled back
+   * so the list on screen matches what is actually saved.
+   */
+  function writeToLibrary(
+    write: () => MissionScenario,
+    describeSuccess: (scenario: MissionScenario) => string,
+    fallbackError: string,
+  ) {
+    const idsBefore = new Set(listScenarios(library).map(({ id }) => id));
+
+    try {
+      const saved = write();
+      refreshScenarios();
+      setMessage({
+        text: persistent
+          ? describeSuccess(saved)
+          : `${describeSuccess(saved)} It is kept for this visit only because browser storage is not available.`,
+        tone: persistent ? "success" : "error",
+      });
+    } catch (error) {
+      for (const scenario of listScenarios(library)) {
+        if (!idsBefore.has(scenario.id)) {
+          try {
+            deleteScenario(library, scenario.id);
+          } catch {
+            // Storage is still refusing writes; the entry stays in memory.
+          }
+        }
+      }
+      refreshScenarios();
+      setMessage({
+        text: isQuotaError(error)
+          ? "Not saved: browser storage for this site is full. Delete a saved scenario, then try again."
+          : error instanceof RangeError
+            ? `Not saved: ${error.message}`
+            : fallbackError,
+        tone: "error",
+      });
+    }
+  }
+
   function saveCurrentMission() {
     if (currentScenario === null) return;
 
-    try {
-      const saved = saveScenario(library, {
-        category: currentScenario.category,
-        description: currentScenario.description,
-        name: currentScenario.profile.missionName,
-        profile: currentScenario.profile,
-      });
-      refreshScenarios();
-      setAnnouncement(`${saved.name} saved to the scenario library.`);
-    } catch (error) {
-      setAnnouncement(
-        error instanceof RangeError
-          ? error.message
-          : "The current mission could not be saved.",
-      );
-    }
+    writeToLibrary(
+      () =>
+        saveScenario(library, {
+          category: currentScenario.category,
+          description: currentScenario.description,
+          name: currentScenario.profile.missionName,
+          profile: currentScenario.profile,
+        }),
+      (saved) => `Saved "${saved.name}" to the scenario library.`,
+      "Not saved: the scenario could not be written to browser storage. Check that site data is allowed, then try again.",
+    );
+  }
+
+  function copyScenario(id: string) {
+    writeToLibrary(
+      () => duplicateScenario(library, id),
+      (copy) => `Saved a copy as "${copy.name}".`,
+      "Not duplicated: the copy could not be written to browser storage.",
+    );
   }
 
   function loadScenario(id: string) {
     const scenario = getScenarioById(library, id);
     if (!scenario) {
-      setAnnouncement("The selected mission scenario is unavailable.");
+      setMessage({
+        text: "That scenario is no longer in the library.",
+        tone: "error",
+      });
       return;
     }
 
@@ -205,107 +295,136 @@ export function ScenarioLibrary() {
       revision: (current?.revision ?? 0) + 1,
       scenario,
     }));
-    setAnnouncement(
-      `${scenario.name} loaded into the Mission Profile Analyzer.`,
-    );
+    setMessage({
+      text: `Loaded "${scenario.name}" into the mission profile analyzer below.`,
+      tone: "success",
+    });
     window.setTimeout(() => loadedHeadingRef.current?.focus(), 0);
   }
 
-  function copyScenario(id: string) {
-    try {
-      const copy = duplicateScenario(library, id);
-      refreshScenarios();
-      setAnnouncement(`${copy.name} added to the scenario library.`);
-    } catch (error) {
-      setAnnouncement(
-        error instanceof RangeError
-          ? error.message
-          : "The mission scenario could not be duplicated.",
-      );
+  function cancelDelete() {
+    const id = pendingDeleteId;
+    setPendingDeleteId(null);
+    if (id !== null) {
+      window.setTimeout(() => deleteTriggerRefs.current.get(id)?.focus(), 0);
     }
   }
 
-  function removeScenario(id: string) {
+  function confirmDelete(id: string) {
     const scenario = getScenarioById(library, id);
+    setPendingDeleteId(null);
     if (!scenario) return;
 
-    deleteScenario(library, id);
+    try {
+      deleteScenario(library, id);
+      setMessage({
+        text: `Deleted "${scenario.name}" from the scenario library.`,
+        tone: "success",
+      });
+    } catch {
+      setMessage({
+        text: `"${scenario.name}" was removed from this page, but browser storage could not be updated. It may reappear after a reload.`,
+        tone: "error",
+      });
+    }
     if (loadedScenario?.scenario.id === id) {
       setLoadedScenario(null);
     }
     refreshScenarios();
-    setAnnouncement(`${scenario.name} deleted from the scenario library.`);
     window.setTimeout(() => libraryHeadingRef.current?.focus(), 0);
   }
 
+  function handleConfirmKeyDown(event: KeyboardEvent<HTMLDivElement>) {
+    if (event.key === "Escape") {
+      event.preventDefault();
+      cancelDelete();
+    }
+  }
+
   return (
-    <div className="space-y-8">
-      <header className="flex flex-col gap-5 border-b border-border pb-7 md:flex-row md:items-end md:justify-between">
-        <div className="max-w-3xl">
-          <p className="orbix-label text-accent">
-            Device library // Mission inputs only
-          </p>
+    <div className="space-y-6">
+      <header className="flex flex-col gap-4 border-b border-border-subtle pb-6 md:flex-row md:items-end md:justify-between">
+        <div className="max-w-[68ch]">
           <h3
-            className="mt-2 text-2xl font-semibold outline-none"
+            className="orbix-h3 text-foreground outline-none"
             id="scenario-library-title"
             ref={libraryHeadingRef}
             tabIndex={-1}
           >
             Saved educational scenarios
           </h3>
-          <p className="mt-3 text-sm leading-6 text-muted">
-            Save and reload mission-profile inputs on this device. The library
-            never evaluates a mission or changes its engineering configuration.
+          <p className="mt-2 text-sm leading-6 text-muted">
+            Scenarios are stored in this browser only. The library keeps the
+            mission inputs; it does not run or change any calculation.
           </p>
         </div>
-        <button
+        <Button
           aria-describedby="save-current-mission-hint"
-          className="inline-flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-xl bg-accent px-5 py-3 text-sm font-semibold text-background transition-opacity outline-none hover:opacity-90 focus-visible:ring-2 focus-visible:ring-accent/45 focus-visible:ring-offset-2 focus-visible:ring-offset-surface disabled:cursor-not-allowed disabled:opacity-45"
+          className="shrink-0"
           disabled={currentScenario === null}
           onClick={saveCurrentMission}
-          type="button"
         >
           <Save aria-hidden="true" size={16} />
-          Save Current Mission
-        </button>
+          Save current mission
+        </Button>
       </header>
 
-      <p className="sr-only" id="save-current-mission-hint">
-        Analyze a custom mission in Module 28 before saving it here.
+      <p
+        className="text-sm leading-6 text-muted"
+        id="save-current-mission-hint"
+      >
+        {currentScenario === null
+          ? "To enable saving, open the mission scenario builder and select Analyze mission."
+          : `Ready to save "${currentScenario.profile.missionName}" from the mission scenario builder.`}
       </p>
 
       {storageError ? (
         <p
-          className="rounded-xl border border-signal/35 bg-signal/8 p-4 text-sm text-signal"
+          className="flex items-start gap-2 border-l-2 border-status-danger pl-3 text-sm leading-6 text-status-danger"
           role="alert"
         >
+          <CircleAlert aria-hidden="true" className="mt-1 shrink-0" size={16} />
           {storageError}
         </p>
       ) : null}
 
-      {scenarios.length === 0 ? (
-        <section
-          aria-labelledby="scenario-library-empty-title"
-          className="rounded-2xl border border-dashed border-border bg-background/30 px-6 py-12 text-center"
-        >
-          <Database
-            aria-hidden="true"
-            className="mx-auto text-accent"
-            size={28}
-          />
-          <h4
-            className="mt-4 text-lg font-semibold"
-            id="scenario-library-empty-title"
+      {/* Always mounted so screen readers announce each new message. */}
+      <div aria-live="polite" role="status">
+        {message ? (
+          <p
+            className={
+              message.tone === "success"
+                ? "flex items-start gap-2 border-l-2 border-status-success pl-3 text-sm leading-6 text-status-success"
+                : "flex items-start gap-2 border-l-2 border-status-danger pl-3 text-sm leading-6 text-status-danger"
+            }
           >
-            No saved mission scenarios
-          </h4>
-          <p className="mx-auto mt-2 max-w-xl text-sm leading-6 text-muted">
-            Configure and analyze a mission in Module 28, then use Save Current
-            Mission to add its unchanged input profile to this device library.
+            {message.tone === "success" ? (
+              <CheckCircle2
+                aria-hidden="true"
+                className="mt-1 shrink-0"
+                size={16}
+              />
+            ) : (
+              <CircleAlert
+                aria-hidden="true"
+                className="mt-1 shrink-0"
+                size={16}
+              />
+            )}
+            {message.text}
           </p>
-        </section>
+        ) : null}
+      </div>
+
+      {scenarios.length === 0 ? (
+        <EmptyState
+          aria-labelledby="scenario-library-empty-title"
+          description="Configure and analyze a mission in the mission scenario builder, then select Save current mission to keep its inputs here."
+          id="scenario-library-empty"
+          title="No saved mission scenarios"
+        />
       ) : (
-        <div
+        <ul
           aria-label="Saved mission scenarios"
           className="grid gap-4 lg:grid-cols-2"
           role="list"
@@ -313,33 +432,34 @@ export function ScenarioLibrary() {
           {scenarios.map((scenario) => {
             const systems = getIncludedSystems(scenario);
             const loaded = loadedScenario?.scenario.id === scenario.id;
+            const confirming = pendingDeleteId === scenario.id;
+            const titleId = `scenario-${scenario.id}-title`;
 
             return (
-              <article
-                aria-labelledby={`scenario-${scenario.id}-title`}
+              <li
+                aria-labelledby={titleId}
                 className={
                   loaded
-                    ? "rounded-2xl border border-accent/60 bg-accent/7 p-5"
-                    : "rounded-2xl border border-border bg-background/35 p-5"
+                    ? "rounded-md border border-border-strong bg-surface-raised p-4 sm:p-6"
+                    : "rounded-md border border-border bg-surface p-4 sm:p-6"
                 }
                 key={scenario.id}
                 role="listitem"
               >
                 <div className="flex flex-wrap items-start justify-between gap-3">
-                  <div>
-                    <p className="font-mono text-[0.62rem] tracking-[0.12em] text-accent uppercase">
+                  <div className="min-w-0">
+                    <p className="orbix-label">
                       {formatCategory(scenario.category)}
                     </p>
                     <h4
-                      className="mt-2 text-lg font-semibold"
-                      id={`scenario-${scenario.id}-title`}
+                      className="orbix-h4 mt-1 break-words text-foreground"
+                      id={titleId}
                     >
                       {scenario.name}
                     </h4>
                   </div>
                   {loaded ? (
-                    <span className="inline-flex items-center gap-1.5 rounded-full border border-accent/35 bg-accent/8 px-3 py-1 text-[0.65rem] font-semibold text-accent">
-                      <CheckCircle2 aria-hidden="true" size={13} />
+                    <span className="orbix-status orbix-status--positive">
                       Loaded
                     </span>
                   ) : null}
@@ -349,87 +469,125 @@ export function ScenarioLibrary() {
                   {scenario.description}
                 </p>
 
-                <dl className="mt-4 grid gap-3 text-xs sm:grid-cols-2">
+                <dl className="mt-4 grid gap-3 text-sm sm:grid-cols-2">
                   <div>
-                    <dt className="text-muted">Created</dt>
-                    <dd className="mt-1 font-mono">
+                    <dt className="orbix-label">Created</dt>
+                    <dd className="mt-1 text-foreground tabular-nums">
                       {formatTimestamp(scenario.createdAt)}
                     </dd>
                   </div>
                   <div>
-                    <dt className="text-muted">Updated</dt>
-                    <dd className="mt-1 font-mono">
+                    <dt className="orbix-label">Updated</dt>
+                    <dd className="mt-1 text-foreground tabular-nums">
                       {formatTimestamp(scenario.updatedAt)}
+                    </dd>
+                  </div>
+                  <div className="sm:col-span-2">
+                    <dt className="orbix-label">Included systems</dt>
+                    <dd className="mt-1 text-foreground">
+                      {systems.length > 0
+                        ? systems.join(", ")
+                        : "Mission identity only"}
                     </dd>
                   </div>
                 </dl>
 
-                <div className="mt-4 border-t border-border pt-4">
-                  <p className="text-xs text-muted">Included systems</p>
-                  <p className="mt-1 text-sm font-semibold">
-                    {systems.length > 0
-                      ? systems.join(" · ")
-                      : "Mission identity only"}
-                  </p>
-                </div>
-
-                <div className="mt-5 grid grid-cols-3 gap-2">
-                  <button
-                    aria-label={`Load ${scenario.name}`}
-                    className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-accent px-3 py-2 text-xs font-semibold text-background outline-none hover:opacity-90 focus-visible:ring-2 focus-visible:ring-accent/45"
-                    onClick={() => loadScenario(scenario.id)}
-                    type="button"
+                {confirming ? (
+                  <div
+                    aria-labelledby={`${titleId}-confirm`}
+                    className="mt-4 border-t border-border-subtle pt-4"
+                    onKeyDown={handleConfirmKeyDown}
+                    role="group"
                   >
-                    <Upload aria-hidden="true" size={14} />
-                    Load
-                  </button>
-                  <button
-                    aria-label={`Duplicate ${scenario.name}`}
-                    className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-border px-3 py-2 text-xs font-semibold outline-none hover:border-accent/60 hover:text-accent focus-visible:ring-2 focus-visible:ring-accent/35"
-                    onClick={() => copyScenario(scenario.id)}
-                    type="button"
-                  >
-                    <Copy aria-hidden="true" size={14} />
-                    Duplicate
-                  </button>
-                  <button
-                    aria-label={`Delete ${scenario.name}`}
-                    className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-signal/35 px-3 py-2 text-xs font-semibold text-signal outline-none hover:bg-signal/8 focus-visible:ring-2 focus-visible:ring-signal/35"
-                    onClick={() => removeScenario(scenario.id)}
-                    type="button"
-                  >
-                    <Trash2 aria-hidden="true" size={14} />
-                    Delete
-                  </button>
-                </div>
-              </article>
+                    <p
+                      className="text-sm leading-6 text-foreground"
+                      id={`${titleId}-confirm`}
+                    >
+                      Delete &quot;{scenario.name}&quot; from this browser? This
+                      cannot be undone.
+                    </p>
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      <Button
+                        className="border-status-danger text-status-danger"
+                        onClick={() => confirmDelete(scenario.id)}
+                        variant="secondary"
+                      >
+                        <Trash2 aria-hidden="true" size={16} />
+                        Delete scenario
+                      </Button>
+                      <button
+                        className={buttonClass({ variant: "ghost" })}
+                        onClick={cancelDelete}
+                        ref={keepButtonRef}
+                        type="button"
+                      >
+                        Keep scenario
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="mt-4 flex flex-wrap gap-2 border-t border-border-subtle pt-4">
+                    <Button
+                      aria-label={`Load ${scenario.name}`}
+                      onClick={() => loadScenario(scenario.id)}
+                      variant="secondary"
+                    >
+                      <Upload aria-hidden="true" size={16} />
+                      Load
+                    </Button>
+                    <Button
+                      aria-label={`Duplicate ${scenario.name}`}
+                      onClick={() => copyScenario(scenario.id)}
+                      variant="ghost"
+                    >
+                      <Copy aria-hidden="true" size={16} />
+                      Duplicate
+                    </Button>
+                    <button
+                      aria-label={`Delete ${scenario.name}`}
+                      className={buttonClass({
+                        className: "text-status-danger",
+                        variant: "ghost",
+                      })}
+                      onClick={() => setPendingDeleteId(scenario.id)}
+                      ref={(node) => {
+                        if (node) {
+                          deleteTriggerRefs.current.set(scenario.id, node);
+                        } else {
+                          deleteTriggerRefs.current.delete(scenario.id);
+                        }
+                      }}
+                      type="button"
+                    >
+                      <Trash2 aria-hidden="true" size={16} />
+                      Delete
+                    </button>
+                  </div>
+                )}
+              </li>
             );
           })}
-        </div>
+        </ul>
       )}
-
-      <p aria-live="polite" className="sr-only" role="status">
-        {announcement}
-      </p>
 
       {loadedScenario ? (
         <section
           aria-labelledby="loaded-scenario-analysis-title"
-          className="border-t border-border pt-8"
+          className="border-t border-border-subtle pt-8"
         >
           <h3
-            className="text-2xl font-semibold outline-none"
+            className="orbix-h3 text-foreground outline-none"
             id="loaded-scenario-analysis-title"
             ref={loadedHeadingRef}
             tabIndex={-1}
           >
-            Loaded Mission Profile Analyzer
+            Mission profile analyzer: {loadedScenario.scenario.name}
           </h3>
           <p className="mt-2 text-sm leading-6 text-muted">
-            {loadedScenario.scenario.name} is loaded through the analyzer&apos;s
-            existing initialMissionProfile input.
+            The saved inputs are loaded into the analyzer below. Edit them there
+            to try variations; the saved scenario is not changed.
           </p>
-          <div className="mt-7">
+          <div className="mt-6">
             <MissionProfileAnalyzer
               initialMissionProfile={loadedScenario.scenario.profile}
               key={loadedScenario.revision}

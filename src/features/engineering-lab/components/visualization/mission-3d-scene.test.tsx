@@ -71,14 +71,15 @@ describe("Mission3DScene", () => {
       />,
     );
 
-    expect(markup).toContain("Interactive 3D Mission Scene");
-    expect(markup).toContain("Orbital Mission");
+    expect(markup).toContain("Mission scene");
+    expect(markup).toContain("Orbital mission");
     expect(markup).toContain("Orbital mission scene");
     expect(markup).toContain("Earth with orbital mission paths");
     expect(markup).toContain("Initial orbit");
-    expect(markup).toContain("Final orbit");
-    expect(markup).toContain("Transfer trajectory");
+    expect(markup).toContain("Target orbit");
+    expect(markup).toContain("Transfer path");
     expect(markup).toContain("Orbit transfer");
+    expect(markup).not.toContain("animate-");
   });
 
   it("renders the reentry scene from a completed vehicle evaluation", () => {
@@ -91,11 +92,10 @@ describe("Mission3DScene", () => {
       />,
     );
 
-    expect(markup).toContain("Reentry Mission");
+    expect(markup).toContain("Reentry mission");
     expect(markup).toContain("Reentry mission scene");
-    expect(markup).toContain("Earth atmospheric reentry target");
-    expect(markup).toContain("Reentry corridor");
-    expect(markup).toContain("Heating phase indicated");
+    expect(markup).toContain("Vehicle reentry time history");
+    expect(markup).toContain("Altitude profile");
     expect(markup).toContain("3D Scene Test Vehicle");
   });
 
@@ -110,9 +110,8 @@ describe("Mission3DScene", () => {
 
     expect(markup).toContain("Orbital-only scene");
     expect(markup).toContain("Orbital mission scene");
-    expect(markup).toContain("Reentry Mission");
+    expect(markup).toContain("Reentry mission");
     expect(markup).toContain("disabled");
-    expect(markup).toContain("Not reported");
   });
 
   it("renders an explicit empty state without orbital or reentry outputs", () => {
@@ -123,7 +122,7 @@ describe("Mission3DScene", () => {
       <Mission3DScene missionProfileAnalysis={emptyAnalysis} />,
     );
 
-    expect(markup).toContain("3D mission visualization unavailable");
+    expect(markup).toContain("Mission scene unavailable");
     expect(markup).toContain(
       "A resolved orbital transfer, orbital maneuver, or vehicle reentry evaluation is required",
     );

@@ -1,12 +1,16 @@
 "use client";
 
+import { Button } from "@/components/ui";
 import { useMemo, useState, type FormEvent } from "react";
 import { AlertTriangle, CircleDot, Gauge, RotateCcw } from "lucide-react";
 
 import { analyzeOrbitalPlaneChange } from "@/features/engineering-lab/analysis";
 import {
   CalculatorNumberField,
+  focusFirstInvalidField,
+  focusFirstInvalidFieldOnEnter,
   CalculatorResultSection,
+  NotCalculated,
   ValidationErrorSummary,
 } from "@/features/engineering-lab/components/shared";
 import type {
@@ -178,6 +182,7 @@ export function OrbitalPlaneChangeAnalyzer() {
 
   function preventSubmission(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    focusFirstInvalidField(event.currentTarget);
   }
 
   function resetAnalyzer() {
@@ -187,9 +192,13 @@ export function OrbitalPlaneChangeAnalyzer() {
   return (
     <div className="grid gap-8 xl:grid-cols-[minmax(0,0.95fr)_minmax(22rem,1.05fr)] xl:gap-10">
       <div>
-        <form noValidate onSubmit={preventSubmission}>
+        <form
+          noValidate
+          onKeyDown={focusFirstInvalidFieldOnEnter}
+          onSubmit={preventSubmission}
+        >
           <fieldset>
-            <legend className="orbix-label text-accent">
+            <legend className="text-base font-semibold text-foreground">
               Orbital maneuver
             </legend>
             <div className="mt-5 grid gap-5 sm:grid-cols-2">
@@ -217,7 +226,7 @@ export function OrbitalPlaneChangeAnalyzer() {
           </fieldset>
 
           <fieldset className="mt-7 border-t border-border pt-7">
-            <legend className="orbix-label text-accent">
+            <legend className="text-base font-semibold text-foreground">
               Central-body constants
             </legend>
             <div className="mt-5 grid gap-5 sm:grid-cols-2">
@@ -255,18 +264,18 @@ export function OrbitalPlaneChangeAnalyzer() {
           />
 
           <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:items-center">
-            <p className="text-xs leading-5 text-muted">
+            <p className="text-sm leading-6 text-muted">
               Valid changes update the circular-orbit and maneuver results
               immediately.
             </p>
-            <button
-              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-border bg-surface/60 px-5 py-2.5 text-sm font-semibold text-foreground transition-colors hover:border-accent/60 hover:text-accent sm:ml-auto"
+            <Button
+              className="shrink-0 whitespace-nowrap sm:ml-auto"
+              variant="secondary"
               onClick={resetAnalyzer}
-              type="button"
             >
               <RotateCcw aria-hidden="true" size={16} />
-              Reset example
-            </button>
+              Reset inputs
+            </Button>
           </div>
         </form>
 
@@ -274,7 +283,7 @@ export function OrbitalPlaneChangeAnalyzer() {
           aria-labelledby="orbital-plane-change-explanation-title"
           className="mt-8 border-t border-border pt-7"
         >
-          <p className="orbix-label text-accent">Educational context</p>
+          <p className="orbix-label">Educational context</p>
           <h3
             className="mt-1 text-lg font-semibold"
             id="orbital-plane-change-explanation-title"
@@ -292,7 +301,7 @@ export function OrbitalPlaneChangeAnalyzer() {
 
       <div className="space-y-5">
         <CalculatorResultSection
-          eyebrow="Circular Orbit + Inclination"
+          eyebrow="Circular orbit and inclination"
           icon={CircleDot}
           id="orbital-plane-change-result"
           title="Orbital plane change"
@@ -301,17 +310,17 @@ export function OrbitalPlaneChangeAnalyzer() {
             <div className="space-y-6">
               <section aria-labelledby="orbital-plane-change-orbit-title">
                 <h4
-                  className="orbix-label text-accent"
+                  className="text-sm font-semibold text-foreground"
                   id="orbital-plane-change-orbit-title"
                 >
                   Orbit
                 </h4>
                 <dl className="mt-3 grid gap-4 sm:grid-cols-3">
                   <div>
-                    <dt className="text-xs text-muted">Orbital altitude</dt>
+                    <dt className="orbix-label">Orbital altitude</dt>
                     <dd className="mt-1">
                       <output
-                        className="font-mono text-sm font-semibold"
+                        className="orbix-data"
                         htmlFor="orbital-plane-change-orbitalAltitudeMetres"
                       >
                         {distanceFormatter.format(orbitalAltitudeMetres)} m
@@ -319,25 +328,17 @@ export function OrbitalPlaneChangeAnalyzer() {
                     </dd>
                   </div>
                   <div>
-                    <dt className="text-xs text-muted">Orbital radius</dt>
+                    <dt className="orbix-label">Orbital radius</dt>
                     <dd className="mt-1">
-                      <output
-                        className="font-mono text-sm font-semibold"
-                        htmlFor={orbitOutputIds}
-                      >
+                      <output className="orbix-data" htmlFor={orbitOutputIds}>
                         {distanceFormatter.format(result.orbitalRadiusMetres)} m
                       </output>
                     </dd>
                   </div>
                   <div>
-                    <dt className="text-xs text-muted">
-                      Circular orbital velocity
-                    </dt>
+                    <dt className="orbix-label">Circular orbital velocity</dt>
                     <dd className="mt-1">
-                      <output
-                        className="font-mono text-sm font-semibold text-accent"
-                        htmlFor={orbitOutputIds}
-                      >
+                      <output className="orbix-data" htmlFor={orbitOutputIds}>
                         {velocityFormatter.format(
                           result.orbitalVelocityMetresPerSecond,
                         )}{" "}
@@ -353,17 +354,17 @@ export function OrbitalPlaneChangeAnalyzer() {
                 className="border-t border-border pt-5"
               >
                 <h4
-                  className="orbix-label text-accent"
+                  className="text-sm font-semibold text-foreground"
                   id="orbital-plane-change-maneuver-title"
                 >
                   Plane change
                 </h4>
                 <dl className="mt-3 grid gap-4 sm:grid-cols-3">
                   <div>
-                    <dt className="text-xs text-muted">Inclination change</dt>
+                    <dt className="orbix-label">Inclination change</dt>
                     <dd className="mt-1">
                       <output
-                        className="font-mono text-sm font-semibold"
+                        className="orbix-data"
                         htmlFor={maneuverOutputIds}
                       >
                         {angleFormatter.format(result.inclinationChangeDegrees)}{" "}
@@ -372,10 +373,10 @@ export function OrbitalPlaneChangeAnalyzer() {
                     </dd>
                   </div>
                   <div>
-                    <dt className="text-xs text-muted">Inclination change</dt>
+                    <dt className="orbix-label">Inclination change</dt>
                     <dd className="mt-1">
                       <output
-                        className="font-mono text-sm font-semibold"
+                        className="orbix-data"
                         htmlFor={maneuverOutputIds}
                       >
                         {angleFormatter.format(result.inclinationChangeRadians)}{" "}
@@ -384,10 +385,10 @@ export function OrbitalPlaneChangeAnalyzer() {
                     </dd>
                   </div>
                   <div>
-                    <dt className="text-xs text-muted">Required delta-v</dt>
+                    <dt className="orbix-label">Required delta-v</dt>
                     <dd className="mt-1">
                       <output
-                        className="font-mono text-lg font-semibold text-accent"
+                        className="orbix-data-lg"
                         htmlFor={maneuverOutputIds}
                       >
                         {velocityFormatter.format(result.deltaVMetresPerSecond)}{" "}
@@ -399,18 +400,15 @@ export function OrbitalPlaneChangeAnalyzer() {
               </section>
             </div>
           ) : (
-            <div className="py-5">
-              <p className="font-mono text-3xl text-muted">—</p>
-              <p className="mt-3 text-sm leading-6 text-muted">
-                Enter a valid orbital altitude and inclination change to resolve
-                the circular-orbit state and ideal maneuver delta-v.
-              </p>
-            </div>
+            <NotCalculated invalid={Object.values(errors).some(Boolean)}>
+              Enter a valid orbital altitude and inclination change to resolve
+              the circular-orbit state and ideal maneuver delta-v.
+            </NotCalculated>
           )}
         </CalculatorResultSection>
 
         <CalculatorResultSection
-          eyebrow="Educational Interpretation"
+          eyebrow="Educational interpretation"
           icon={Gauge}
           id="orbital-plane-change-mission-context"
           title="Mission context"
@@ -418,16 +416,16 @@ export function OrbitalPlaneChangeAnalyzer() {
           {result && presentationBand ? (
             <div className="space-y-5">
               <div>
-                <p className="text-xs text-muted">
+                <p className="orbix-label">
                   Educational delta-v classification
                 </p>
                 <output
-                  className="mt-2 block text-lg font-semibold text-accent"
+                  className="mt-2 block text-lg font-semibold"
                   htmlFor={maneuverOutputIds}
                 >
                   {presentationBand.label}
                 </output>
-                <p className="mt-2 text-xs leading-5 text-muted">
+                <p className="mt-2 text-sm leading-6 text-muted">
                   {presentationBand.description}
                 </p>
               </div>
@@ -435,7 +433,7 @@ export function OrbitalPlaneChangeAnalyzer() {
                 <h4 className="text-sm font-semibold">
                   Velocity and maneuver cost
                 </h4>
-                <p className="mt-2 text-xs leading-5 text-muted">
+                <p className="mt-2 text-sm leading-6 text-muted">
                   Plane-change delta-v rises with the orbital speed at the
                   maneuver point. This display band is educational context only
                   and does not determine mission feasibility.
@@ -443,10 +441,10 @@ export function OrbitalPlaneChangeAnalyzer() {
               </div>
             </div>
           ) : (
-            <p className="py-3 text-sm leading-6 text-muted">
+            <NotCalculated>
               A valid solution will add an educational delta-v band and mission
               interpretation.
-            </p>
+            </NotCalculated>
           )}
         </CalculatorResultSection>
 
@@ -455,7 +453,7 @@ export function OrbitalPlaneChangeAnalyzer() {
             <AlertTriangle aria-hidden="true" size={17} />
             Modeling assumptions
           </p>
-          <ul className="mt-4 grid list-disc gap-2 pl-5 text-xs leading-5 text-muted sm:grid-cols-2">
+          <ul className="mt-4 grid list-disc gap-2 pl-5 text-sm leading-6 text-muted sm:grid-cols-2">
             <li>Two-body gravity model</li>
             <li>Circular orbit at the maneuver point</li>
             <li>Instantaneous impulsive maneuver</li>

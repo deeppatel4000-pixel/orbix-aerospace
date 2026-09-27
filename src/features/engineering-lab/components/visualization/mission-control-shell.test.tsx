@@ -64,10 +64,10 @@ describe("MissionControlShell", () => {
       </MissionControlShell>,
     );
 
-    expect(markup).toContain("ORBIX // Mission Control");
-    expect(markup).toContain("Mission Workspaces");
+    expect(markup).toContain("Mission control");
+    expect(markup).toContain("Mission workspaces");
     expect(markup).toContain("Existing workspace output");
-    expect(markup).toContain("Persistent mission telemetry");
+    expect(markup).toContain("Mission summary: computed values");
     expect(markup).toContain('data-active-workspace="overview"');
   });
 
@@ -141,7 +141,7 @@ describe("MissionControlShell", () => {
     );
 
     expect(markup).toContain("Mission profile unavailable");
-    expect(markup).toContain("Not Reported");
+    expect(markup).toContain("Not reported");
     expect(markup).toContain("Empty workspace");
   });
 
@@ -156,11 +156,10 @@ describe("MissionControlShell", () => {
       </MissionControlShell>,
     );
 
-    expect(markup).toContain('aria-label="Mission Control sections"');
-    expect(markup).toContain('aria-label="Mission Control workspace content"');
-    expect(markup).toContain('aria-label="Mission telemetry status bar"');
+    expect(markup).toContain('aria-label="Mission control sections"');
+    expect(markup).toContain('aria-label="Mission control workspace content"');
+    expect(markup).toContain('aria-label="Mission summary"');
     expect(markup).toContain('aria-live="polite"');
-    expect(markup).toContain("motion-reduce:transition-none");
-    expect(markup).toContain("motion-reduce:animate-none");
+    expect(markup).not.toContain("animate-");
   });
 });

@@ -1,5 +1,3 @@
-import { Crosshair, Orbit, Plane, Shield } from "lucide-react";
-
 import type {
   MissionProfileAnalysis,
   MissionReport,
@@ -50,41 +48,23 @@ export function BriefingObjectives({
   report,
 }: BriefingObjectivesProps) {
   const objectives = buildPresentationObjectives(missionProfile, report);
-  const icons = [Orbit, Crosshair, Plane, Shield];
 
   return (
     <section aria-labelledby="mission-briefing-objectives-title">
-      <p className="font-mono text-[0.6rem] tracking-[0.16em] text-accent uppercase">
-        Presentation objectives // Explanatory only
-      </p>
-      <h3
-        className="mt-1 text-xl font-semibold"
+      <h4
+        className="orbix-h4 text-foreground"
         id="mission-briefing-objectives-title"
       >
-        Mission Objectives
-      </h3>
-      <ol className="mt-5 grid gap-3 sm:grid-cols-2">
-        {objectives.map((objective, index) => {
-          const Icon = icons[index % icons.length] ?? Crosshair;
-
-          return (
-            <li
-              className="flex min-h-24 gap-4 rounded-xl border border-white/10 bg-black/15 p-4"
-              key={objective}
-            >
-              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-accent/20 bg-accent/6 font-mono text-xs text-accent">
-                {String(index + 1).padStart(2, "0")}
-              </span>
-              <div>
-                <Icon aria-hidden="true" className="text-accent" size={15} />
-                <p className="text-muted-strong mt-2 text-sm leading-6">
-                  {objective}
-                </p>
-              </div>
-            </li>
-          );
-        })}
-      </ol>
+        Mission objectives
+      </h4>
+      <p className="mt-1 text-sm leading-6 text-muted">
+        What this briefing reviews, based on the analyses the mission includes.
+      </p>
+      <ul className="mt-3 list-disc space-y-1 pl-5 text-sm leading-6 text-text-secondary">
+        {objectives.map((objective) => (
+          <li key={objective}>{objective}</li>
+        ))}
+      </ul>
     </section>
   );
 }

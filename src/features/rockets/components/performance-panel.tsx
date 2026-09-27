@@ -1,112 +1,76 @@
-import { Flame, Orbit, PackageOpen, Ruler, Weight } from "lucide-react";
-
-import { ProfileSection } from "@/features/rockets/components/profile-section";
-import { SpecificationGrid } from "@/features/rockets/components/specification-grid";
 import {
   formatLaunchConfiguration,
   formatOrbitType,
-  formatRocketMeasurement,
 } from "@/features/rockets/utils";
-import type {
-  RocketDimensions,
-  RocketMass,
-  RocketPerformance,
-} from "@/features/vehicles/types";
+import { DataTable } from "@/features/vehicles/components/data-table";
+import { VehicleProfileSection } from "@/features/vehicles/components/vehicle-profile-section";
+import type { RocketPerformance } from "@/features/vehicles/types";
+import {
+  formatMeasurementParts,
+  formatQualifierLabel,
+} from "@/features/vehicles/utils/format-measurement";
 
 interface PerformancePanelProps {
-  dimensions: RocketDimensions;
-  mass: RocketMass;
+  name: string;
   performance: RocketPerformance;
 }
 
-export function PerformancePanel({
-  dimensions,
-  mass,
-  performance,
-}: PerformancePanelProps) {
+/**
+ * Performance (spec 14): payload to each published destination, then the
+ * orbit classes the record lists as supported.
+ */
+export function PerformancePanel({ name, performance }: PerformancePanelProps) {
   return (
-    <ProfileSection
-      description="Configuration-specific vehicle scale, liftoff output, and payload capability with source qualifiers retained."
-      eyebrow="Mission capability"
-      mode="data"
+    <VehicleProfileSection
+      description="Payload mass depends on the destination orbit and on whether boosters are recovered, so each figure is tied to both."
       id="performance"
       title="Performance"
     >
-      <SpecificationGrid
-        items={[
-          {
-            icon: Ruler,
-            label: "Vehicle height",
-            ...formatRocketMeasurement(dimensions.height),
-          },
-          {
-            icon: Weight,
-            label: "Liftoff mass",
-            ...formatRocketMeasurement(mass.liftoff),
-          },
-          {
-            icon: Flame,
-            label: "Liftoff thrust",
-            ...formatRocketMeasurement(performance.liftoffThrust),
-          },
-        ]}
-      />
+      {performance.payloadCapabilities.length > 0 ? (
+        <DataTable
+          caption={`${name} payload capability`}
+          columns={[
+            { label: "Destination" },
+            { label: "Configuration" },
+            { label: "Payload", numeric: true },
+            { label: "Unit" },
+            { label: "Basis" },
+          ]}
+          rows={performance.payloadCapabilities.map((capability) => {
+            const { unit, value } = formatMeasurementParts(capability.mass);
 
-      <div className="orbix-frame mt-6 overflow-hidden border-atmosphere/20 bg-surface/70">
-        <div className="flex items-center gap-3 border-b border-atmosphere/20 bg-[#080d17] p-5 sm:p-6">
-          <PackageOpen
-            aria-hidden="true"
-            className="text-accent"
-            size={19}
-            strokeWidth={1.7}
-          />
-          <h3 className="font-display text-xl font-semibold">
-            Payload capability
-          </h3>
-        </div>
-        <dl className="divide-y divide-border">
-          {performance.payloadCapabilities.map((capability) => {
-            const payload = formatRocketMeasurement(capability.mass);
-
-            return (
-              <div
-                className="grid gap-4 p-5 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center sm:p-6"
-                key={capability.orbit + "-" + capability.configuration}
-              >
-                <dt>
-                  <span className="block font-semibold">
-                    {formatOrbitType(capability.orbit)}
-                  </span>
-                  <span className="mt-1 block text-xs text-muted">
-                    {formatLaunchConfiguration(capability.configuration)}
-                    configuration // {payload.note}
-                  </span>
-                </dt>
-                <dd className="orbix-telemetry-value text-xl text-signal">
-                  {payload.value}
-                </dd>
-              </div>
-            );
+            return {
+              cells: [
+                formatLaunchConfiguration(capability.configuration),
+                value,
+                <span className="orbix-table-unit" key="unit">
+                  {unit}
+                </span>,
+                <span className="text-muted" key="basis">
+                  {formatQualifierLabel(capability.mass.qualifier)}
+                </span>,
+              ],
+              header: (
+                <span className="whitespace-nowrap">
+                  {formatOrbitType(capability.orbit)} ({capability.orbit})
+                </span>
+              ),
+              key: `${capability.orbit}-${capability.configuration}`,
+            };
           })}
-        </dl>
-      </div>
+        />
+      ) : (
+        <p className="text-muted">No payload figures are published.</p>
+      )}
 
-      <div className="orbix-frame mt-6 border-atmosphere/20 bg-surface/70 p-5 sm:p-6">
-        <p className="flex items-center gap-2 font-mono text-[0.62rem] tracking-[0.14em] text-muted uppercase">
-          <Orbit aria-hidden="true" className="text-accent" size={15} />
-          Supported mission regimes
-        </p>
-        <ul className="mt-4 flex flex-wrap gap-2">
-          {performance.supportedOrbits.map((orbit) => (
-            <li
-              className="border border-accent/20 bg-accent/8 px-3 py-1.5 text-xs text-accent"
-              key={orbit}
-            >
-              {formatOrbitType(orbit)} ({orbit})
-            </li>
-          ))}
-        </ul>
-      </div>
-    </ProfileSection>
+      <h3 className="orbix-h4 mt-8 text-foreground">Supported destinations</h3>
+      <ul className="mt-3 flex flex-wrap gap-2">
+        {performance.supportedOrbits.map((orbit) => (
+          <li className="orbix-tag" key={orbit}>
+            {formatOrbitType(orbit)} ({orbit})
+          </li>
+        ))}
+      </ul>
+    </VehicleProfileSection>
   );
 }

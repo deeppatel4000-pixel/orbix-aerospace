@@ -31,7 +31,7 @@ export const educationCategoryMeta: Readonly<
 > = {
   heritage: {
     id: "heritage",
-    label: "Heritage & Programme",
+    label: "Heritage and programme",
     summary: "Who built the vehicle, and when its design was first flown.",
   },
   geometry: {
@@ -42,7 +42,7 @@ export const educationCategoryMeta: Readonly<
   },
   "mass-structures": {
     id: "mass-structures",
-    label: "Mass & Structures",
+    label: "Mass and structures",
     summary:
       "The structural mass budget available for propellant, fuel, and payload.",
   },

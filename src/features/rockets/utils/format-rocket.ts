@@ -7,8 +7,10 @@ import type {
   MeasurementQualifier,
   MeasurementUnit,
   OrbitType,
+  Rocket,
   RocketEngineCycle,
   RocketPropellant,
+  RocketStage,
 } from "@/features/vehicles/types";
 import { formatMeasurement } from "@/features/vehicles/utils";
 
@@ -105,6 +107,62 @@ export function formatRocketMeasurement<TUnit extends MeasurementUnit>(
 
 export function formatRocketPropellant(propellant: RocketPropellant) {
   return propellant.oxidizer
-    ? propellant.fuel + " / " + propellant.oxidizer
+    ? propellant.fuel +
+        " with " +
+        propellant.oxidizer.toLocaleLowerCase("en-US")
     : propellant.fuel;
+}
+
+/**
+ * The number of stages in the flight sequence. Parallel boosters share a
+ * stage number with the core they fly beside, so Falcon Heavy and SLS count
+ * as two stages, not three.
+ */
+export function countRocketStages(stages: readonly RocketStage[]) {
+  return new Set(stages.map((stage) => stage.stageNumber)).size;
+}
+
+const stageCountWords = ["", "Single", "Two", "Three", "Four", "Five"];
+
+/**
+ * One classification line from the stage records: "Two-stage launch vehicle,
+ * partially reusable". Reusability comes from each stage's `reusable` flag.
+ */
+export function formatRocketClassification(stages: readonly RocketStage[]) {
+  const count = countRocketStages(stages);
+  const countWord = stageCountWords[count] ?? String(count);
+  const reusableCount = stages.filter((stage) => stage.reusable).length;
+  const reuse =
+    reusableCount === 0
+      ? "expendable"
+      : reusableCount === stages.length
+        ? "fully reusable"
+        : "partially reusable";
+
+  return `${countWord}-stage launch vehicle, ${reuse}`;
+}
+
+/**
+ * A page description built from the record, for `generateMetadata`:
+ * "Falcon 9 specifications: two-stage launch vehicle, partially reusable, by
+ * SpaceX, first flown June 4, 2010. Height 70 m, liftoff thrust 7,686 kN,
+ * up to 22,800 kg to low Earth orbit."
+ */
+export function formatRocketMetaDescription(rocket: Rocket) {
+  const classification = formatRocketClassification(
+    rocket.stages,
+  ).toLocaleLowerCase("en-US");
+  const leo = rocket.performance.payloadCapabilities
+    .filter((capability) => capability.orbit === "LEO")
+    .sort((a, b) => b.mass.value - a.mass.value)[0];
+  const payload = leo
+    ? ` Payload to low Earth orbit ${formatMeasurement(leo.mass)} (${formatLaunchConfiguration(leo.configuration).toLocaleLowerCase("en-US")}).`
+    : "";
+
+  return (
+    `${rocket.name} specifications: ${classification}, by ${rocket.manufacturer}, ` +
+    `first flown ${formatRocketFirstFlight(rocket.firstFlight)}. ` +
+    `Height ${formatMeasurement(rocket.dimensions.height)}, liftoff thrust ${formatMeasurement(rocket.performance.liftoffThrust)}.` +
+    payload
+  );
 }

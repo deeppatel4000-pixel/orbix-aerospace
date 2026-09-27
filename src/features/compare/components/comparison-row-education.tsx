@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { BookOpenText } from "lucide-react";
+import { ChevronRight } from "lucide-react";
 
 import { getRowEducation } from "@/features/compare/education";
 import type { ComparisonCategory } from "@/features/compare/types";
@@ -10,10 +10,9 @@ interface ComparisonRowEducationProps {
 }
 
 /**
- * Collapsed, presentation-only "why it matters" note for a comparison row.
- * The explanation is general aerospace context, never an ORBIX-computed
- * result, and is kept collapsed by default so it never buries the
- * published specification data above it.
+ * Collapsed "What this measures" note for a comparison row (spec 14). The
+ * explanation is general aerospace context, never an ORBIX-computed result,
+ * and stays collapsed by default so it never buries the published values.
  */
 export function ComparisonRowEducation({
   category,
@@ -24,28 +23,29 @@ export function ComparisonRowEducation({
   if (!education) return null;
 
   return (
-    <details className="mt-3 text-xs font-normal">
-      <summary className="inline-flex min-h-11 items-center gap-1.5 py-1 font-mono text-[0.62rem] tracking-[0.1em] text-accent uppercase">
-        <BookOpenText aria-hidden="true" size={13} strokeWidth={1.8} />
-        Why it matters
+    <details className="group mt-2 text-[length:var(--text-label)] font-normal">
+      <summary className="inline-flex min-h-6 cursor-pointer list-none items-center gap-1 rounded-sm text-accent underline decoration-1 underline-offset-[0.2em] hover:text-accent-strong focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent [&::-webkit-details-marker]:hidden">
+        <ChevronRight
+          aria-hidden="true"
+          className="shrink-0 transition-transform duration-150 group-open:rotate-90 motion-reduce:transition-none"
+          size={14}
+        />
+        What this measures
       </summary>
-      <div className="mt-2 max-w-xs space-y-2 border-l border-accent/25 pl-3">
-        <p className="leading-5 text-muted">{education.explanation}</p>
-        {/* Full `text-muted`, not a reduced-opacity variant: at 70% opacity
-            this line measured 4.06:1 against the surface behind it, below the
-            WCAG AA 4.5:1 minimum for normal-weight text. */}
-        <p className="font-mono text-[0.58rem] tracking-[0.08em] text-muted uppercase">
-          General aerospace concept, not an ORBIX calculation
+      <div className="mt-2 space-y-2 border-l border-border-strong pl-3">
+        <p className="leading-5 text-text-secondary">{education.explanation}</p>
+        <p className="leading-5 text-muted">
+          General aerospace background, not an ORBIX calculation.
         </p>
         {education.labLinks && education.labLinks.length > 0 ? (
-          <ul className="flex flex-wrap gap-x-3 gap-y-1.5">
+          <ul className="space-y-1">
             {education.labLinks.map((link) => (
               <li key={link.anchor}>
                 <Link
-                  className="inline-flex min-h-11 items-center text-[0.68rem] font-semibold text-accent underline-offset-2 hover:underline"
+                  className="orbix-link inline-flex min-h-6 items-center"
                   href={`/engineering-lab#${link.anchor}`}
                 >
-                  {link.label}
+                  Open the {link.label} tool
                 </Link>
               </li>
             ))}

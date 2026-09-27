@@ -1,12 +1,16 @@
 "use client";
 
+import { Button } from "@/components/ui";
 import { useMemo, useState, type FormEvent } from "react";
 import { AlertTriangle, Gauge, RotateCcw } from "lucide-react";
 
 import { analyzeShockPressureLoss } from "@/features/engineering-lab/analysis";
 import {
   CalculatorNumberField,
+  focusFirstInvalidField,
+  focusFirstInvalidFieldOnEnter,
   CalculatorResultSection,
+  NotCalculated,
   ValidationErrorSummary,
 } from "@/features/engineering-lab/components/shared";
 import type {
@@ -156,6 +160,7 @@ export function ShockPressureLossAnalyzer() {
 
   function preventSubmission(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    focusFirstInvalidField(event.currentTarget);
   }
 
   function resetAnalyzer() {
@@ -170,11 +175,15 @@ export function ShockPressureLossAnalyzer() {
   return (
     <div className="grid gap-8 xl:grid-cols-[minmax(0,0.9fr)_minmax(24rem,1.1fr)] xl:gap-10">
       <div>
-        <form noValidate onSubmit={preventSubmission}>
+        <form
+          noValidate
+          onKeyDown={focusFirstInvalidFieldOnEnter}
+          onSubmit={preventSubmission}
+        >
           <fieldset aria-describedby="shock-pressure-loss-mode-hint">
             <legend className="text-sm font-semibold">Shock type</legend>
             <p
-              className="mt-2 text-xs leading-5 text-muted"
+              className="orbix-field__help mt-2"
               id="shock-pressure-loss-mode-hint"
             >
               Select the shock geometry used to evaluate stagnation-pressure
@@ -188,10 +197,10 @@ export function ShockPressureLossAnalyzer() {
                 return (
                   <label
                     className={
-                      "flex min-h-20 cursor-pointer items-start gap-3 rounded-xl border p-4 transition-colors " +
+                      "flex min-h-20 cursor-pointer items-start gap-3 rounded-md border p-4 transition-colors " +
                       (isSelected
-                        ? "border-accent/70 bg-accent/8"
-                        : "border-border bg-background/45 hover:border-accent/40")
+                        ? "border-accent bg-surface-raised"
+                        : "border-border-control bg-surface-input hover:border-muted")
                     }
                     htmlFor={optionId}
                     key={option.value}
@@ -210,7 +219,7 @@ export function ShockPressureLossAnalyzer() {
                       <span className="block text-sm font-semibold">
                         {option.label}
                       </span>
-                      <span className="mt-1 block text-xs leading-5 text-muted">
+                      <span className="mt-1 block text-sm leading-6 text-muted">
                         {option.description}
                       </span>
                     </span>
@@ -239,7 +248,7 @@ export function ShockPressureLossAnalyzer() {
               error={errors.altitudeMeters}
               field="altitudeMeters"
               hint={
-                "Optional reference altitude from 0–" +
+                "Optional reference altitude from 0 to " +
                 STANDARD_ATMOSPHERE_MAX_ALTITUDE_METRES.toLocaleString(
                   "en-US",
                 ) +
@@ -265,20 +274,23 @@ export function ShockPressureLossAnalyzer() {
             ) : null}
           </div>
 
-          <ValidationErrorSummary errors={Object.values(errors)} />
+          <ValidationErrorSummary
+            errors={errors}
+            idPrefix="shock-pressure-loss"
+          />
 
           <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:items-center">
-            <p className="text-xs leading-5 text-muted">
+            <p className="text-sm leading-6 text-muted">
               Valid inputs update total-pressure recovery immediately.
             </p>
-            <button
-              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-border bg-surface/60 px-5 py-2.5 text-sm font-semibold text-foreground transition-colors hover:border-accent/60 hover:text-accent sm:ml-auto"
+            <Button
+              className="shrink-0 whitespace-nowrap sm:ml-auto"
+              variant="secondary"
               onClick={resetAnalyzer}
-              type="button"
             >
               <RotateCcw aria-hidden="true" size={16} />
-              Reset example
-            </button>
+              Reset inputs
+            </Button>
           </div>
         </form>
       </div>
@@ -294,14 +306,14 @@ export function ShockPressureLossAnalyzer() {
             <div className="space-y-6">
               <section aria-labelledby="shock-pressure-loss-summary-title">
                 <h4
-                  className="orbix-label text-accent"
+                  className="text-sm font-semibold text-foreground"
                   id="shock-pressure-loss-summary-title"
                 >
                   Shock summary
                 </h4>
                 <dl className="mt-3 grid gap-4 sm:grid-cols-2">
                   <div>
-                    <dt className="text-xs text-muted">Shock type</dt>
+                    <dt className="orbix-label">Shock type</dt>
                     <dd className="mt-1">
                       <output
                         className="text-sm font-semibold"
@@ -314,12 +326,9 @@ export function ShockPressureLossAnalyzer() {
                     </dd>
                   </div>
                   <div>
-                    <dt className="text-xs text-muted">Upstream Mach</dt>
+                    <dt className="orbix-label">Upstream Mach</dt>
                     <dd className="mt-1">
-                      <output
-                        className="font-mono text-sm font-semibold"
-                        htmlFor={outputIds}
-                      >
+                      <output className="orbix-data" htmlFor={outputIds}>
                         {precisionFormatter.format(result.upstreamMach)}
                       </output>
                     </dd>
@@ -333,32 +342,26 @@ export function ShockPressureLossAnalyzer() {
                   className="border-t border-border pt-5"
                 >
                   <h4
-                    className="orbix-label text-accent"
+                    className="text-sm font-semibold text-foreground"
                     id="normal-pressure-loss-results-title"
                   >
                     Normal shock results
                   </h4>
                   <dl className="mt-3 grid gap-4 sm:grid-cols-2">
                     <div>
-                      <dt className="text-xs text-muted">Downstream Mach</dt>
+                      <dt className="orbix-label">Downstream Mach</dt>
                       <dd className="mt-1">
-                        <output
-                          className="font-mono text-lg font-semibold text-accent"
-                          htmlFor={outputIds}
-                        >
+                        <output className="orbix-data-lg" htmlFor={outputIds}>
                           {precisionFormatter.format(result.downstreamMach)}
                         </output>
                       </dd>
                     </div>
                     <div>
-                      <dt className="text-xs text-muted">
+                      <dt className="orbix-label">
                         Total pressure recovery ratio
                       </dt>
                       <dd className="mt-1">
-                        <output
-                          className="font-mono text-lg font-semibold text-accent"
-                          htmlFor={outputIds}
-                        >
+                        <output className="orbix-data-lg" htmlFor={outputIds}>
                           {precisionFormatter.format(
                             result.pressureRecoveryRatio,
                           )}
@@ -366,14 +369,9 @@ export function ShockPressureLossAnalyzer() {
                       </dd>
                     </div>
                     <div>
-                      <dt className="text-xs text-muted">
-                        Total pressure loss
-                      </dt>
+                      <dt className="orbix-label">Total pressure loss</dt>
                       <dd className="mt-1">
-                        <output
-                          className="font-mono text-lg font-semibold text-accent"
-                          htmlFor={outputIds}
-                        >
+                        <output className="orbix-data-lg" htmlFor={outputIds}>
                           {percentageFormatter.format(
                             result.pressureLossPercentage,
                           )}
@@ -390,19 +388,16 @@ export function ShockPressureLossAnalyzer() {
                     className="border-t border-border pt-5"
                   >
                     <h4
-                      className="orbix-label text-accent"
+                      className="text-sm font-semibold text-foreground"
                       id="oblique-pressure-loss-geometry-title"
                     >
                       Geometry
                     </h4>
                     <dl className="mt-3 grid gap-4 sm:grid-cols-3">
                       <div>
-                        <dt className="text-xs text-muted">Shock angle β</dt>
+                        <dt className="orbix-label">Shock angle β</dt>
                         <dd className="mt-1">
-                          <output
-                            className="font-mono text-sm font-semibold"
-                            htmlFor={outputIds}
-                          >
+                          <output className="orbix-data" htmlFor={outputIds}>
                             {precisionFormatter.format(
                               result.shockAngleDegrees,
                             )}
@@ -411,14 +406,9 @@ export function ShockPressureLossAnalyzer() {
                         </dd>
                       </div>
                       <div>
-                        <dt className="text-xs text-muted">
-                          Deflection angle θ
-                        </dt>
+                        <dt className="orbix-label">Deflection angle θ</dt>
                         <dd className="mt-1">
-                          <output
-                            className="font-mono text-sm font-semibold"
-                            htmlFor={outputIds}
-                          >
+                          <output className="orbix-data" htmlFor={outputIds}>
                             {precisionFormatter.format(
                               Number(values.deflectionAngleDegrees),
                             )}
@@ -427,14 +417,9 @@ export function ShockPressureLossAnalyzer() {
                         </dd>
                       </div>
                       <div>
-                        <dt className="text-xs text-muted">
-                          Normal Mach component
-                        </dt>
+                        <dt className="orbix-label">Normal Mach component</dt>
                         <dd className="mt-1">
-                          <output
-                            className="font-mono text-sm font-semibold"
-                            htmlFor={outputIds}
-                          >
+                          <output className="orbix-data" htmlFor={outputIds}>
                             {precisionFormatter.format(
                               result.normalMachComponent,
                             )}
@@ -449,32 +434,26 @@ export function ShockPressureLossAnalyzer() {
                     className="border-t border-border pt-5"
                   >
                     <h4
-                      className="orbix-label text-accent"
+                      className="text-sm font-semibold text-foreground"
                       id="oblique-pressure-loss-results-title"
                     >
                       Flow results
                     </h4>
                     <dl className="mt-3 grid gap-4 sm:grid-cols-2">
                       <div>
-                        <dt className="text-xs text-muted">Downstream Mach</dt>
+                        <dt className="orbix-label">Downstream Mach</dt>
                         <dd className="mt-1">
-                          <output
-                            className="font-mono text-lg font-semibold text-accent"
-                            htmlFor={outputIds}
-                          >
+                          <output className="orbix-data-lg" htmlFor={outputIds}>
                             {precisionFormatter.format(result.downstreamMach)}
                           </output>
                         </dd>
                       </div>
                       <div>
-                        <dt className="text-xs text-muted">
+                        <dt className="orbix-label">
                           Total pressure recovery ratio
                         </dt>
                         <dd className="mt-1">
-                          <output
-                            className="font-mono text-lg font-semibold text-accent"
-                            htmlFor={outputIds}
-                          >
+                          <output className="orbix-data-lg" htmlFor={outputIds}>
                             {precisionFormatter.format(
                               result.pressureRecoveryRatio,
                             )}
@@ -482,14 +461,9 @@ export function ShockPressureLossAnalyzer() {
                         </dd>
                       </div>
                       <div>
-                        <dt className="text-xs text-muted">
-                          Total pressure loss
-                        </dt>
+                        <dt className="orbix-label">Total pressure loss</dt>
                         <dd className="mt-1">
-                          <output
-                            className="font-mono text-lg font-semibold text-accent"
-                            htmlFor={outputIds}
-                          >
+                          <output className="orbix-data-lg" htmlFor={outputIds}>
                             {percentageFormatter.format(
                               result.pressureLossPercentage,
                             )}
@@ -503,19 +477,16 @@ export function ShockPressureLossAnalyzer() {
               )}
             </div>
           ) : (
-            <div className="py-5">
-              <p className="font-mono text-3xl text-muted">—</p>
-              <p className="mt-3 text-sm leading-6 text-muted">
-                Enter valid shock inputs to restore the live pressure-recovery
-                analysis.
-              </p>
-            </div>
+            <NotCalculated invalid={Object.values(errors).some(Boolean)}>
+              Enter valid shock inputs to restore the live pressure-recovery
+              analysis.
+            </NotCalculated>
           )}
         </CalculatorResultSection>
 
-        <section className="rounded-2xl border border-accent/20 bg-accent/5 p-5 sm:p-6">
+        <section className="rounded-md border border-border bg-surface p-4 sm:p-6">
           <h3 className="text-sm font-semibold">Pressure-loss context</h3>
-          <p className="mt-3 text-xs leading-5 text-muted">
+          <p className="mt-3 text-sm leading-6 text-muted">
             Oblique shocks generally produce lower total-pressure losses than
             normal shocks at the same upstream Mach because only the velocity
             component normal to the shock is compressed. Loss increases rapidly
@@ -528,7 +499,7 @@ export function ShockPressureLossAnalyzer() {
             <AlertTriangle aria-hidden="true" size={17} />
             Engineering assumptions
           </p>
-          <ul className="mt-4 grid list-disc gap-2 pl-5 text-xs leading-5 text-muted sm:grid-cols-2">
+          <ul className="mt-4 grid list-disc gap-2 pl-5 text-sm leading-6 text-muted sm:grid-cols-2">
             <li>Perfect gas approximation</li>
             <li>Constant gamma = 1.4</li>
             <li>Inviscid flow</li>

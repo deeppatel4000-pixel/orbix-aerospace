@@ -70,8 +70,8 @@ describe("DemoMode", () => {
       />,
     );
 
-    expect(markup).toContain("Welcome to Orbix");
-    expect(markup).toContain("Mission Concept");
+    expect(markup).toContain("Guided tour of a mission");
+    expect(markup).toContain("Mission concept");
     expect(markup).toContain('data-demo-step="mission-concept"');
     expect(markup).toContain("Mission objective");
   });
@@ -135,18 +135,16 @@ describe("DemoMode", () => {
     expect(markup).toContain('aria-label="Restart demo tour"');
     expect(markup).toContain('aria-label="Skip Orbix demo tour"');
     expect(markup).toContain('aria-live="polite"');
-    expect(markup).toContain("use left or right arrow keys");
+    expect(markup).toContain("the left and right arrow keys change steps");
   });
 
-  it("exposes a reduced-motion presentation state", () => {
+  it("uses no decorative motion", () => {
     const markup = renderToStaticMarkup(
-      <DemoMode missionProfile={missionProfile} reducedMotionOverride />,
+      <DemoMode missionProfile={missionProfile} />,
     );
 
-    expect(markup).toContain('data-reduced-motion="true"');
-    expect(markup).toContain("Reduced motion mode is active");
-    expect(markup).toContain("motion-reduce:animate-none");
-    expect(markup).toContain("motion-reduce:transition-none");
+    expect(markup).not.toContain("animate-");
+    expect(markup).not.toContain("blur");
   });
 
   it("handles a demo shell without completed optional mission objects", () => {

@@ -70,17 +70,18 @@ describe("MissionReplay", () => {
       />,
     );
 
-    expect(markup).toContain("Mission Replay");
+    expect(markup).toContain("Mission replay");
     expect(markup).toContain("Play mission replay");
-    expect(markup).toContain("Pause mission replay");
+    // Starts paused: one toggle, labelled Play until the replay runs.
+    expect(markup).not.toContain("Pause mission replay");
     expect(markup).toContain("Restart mission replay");
-    expect(markup).toContain("Mission replay speed");
+    expect(markup).toContain("Replay speed");
     expect(markup).toContain("0.5x");
     expect(markup).toContain("1x");
     expect(markup).toContain("2x");
     expect(markup).toContain("Mission replay progress");
-    expect(markup).toContain("Synchronized Telemetry");
-    expect(markup).toContain("Interactive 3D Mission Scene");
+    expect(markup).toContain("Values for this mission");
+    expect(markup).toContain("Mission scene");
   });
 
   it("starts playback through the local replay state reducer", () => {
@@ -125,14 +126,14 @@ describe("MissionReplay", () => {
     });
 
     expect(phases.map((phase) => phase.label)).toEqual([
-      "Mission Preparation",
-      "Launch / Departure",
-      "Orbital Operations",
-      "Transfer Maneuver",
-      "Arrival / Cruise",
-      "Reentry Preparation",
-      "Atmospheric Entry",
-      "Mission Complete",
+      "Mission preparation",
+      "Launch and departure",
+      "Orbital operations",
+      "Transfer maneuver",
+      "Arrival and cruise",
+      "Reentry preparation",
+      "Atmospheric entry",
+      "Mission complete",
     ]);
     expect(advanced.currentPhaseIndex).toBe(1);
     expect(selected.currentPhaseIndex).toBe(phases.length - 1);
@@ -161,7 +162,7 @@ describe("MissionReplay", () => {
     );
 
     expect(markup).toContain('data-reduced-motion="true"');
-    expect(markup).toContain("Reduced motion mode is active");
-    expect(markup).toContain("decorative motion is suppressed");
+    expect(markup).toContain("Reduced motion is on");
+    expect(markup).toContain("nothing animates between phases");
   });
 });

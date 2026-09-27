@@ -90,12 +90,12 @@ describe("MissionTradeStudy", () => {
     );
 
     expect(markup).toContain("Mission trade study");
-    expect(markup).toContain("Architecture Comparison Review");
+    expect(markup).toContain("Architecture comparison review");
     expect(markup).toContain("LEO Deployment Baseline");
     expect(markup).toContain("LEO Deployment Extended");
     expect(markup).toContain("Deep Space Shell");
-    expect(markup).toContain("Orbital Logistics");
-    expect(markup).toContain("Deep Space Concept");
+    expect(markup).toContain("Orbital logistics");
+    expect(markup).toContain("Deep space concept");
   });
 
   it("renders orbital, vehicle, and thermal comparison metrics", () => {
@@ -107,7 +107,7 @@ describe("MissionTradeStudy", () => {
       />,
     );
 
-    expect(markup).toContain("Mission Comparison Metrics");
+    expect(markup).toContain("Mission comparison metrics");
     expect(markup).toContain("Delta-v");
     expect(markup).toContain("Transfer duration");
     expect(markup).toContain("Maneuvers");
@@ -128,7 +128,6 @@ describe("MissionTradeStudy", () => {
 
     expect(markup).toContain("LEO Deployment Baseline");
     expect(markup).toContain("Not reported");
-    expect(markup).toContain("Reported Metric Availability");
   });
 
   it("handles missing analyses while preserving supplied report values", () => {
@@ -153,7 +152,7 @@ describe("MissionTradeStudy", () => {
       />,
     );
 
-    expect(markup).toContain("Trade Study Explanations");
+    expect(markup).toContain("Trade study notes");
     expect(markup).toContain(
       "LEO Deployment Extended has a larger reported total delta-v than LEO Deployment Baseline.",
     );
@@ -177,7 +176,6 @@ describe("MissionTradeStudy", () => {
     );
     expect(markup).toContain('aria-live="polite"');
     expect(markup).toContain('role="status"');
-    expect(markup).toContain("motion-reduce:transition-none");
   });
 
   it("renders an accessible empty state", () => {
@@ -187,6 +185,6 @@ describe("MissionTradeStudy", () => {
     expect(markup).toContain(
       "Supply saved scenarios and optional completed reports or analyses",
     );
-    expect(markup).not.toContain("Mission Comparison Metrics");
+    expect(markup).not.toContain("Mission comparison metrics");
   });
 });

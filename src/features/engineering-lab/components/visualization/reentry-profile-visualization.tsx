@@ -1,22 +1,19 @@
 "use client";
 
-import { useId } from "react";
-import { Flame, Gauge, Plane } from "lucide-react";
+import { useId, type ReactNode } from "react";
 
+import { EmptyState } from "@/components/ui/empty-state";
 import type {
   ReentryTrajectoryPoint,
   VehicleReentryEvaluationAnalysis,
 } from "@/features/engineering-lab/types";
+import { formatLabValue } from "./format-lab-value";
 
 export interface ReentryProfileVisualizationProps {
   readonly analysis?: VehicleReentryEvaluationAnalysis | null;
 }
 
 const MAXIMUM_RENDERED_POINTS = 96;
-
-const telemetryFormatter = new Intl.NumberFormat("en-US", {
-  maximumFractionDigits: 2,
-});
 
 function sampleTrajectoryPoints(
   points: readonly ReentryTrajectoryPoint[],
@@ -34,51 +31,25 @@ function sampleTrajectoryPoints(
   return sampled;
 }
 
-export function ReentryProfileVisualization({
+/**
+ * Altitude (solid, left axis, km) and velocity (dashed, right axis, km/s)
+ * against elapsed time, drawn from the computed trajectory points. Peak
+ * deceleration and peak heating are marked with distinct shapes.
+ */
+export function ReentryProfileChart({
   analysis,
-}: ReentryProfileVisualizationProps) {
+}: {
+  readonly analysis: VehicleReentryEvaluationAnalysis;
+}) {
   const reactId = useId().replaceAll(":", "");
   const titleId = `reentry-title-${reactId}`;
   const descriptionId = `reentry-description-${reactId}`;
-  const gridId = `reentry-grid-${reactId}`;
-  const atmosphereGradientId = `atmosphere-gradient-${reactId}`;
-  const heatingGradientId = `heating-gradient-${reactId}`;
-  const spacecraftGlowId = `reentry-spacecraft-glow-${reactId}`;
-  const trajectoryPoints = analysis?.trajectory.trajectoryPoints ?? [];
+  const trajectoryPoints = analysis.trajectory.trajectoryPoints;
 
-  if (
-    analysis === undefined ||
-    analysis === null ||
-    trajectoryPoints.length === 0
-  ) {
-    return (
-      <section
-        aria-label="Reentry profile visualization"
-        className="rounded-2xl border border-border bg-background/45 p-6"
-      >
-        <div className="flex items-center gap-3">
-          <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-accent/10 text-accent">
-            <Plane aria-hidden="true" size={19} />
-          </span>
-          <div>
-            <p className="orbix-label text-accent">Reentry telemetry</p>
-            <h3 className="mt-1 text-lg font-semibold">
-              Reentry visualization unavailable
-            </h3>
-          </div>
-        </div>
-        <p className="mt-4 text-sm leading-6 text-muted">
-          A completed vehicle reentry evaluation with trajectory points is
-          required to render this profile.
-        </p>
-      </section>
-    );
-  }
-
-  const plotLeft = 62;
-  const plotRight = 604;
-  const plotTop = 42;
-  const plotBottom = 306;
+  const plotLeft = 64;
+  const plotRight = 596;
+  const plotTop = 40;
+  const plotBottom = 300;
   const plotWidth = plotRight - plotLeft;
   const plotHeight = plotBottom - plotTop;
   const sampledPoints = sampleTrajectoryPoints(trajectoryPoints);
@@ -99,317 +70,284 @@ export function ReentryProfileVisualization({
     plotBottom - (altitudeMeters / maximumAltitude) * plotHeight;
   const plotVelocityY = (velocityMetersPerSecond: number) =>
     plotBottom - (velocityMetersPerSecond / maximumVelocity) * plotHeight;
-  const altitudePath = sampledPoints
-    .map(
-      (point, index) =>
-        `${index === 0 ? "M" : "L"} ${plotX(point.timeSeconds).toFixed(2)} ${plotAltitudeY(point.altitudeMeters).toFixed(2)}`,
-    )
-    .join(" ");
-  const velocityPath = sampledPoints
-    .map(
-      (point, index) =>
-        `${index === 0 ? "M" : "L"} ${plotX(point.timeSeconds).toFixed(2)} ${plotVelocityY(point.velocityMetersPerSecond).toFixed(2)}`,
-    )
-    .join(" ");
+  const toPath = (y: (point: ReentryTrajectoryPoint) => number) =>
+    sampledPoints
+      .map(
+        (point, index) =>
+          `${index === 0 ? "M" : "L"} ${plotX(point.timeSeconds).toFixed(2)} ${y(point).toFixed(2)}`,
+      )
+      .join(" ");
+  const altitudePath = toPath((point) => plotAltitudeY(point.altitudeMeters));
+  const velocityPath = toPath((point) =>
+    plotVelocityY(point.velocityMetersPerSecond),
+  );
   const peakDeceleration = analysis.trajectory.peakDeceleration;
   const peakDecelerationX = plotX(peakDeceleration.timeSeconds);
   const peakDecelerationY = plotAltitudeY(peakDeceleration.altitudeMeters);
-  const thermalDataAvailable = analysis.thermalHistory.thermalPoints.length > 0;
-  const peakHeating = thermalDataAvailable
-    ? analysis.thermalHistory.peakHeatFlux
-    : undefined;
-  const peakHeatingX = peakHeating ? plotX(peakHeating.timeSeconds) : 0;
-  const peakHeatingY = peakHeating
-    ? plotAltitudeY(peakHeating.altitudeMeters)
-    : 0;
-  const visualSummary = `${analysis.vehicle.vehicleName} descends from ${analysis.trajectory.initialState.altitudeMeters} metres to ${analysis.trajectory.finalState.altitudeMeters} metres while velocity changes from ${analysis.trajectory.initialState.velocityMetersPerSecond} metres per second to ${analysis.trajectory.finalState.velocityMetersPerSecond} metres per second.`;
+  const peakHeating =
+    analysis.thermalHistory.thermalPoints.length > 0
+      ? analysis.thermalHistory.peakHeatFlux
+      : undefined;
+  const visualSummary = `${analysis.vehicle.vehicleName} descends from ${formatLabValue(analysis.trajectory.initialState.altitudeMeters)} m to ${formatLabValue(analysis.trajectory.finalState.altitudeMeters)} m while velocity changes from ${formatLabValue(analysis.trajectory.initialState.velocityMetersPerSecond)} m/s to ${formatLabValue(analysis.trajectory.finalState.velocityMetersPerSecond)} m/s over ${formatLabValue(analysis.trajectory.durationSeconds)} s.`;
+  const gridFractions = [0.25, 0.5, 0.75];
 
   return (
-    <section
-      aria-labelledby={`${titleId}-panel`}
-      className="overflow-hidden rounded-2xl border border-border bg-[#071015]"
-    >
-      <header className="flex flex-col gap-3 border-b border-white/10 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <p className="font-mono text-[0.62rem] tracking-[0.16em] text-accent uppercase">
-            Atmospheric descent // Time history
-          </p>
-          <h3 className="mt-1 text-lg font-semibold" id={`${titleId}-panel`}>
-            Reentry Profile Visualization
-          </h3>
-        </div>
-        <span className="w-fit rounded-full border border-accent/25 bg-accent/8 px-3 py-1.5 font-mono text-[0.65rem] tracking-[0.08em] text-accent uppercase">
-          {analysis.vehicle.vehicleName}
-        </span>
-      </header>
+    <figure className="m-0">
+      <svg
+        aria-labelledby={`${titleId} ${descriptionId}`}
+        className="block h-auto w-full"
+        role="img"
+        viewBox="0 0 660 350"
+      >
+        <title id={titleId}>Vehicle reentry time history</title>
+        <desc id={descriptionId}>{visualSummary}</desc>
 
-      <div className="p-3 sm:p-5">
-        <svg
-          aria-labelledby={`${titleId} ${descriptionId}`}
-          className="h-auto w-full"
-          role="img"
-          viewBox="0 0 660 380"
-        >
-          <title id={titleId}>Vehicle reentry time history</title>
-          <desc id={descriptionId}>{visualSummary}</desc>
-          <defs>
-            <pattern
-              height="24"
-              id={gridId}
-              patternUnits="userSpaceOnUse"
-              width="24"
-            >
-              <path
-                d="M 24 0 L 0 0 0 24"
-                fill="none"
-                stroke="rgba(118, 164, 173, 0.08)"
-                strokeWidth="1"
-              />
-            </pattern>
-            <linearGradient
-              id={atmosphereGradientId}
-              x1="0"
-              x2="0"
-              y1="0"
-              y2="1"
-            >
-              <stop offset="0%" stopColor="#12313b" stopOpacity="0.05" />
-              <stop offset="100%" stopColor="#1d6572" stopOpacity="0.38" />
-            </linearGradient>
-            <radialGradient id={heatingGradientId}>
-              <stop offset="0%" stopColor="#f2a76f" stopOpacity="0.8" />
-              <stop offset="45%" stopColor="#df6f55" stopOpacity="0.25" />
-              <stop offset="100%" stopColor="#df6f55" stopOpacity="0" />
-            </radialGradient>
-            <filter
-              height="300%"
-              id={spacecraftGlowId}
-              width="300%"
-              x="-100%"
-              y="-100%"
-            >
-              <feGaussianBlur result="blur" stdDeviation="3" />
-              <feMerge>
-                <feMergeNode in="blur" />
-                <feMergeNode in="SourceGraphic" />
-              </feMerge>
-            </filter>
-          </defs>
-
-          <rect fill={`url(#${gridId})`} height="380" width="660" />
-          <rect
-            fill={`url(#${atmosphereGradientId})`}
-            height={plotHeight}
-            width={plotWidth}
-            x={plotLeft}
-            y={plotTop}
-          />
-
+        {gridFractions.map((fraction) => (
           <line
-            stroke="#49636a"
-            strokeWidth="1"
-            x1={plotLeft}
-            x2={plotLeft}
-            y1={plotTop}
-            y2={plotBottom}
-          />
-          <line
-            stroke="#49636a"
+            key={fraction}
+            stroke="var(--orbix-data-grid)"
             strokeWidth="1"
             x1={plotLeft}
             x2={plotRight}
-            y1={plotBottom}
-            y2={plotBottom}
+            y1={plotBottom - fraction * plotHeight}
+            y2={plotBottom - fraction * plotHeight}
           />
+        ))}
+        <line
+          stroke="var(--orbix-data-axis)"
+          x1={plotLeft}
+          x2={plotLeft}
+          y1={plotTop}
+          y2={plotBottom}
+        />
+        <line
+          stroke="var(--orbix-data-axis)"
+          x1={plotRight}
+          x2={plotRight}
+          y1={plotTop}
+          y2={plotBottom}
+        />
+        <line
+          stroke="var(--orbix-data-axis)"
+          x1={plotLeft}
+          x2={plotRight}
+          y1={plotBottom}
+          y2={plotBottom}
+        />
 
-          {peakHeating ? (
-            <circle
-              cx={peakHeatingX}
-              cy={peakHeatingY}
-              fill={`url(#${heatingGradientId})`}
-              r="54"
-            />
-          ) : null}
+        <path
+          d={altitudePath}
+          fill="none"
+          stroke="var(--orbix-data-1)"
+          strokeWidth="2.5"
+        />
+        <path
+          d={velocityPath}
+          fill="none"
+          stroke="var(--orbix-data-2)"
+          strokeDasharray="7 5"
+          strokeWidth="2"
+        />
 
+        <rect
+          fill="var(--orbix-data-3)"
+          height="8"
+          stroke="var(--orbix-surface)"
+          strokeWidth="1.5"
+          width="8"
+          x={peakDecelerationX - 4}
+          y={peakDecelerationY - 4}
+        />
+        {peakHeating ? (
           <path
-            d={altitudePath}
-            fill="none"
-            stroke="#77d6c8"
-            strokeWidth="2.5"
+            d={`M ${plotX(peakHeating.timeSeconds)} ${plotAltitudeY(peakHeating.altitudeMeters) - 6} L ${plotX(peakHeating.timeSeconds) + 6} ${plotAltitudeY(peakHeating.altitudeMeters) + 5} L ${plotX(peakHeating.timeSeconds) - 6} ${plotAltitudeY(peakHeating.altitudeMeters) + 5} Z`}
+            fill="var(--orbix-data-2)"
+            stroke="var(--orbix-surface)"
+            strokeWidth="1.5"
           />
-          <path
-            d={velocityPath}
-            fill="none"
-            opacity="0.9"
-            stroke="#e3b273"
-            strokeDasharray="7 5"
-            strokeWidth="2"
-          />
+        ) : null}
 
-          {peakHeating ? (
-            <g>
-              <circle
-                cx={peakHeatingX}
-                cy={peakHeatingY}
-                fill="#f2a76f"
-                r="4"
-                stroke="#071015"
+        <g
+          fill="var(--orbix-data-axis)"
+          fontFamily="var(--font-telemetry), monospace"
+          fontSize="11"
+        >
+          <text textAnchor="end" x={plotLeft - 8} y={plotTop + 4}>
+            {formatLabValue(maximumAltitude / 1000)}
+          </text>
+          <text textAnchor="end" x={plotLeft - 8} y={plotBottom + 4}>
+            0
+          </text>
+          <text textAnchor="start" x={plotRight + 8} y={plotTop + 4}>
+            {formatLabValue(maximumVelocity / 1000)}
+          </text>
+          <text textAnchor="start" x={plotRight + 8} y={plotBottom + 4}>
+            0
+          </text>
+          <text textAnchor="middle" x={plotLeft} y={plotBottom + 20}>
+            0 s
+          </text>
+          <text textAnchor="end" x={plotRight} y={plotBottom + 20}>
+            {formatLabValue(analysis.trajectory.durationSeconds)} s
+          </text>
+          <text textAnchor="start" x={plotLeft - 56} y={plotTop - 16}>
+            Altitude (km)
+          </text>
+          <text textAnchor="end" x={plotRight + 60} y={plotTop - 16}>
+            Velocity (km/s)
+          </text>
+          <text textAnchor="middle" x={(plotLeft + plotRight) / 2} y="340">
+            Elapsed time
+          </text>
+        </g>
+      </svg>
+
+      <figcaption className="mt-3 text-sm text-text-secondary">
+        <ul className="flex flex-wrap gap-x-6 gap-y-1">
+          <li className="flex items-center gap-2">
+            <svg aria-hidden="true" height="8" width="24">
+              <line
+                stroke="var(--orbix-data-1)"
+                strokeWidth="2.5"
+                x1="0"
+                x2="24"
+                y1="4"
+                y2="4"
+              />
+            </svg>
+            Altitude profile
+          </li>
+          <li className="flex items-center gap-2">
+            <svg aria-hidden="true" height="8" width="24">
+              <line
+                stroke="var(--orbix-data-2)"
+                strokeDasharray="7 5"
                 strokeWidth="2"
+                x1="0"
+                x2="24"
+                y1="4"
+                y2="4"
               />
-              <text
-                fill="#f1b384"
-                fontFamily="monospace"
-                fontSize="9"
-                x={peakHeatingX + 9}
-                y={peakHeatingY - 9}
-              >
-                PEAK HEATING
-              </text>
-            </g>
+            </svg>
+            Velocity
+          </li>
+          <li className="flex items-center gap-2">
+            <svg aria-hidden="true" height="10" width="10">
+              <rect
+                fill="var(--orbix-data-3)"
+                height="8"
+                width="8"
+                x="1"
+                y="1"
+              />
+            </svg>
+            Peak deceleration
+          </li>
+          {peakHeating ? (
+            <li className="flex items-center gap-2">
+              <svg aria-hidden="true" height="10" width="12">
+                <path d="M 6 0 L 12 10 L 0 10 Z" fill="var(--orbix-data-2)" />
+              </svg>
+              Peak heating
+            </li>
           ) : null}
+        </ul>
+      </figcaption>
+    </figure>
+  );
+}
 
-          <g>
-            <circle
-              cx={peakDecelerationX}
-              cy={peakDecelerationY}
-              fill="#8db8df"
-              r="4"
-              stroke="#071015"
-              strokeWidth="2"
-            />
-            <text
-              fill="#a8c8e5"
-              fontFamily="monospace"
-              fontSize="9"
-              x={peakDecelerationX + 9}
-              y={peakDecelerationY + 17}
-            >
-              PEAK DECELERATION
-            </text>
-          </g>
+/** Mono is for machine values only (spec 5): callers wrap the number and
+ * unit in `orbix-data` and leave connecting words in the sans face. */
+function Value({ label, value }: { label: string; value: ReactNode }) {
+  return (
+    <div className="flex items-baseline justify-between gap-4 border-t border-border-subtle py-2 text-sm">
+      <dt className="text-muted">{label}</dt>
+      <dd className="text-right text-foreground">{value}</dd>
+    </div>
+  );
+}
 
-          <g aria-hidden="true" className="motion-reduce:hidden">
-            <path
-              d="M -7 -4 L 7 0 L -7 4 Z"
-              fill="#f4ead0"
-              filter={`url(#${spacecraftGlowId})`}
-            >
-              <animateMotion
-                dur="10s"
-                path={altitudePath}
-                repeatCount="indefinite"
-                rotate="auto"
-              />
-            </path>
-          </g>
-          <path
-            aria-hidden="true"
-            className="motion-safe:hidden"
-            d={`M ${plotX(analysis.trajectory.initialState.timeSeconds) - 7} ${plotAltitudeY(analysis.trajectory.initialState.altitudeMeters) - 4} L ${plotX(analysis.trajectory.initialState.timeSeconds) + 7} ${plotAltitudeY(analysis.trajectory.initialState.altitudeMeters)} L ${plotX(analysis.trajectory.initialState.timeSeconds) - 7} ${plotAltitudeY(analysis.trajectory.initialState.altitudeMeters) + 4} Z`}
-            fill="#f4ead0"
-            filter={`url(#${spacecraftGlowId})`}
-          />
+function Num({ children }: { children: string }) {
+  return <span className="orbix-data">{children}</span>;
+}
 
-          <g fill="#8099a0" fontFamily="monospace" fontSize="9">
-            <text textAnchor="end" x={plotLeft - 9} y={plotTop + 3}>
-              {telemetryFormatter.format(maximumAltitude)} m
-            </text>
-            <text textAnchor="end" x={plotLeft - 9} y={plotBottom + 3}>
-              0 m
-            </text>
-            <text textAnchor="middle" x={plotLeft} y={plotBottom + 24}>
-              0 s
-            </text>
-            <text textAnchor="end" x={plotRight} y={plotBottom + 24}>
-              {telemetryFormatter.format(analysis.trajectory.durationSeconds)} s
-            </text>
-            <text
-              textAnchor="middle"
-              transform={`rotate(-90 18 ${(plotTop + plotBottom) / 2})`}
-              x="18"
-              y={(plotTop + plotBottom) / 2}
-            >
-              ALTITUDE
-            </text>
-            <text textAnchor="middle" x={(plotLeft + plotRight) / 2} y="356">
-              ELAPSED TIME
-            </text>
-          </g>
+export function ReentryProfileVisualization({
+  analysis,
+}: ReentryProfileVisualizationProps) {
+  const titleId = `reentry-profile-title-${useId().replaceAll(":", "")}`;
 
-          <g fontFamily="monospace" fontSize="9">
-            <line
-              stroke="#77d6c8"
-              strokeWidth="2"
-              x1="427"
-              x2="449"
-              y1="24"
-              y2="24"
-            />
-            <text fill="#9eb6bc" x="455" y="27">
-              ALTITUDE PROFILE
-            </text>
-            <line
-              stroke="#e3b273"
-              strokeDasharray="5 3"
-              strokeWidth="2"
-              x1="538"
-              x2="560"
-              y1="24"
-              y2="24"
-            />
-            <text fill="#9eb6bc" x="566" y="27">
-              VELOCITY
-            </text>
-          </g>
-        </svg>
+  if (!analysis || analysis.trajectory.trajectoryPoints.length === 0) {
+    return (
+      <EmptyState
+        description="A completed vehicle reentry evaluation with trajectory points is required to draw this profile."
+        title="Reentry visualization unavailable"
+      />
+    );
+  }
+
+  const peakHeating =
+    analysis.thermalHistory.thermalPoints.length > 0
+      ? analysis.thermalHistory.peakHeatFlux
+      : undefined;
+
+  return (
+    <section aria-labelledby={titleId} className="min-w-0">
+      <header className="flex flex-wrap items-baseline justify-between gap-2 border-b border-border-subtle pb-4">
+        <h3 className="orbix-h3 text-foreground" id={titleId}>
+          Reentry profile
+        </h3>
+        <p className="text-sm text-text-secondary">
+          {analysis.vehicle.vehicleName}
+        </p>
+      </header>
+
+      <div className="pt-4">
+        <ReentryProfileChart analysis={analysis} />
       </div>
 
-      <div className="grid border-t border-white/10 sm:grid-cols-2 lg:grid-cols-4">
-        <div className="p-4 sm:border-r sm:border-white/10">
-          <p className="font-mono text-[0.6rem] tracking-[0.12em] text-[#8099a0] uppercase">
-            Velocity change
-          </p>
-          <p className="mt-1 font-mono text-sm text-[#d6e1e3]">
-            {telemetryFormatter.format(
-              analysis.trajectory.initialState.velocityMetersPerSecond,
-            )}
-            {}→{}
-            {telemetryFormatter.format(
-              analysis.trajectory.finalState.velocityMetersPerSecond,
-            )}
-            {}
-            m/s
-          </p>
-        </div>
-        <div className="border-t border-white/10 p-4 sm:border-t-0 lg:border-r">
-          <p className="flex items-center gap-1.5 font-mono text-[0.6rem] tracking-[0.12em] text-[#8099a0] uppercase">
-            <Flame aria-hidden="true" size={12} /> Peak heating
-          </p>
-          <p className="mt-1 font-mono text-sm text-[#e8b07f]">
+      <dl className="grid gap-x-8 border-t border-border-subtle pb-2 sm:grid-cols-2 lg:grid-cols-4">
+        <Value
+          label="Velocity change"
+          value={
+            <>
+              <Num>
+                {formatLabValue(
+                  analysis.trajectory.initialState.velocityMetersPerSecond,
+                )}
+              </Num>{" "}
+              to{" "}
+              <Num>{`${formatLabValue(analysis.trajectory.finalState.velocityMetersPerSecond)} m/s`}</Num>
+            </>
+          }
+        />
+        <div className="flex items-baseline justify-between gap-4 border-t border-border-subtle py-2 text-sm">
+          <dt className="text-muted">Peak heating</dt>
+          <dd
+            className={
+              peakHeating
+                ? "orbix-data text-right text-foreground"
+                : "text-right text-muted"
+            }
+          >
             {peakHeating
-              ? `${telemetryFormatter.format(peakHeating.heatFluxKilowattsPerSquareMetre)} kW/m²`
+              ? `${formatLabValue(peakHeating.heatFluxKilowattsPerSquareMetre)} kW/m²`
               : "Thermal profile unavailable"}
-          </p>
+          </dd>
         </div>
-        <div className="border-t border-white/10 p-4 sm:border-r sm:border-white/10 lg:border-t-0">
-          <p className="flex items-center gap-1.5 font-mono text-[0.6rem] tracking-[0.12em] text-[#8099a0] uppercase">
-            <Gauge aria-hidden="true" size={12} /> Peak deceleration
-          </p>
-          <p className="mt-1 font-mono text-sm text-[#a8c8e5]">
-            {telemetryFormatter.format(peakDeceleration.decelerationGs)} g
-          </p>
-        </div>
-        <div className="border-t border-white/10 p-4 lg:border-t-0">
-          <p className="font-mono text-[0.6rem] tracking-[0.12em] text-[#8099a0] uppercase">
-            Timeline
-          </p>
-          <p className="mt-1 font-mono text-sm text-[#d6e1e3]">
-            {telemetryFormatter.format(analysis.trajectory.durationSeconds)} s
-          </p>
-        </div>
-      </div>
-
-      <p className="sr-only">{visualSummary}</p>
+        <Value
+          label="Peak deceleration"
+          value={
+            <Num>{`${formatLabValue(analysis.trajectory.peakDeceleration.decelerationGs)} g`}</Num>
+          }
+        />
+        <Value
+          label="Duration"
+          value={
+            <Num>{`${formatLabValue(analysis.trajectory.durationSeconds)} s`}</Num>
+          }
+        />
+      </dl>
     </section>
   );
 }

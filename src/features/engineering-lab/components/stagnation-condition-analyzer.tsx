@@ -1,12 +1,16 @@
 "use client";
 
+import { Button } from "@/components/ui";
 import { useMemo, useState, type FormEvent } from "react";
 import { AlertTriangle, Gauge, RotateCcw } from "lucide-react";
 
 import { analyzeStagnationCondition } from "@/features/engineering-lab/analysis";
 import {
   CalculatorNumberField,
+  focusFirstInvalidField,
+  focusFirstInvalidFieldOnEnter,
   CalculatorResultSection,
+  NotCalculated,
   ValidationErrorSummary,
 } from "@/features/engineering-lab/components/shared";
 import type {
@@ -94,6 +98,7 @@ export function StagnationConditionAnalyzer() {
 
   function preventSubmission(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    focusFirstInvalidField(event.currentTarget);
   }
 
   function resetAnalyzer() {
@@ -106,13 +111,17 @@ export function StagnationConditionAnalyzer() {
   return (
     <div className="grid gap-8 xl:grid-cols-[minmax(0,0.9fr)_minmax(24rem,1.1fr)] xl:gap-10">
       <div>
-        <form noValidate onSubmit={preventSubmission}>
+        <form
+          noValidate
+          onKeyDown={focusFirstInvalidFieldOnEnter}
+          onSubmit={preventSubmission}
+        >
           <div className="grid gap-5 sm:grid-cols-2">
             <CalculatorNumberField
               error={errors.altitudeMeters}
               field="altitudeMeters"
               hint={
-                "Geometric altitude within the 0–" +
+                "Geometric altitude within the 0 to " +
                 STANDARD_ATMOSPHERE_MAX_ALTITUDE_METRES.toLocaleString(
                   "en-US",
                 ) +
@@ -136,20 +145,23 @@ export function StagnationConditionAnalyzer() {
             />
           </div>
 
-          <ValidationErrorSummary errors={Object.values(errors)} />
+          <ValidationErrorSummary
+            errors={errors}
+            idPrefix="stagnation-condition"
+          />
 
           <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:items-center">
-            <p className="text-xs leading-5 text-muted">
+            <p className="text-sm leading-6 text-muted">
               Valid changes update the thermodynamic state immediately.
             </p>
-            <button
-              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-border bg-surface/60 px-5 py-2.5 text-sm font-semibold text-foreground transition-colors hover:border-accent/60 hover:text-accent sm:ml-auto"
+            <Button
+              className="shrink-0 whitespace-nowrap sm:ml-auto"
+              variant="secondary"
               onClick={resetAnalyzer}
-              type="button"
             >
               <RotateCcw aria-hidden="true" size={16} />
-              Reset example
-            </button>
+              Reset inputs
+            </Button>
           </div>
         </form>
       </div>
@@ -165,19 +177,16 @@ export function StagnationConditionAnalyzer() {
             <div className="space-y-6">
               <section aria-labelledby="static-conditions-title">
                 <h4
-                  className="orbix-label text-accent"
+                  className="text-sm font-semibold text-foreground"
                   id="static-conditions-title"
                 >
                   Static atmospheric conditions
                 </h4>
                 <dl className="mt-3 grid gap-4 sm:grid-cols-3">
                   <div>
-                    <dt className="text-xs text-muted">Temperature</dt>
+                    <dt className="orbix-label">Temperature</dt>
                     <dd className="mt-1">
-                      <output
-                        className="font-mono text-sm font-semibold"
-                        htmlFor={outputIds}
-                      >
+                      <output className="orbix-data" htmlFor={outputIds}>
                         {conditionFormatter.format(
                           result.staticConditions.temperatureKelvin,
                         )}{" "}
@@ -186,12 +195,9 @@ export function StagnationConditionAnalyzer() {
                     </dd>
                   </div>
                   <div>
-                    <dt className="text-xs text-muted">Pressure</dt>
+                    <dt className="orbix-label">Pressure</dt>
                     <dd className="mt-1">
-                      <output
-                        className="font-mono text-sm font-semibold"
-                        htmlFor={outputIds}
-                      >
+                      <output className="orbix-data" htmlFor={outputIds}>
                         {conditionFormatter.format(
                           result.staticConditions.pressurePascals,
                         )}{" "}
@@ -200,12 +206,9 @@ export function StagnationConditionAnalyzer() {
                     </dd>
                   </div>
                   <div>
-                    <dt className="text-xs text-muted">Density</dt>
+                    <dt className="orbix-label">Density</dt>
                     <dd className="mt-1">
-                      <output
-                        className="font-mono text-sm font-semibold"
-                        htmlFor={outputIds}
-                      >
+                      <output className="orbix-data" htmlFor={outputIds}>
                         {densityFormatter.format(
                           result.staticConditions.densityKilogramsPerCubicMetre,
                         )}{" "}
@@ -221,21 +224,16 @@ export function StagnationConditionAnalyzer() {
                 className="border-t border-border pt-5"
               >
                 <h4
-                  className="orbix-label text-accent"
+                  className="text-sm font-semibold text-foreground"
                   id="stagnation-conditions-title"
                 >
                   Stagnation conditions
                 </h4>
                 <dl className="mt-3 grid gap-4 sm:grid-cols-3">
                   <div>
-                    <dt className="text-xs text-muted">
-                      Stagnation temperature
-                    </dt>
+                    <dt className="orbix-label">Stagnation temperature</dt>
                     <dd className="mt-1">
-                      <output
-                        className="font-mono text-lg font-semibold text-accent"
-                        htmlFor={outputIds}
-                      >
+                      <output className="orbix-data-lg" htmlFor={outputIds}>
                         {conditionFormatter.format(
                           result.stagnationConditions.temperatureKelvin,
                         )}{" "}
@@ -244,12 +242,9 @@ export function StagnationConditionAnalyzer() {
                     </dd>
                   </div>
                   <div>
-                    <dt className="text-xs text-muted">Stagnation pressure</dt>
+                    <dt className="orbix-label">Stagnation pressure</dt>
                     <dd className="mt-1">
-                      <output
-                        className="font-mono text-lg font-semibold text-accent"
-                        htmlFor={outputIds}
-                      >
+                      <output className="orbix-data-lg" htmlFor={outputIds}>
                         {conditionFormatter.format(
                           result.stagnationConditions.pressurePascals,
                         )}{" "}
@@ -258,12 +253,9 @@ export function StagnationConditionAnalyzer() {
                     </dd>
                   </div>
                   <div>
-                    <dt className="text-xs text-muted">Stagnation density</dt>
+                    <dt className="orbix-label">Stagnation density</dt>
                     <dd className="mt-1">
-                      <output
-                        className="font-mono text-lg font-semibold text-accent"
-                        htmlFor={outputIds}
-                      >
+                      <output className="orbix-data-lg" htmlFor={outputIds}>
                         {densityFormatter.format(
                           result.stagnationConditions
                             .densityKilogramsPerCubicMetre,
@@ -280,27 +272,27 @@ export function StagnationConditionAnalyzer() {
                 className="border-t border-border pt-5"
               >
                 <h4
-                  className="orbix-label text-accent"
+                  className="text-sm font-semibold text-foreground"
                   id="isentropic-ratios-title"
                 >
                   Isentropic ratios
                 </h4>
                 <dl className="mt-3 grid gap-4 sm:grid-cols-3">
                   <div>
-                    <dt className="text-xs text-muted">Temperature ratio</dt>
-                    <dd className="mt-1 font-mono text-sm font-semibold">
+                    <dt className="orbix-label">Temperature ratio</dt>
+                    <dd className="orbix-data mt-1">
                       {ratioFormatter.format(result.ratios.temperatureRatio)}
                     </dd>
                   </div>
                   <div>
-                    <dt className="text-xs text-muted">Pressure ratio</dt>
-                    <dd className="mt-1 font-mono text-sm font-semibold">
+                    <dt className="orbix-label">Pressure ratio</dt>
+                    <dd className="orbix-data mt-1">
                       {ratioFormatter.format(result.ratios.pressureRatio)}
                     </dd>
                   </div>
                   <div>
-                    <dt className="text-xs text-muted">Density ratio</dt>
-                    <dd className="mt-1 font-mono text-sm font-semibold">
+                    <dt className="orbix-label">Density ratio</dt>
+                    <dd className="orbix-data mt-1">
                       {ratioFormatter.format(result.ratios.densityRatio)}
                     </dd>
                   </div>
@@ -308,13 +300,10 @@ export function StagnationConditionAnalyzer() {
               </section>
             </div>
           ) : (
-            <div className="py-5">
-              <p className="font-mono text-3xl text-muted">—</p>
-              <p className="mt-3 text-sm leading-6 text-muted">
-                Enter a valid altitude and Mach number to restore the live
-                thermodynamic state.
-              </p>
-            </div>
+            <NotCalculated invalid={Object.values(errors).some(Boolean)}>
+              Enter a valid altitude and Mach number to restore the live
+              thermodynamic state.
+            </NotCalculated>
           )}
         </CalculatorResultSection>
 
@@ -323,10 +312,10 @@ export function StagnationConditionAnalyzer() {
             <AlertTriangle aria-hidden="true" size={17} />
             Model assumptions
           </p>
-          <p className="mt-3 text-xs leading-5 text-muted">
+          <p className="mt-3 text-sm leading-6 text-muted">
             Static-to-stagnation conversion assumes:
           </p>
-          <ul className="mt-3 grid list-disc gap-2 pl-5 text-xs leading-5 text-muted sm:grid-cols-2">
+          <ul className="mt-3 grid list-disc gap-2 pl-5 text-sm leading-6 text-muted sm:grid-cols-2">
             <li>Steady flow</li>
             <li>Ideal gas behavior</li>
             <li>No viscous losses</li>

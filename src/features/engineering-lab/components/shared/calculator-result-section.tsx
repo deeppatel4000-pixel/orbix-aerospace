@@ -2,19 +2,13 @@ import type { ReactNode } from "react";
 import type { LucideIcon } from "lucide-react";
 
 /**
- * The answer panel every calculator ends in — 22 modules render through it.
+ * The results panel every calculator ends in (spec 14, Engineering Lab).
  *
- * Kept as a distinct surface, because "what did this compute?" is the one
- * question the module exists to answer and it earns containment. What went is
- * the decoration around it: the `technical-grid` overlay behind the numbers,
- * and the monospace micro-eyebrow. The border now carries a trace of the
- * accent so the result reads as the emphasised region without a second
- * background competing with the figure inside it.
- *
- * `role="status"` with `aria-live="polite"` is deliberately preserved. Results
- * appear on submit without moving focus, so a screen reader user would
- * otherwise get no confirmation that anything happened. Only one module is
- * visible at a time, so at most one of these is live.
+ * A flat bordered panel: a small label, an h3 title, then the figures. The
+ * body keeps `role="status"` with `aria-live="polite"`: results appear on
+ * submit (or as valid inputs change) without moving focus, so a screen reader
+ * user would otherwise get no confirmation that anything was calculated. Only
+ * one module is visible at a time, so at most one of these is live.
  */
 
 interface CalculatorResultSectionProps {
@@ -37,19 +31,20 @@ export function CalculatorResultSection({
   return (
     <section
       aria-labelledby={titleId}
-      className="overflow-hidden rounded-lg border border-accent/25 bg-background/45"
+      className="overflow-hidden rounded-md border border-border bg-surface"
+      id={id}
     >
-      <div className="border-b border-border p-5 sm:p-6">
+      <div className="border-b border-border-subtle px-4 py-4 sm:px-6">
         <p className="orbix-label flex items-center gap-2">
-          <Icon aria-hidden="true" size={15} />
+          <Icon aria-hidden="true" className="shrink-0" size={16} />
           {eyebrow}
         </p>
-        <h3 className="mt-2 text-lg font-semibold" id={titleId}>
+        <h3 className="mt-1 text-lg font-semibold" id={titleId}>
           {title}
         </h3>
       </div>
 
-      <div aria-live="polite" className="p-5 sm:p-6" role="status">
+      <div aria-live="polite" className="p-4 sm:p-6" role="status">
         {children}
       </div>
     </section>
