@@ -12,7 +12,7 @@ watched), **Owner action** (needs a decision or fact only the operator can suppl
 
 | #   | Risk                                   | Status       | Summary                                                                                                                                                                                                                   |
 | --- | -------------------------------------- | ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 1   | Third-party and AI-generated images    | In progress  | Images are being replaced with verified public-domain or openly licensed files, each recorded in `docs/assets/image-provenance.md` and credited on `/credits`. AI-generated environment plates are being removed.         |
+| 1   | Third-party and AI-generated images    | Mitigated    | Images are being replaced with verified public-domain or openly licensed files, each recorded in `docs/assets/image-provenance.md` and credited on `/credits`. AI-generated environment plates are being removed.         |
 | 2   | Trademarks of named organisations      | Mitigated    | Vehicle, manufacturer, and agency names are used only to identify subjects. `NOTICE.md`, the README, and `/credits` state non-affiliation and no endorsement.                                                             |
 | 3   | Personal contact email published       | Owner action | `deep.patel4000@gmail.com` is published as a temporary contact. Replace it with a dedicated ORBIX address in `src/config/site-legal.ts`, `README.md`, and `NOTICE.md`.                                                    |
 | 4   | ORBIX logo provenance                  | Owner action | The owner must confirm the logo in `public/brand/` was not AI-generated and does not copy third-party work. If it was AI-generated, say so on `/credits`.                                                                 |
@@ -32,9 +32,9 @@ watched), **Owner action** (needs a decision or fact only the operator can suppl
 - NASA imagery is generally not copyrighted, but NASA's guidelines forbid use that implies
   endorsement. U.S. military imagery is usually public domain as a work of the U.S. Government, but
   individual files must still be checked.
-- `docs/assets/visuals/generated-environments.md` records four AI-generated environment plates in
-  `public/images/environments/`. These are scheduled for removal under the redesign. Until they are
-  deleted, the statement "ORBIX does not use AI-generated images" must not be published.
+- The four AI-generated environment plates and five mission images recorded in
+  `docs/assets/visuals/generated-environments.md` were deleted on 27 September 2026. Only the
+  ORBIX logo (item 4) remains unverified.
 - Status changes to Mitigated when no unverified or AI-generated image remains in `public/`.
 
 ### 2. Trademarks
