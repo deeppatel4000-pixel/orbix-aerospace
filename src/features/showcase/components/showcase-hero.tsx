@@ -114,7 +114,7 @@ export function ShowcaseHero() {
               ))}
             </ol>
 
-            <div className="border-t border-border bg-gradient-to-r from-accent/[0.07] to-plasma/[0.04] px-5 py-4">
+            <div className="to-plasma/[0.04] border-t border-border bg-gradient-to-r from-accent/[0.07] px-5 py-4">
               <p className="text-sm leading-6 text-foreground">
                 Each layer consumes typed outputs from the layer before it.
                 Presentation never becomes the source of engineering truth.

@@ -4,45 +4,60 @@ import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
 /**
- * The shared technical grid must never mask its own content again.
+ * Global style guards for the 2026 redesign (spec 1, 15.1).
  *
- * `.technical-grid` / `.orbix-grid` once ended with
- * `mask-image: linear-gradient(to bottom, black 8%, transparent 94%)`. A CSS
- * mask applies to the element AND every descendant, and twenty-one of the
- * thirty-six usages are content containers — the Compare empty state, Mission
- * Control panels, the mission tiles, both explorer empty states. Their text and
- * controls faded toward the bottom of the card.
- *
- * Scoped deliberately to this one declaration. Gradients are not banned
- * anywhere else: the photographic scrims in `vehicle-media-frame.tsx` and the
- * vehicle visual panels darken IMAGES so overlaid text stays legible, which is
- * the opposite problem and must keep working.
+ * The decorative grid, star field and glow classes are still referenced by
+ * feature code that has not migrated yet, so they must exist but draw
+ * nothing. And no stylesheet may reintroduce the deleted violet token, pill
+ * radii, pure black, blur, or smooth scrolling.
  */
 
-const FOUNDATIONS = join(process.cwd(), "src/styles/orbix-foundations.css");
+const stylesDir = join(process.cwd(), "src/styles");
+const read = (file: string) =>
+  readFileSync(join(stylesDir, file), "utf8").replace(/\/\*[\s\S]*?\*\//g, "");
 
-/** The shared declaration body, comments stripped. */
-function sharedGridRule(): string {
-  const source = readFileSync(FOUNDATIONS, "utf8");
+const sheets = [
+  "orbix-tokens.css",
+  "orbix-foundations.css",
+  "orbix-components.css",
+  "orbix-motion.css",
+].map((file) => [file, read(file)] as const);
+
+function ruleBody(source: string, selectorPattern: RegExp): string {
   const match = source.match(
-    /\.technical-grid,\s*\.orbix-grid\s*\{([\s\S]*?)\n {2}\}/,
+    new RegExp(`${selectorPattern.source}[^{]*\\{([\\s\\S]*?)\\n {2}\\}`),
   );
-
-  expect(match, "the shared technical-grid rule should exist").not.toBeNull();
-  return (match?.[1] ?? "").replace(/\/\*[\s\S]*?\*\//g, "");
+  expect(match, `${selectorPattern} should exist`).not.toBeNull();
+  return match?.[1] ?? "";
 }
 
-describe("shared technical grid", () => {
-  it("does not mask the element it is applied to", () => {
-    const rule = sharedGridRule();
+describe("neutralised decoration", () => {
+  it("keeps the shared grid class but draws nothing and masks nothing", () => {
+    const rule = ruleBody(
+      read("orbix-foundations.css"),
+      /\.technical-grid,\s*\.orbix-grid/,
+    );
 
-    expect(rule.match(/(?<!-)\bmask-image\s*:/g) ?? []).toEqual([]);
-    expect(rule.match(/-webkit-mask-image\s*:/g) ?? []).toEqual([]);
-    expect(rule.match(/\bmask\s*:/g) ?? []).toEqual([]);
+    expect(rule).toMatch(/background-image:\s*none/);
+    expect(rule).not.toMatch(/gradient\(/);
+    expect(rule).not.toMatch(/mask(-image)?\s*:/);
+  });
+});
+
+describe("global style hard rules", () => {
+  it.each(sheets)("%s has no violet, purple, indigo or fuchsia", (_, css) => {
+    expect(css).not.toMatch(/plasma|violet|purple|indigo|fuchsia/i);
   });
 
-  it("still draws the grid", () => {
-    // The fix removes the fade, not the treatment.
-    expect(sharedGridRule()).toContain("background-image");
+  it.each(sheets)("%s has no pill radius", (_, css) => {
+    expect(css).not.toMatch(/999px|9999px/);
+  });
+
+  it.each(sheets)("%s never uses pure black", (_, css) => {
+    expect(css).not.toMatch(/#0{6}\b|#0{3}\b|rgb\(0 0 0|\bblack\b/i);
+  });
+
+  it.each(sheets)("%s has no blur or smooth scrolling", (_, css) => {
+    expect(css).not.toMatch(/backdrop-filter|blur\(|scroll-behavior:\s*smooth/);
   });
 });

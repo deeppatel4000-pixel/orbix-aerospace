@@ -7,7 +7,7 @@ interface OrbixWordmarkProps {
    * Text describing the mark, when the mark itself is the content.
    *
    * Defaults to empty, which is right wherever a visible or `sr-only` label
-   * already names the link — the site header, for one — because a decorative
+   * already names the link (the site header, for one), because a decorative
    * duplicate would make assistive technology announce "ORBIX ORBIX". Pass a
    * value only where the image is the sole carrier of the name, such as the
    * homepage `h1`; the wrapper then stops hiding itself so the alt is reachable.

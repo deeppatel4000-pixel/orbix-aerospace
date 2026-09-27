@@ -2,37 +2,33 @@ import Link from "next/link";
 
 import { Container } from "@/components/layout/container";
 import { SiteLogo } from "@/components/layout/site-logo";
-import { navigationItems } from "@/config/navigation";
-import { siteConfig } from "@/config/site";
+import { legalNavigationItems, navigationItems } from "@/config/navigation";
+import { siteLegal } from "@/config/site-legal";
 
 /**
- * The footer is deliberately division-NEUTRAL — it is where ORBIX speaks as
- * one platform rather than as the section you happen to be in.
+ * Plain footer (spec 10). Row one: wordmark, one-sentence description, and
+ * the "Platform" and "About" link groups. Row two: the operator and contact
+ * line, then the copyright and educational-use notice.
  *
- * Changes from the previous version are presentational only. Every
- * destination is preserved (the same `navigationItems.slice(1)` set), the
- * `Footer navigation` landmark label is unchanged, and no link was added or
- * removed.
+ * The contact address comes from `src/config/site-legal.ts` so it can be
+ * replaced in one place.
  */
 export function SiteFooter() {
   return (
-    <footer className="orbix-site-footer relative">
-      <Container className="flex flex-col gap-12 py-14 lg:flex-row lg:justify-between lg:gap-16 lg:py-16">
-        <div className="max-w-sm">
-          <SiteLogo />
-          <p className="mt-5 text-sm leading-7 text-muted">
-            {siteConfig.tagline}. Aerospace education through exploration,
-            analysis, and guided practice.
-          </p>
-        </div>
+    <footer className="orbix-site-footer">
+      <Container className="py-12">
+        <div className="grid gap-8 lg:grid-cols-12 lg:gap-6">
+          <div className="lg:col-span-6">
+            <SiteLogo />
+            <p className="mt-4 max-w-[50ch] text-sm leading-6 text-text-secondary">
+              An educational site about aircraft, launch vehicles and the
+              engineering behind them.
+            </p>
+          </div>
 
-        <div className="flex flex-col gap-8 sm:flex-row sm:gap-16">
-          <nav aria-label="Footer navigation">
-            {/* A labelled group rather than a bare row of links: the footer
-                now states what the list is instead of repeating the header
-                without context. */}
+          <nav aria-label="Footer navigation" className="lg:col-span-3">
             <h2 className="orbix-footer-heading">Platform</h2>
-            <ul className="mt-4 flex flex-col gap-2.5">
+            <ul className="mt-3 flex flex-col gap-2">
               {navigationItems.slice(1).map((item) => (
                 <li key={item.href}>
                   <Link className="orbix-footer-link" href={item.href}>
@@ -43,15 +39,34 @@ export function SiteFooter() {
             </ul>
           </nav>
 
-          <div className="max-w-[16rem]">
-            <h2 className="orbix-footer-heading">Scope</h2>
-            {/* Previously set in uppercase letter-spaced monospace with a
-                decorative `//` separator. It is a plain sentence, so it now
-                reads as one. */}
-            <p className="mt-4 text-sm leading-6 text-muted">
-              An educational engineering platform. Not for operational use.
-            </p>
-          </div>
+          <nav aria-label="About and legal" className="lg:col-span-3">
+            <h2 className="orbix-footer-heading">About</h2>
+            <ul className="mt-3 flex flex-col gap-2">
+              {legalNavigationItems.map((item) => (
+                <li key={item.href}>
+                  <Link className="orbix-footer-link" href={item.href}>
+                    {item.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </nav>
+        </div>
+
+        <div className="mt-12 flex flex-col gap-2 border-t border-border pt-6 text-sm leading-6 text-muted">
+          <p>
+            Operated by {siteLegal.operatorName} · Massachusetts, USA · Contact:{" "}
+            <a
+              className="orbix-footer-link underline underline-offset-2"
+              href={`mailto:${siteLegal.contactEmail}`}
+            >
+              {siteLegal.contactEmail}
+            </a>
+          </p>
+          <p>
+            © {new Date().getFullYear()} {siteLegal.operatorName}. Educational
+            use only. Not for operational or certification use.
+          </p>
         </div>
       </Container>
     </footer>

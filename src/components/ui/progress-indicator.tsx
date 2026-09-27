@@ -18,10 +18,10 @@ export function ProgressIndicator({
 }: ProgressIndicatorProps) {
   return (
     <div className={cn("space-y-2", className)}>
-      <div className="flex items-center justify-between gap-4 font-mono text-[0.65rem] tracking-[0.1em] text-muted uppercase">
+      <div className="orbix-label flex items-center justify-between gap-4">
         <span>{label}</span>
         {valueLabel ? (
-          <span className="text-foreground">{valueLabel}</span>
+          <span className="orbix-data text-foreground">{valueLabel}</span>
         ) : null}
       </div>
       <progress aria-label={label} className="orbix-progress" {...props} />

@@ -3,19 +3,18 @@ import { DesktopNavigation } from "@/components/layout/desktop-navigation";
 import { MobileNavigation } from "@/components/layout/mobile-navigation";
 import { SiteLogo } from "@/components/layout/site-logo";
 
+/**
+ * Plain header (spec 10): solid page ground, one bottom hairline, 3.5rem
+ * tall. The mobile menu sheet is positioned against this sticky element, so
+ * it spans the full viewport width directly below the header.
+ */
 export function SiteHeader() {
   return (
     <header className="orbix-site-header sticky top-0 z-50">
-      {/* `justify-between` with the nav pushed right leaves the logo and the
-          navigation as the only two anchors, rather than three competing
-          clusters. Height is unchanged at 5.5rem so no route's content
-          offset shifts. */}
-      <Container className="relative flex h-[5.5rem] items-center justify-between gap-8">
+      <Container className="flex h-14 items-center justify-between gap-6">
         <SiteLogo priority />
-        <div className="flex items-center gap-2">
-          <DesktopNavigation />
-          <MobileNavigation />
-        </div>
+        <DesktopNavigation />
+        <MobileNavigation />
       </Container>
     </header>
   );

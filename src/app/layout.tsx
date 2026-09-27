@@ -6,30 +6,14 @@ import { siteConfig } from "@/config/site";
 import "./globals.css";
 
 /**
- * ORBIX typography is self-hosted so the product's identity is identical on
- * every operating system.
+ * ORBIX typography is self-hosted through `next/font/google`: the files are
+ * downloaded at build time and served from this origin, so there is no
+ * runtime request to a third party and no extra dependency. IBM Plex Sans and
+ * IBM Plex Mono are licensed under the SIL Open Font License 1.1.
  *
- * Before this, no web font was loaded at all: `--font-interface` resolved to
- * Aptos (Microsoft Office) and `--font-display` to Bahnschrift (Windows only).
- * On macOS and Linux those fall through to Arial and Arial Narrow, so ORBIX
- * rendered in a different typeface depending on who opened it.
- *
- * `next/font/google` downloads the files at build time and serves them from
- * this origin — there is no runtime request to Google, no external CDN in the
- * critical path, and no new package dependency (`next/font` ships with Next).
- * Nothing is fetched by the browser from a third party.
- *
- * IBM Plex was commissioned as the corporate typeface of an engineering
- * company, which is the register ORBIX wants: humanist and readable, but
- * disciplined rather than friendly. It is licensed under the SIL Open Font
- * License 1.1.
- *
- * Only TWO families are loaded, because the sans is variable and carries a
- * `wdth` axis (75-100). The condensed display voice ORBIX previously borrowed
- * from Bahnschrift is therefore the *same typeface* at a narrower width, not a
- * second font file — see `--font-display` and `.font-display` in
- * `src/styles/`. Weight is variable across 100-700, so headings and UI share
- * one download.
+ * Plex Sans carries prose, headings and interface text at normal width
+ * (spec 5). The `wdth` axis is still loaded so existing `font-stretch`
+ * declarations resolve, but no condensed cut is used.
  */
 const plexSans = IBM_Plex_Sans({
   axes: ["wdth"],
@@ -38,10 +22,7 @@ const plexSans = IBM_Plex_Sans({
   variable: "--font-plex-sans",
 });
 
-/**
- * The data voice. Loaded at the three weights the interface actually uses, to
- * keep the payload honest.
- */
+/** Machine values: numbers with units, equations, identifiers. */
 const plexMono = IBM_Plex_Mono({
   display: "swap",
   subsets: ["latin"],
@@ -64,20 +45,15 @@ export const metadata: Metadata = {
     "rocket science",
     "orbital mechanics",
     "spacecraft mission design",
-    "engineering learning",
+    "engineering education",
     "STEM",
   ],
   metadataBase: new URL(productionUrl),
+  // The brand board is no longer used as the social preview image (spec
+  // 12.4). Until a real home page screenshot or a typographic image exists,
+  // no preview image is declared.
   openGraph: {
     description: siteConfig.description,
-    images: [
-      {
-        alt: "ORBIX official brand identity",
-        height: 1536,
-        url: "/brand/orbix-brand-suite.png",
-        width: 2816,
-      },
-    ],
     locale: "en_US",
     siteName: siteConfig.wordmark,
     title: `${siteConfig.wordmark} | ${siteConfig.tagline}`,
@@ -89,16 +65,15 @@ export const metadata: Metadata = {
     template: `%s | ${siteConfig.wordmark}`,
   },
   twitter: {
-    card: "summary_large_image",
+    card: "summary",
     description: siteConfig.description,
-    images: ["/brand/orbix-brand-suite.png"],
     title: `${siteConfig.wordmark} | ${siteConfig.tagline}`,
   },
 };
 
 export const viewport: Viewport = {
   colorScheme: "dark",
-  themeColor: "#02040a",
+  themeColor: "#0e1114",
 };
 
 export default function RootLayout({
@@ -107,21 +82,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    // `data-scroll-behavior="smooth"` is required from Next.js 16 onward.
-    // `src/styles/orbix-foundations.css` sets `scroll-behavior: smooth` on
-    // `html`. Next 15 silently forced `scroll-behavior: auto` for the duration
-    // of a route transition so navigation snapped to the top instantly; Next 16
-    // only does that when this attribute is present. Without it, every route
-    // change would animate-scroll instead of snapping — a UX regression, and a
-    // source of screenshot flakiness for the visual suite, which could capture
-    // a page mid-scroll. Reduced-motion behaviour is unaffected: the
-    // `prefers-reduced-motion` rule in `orbix-motion.css` still overrides
-    // `scroll-behavior` to `auto`.
-    <html
-      lang="en"
-      className={`${plexSans.variable} ${plexMono.variable}`}
-      data-scroll-behavior="smooth"
-    >
+    <html lang="en" className={`${plexSans.variable} ${plexMono.variable}`}>
       <body>{children}</body>
     </html>
   );

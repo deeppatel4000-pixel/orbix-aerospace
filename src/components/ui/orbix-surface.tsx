@@ -3,6 +3,11 @@ import type { ComponentPropsWithoutRef } from "react";
 import { cn } from "@/lib/cn";
 
 type OrbixSurfaceElement = "article" | "aside" | "div" | "section";
+
+/**
+ * Deprecated. Every variant now renders the same flat panel (spec 10); the
+ * prop is accepted and ignored until phase C removes it.
+ */
 type OrbixSurfaceVariant =
   | "engineering"
   | "gallery"
@@ -18,22 +23,22 @@ interface OrbixSurfaceProps extends ComponentPropsWithoutRef<"div"> {
   variant?: OrbixSurfaceVariant;
 }
 
+/** The flat panel: surface fill, 1px border, 6px radius, no shadow. */
 export function OrbixSurface({
   as: Component = "div",
   className,
   interactive = false,
-  variant = "telemetry",
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  variant,
   ...props
 }: OrbixSurfaceProps) {
   return (
     <Component
       className={cn(
         "orbix-surface",
-        `orbix-surface--${variant}`,
         interactive && "orbix-surface--interactive",
         className,
       )}
-      data-orbix-surface={variant}
       {...props}
     />
   );

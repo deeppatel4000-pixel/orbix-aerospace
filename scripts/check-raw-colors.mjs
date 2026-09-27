@@ -17,7 +17,7 @@
  * ## Why a script rather than an ESLint rule
  *
  * Grandfathering per-file counts in ESLint would mean adding ~74
- * `eslint-disable` comments — a large diff through component files that this
+ * `eslint-disable` comments: a large diff through component files that this
  * phase is explicitly not allowed to touch. This keeps the entire mechanism in
  * two files.
  *
@@ -56,7 +56,7 @@ const scanExtensions = [".ts", ".tsx"];
 const allowlist = new Map([
   [
     "src/styles/orbix-tokens.css",
-    "the canonical token source — literal colours are its whole purpose",
+    "the canonical token source; literal colours are its whole purpose",
   ],
 ]);
 
@@ -146,12 +146,12 @@ for (const [file, { count, samples }] of current) {
 if (failures.length > 0) {
   console.error("\nRaw colour values are not allowed in new component code.\n");
   console.error(
-    "Use a semantic token from src/styles/orbix-tokens.css instead — for\n" +
+    "Use a semantic token from src/styles/orbix-tokens.css instead, for\n" +
       "example `text-muted`, `border-border`, or `var(--orbix-accent)`.\n",
   );
   for (const { allowed, count, file, samples } of failures) {
     console.error(
-      `  ${file}\n    ${allowed} allowed, ${count} found — e.g. ${samples.join(", ")}`,
+      `  ${file}\n    ${allowed} allowed, ${count} found, e.g. ${samples.join(", ")}`,
     );
   }
   console.error(
@@ -167,6 +167,6 @@ const observed = [...current.values()].reduce(
   0,
 );
 console.log(
-  `Raw colour check passed — ${observed} known violations across ${current.size} files ` +
+  `Raw colour check passed: ${observed} known violations across ${current.size} files ` +
     `(baseline allows ${recorded}). No new raw colours.`,
 );

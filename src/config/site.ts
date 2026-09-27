@@ -1,7 +1,7 @@
 export const siteConfig = {
   description:
-    "A professional educational aerospace engineering platform for orbital mechanics, mission planning, atmospheric reentry analysis, thermal protection studies, spacecraft design, engineering visualization, and mission systems analysis.",
+    "ORBIX is an educational site about aircraft, launch vehicles and the engineering behind them: vehicle records with sources, side-by-side comparison, and calculators for orbital mechanics, compressible flow and atmospheric entry.",
   name: "Orbix",
-  tagline: "Advanced Aerospace Engineering Laboratory",
+  tagline: "Aerospace engineering, explained with real vehicles",
   wordmark: "ORBIX",
 } as const;

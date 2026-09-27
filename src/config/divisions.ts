@@ -1,36 +1,22 @@
 /**
- * ORBIX division identity — the single authority for which division a route
- * belongs to.
+ * ORBIX route divisions.
  *
- * A division is a controlled accent within ONE design system. It may change
- * `--orbix-division-accent` and its related roles and nothing else;
- * backgrounds, surfaces, borders, text, typography, spacing, radii and
- * interaction are global. See the DIVISION SYSTEM block in
- * `src/styles/orbix-tokens.css`.
+ * Since the 2026 redesign there is ONE accent sitewide, and no CSS keys off
+ * `data-orbix-division` (see `docs/design-system/orbix-redesign-2026.md`,
+ * section 4.3). `SiteShell` still writes the attribute because tests assert
+ * it; it has no visual effect.
  *
- * ## Why the mapping lives here and only here
+ * The mapping is longest-prefix-wins on path segments:
  *
- * Before this, theming was decided ad hoc: `data-orbix-environment` was set
- * per-component on decorative backdrops, so nothing readable inherited it.
- * Duplicating pathname checks across the header, the nav and each route would
- * reproduce that problem. One table, consumed by one shell wrapper, means a
- * future route gets its identity by adding a line here.
+ *   /aircraft          aircraft
+ *   /rockets           space
+ *   /compare           engineering
+ *   /engineering-lab   engineering
+ *   /learn             research
+ *   /showcase          space
+ *   anything else      space (default)
  *
- * ## Assignments are derived from how each route already describes itself
- *
- *   /aircraft          "Aircraft Explorer", nav label "Aircraft"  -> aircraft
- *   /rockets           launch vehicles, orbital missions          -> space
- *   /compare           kicker: "Engineering workspace // Compar…"  -> engineering
- *   /engineering-lab   "Engineering Laboratory"                   -> engineering
- *   /learn             "Learn the physics behind ORBIX"           -> research
- *   /showcase          kicker: "ORBIX // Portfolio showcase"      -> space (generic)
- *   /                  generic ORBIX identity                     -> space (default)
- *
- * `defense` is defined in the token layer but deliberately has NO route. The
- * aircraft registry is a product division ("Aircraft"), not a defense
- * division, and forcing military airframes into a Defense accent purely to
- * use all five would misrepresent the product. It stays available for a
- * future route that genuinely warrants it.
+ * `defense` is a valid value with no route.
  */
 
 export type OrbixDivision =

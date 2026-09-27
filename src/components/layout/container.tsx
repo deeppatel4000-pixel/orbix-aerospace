@@ -2,13 +2,24 @@ import type { ComponentPropsWithoutRef } from "react";
 
 import { cn } from "@/lib/cn";
 
-type ContainerProps = ComponentPropsWithoutRef<"div">;
+type ContainerProps = ComponentPropsWithoutRef<"div"> & {
+  /**
+   * 84rem instead of 72rem. Only for Compare and the Engineering Lab
+   * workspace (spec 6.2).
+   */
+  wide?: boolean;
+};
 
-export function Container({ className, ...props }: ContainerProps) {
+export function Container({
+  className,
+  wide = false,
+  ...props
+}: ContainerProps) {
   return (
     <div
       className={cn(
-        "mx-auto w-full max-w-7xl px-5 sm:px-8 lg:px-10",
+        "mx-auto w-full px-4 sm:px-6 lg:px-8",
+        wide ? "max-w-[84rem]" : "max-w-[72rem]",
         className,
       )}
       {...props}

@@ -1,48 +1,29 @@
-@keyframes orbix-fade-in {
-  from {
-    opacity: 0;
-    transform: translateY(0.5rem);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
+/**
+ * Motion (spec 11).
+ *
+ * Allowed: short colour, border, opacity and disclosure transitions triggered
+ * by hover, focus or a state change the user made. The only infinite
+ * animation is the functional loading spinner, and it stops under reduced
+ * motion.
+ */
 
-@keyframes orbix-signal-pulse {
-  0%,
-  100% {
-    opacity: 0.55;
-  }
-  50% {
-    opacity: 1;
-  }
-}
-
-@keyframes orbix-scan {
-  from {
-    transform: translateX(-120%);
-  }
+@keyframes orbix-spin {
   to {
-    transform: translateX(220%);
+    transform: rotate(360deg);
   }
 }
 
 @layer utilities {
-  .orbix-enter {
-    animation: orbix-fade-in var(--duration-slow) var(--ease-orbix) both;
-  }
-
-  .orbix-signal-pulse {
-    animation: orbix-signal-pulse 2.4s ease-in-out infinite;
+  /* Neutralised: entrance fades and decorative pulses are removed. Kept as
+   * no-ops for existing usages until phase C. */
+  .orbix-enter,
+  .orbix-signal-pulse,
+  .orbix-page-transition {
+    animation: none;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  html {
-    scroll-behavior: auto;
-  }
-
   *,
   *::before,
   *::after {
@@ -52,16 +33,7 @@
     transition-duration: 0.01ms !important;
   }
 
-  .orbix-button:hover,
-  .orbix-button:active,
-  .orbix-icon-control:active,
-  .orbix-nav-link:active,
-  .orbix-tab:active,
-  .orbix-anchor-nav a:active,
-  .orbix-premium-card--interactive:is(a, button):active,
-  .orbix-premium-card--interactive:hover,
-  .orbix-surface--interactive:is(a, button):active,
-  .orbix-surface--interactive:hover {
-    transform: none;
+  .orbix-spinner {
+    animation: none !important;
   }
 }

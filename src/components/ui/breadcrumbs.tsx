@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ChevronRight } from "lucide-react";
 
 interface BreadcrumbItem {
   href?: string;
@@ -10,10 +11,11 @@ interface BreadcrumbsProps {
   label?: string;
 }
 
-export function Breadcrumbs({
-  items,
-  label = "Breadcrumb navigation",
-}: BreadcrumbsProps) {
+/**
+ * Breadcrumb trail (spec 10). The separator is decorative and hidden from
+ * assistive technology; the current item is text with `aria-current`.
+ */
+export function Breadcrumbs({ items, label = "Breadcrumb" }: BreadcrumbsProps) {
   return (
     <nav aria-label={label}>
       <ol className="orbix-breadcrumbs">
@@ -22,16 +24,12 @@ export function Breadcrumbs({
 
           return (
             <li className="contents" key={`${item.label}-${index}`}>
-              {/* A single slash is the conventional hierarchy separator and
-                  carries real meaning here, unlike the decorative `//` used
-                  elsewhere in the product. It stays `aria-hidden` so screen
-                  readers get the list semantics, not punctuation. */}
               {index > 0 ? (
                 <span
                   aria-hidden="true"
                   className="orbix-breadcrumbs-separator"
                 >
-                  /
+                  <ChevronRight size={12} />
                 </span>
               ) : null}
               {item.href && !isCurrent ? (

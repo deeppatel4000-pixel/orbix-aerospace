@@ -13,21 +13,26 @@ function isCurrentRoute(pathname: string, href: string) {
     : pathname === href || pathname.startsWith(`${href}/`);
 }
 
+/**
+ * Disclosure menu below 1024px (spec 10). The toggle's visible text is its
+ * accessible name ("Menu" / "Close menu"). Opening moves focus to the first
+ * link; Escape closes the sheet and returns focus to the toggle.
+ */
 export function MobileNavigation() {
   const [isOpen, setIsOpen] = useState(false);
   const pathname = usePathname();
   const menuId = useId();
   const toggleRef = useRef<HTMLButtonElement>(null);
-  // Flipped to true immediately before an Escape-driven close, so the
-  // focus-restoration effect below can tell that dismissal apart from a
-  // link click (the user is intentionally navigating away -- forcing focus
-  // back to the toggle would fight them) or a plain toggle-button click
-  // (focus is already on the toggle; nothing to restore). Only the Escape
-  // path should send focus back to the toggle.
+  const firstLinkRef = useRef<HTMLAnchorElement>(null);
+  // Set immediately before an Escape-driven close, so the effect below
+  // returns focus to the toggle only for that path. A link click navigates
+  // away, and a toggle click already leaves focus on the toggle.
   const restoreFocusOnCloseRef = useRef(false);
 
   useEffect(() => {
     if (!isOpen) return;
+
+    firstLinkRef.current?.focus();
 
     function handleEscape(event: KeyboardEvent) {
       if (event.key !== "Escape") return;
@@ -39,13 +44,8 @@ export function MobileNavigation() {
     return () => document.removeEventListener("keydown", handleEscape);
   }, [isOpen]);
 
-  // Runs after commit, once `isOpen` has already flipped to false and the
-  // <nav> (and whichever link inside it held focus) has already unmounted --
-  // so restoring focus here can't race React's own DOM update, and doesn't
-  // require a setTimeout to "wait" for the unmount. Guarded by the ref above
-  // so it only fires for an Escape-driven close, never on initial mount
-  // (isOpen starts false and the ref starts false) and never for a link
-  // click or a plain toggle click.
+  // Runs after commit, once the sheet has unmounted, so restoring focus
+  // cannot race React's DOM update.
   useEffect(() => {
     if (isOpen) return;
     if (!restoreFocusOnCloseRef.current) return;
@@ -59,32 +59,27 @@ export function MobileNavigation() {
       <button
         aria-controls={menuId}
         aria-expanded={isOpen}
-        aria-label={isOpen ? "Close navigation menu" : "Open navigation menu"}
-        className="orbix-icon-control"
+        className="orbix-menu-toggle"
         onClick={() => setIsOpen((open) => !open)}
         ref={toggleRef}
         type="button"
       >
         {isOpen ? (
-          <X aria-hidden="true" size={19} />
+          <X aria-hidden="true" size={16} />
         ) : (
-          <Menu aria-hidden="true" size={19} />
+          <Menu aria-hidden="true" size={16} />
         )}
+        {isOpen ? "Close menu" : "Menu"}
       </button>
 
       {isOpen ? (
-        // `orbix-mobile-nav` now carries its own surface, so the stacked
-        // `orbix-surface`/`--mission` gradients (which added a decorative
-        // accent hairline and a blue wash) are gone. Links are full-width
-        // rows at a 3rem minimum height rather than toolbar chips reused
-        // from the desktop nav.
         <nav
           aria-label="Mobile navigation"
-          className="orbix-mobile-nav absolute inset-x-5 top-[calc(100%+0.5rem)] p-2 sm:inset-x-8"
+          className="orbix-mobile-nav absolute inset-x-0 top-full"
           id={menuId}
         >
-          <ul className="flex flex-col gap-0.5">
-            {navigationItems.map((item) => {
+          <ul className="flex flex-col py-2">
+            {navigationItems.map((item, index) => {
               const isActive = isCurrentRoute(pathname, item.href);
 
               return (
@@ -94,6 +89,7 @@ export function MobileNavigation() {
                     className="orbix-mobile-nav-link"
                     href={item.href}
                     onClick={() => setIsOpen(false)}
+                    ref={index === 0 ? firstLinkRef : undefined}
                   >
                     {item.label}
                   </Link>

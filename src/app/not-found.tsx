@@ -1,34 +1,45 @@
-import { ArrowLeft } from "lucide-react";
+import type { Metadata } from "next";
+import { ArrowRight } from "lucide-react";
 
-import { OrbixBackground } from "@/components/brand/orbix-background";
 import { Container } from "@/components/layout/container";
+import { SiteFooter } from "@/components/layout/site-footer";
+import { SiteHeader } from "@/components/layout/site-header";
+import { SiteShell } from "@/components/layout/site-shell";
+import { SkipLink } from "@/components/layout/skip-link";
 import { ButtonLink } from "@/components/ui/button-link";
 
+export const metadata: Metadata = {
+  title: "Page not found",
+};
+
+// `app/not-found.tsx` sits outside the (site) layout, so it renders the site
+// chrome itself to keep the header, main and footer on every page.
 export default function NotFound() {
   return (
-    <section className="relative isolate flex min-h-[calc(100svh-5rem)] items-center overflow-hidden border-b border-border/70">
-      <OrbixBackground variant="technical" />
-      <Container className="relative py-[var(--space-section-compact)]">
-        <div className="max-w-4xl">
-          <p className="orbix-kicker">Navigation control // Error 404</p>
-          <h1 className="orbix-display-lg mt-[var(--space-stack-compact)]">
-            This route is off the flight plan.
-          </h1>
-          <div className="orbix-brand-rule my-[var(--space-stack)] max-w-sm" />
-          <p className="orbix-body-lead max-w-[var(--measure-copy)]">
-            The page may have moved, or its workspace has not been established
-            yet. Return to the ORBIX command index to continue exploring.
+    <SiteShell>
+      <SkipLink />
+      <SiteHeader />
+      <main
+        className="flex-1 border-b border-border pt-12 pb-8"
+        id="main-content"
+      >
+        <Container>
+          <h1 className="orbix-h1">Page not found</h1>
+          <p className="orbix-lead mt-4">
+            The page you asked for does not exist or has moved.
           </p>
-          <ButtonLink
-            className="mt-[var(--space-stack)]"
-            href="/"
-            variant="secondary"
-          >
-            <ArrowLeft aria-hidden="true" size={17} />
-            Return home
-          </ButtonLink>
-        </div>
-      </Container>
-    </section>
+          <div className="mt-6 flex flex-wrap gap-3">
+            <ButtonLink href="/" variant="primary">
+              Go to the home page
+            </ButtonLink>
+            <ButtonLink href="/aircraft" variant="secondary">
+              Browse the aircraft registry
+              <ArrowRight aria-hidden="true" size={16} />
+            </ButtonLink>
+          </div>
+        </Container>
+      </main>
+      <SiteFooter />
+    </SiteShell>
   );
 }

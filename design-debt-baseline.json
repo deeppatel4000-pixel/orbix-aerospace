@@ -1,7 +1,6 @@
 {
   "src/app/layout.tsx": 1,
   "src/app/manifest.ts": 2,
-  "src/components/brand/orbix-environment.tsx": 16,
   "src/features/aircraft/components/aircraft-explorer.tsx": 9,
   "src/features/aircraft/components/aircraft-profile-cta.tsx": 1,
   "src/features/aircraft/components/aircraft-profile.tsx": 2,

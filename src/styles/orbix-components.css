@@ -1,298 +1,449 @@
 @layer components {
+  /* ==================================================================== *
+   * BUTTONS (spec 8)
+   *
+   * Flat fills and 1px edges. No sheen, no transform, no shadow at any
+   * state. `ButtonLink` and `Button` in `src/components/ui/` apply these.
+   * ==================================================================== */
+
   .orbix-button {
     align-items: center;
     border: 1px solid transparent;
-    border-radius: var(--radius-control);
+    border-radius: var(--radius-2);
     display: inline-flex;
-    font-family: var(--font-telemetry);
-    font-size: 0.72rem;
-    font-weight: 700;
-    gap: 0.55rem;
+    font-family: var(--font-interface);
+    font-size: var(--text-body-sm);
+    font-weight: 500;
+    gap: var(--space-2);
     justify-content: center;
-    letter-spacing: 0.1em;
-    min-height: 2.75rem;
-    padding: 0.7rem 1.3rem;
-    position: relative;
-    text-transform: uppercase;
+    letter-spacing: 0;
+    line-height: 1.25;
+    min-height: 2.5rem;
+    padding: 0.5rem 1rem;
+    text-decoration: none;
+    text-transform: none;
     transition:
-      border-color var(--duration-base) var(--ease-orbix),
-      box-shadow var(--duration-base) var(--ease-orbix),
-      color var(--duration-base) var(--ease-orbix),
-      background-color var(--duration-base) var(--ease-orbix),
-      transform var(--duration-base) var(--ease-orbix);
-  }
-
-  .orbix-button:not(:disabled):not([aria-disabled="true"]):active {
-    transform: translateY(1px) scale(0.985);
+      background-color var(--motion-fast) var(--motion-ease),
+      border-color var(--motion-fast) var(--motion-ease),
+      color var(--motion-fast) var(--motion-ease);
   }
 
   .orbix-button:focus-visible {
-    box-shadow:
-      0 0 0 2px var(--background),
-      0 0 0 4px var(--accent),
-      var(--shadow-accent);
-    outline: 0;
-  }
-
-  .orbix-button::after {
-    background: linear-gradient(
-      90deg,
-      transparent,
-      rgb(255 255 255 / 28%),
-      transparent
-    );
-    content: "";
-    height: 1px;
-    inset: 0.2rem 12% auto;
-    opacity: 0;
-    position: absolute;
-    transition: opacity var(--duration-base) var(--ease-orbix);
-  }
-
-  .orbix-button:not(:disabled):not([aria-disabled="true"]):hover {
-    transform: translateY(-1px);
-  }
-
-  .orbix-button:not(:disabled):not([aria-disabled="true"]):hover::after {
-    opacity: 1;
+    outline: 2px solid var(--orbix-focus);
+    outline-offset: 2px;
   }
 
   .orbix-button--primary {
-    background: linear-gradient(120deg, #dff8ff, var(--accent) 52%, #a7c8ff);
-    box-shadow: var(--shadow-accent);
-    color: var(--orbital-black);
+    background: var(--orbix-accent);
+    border-color: var(--orbix-accent);
+    color: var(--orbix-text-on-accent);
   }
 
   .orbix-button--primary:not(:disabled):not([aria-disabled="true"]):hover {
-    background: var(--foreground);
-    box-shadow: 0 20px 58px rgb(88 220 255 / 22%);
+    background: var(--orbix-accent-hover);
+    border-color: var(--orbix-accent-hover);
+  }
+
+  .orbix-button--primary:not(:disabled):not([aria-disabled="true"]):active {
+    background: var(--orbix-accent-hover);
+    opacity: 0.9;
   }
 
   .orbix-button--secondary {
-    background: color-mix(in srgb, var(--surface) 78%, transparent);
-    border-color: var(--border);
-    color: var(--foreground);
+    background: var(--orbix-surface);
+    border-color: var(--orbix-border-control);
+    color: var(--orbix-text-primary);
   }
 
   .orbix-button--secondary:not(:disabled):not([aria-disabled="true"]):hover {
-    background: color-mix(in srgb, var(--accent) 8%, var(--surface));
-    border-color: color-mix(in srgb, var(--accent) 58%, var(--border));
-    color: var(--accent);
+    background: var(--orbix-surface-raised);
+    border-color: var(--orbix-text-muted);
   }
 
+  .orbix-button--secondary:not(:disabled):not([aria-disabled="true"]):active,
+  .orbix-button--secondary[aria-pressed="true"] {
+    background: var(--orbix-surface-raised);
+  }
+
+  .orbix-button--secondary[aria-pressed="true"] {
+    border-color: var(--orbix-accent);
+  }
+
+  /* `tertiary` is the deprecated name for `ghost`. */
+  .orbix-button--ghost,
   .orbix-button--tertiary {
-    color: var(--muted-strong);
+    background: transparent;
+    color: var(--orbix-text-secondary);
   }
 
-  .orbix-button--tertiary:not(:disabled):not([aria-disabled="true"]):hover {
-    background: rgb(255 255 255 / 4%);
-    color: var(--foreground);
+  .orbix-button--ghost:not(:disabled):not([aria-disabled="true"]):is(
+      :hover,
+      :active
+    ),
+  .orbix-button--tertiary:not(:disabled):not([aria-disabled="true"]):is(
+      :hover,
+      :active
+    ) {
+    background: var(--orbix-surface-raised);
+    color: var(--orbix-text-primary);
+  }
+
+  .orbix-button--link {
+    background: transparent;
+    border: 0;
+    color: var(--orbix-accent);
+    min-height: 0;
+    padding: 0;
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 0.2em;
+  }
+
+  .orbix-button--link:not(:disabled):not([aria-disabled="true"]):is(
+      :hover,
+      :active
+    ) {
+    color: var(--orbix-accent-hover);
+    text-decoration-thickness: 2px;
   }
 
   .orbix-button:is(:disabled, [aria-disabled="true"]) {
-    box-shadow: none;
-    opacity: 0.48;
-    transform: none;
+    background: transparent;
+    border-color: var(--orbix-border);
+    color: var(--orbix-text-disabled);
+    cursor: not-allowed;
   }
 
-  .orbix-button:is(:disabled, [aria-disabled="true"])::after {
-    opacity: 0;
+  .orbix-button--ghost:is(:disabled, [aria-disabled="true"]),
+  .orbix-button--tertiary:is(:disabled, [aria-disabled="true"]) {
+    border-color: transparent;
   }
 
-  .orbix-surface {
-    background:
-      linear-gradient(145deg, rgb(255 255 255 / 3.5%), transparent 45%),
-      var(--surface-glass);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-card);
-    box-shadow: var(--shadow-card);
-    overflow: hidden;
+  .orbix-button--link:is(:disabled, [aria-disabled="true"]) {
+    text-decoration: none;
+  }
+
+  /* The only action on a mobile row gets a taller target. */
+  .orbix-button--lg {
+    min-height: 2.75rem;
+  }
+
+  /* Icon-only control: 2.5rem square, requires `aria-label`. */
+  .orbix-icon-control {
+    align-items: center;
+    background: var(--orbix-surface);
+    border: 1px solid var(--orbix-border-control);
+    border-radius: var(--radius-2);
+    color: var(--orbix-text-primary);
+    display: inline-flex;
+    height: 2.5rem;
+    justify-content: center;
+    transition:
+      background-color var(--motion-fast) var(--motion-ease),
+      border-color var(--motion-fast) var(--motion-ease);
+    width: 2.5rem;
+  }
+
+  .orbix-icon-control:not(:disabled):not([aria-disabled="true"]):hover {
+    background: var(--orbix-surface-raised);
+    border-color: var(--orbix-text-muted);
+  }
+
+  .orbix-icon-control:focus-visible {
+    outline: 2px solid var(--orbix-focus);
+    outline-offset: 2px;
+  }
+
+  .orbix-icon-control:is(:disabled, [aria-disabled="true"]) {
+    border-color: var(--orbix-border);
+    color: var(--orbix-text-disabled);
+  }
+
+  /* Inline text link. */
+  .orbix-link {
+    color: var(--orbix-accent);
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 0.2em;
+    transition: color var(--motion-fast) var(--motion-ease);
+  }
+
+  .orbix-link:hover {
+    color: var(--orbix-accent-hover);
+    text-decoration-thickness: 2px;
+  }
+
+  /* ==================================================================== *
+   * FORM FIELDS (spec 9)
+   * ==================================================================== */
+
+  .orbix-field {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+  }
+
+  .orbix-field__label {
+    color: var(--orbix-text-secondary);
+    font-size: var(--text-label);
+    font-weight: 500;
+    line-height: 1.4;
+  }
+
+  .orbix-field__control {
+    align-items: stretch;
+    display: flex;
     position: relative;
   }
 
+  .orbix-input,
+  .orbix-select {
+    background: var(--orbix-surface-input);
+    border: 1px solid var(--orbix-border-control);
+    border-radius: var(--radius-2);
+    color: var(--orbix-text-primary);
+    font-family: var(--font-interface);
+    font-size: var(--text-body-sm);
+    height: 2.5rem;
+    min-width: 0;
+    padding: 0.5rem 0.75rem;
+    transition: border-color var(--motion-fast) var(--motion-ease);
+    width: 100%;
+  }
+
+  .orbix-input[inputmode="decimal"],
+  .orbix-input[inputmode="numeric"],
+  .orbix-input[type="number"] {
+    font-family: var(--font-telemetry);
+    font-variant-numeric: tabular-nums;
+    text-align: right;
+  }
+
+  .orbix-input[type="search"] {
+    padding-left: 2.25rem;
+  }
+
+  .orbix-select {
+    appearance: none;
+    padding-right: 2.25rem;
+  }
+
+  /* Absolute-positioned lucide icons inside a control (select chevron,
+   * search glass). */
+  .orbix-field__icon {
+    color: var(--orbix-text-muted);
+    pointer-events: none;
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+  }
+
+  .orbix-field__icon--end {
+    right: 0.75rem;
+  }
+
+  .orbix-field__icon--start {
+    left: 0.75rem;
+  }
+
+  .orbix-input::placeholder {
+    color: var(--orbix-text-muted);
+    opacity: 1;
+  }
+
+  .orbix-input:hover:not(:disabled),
+  .orbix-select:hover:not(:disabled) {
+    border-color: var(--orbix-text-muted);
+  }
+
+  .orbix-input:focus-visible,
+  .orbix-select:focus-visible {
+    outline: 2px solid var(--orbix-focus);
+    outline-offset: 1px;
+  }
+
+  .orbix-input[aria-invalid="true"],
+  .orbix-select[aria-invalid="true"] {
+    border-color: var(--orbix-status-danger);
+  }
+
+  .orbix-input:disabled,
+  .orbix-select:disabled {
+    background: var(--orbix-bg-page);
+    border-color: var(--orbix-border);
+    color: var(--orbix-text-disabled);
+    cursor: not-allowed;
+  }
+
+  /* Joined unit suffix. */
+  .orbix-field__control:has(.orbix-field__unit) .orbix-input {
+    border-bottom-right-radius: 0;
+    border-top-right-radius: 0;
+  }
+
+  .orbix-field__unit {
+    align-items: center;
+    background: var(--orbix-surface-raised);
+    border: 1px solid var(--orbix-border-control);
+    border-bottom-right-radius: var(--radius-2);
+    border-left: 0;
+    border-top-right-radius: var(--radius-2);
+    color: var(--orbix-text-muted);
+    display: inline-flex;
+    font-family: var(--font-telemetry);
+    font-size: var(--text-body-sm);
+    height: 2.5rem;
+    padding-inline: 0.75rem;
+    white-space: nowrap;
+  }
+
+  .orbix-field__help {
+    color: var(--orbix-text-muted);
+    font-size: var(--text-label);
+    font-weight: 400;
+    line-height: 1.4;
+  }
+
+  .orbix-field__error {
+    align-items: center;
+    color: var(--orbix-status-danger);
+    display: flex;
+    font-size: var(--text-label);
+    gap: var(--space-1);
+    line-height: 1.4;
+  }
+
+  .orbix-check {
+    align-items: center;
+    display: flex;
+    gap: var(--space-2);
+    min-height: 1.5rem;
+  }
+
+  .orbix-check input {
+    accent-color: var(--orbix-accent);
+    height: 1rem;
+    width: 1rem;
+  }
+
+  .orbix-fieldset {
+    border: 0;
+    margin: 0;
+    min-width: 0;
+    padding: 0;
+  }
+
+  .orbix-fieldset > legend {
+    font-size: var(--text-h4);
+    font-weight: 600;
+    line-height: 1.4;
+    margin-bottom: var(--space-4);
+    padding: 0;
+  }
+
+  /* Empty calculator value (spec 13.4). */
+  .orbix-not-calculated {
+    color: var(--orbix-text-muted);
+    font-family: var(--font-interface);
+    font-size: var(--text-body-sm);
+  }
+
+  /* ==================================================================== *
+   * PANELS (spec 10)
+   *
+   * One flat panel. The `--hero`, `--mission` and other variant classes are
+   * accepted and render identically until phase C removes them.
+   * ==================================================================== */
+
+  .orbix-panel,
+  .orbix-surface,
   .orbix-premium-card {
-    background:
-      linear-gradient(145deg, rgb(255 255 255 / 4%), transparent 42%),
-      linear-gradient(180deg, rgb(12 22 40 / 88%), rgb(5 10 18 / 94%));
-    border: 1px solid rgb(114 151 194 / 24%);
-    border-radius: var(--radius-panel);
-    box-shadow: 0 28px 80px rgb(0 0 0 / 34%);
+    background: var(--orbix-surface);
+    border: 1px solid var(--orbix-border);
+    border-radius: var(--radius-3);
+    box-shadow: none;
     overflow: hidden;
     position: relative;
   }
 
-  .orbix-premium-card::before {
-    background: linear-gradient(
-      90deg,
-      var(--orbital-cyan),
-      var(--plasma-violet),
-      transparent 82%
-    );
-    content: "";
-    height: 1px;
-    inset: 0 18% auto 0;
-    opacity: 0.65;
-    position: absolute;
-  }
-
+  .orbix-surface--interactive,
   .orbix-premium-card--interactive {
-    transition:
-      border-color var(--duration-slow) var(--ease-orbix),
-      box-shadow var(--duration-slow) var(--ease-orbix),
-      transform var(--duration-slow) var(--ease-orbix);
+    transition: border-color var(--motion-fast) var(--motion-ease);
   }
 
+  .orbix-surface--interactive:hover,
   .orbix-premium-card--interactive:hover {
-    border-color: rgb(108 230 255 / 42%);
-    box-shadow:
-      0 36px 100px rgb(0 0 0 / 42%),
-      0 0 48px rgb(108 230 255 / 7%);
-    transform: translateY(-4px);
+    border-color: var(--orbix-border-strong);
   }
 
-  .orbix-premium-card--interactive:is(a, button):active,
-  .orbix-surface--interactive:is(a, button):active {
-    transform: translateY(1px) scale(0.995);
-  }
+  /* ==================================================================== *
+   * TAGS AND STATUS (spec 10)
+   * ==================================================================== */
 
-  .orbix-surface::before {
-    background: linear-gradient(90deg, var(--accent), transparent 62%);
-    content: "";
-    height: 1px;
-    inset: 0 14% auto 0;
-    opacity: 0.55;
-    position: absolute;
-  }
-
-  .orbix-surface--interactive {
-    transition:
-      border-color var(--duration-slow) var(--ease-orbix),
-      box-shadow var(--duration-slow) var(--ease-orbix),
-      transform var(--duration-slow) var(--ease-orbix);
-  }
-
-  .orbix-surface--interactive:hover {
-    border-color: color-mix(in srgb, var(--accent) 42%, var(--border));
-    box-shadow:
-      var(--shadow-panel),
-      0 0 54px rgb(88 220 255 / 7%);
-    transform: translateY(-3px);
-  }
-
-  .orbix-surface--hero {
-    background:
-      radial-gradient(
-        circle at 82% 8%,
-        rgb(88 220 255 / 12%),
-        transparent 24rem
-      ),
-      linear-gradient(135deg, rgb(255 255 255 / 5%), transparent 46%),
-      var(--surface-glass);
-    border-radius: var(--radius-panel);
-    box-shadow: var(--shadow-panel);
-  }
-
-  .orbix-surface--mission {
-    background:
-      linear-gradient(160deg, rgb(90 150 255 / 10%), transparent 44%),
-      var(--surface-glass);
-  }
-
-  .orbix-surface--engineering {
-    background:
-      linear-gradient(145deg, rgb(104 216 232 / 8%), transparent 42%),
-      var(--surface-glass);
-    border-color: color-mix(in srgb, var(--laboratory-blue) 32%, var(--border));
-  }
-
-  .orbix-surface--telemetry {
-    background: rgb(3 9 15 / 76%);
-    border-radius: var(--radius-control);
-    box-shadow: inset 0 0 0 1px rgb(255 255 255 / 1.5%);
-  }
-
-  .orbix-surface--vehicle {
-    background:
-      linear-gradient(145deg, rgb(130 148 107 / 9%), transparent 48%),
-      var(--surface-glass);
-    border-color: color-mix(in srgb, var(--tactical-steel) 40%, var(--border));
-  }
-
-  .orbix-surface--gallery {
-    background:
-      radial-gradient(
-        circle at 100% 0%,
-        rgb(163 139 255 / 11%),
-        transparent 20rem
-      ),
-      var(--surface-glass);
-  }
-
-  .orbix-surface--report {
-    background:
-      linear-gradient(180deg, rgb(242 248 252 / 4%), transparent 32%),
-      var(--surface-glass);
-    border-left: 2px solid var(--accent);
+  .orbix-tag {
+    align-items: center;
+    background: transparent;
+    border: 1px solid var(--orbix-border-strong);
+    border-radius: var(--radius-1);
+    color: var(--orbix-text-secondary);
+    display: inline-flex;
+    font-family: var(--font-interface);
+    font-size: var(--text-label);
+    letter-spacing: 0;
+    line-height: 1.4;
+    padding: 0.125rem 0.5rem;
+    text-transform: none;
   }
 
   .orbix-status {
     align-items: center;
-    background: rgb(255 255 255 / 3%);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-pill);
-    color: var(--muted-strong);
+    background: transparent;
+    border: 1px solid var(--orbix-border-strong);
+    border-radius: var(--radius-1);
+    color: var(--orbix-text-secondary);
     display: inline-flex;
-    font-family: var(--font-telemetry);
-    font-size: 0.64rem;
-    font-weight: 650;
-    gap: 0.5rem;
-    letter-spacing: 0.11em;
-    line-height: 1;
-    padding: 0.48rem 0.7rem;
-    text-transform: uppercase;
+    font-family: var(--font-interface);
+    font-size: var(--text-label);
+    font-weight: 500;
+    gap: var(--space-2);
+    letter-spacing: 0;
+    line-height: 1.4;
+    padding: 0.125rem 0.5rem;
+    text-transform: none;
   }
 
   .orbix-status::before {
-    background: currentColor;
-    border-radius: 50%;
-    box-shadow: 0 0 10px currentColor;
+    background: var(--orbix-status-dot, var(--orbix-text-muted));
+    border-radius: var(--radius-circle);
     content: "";
-    height: 0.38rem;
-    width: 0.38rem;
+    flex: none;
+    height: 0.5rem;
+    width: 0.5rem;
   }
 
   .orbix-status--info {
-    color: var(--accent);
+    --orbix-status-dot: var(--orbix-status-info);
   }
 
   .orbix-status--positive {
-    color: var(--positive);
+    --orbix-status-dot: var(--orbix-status-success);
   }
 
   .orbix-status--caution {
-    color: var(--signal);
+    --orbix-status-dot: var(--orbix-status-warning);
   }
 
   .orbix-status--critical {
-    color: var(--critical);
+    --orbix-status-dot: var(--orbix-status-danger);
   }
 
-  .orbix-tag {
-    background: color-mix(in srgb, var(--accent) 7%, transparent);
-    border: 1px solid color-mix(in srgb, var(--accent) 20%, var(--border));
-    border-radius: var(--radius-control);
-    color: var(--muted-strong);
-    display: inline-flex;
-    font-family: var(--font-telemetry);
-    font-size: 0.64rem;
-    letter-spacing: 0.08em;
-    padding: 0.38rem 0.58rem;
-    text-transform: uppercase;
-  }
+  /* ==================================================================== *
+   * TABLES (spec 10)
+   * ==================================================================== */
 
   .orbix-table-wrap {
-    border: 1px solid var(--border);
-    border-radius: var(--radius-card);
+    border: 1px solid var(--orbix-border);
+    border-radius: var(--radius-3);
     overflow-x: auto;
   }
 
@@ -302,239 +453,276 @@
   }
 
   .orbix-table :where(th, td) {
-    border-bottom: 1px solid var(--border);
-    padding: 0.85rem 1rem;
+    border-bottom: 1px solid var(--orbix-border-subtle);
+    font-size: var(--text-body-sm);
+    padding: 0.625rem 0.75rem;
     text-align: left;
+    vertical-align: top;
   }
 
-  .orbix-table th {
-    background: rgb(255 255 255 / 3%);
-    color: var(--muted);
-    font-family: var(--font-telemetry);
-    font-size: 0.65rem;
-    letter-spacing: 0.1em;
+  .orbix-table thead th {
+    background: var(--orbix-surface-raised);
+    color: var(--orbix-text-secondary);
+    font-size: var(--text-caps);
+    font-weight: 600;
+    letter-spacing: var(--tracking-caps);
     text-transform: uppercase;
   }
 
+  .orbix-table tbody th {
+    color: var(--orbix-text-primary);
+    font-weight: 500;
+  }
+
+  .orbix-table :where(td.orbix-num, th.orbix-num) {
+    font-family: var(--font-telemetry);
+    font-variant-numeric: tabular-nums;
+    text-align: right;
+  }
+
+  .orbix-table-unit {
+    color: var(--orbix-text-muted);
+  }
+
+  /* ==================================================================== *
+   * TABS (spec 10): underline tabs.
+   * ==================================================================== */
+
   .orbix-tabs {
-    align-items: center;
-    background: rgb(255 255 255 / 2.5%);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-card);
+    align-items: stretch;
+    border-bottom: 1px solid var(--orbix-border);
     display: flex;
-    gap: 0.25rem;
+    gap: var(--space-1);
     overflow-x: auto;
-    padding: 0.3rem;
   }
 
   .orbix-tab {
-    border-radius: calc(var(--radius-control) - 0.125rem);
-    color: var(--muted);
-    font-family: var(--font-telemetry);
-    font-size: 0.68rem;
-    letter-spacing: 0.08em;
-    padding: 0.65rem 0.85rem;
-    text-transform: uppercase;
-    transition: all var(--duration-base) var(--ease-orbix);
+    border-bottom: 2px solid transparent;
+    border-radius: var(--radius-2) var(--radius-2) 0 0;
+    color: var(--orbix-text-secondary);
+    font-family: var(--font-interface);
+    font-size: var(--text-body-sm);
+    font-weight: 500;
+    letter-spacing: 0;
+    margin-bottom: -1px;
+    min-height: 2.5rem;
+    padding: 0.5rem 0.75rem;
+    text-transform: none;
+    transition:
+      color var(--motion-fast) var(--motion-ease),
+      border-color var(--motion-fast) var(--motion-ease);
     white-space: nowrap;
   }
 
-  .orbix-tab:not(:disabled):not([aria-disabled="true"]):active {
-    transform: translateY(1px);
+  .orbix-tab:not(:disabled):not([aria-disabled="true"]):hover {
+    color: var(--orbix-text-primary);
   }
 
   .orbix-tab:focus-visible {
-    box-shadow: inset 0 0 0 1px var(--accent);
-    outline-offset: 1px;
+    outline: 2px solid var(--orbix-focus);
+    outline-offset: -2px;
   }
 
-  .orbix-tab:not(:disabled):not([aria-disabled="true"]):hover,
   .orbix-tab[aria-selected="true"],
+  .orbix-tab[aria-current="page"],
   .orbix-tab[data-active="true"] {
-    background: color-mix(in srgb, var(--accent) 9%, transparent);
-    color: var(--accent);
+    border-bottom-color: var(--orbix-accent);
+    color: var(--orbix-text-primary);
   }
 
   .orbix-tab:is(:disabled, [aria-disabled="true"]) {
-    opacity: 0.48;
-    transform: none;
+    color: var(--orbix-text-disabled);
   }
 
+  /* ==================================================================== *
+   * OVERLAYS (spec 7.3, 10)
+   * ==================================================================== */
+
   .orbix-dialog {
-    background: var(--surface-elevated);
-    border: 1px solid var(--border-bright);
-    border-radius: var(--radius-panel);
-    box-shadow: var(--shadow-panel);
-    color: var(--foreground);
-    padding: var(--space-panel);
+    background: var(--orbix-surface);
+    border: 1px solid var(--orbix-border);
+    border-radius: var(--radius-3);
+    box-shadow: var(--elevation-overlay);
+    color: var(--orbix-text-primary);
+    padding: var(--space-5);
   }
 
   .orbix-dialog::backdrop {
-    backdrop-filter: blur(8px);
-    background: rgb(0 0 0 / 68%);
+    background: var(--orbix-scrim);
   }
 
   .orbix-tooltip {
-    background: var(--surface-elevated);
-    border: 1px solid var(--border-bright);
-    border-radius: var(--radius-control);
-    box-shadow: var(--shadow-card);
-    color: var(--muted-strong);
-    font-size: 0.75rem;
+    background: var(--orbix-surface-raised);
+    border: 1px solid var(--orbix-border);
+    border-radius: var(--radius-2);
+    box-shadow: var(--elevation-overlay);
+    color: var(--orbix-text-secondary);
+    font-size: var(--text-label);
     max-width: 18rem;
-    padding: 0.55rem 0.7rem;
+    padding: 0.5rem 0.75rem;
   }
 
+  /* ==================================================================== *
+   * PROGRESS, EMPTY STATE, LOADING (spec 10, 11)
+   * ==================================================================== */
+
   .orbix-progress {
-    accent-color: var(--accent);
-    background: rgb(255 255 255 / 6%);
+    accent-color: var(--orbix-accent);
+    appearance: none;
+    background: var(--orbix-border);
     border: 0;
-    border-radius: var(--radius-pill);
-    height: 0.38rem;
+    border-radius: var(--radius-1);
+    height: 0.5rem;
     overflow: hidden;
     width: 100%;
   }
 
   .orbix-progress::-webkit-progress-bar {
-    background: rgb(255 255 255 / 6%);
+    background: var(--orbix-border);
   }
 
   .orbix-progress::-webkit-progress-value {
-    background: linear-gradient(90deg, var(--atmospheric-blue), var(--accent));
-    box-shadow: 0 0 12px rgb(88 220 255 / 40%);
+    background: var(--orbix-accent);
   }
 
   .orbix-progress::-moz-progress-bar {
-    background: linear-gradient(90deg, var(--atmospheric-blue), var(--accent));
+    background: var(--orbix-accent);
   }
 
   .orbix-empty-state {
-    align-items: center;
-    background:
-      radial-gradient(
-        circle at 50% 0%,
-        rgb(88 220 255 / 7%),
-        transparent 16rem
-      ),
-      rgb(255 255 255 / 1.5%);
-    border: 1px dashed var(--border-bright);
-    border-radius: var(--radius-card);
+    align-items: flex-start;
+    background: transparent;
+    border: 1px dashed var(--orbix-border-strong);
+    border-radius: var(--radius-3);
     display: flex;
     flex-direction: column;
-    justify-content: center;
-    min-height: 14rem;
-    padding: 2rem;
-    text-align: center;
+    padding: var(--space-5);
+  }
+
+  .orbix-spinner {
+    animation: orbix-spin 800ms linear infinite;
+    border: 2px solid var(--orbix-border-strong);
+    border-radius: var(--radius-circle);
+    border-top-color: var(--orbix-accent);
+    display: inline-block;
+    flex: none;
+    height: 1rem;
+    width: 1rem;
+  }
+
+  /* Neutralised: the logo carries no glow. */
+  .orbix-loading-mark {
+    filter: none;
   }
 
   /* ==================================================================== *
-   * SITE CHROME
+   * SITE CHROME (spec 10)
    *
-   * The header, navigation and footer are the only surfaces a visitor sees
-   * on every route, so they carry the ORBIX identity. They are deliberately
-   * quiet: the division accent marks one thing at a time (the current route),
-   * and nothing here glows.
-   *
-   * Typography is the INTERFACE face throughout. Monospace was previously
-   * used for navigation, breadcrumbs and the footer note, which is what made
-   * it stop meaning "machine-produced value".
+   * Solid page ground, one hairline, no blur, no glow, no division tint.
    * ==================================================================== */
 
   .orbix-site-header {
-    /* Enough blur to stay readable over the environment photography behind
-     * it, without becoming a frosted slab. */
-    backdrop-filter: blur(12px);
-    background: color-mix(in srgb, var(--orbix-bg-page) 88%, transparent);
-    border-bottom: 1px solid var(--orbix-border-subtle);
-  }
-
-  /* A single hairline in the division's accent: the one place the header
-   * states which part of ORBIX you are in. Replaces a decorative
-   * cyan-to-violet gradient that spanned the header and meant nothing. */
-  .orbix-site-header::after {
-    background: var(--orbix-division-accent);
-    content: "";
-    height: 1px;
-    inset: auto 0 0;
-    opacity: 0.5;
-    position: absolute;
+    background: var(--orbix-bg-page);
+    border-bottom: 1px solid var(--orbix-border);
   }
 
   .orbix-nav {
-    align-items: center;
+    align-items: stretch;
     display: flex;
-    gap: 0.15rem;
+    gap: var(--space-1);
+    height: 3.5rem;
   }
 
   .orbix-nav-link {
-    border-radius: var(--radius-sm);
-    color: var(--orbix-text-muted);
-    display: block;
+    align-items: center;
+    color: var(--orbix-text-secondary);
+    display: flex;
     font-family: var(--font-interface);
     font-size: var(--text-body-sm);
     font-weight: 500;
-    letter-spacing: var(--tracking-normal);
-    padding: 0.5rem 0.75rem;
+    height: 100%;
+    letter-spacing: 0;
+    padding-inline: 0.75rem;
     position: relative;
-    transition:
-      color var(--motion-transition) var(--motion-ease),
-      background-color var(--motion-transition) var(--motion-ease);
+    transition: color var(--motion-fast) var(--motion-ease);
   }
 
   .orbix-nav-link:hover {
-    background: color-mix(in srgb, var(--orbix-text-primary) 5%, transparent);
     color: var(--orbix-text-primary);
   }
 
   .orbix-nav-link:focus-visible {
     outline: 2px solid var(--orbix-focus);
-    outline-offset: 2px;
+    outline-offset: -2px;
   }
 
-  /* Current route: emphasised text plus a precise 2px rule beneath the
-   * label. No filled pill, no glow, no gradient. */
+  /* Current route: primary text and a 2px accent rule on the header's
+   * bottom edge. */
   .orbix-nav-link[aria-current="page"] {
     color: var(--orbix-text-primary);
-    font-weight: 600;
   }
 
   .orbix-nav-link[aria-current="page"]::after {
-    background: var(--orbix-division-accent);
-    border-radius: 1px;
-    bottom: -0.35rem;
+    background: var(--orbix-accent);
+    bottom: -1px;
     content: "";
     height: 2px;
     inset-inline: 0.75rem;
     position: absolute;
   }
 
-  .orbix-mobile-nav {
-    backdrop-filter: blur(16px);
-    background: color-mix(in srgb, var(--orbix-surface-raised) 96%, black);
-    border: 1px solid var(--orbix-border);
-    border-radius: var(--radius-lg);
-    box-shadow: var(--elevation-2);
+  .orbix-menu-toggle {
+    align-items: center;
+    background: transparent;
+    border: 1px solid var(--orbix-border-control);
+    border-radius: var(--radius-2);
+    color: var(--orbix-text-primary);
+    display: inline-flex;
+    font-family: var(--font-interface);
+    font-size: var(--text-body-sm);
+    font-weight: 500;
+    gap: var(--space-2);
+    min-height: 2.5rem;
+    padding: 0.5rem 0.75rem;
+    transition:
+      background-color var(--motion-fast) var(--motion-ease),
+      border-color var(--motion-fast) var(--motion-ease);
   }
 
-  /* Mobile links are list rows, not toolbar chips: full width, comfortable
-   * touch target, and an accent marker on the current route rather than a
-   * filled background. */
+  .orbix-menu-toggle:hover {
+    background: var(--orbix-surface-raised);
+    border-color: var(--orbix-text-muted);
+  }
+
+  .orbix-menu-toggle:focus-visible {
+    outline: 2px solid var(--orbix-focus);
+    outline-offset: 2px;
+  }
+
+  /* Full-width sheet directly below the header. */
+  .orbix-mobile-nav {
+    background: var(--orbix-bg-page);
+    border-bottom: 1px solid var(--orbix-border);
+    box-shadow: var(--elevation-overlay);
+  }
+
   .orbix-mobile-nav-link {
     align-items: center;
-    border-radius: var(--radius-md);
+    border-left: 2px solid transparent;
     color: var(--orbix-text-secondary);
     display: flex;
     font-family: var(--font-interface);
     font-size: var(--text-body);
     font-weight: 500;
     min-height: 3rem;
-    padding: 0.5rem 0.875rem;
-    position: relative;
-    transition: color var(--motion-transition) var(--motion-ease);
+    padding: 0.5rem 1rem;
+    transition:
+      background-color var(--motion-fast) var(--motion-ease),
+      color var(--motion-fast) var(--motion-ease);
   }
 
   .orbix-mobile-nav-link:hover {
-    background: color-mix(in srgb, var(--orbix-text-primary) 5%, transparent);
+    background: var(--orbix-surface);
     color: var(--orbix-text-primary);
   }
 
@@ -544,41 +732,34 @@
   }
 
   .orbix-mobile-nav-link[aria-current="page"] {
+    border-left-color: var(--orbix-accent);
     color: var(--orbix-text-primary);
-    font-weight: 600;
   }
 
-  .orbix-mobile-nav-link[aria-current="page"]::before {
-    background: var(--orbix-division-accent);
-    border-radius: 1px;
-    content: "";
-    inset: 0.75rem auto 0.75rem 0;
-    position: absolute;
-    width: 2px;
-  }
-
-  /* Route context. Quiet by design: it orients, it does not announce.
-   * Previously set in uppercase letter-spaced monospace at 0.65rem, which
-   * gave a secondary wayfinding aid more visual weight than the page title
-   * it sat above. */
   .orbix-breadcrumbs {
     align-items: center;
     color: var(--orbix-text-muted);
     display: flex;
     flex-wrap: wrap;
     font-family: var(--font-interface);
-    font-size: var(--text-caption);
-    gap: 0.5rem;
-    letter-spacing: var(--tracking-normal);
+    font-size: var(--text-body-sm);
+    gap: var(--space-2);
+    letter-spacing: 0;
   }
 
   .orbix-breadcrumbs a {
-    border-radius: var(--radius-sm);
-    transition: color var(--motion-feedback) var(--motion-ease);
+    color: var(--orbix-text-secondary);
+    text-decoration: underline;
+    text-decoration-color: var(--orbix-border-strong);
+    text-underline-offset: 0.2em;
+    transition:
+      color var(--motion-fast) var(--motion-ease),
+      text-decoration-color var(--motion-fast) var(--motion-ease);
   }
 
   .orbix-breadcrumbs a:hover {
     color: var(--orbix-text-primary);
+    text-decoration-color: currentColor;
   }
 
   .orbix-breadcrumbs a:focus-visible {
@@ -586,120 +767,73 @@
     outline-offset: 2px;
   }
 
-  /* The current page is the one item the division accent marks. */
   .orbix-breadcrumbs [aria-current="page"] {
-    color: var(--orbix-division-accent);
+    color: var(--orbix-text-primary);
   }
 
   .orbix-breadcrumbs-separator {
-    color: var(--orbix-border-strong);
+    color: var(--orbix-text-muted);
+    display: inline-flex;
   }
 
+  /* In-page section links. */
   .orbix-anchor-nav {
     align-items: center;
-    backdrop-filter: blur(14px);
-    background: rgb(2 5 11 / 72%);
-    border-block: 1px solid var(--border);
+    background: var(--orbix-bg-page);
+    border-block: 1px solid var(--orbix-border);
     display: flex;
-    gap: 1.25rem;
+    gap: var(--space-4);
     overflow-x: auto;
-    padding: 0.75rem 1rem;
+    padding: 0 var(--space-4);
     scrollbar-width: thin;
   }
 
   .orbix-anchor-nav a {
     align-items: center;
-    color: var(--muted);
+    border-bottom: 2px solid transparent;
+    color: var(--orbix-text-secondary);
     display: inline-flex;
-    font-family: var(--font-telemetry);
-    font-size: 0.65rem;
-    letter-spacing: 0.08em;
+    font-family: var(--font-interface);
+    font-size: var(--text-body-sm);
+    letter-spacing: 0;
     min-height: 2.75rem;
-    text-transform: uppercase;
+    text-transform: none;
     transition:
-      color var(--duration-fast) var(--ease-orbix),
-      transform var(--duration-fast) var(--ease-orbix);
+      color var(--motion-fast) var(--motion-ease),
+      border-color var(--motion-fast) var(--motion-ease);
     white-space: nowrap;
   }
 
-  .orbix-anchor-nav a:hover,
+  .orbix-anchor-nav a:hover {
+    color: var(--orbix-text-primary);
+  }
+
   .orbix-anchor-nav a[aria-current="location"] {
-    color: var(--accent);
+    border-bottom-color: var(--orbix-accent);
+    color: var(--orbix-text-primary);
   }
 
-  .orbix-anchor-nav a:active {
-    transform: translateY(1px);
+  .orbix-anchor-nav a:focus-visible {
+    outline: 2px solid var(--orbix-focus);
+    outline-offset: -2px;
   }
 
-  .orbix-icon-control {
-    align-items: center;
-    background: var(--surface-glass);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-control);
-    color: var(--foreground);
-    display: inline-flex;
-    height: 2.75rem;
-    justify-content: center;
-    transition: all var(--duration-base) var(--ease-orbix);
-    width: 2.75rem;
-  }
-
-  /* Used only by the mobile navigation toggle, so it follows the division
-   * accent — otherwise the header would show an amber active-route rule
-   * beside a cyan toggle on the same screen. */
-  .orbix-icon-control:not(:disabled):not([aria-disabled="true"]):hover {
-    background: color-mix(
-      in srgb,
-      var(--orbix-division-accent) 8%,
-      var(--orbix-surface)
-    );
-    border-color: color-mix(
-      in srgb,
-      var(--orbix-division-accent) 55%,
-      var(--orbix-border)
-    );
-    color: var(--orbix-division-accent);
-  }
-
-  .orbix-icon-control:not(:disabled):not([aria-disabled="true"]):active {
-    transform: translateY(1px) scale(0.96);
-  }
-
-  .orbix-icon-control:focus-visible {
-    box-shadow:
-      0 0 0 2px var(--orbix-bg-page),
-      0 0 0 4px var(--orbix-division-accent);
-    outline: 0;
-  }
-
-  .orbix-icon-control:is(:disabled, [aria-disabled="true"]) {
-    box-shadow: none;
-    opacity: 0.48;
-    transform: none;
-  }
-
-  .orbix-loading-mark {
-    filter: drop-shadow(0 0 22px rgb(88 220 255 / 24%));
-  }
-
-  /* Deliberately division-NEUTRAL. The footer is where ORBIX speaks as one
-   * platform, so it keeps the base ground rather than picking up the route's
-   * accent. Two decorative cyan/violet radial glows were removed; the footer
-   * is now simply the bottom of the page. */
   .orbix-site-footer {
     background: var(--orbix-bg-page);
-    border-top: 1px solid var(--orbix-border-subtle);
+    border-top: 1px solid var(--orbix-border);
   }
 
   .orbix-footer-link {
-    border-radius: var(--radius-sm);
-    color: var(--orbix-text-muted);
+    color: var(--orbix-text-secondary);
     font-size: var(--text-body-sm);
-    transition: color var(--motion-feedback) var(--motion-ease);
+    text-decoration: none;
+    transition: color var(--motion-fast) var(--motion-ease);
   }
 
   .orbix-footer-link:hover {
     color: var(--orbix-text-primary);
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
   }
 
   .orbix-footer-link:focus-visible {
@@ -710,82 +844,70 @@
   .orbix-footer-heading {
     color: var(--orbix-text-muted);
     font-family: var(--font-interface);
-    font-size: var(--text-label);
+    font-size: var(--text-caps);
     font-weight: 600;
-    letter-spacing: var(--tracking-label);
+    letter-spacing: var(--tracking-caps);
+    line-height: 1.3;
     text-transform: uppercase;
   }
 
-  .orbix-page-transition {
-    animation: orbix-fade-in 520ms var(--ease-orbix) both;
-  }
-
   /* ==================================================================== *
-   * VEHICLE DISCOVERY CARD
-   *
-   * A curated vehicle record, not a product tile. The restraint is
-   * deliberate: one border, one radius, no glow, no gradient border, no
-   * clipped HUD corners, and the division accent used on exactly two things
-   * — the classification line and the explore affordance.
+   * VEHICLE CARD LINK (spec 10)
    * ==================================================================== */
 
   .orbix-vehicle-card {
     background: var(--orbix-surface);
     border: 1px solid var(--orbix-border);
-    border-radius: var(--radius-lg);
+    border-radius: var(--radius-3);
     display: flex;
     flex-direction: column;
     height: 100%;
     overflow: hidden;
-    transition:
-      border-color var(--motion-transition) var(--motion-ease),
-      background-color var(--motion-transition) var(--motion-ease);
+    transition: border-color var(--motion-fast) var(--motion-ease);
   }
 
   .orbix-vehicle-card:hover {
-    background: var(--orbix-surface-raised);
-    border-color: color-mix(
-      in srgb,
-      var(--orbix-division-accent) 45%,
-      var(--orbix-border)
-    );
+    border-color: var(--orbix-border-strong);
+  }
+
+  .orbix-vehicle-card:hover .orbix-vehicle-card__name {
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 0.2em;
   }
 
   .orbix-vehicle-card:focus-visible {
     outline: 2px solid var(--orbix-focus);
-    outline-offset: 3px;
+    outline-offset: 2px;
   }
 
   .orbix-vehicle-card__classification {
-    color: var(--orbix-division-accent);
+    color: var(--orbix-text-muted);
     font-family: var(--font-interface);
     font-size: var(--text-label);
-    font-weight: 600;
-    letter-spacing: var(--tracking-label);
-    line-height: var(--leading-tight);
-    text-transform: uppercase;
+    font-weight: 500;
+    letter-spacing: 0;
+    line-height: 1.4;
+    text-transform: none;
   }
 
   .orbix-vehicle-card__name {
     color: var(--orbix-text-primary);
-    font-family: var(--font-display);
-    font-size: 1.75rem;
-    font-stretch: var(--font-display-stretch);
+    font-family: var(--font-interface);
+    font-size: var(--text-h3);
     font-weight: 600;
-    letter-spacing: var(--tracking-tight);
-    line-height: 1.1;
-    margin-top: 0.5rem;
+    letter-spacing: 0;
+    line-height: 1.35;
+    margin-top: var(--space-1);
   }
 
-  /* Two specs, side by side, separated by a rule rather than boxed into
-   * individual tiles. Replaces a six-cell grid of bordered micro-panels. */
   .orbix-vehicle-card__specs {
     border-top: 1px solid var(--orbix-border-subtle);
     display: grid;
-    gap: 1.25rem;
+    gap: var(--space-4);
     grid-template-columns: repeat(2, minmax(0, 1fr));
     margin-top: auto;
-    padding-top: 1.25rem;
+    padding-top: var(--space-4);
   }
 
   .orbix-vehicle-card__spec-label {
@@ -798,11 +920,13 @@
   .orbix-vehicle-card__spec-value {
     color: var(--orbix-text-primary);
     font-family: var(--font-telemetry);
-    font-size: var(--text-body-sm);
+    font-size: var(--text-data);
     font-variant-numeric: tabular-nums;
-    margin-top: 0.25rem;
+    margin-top: var(--space-1);
   }
 
+  /* Deprecated: the card has no inner pseudo-button. Rendered as plain
+   * secondary text until the vehicles task removes it. */
   .orbix-vehicle-card__cta {
     align-items: center;
     color: var(--orbix-text-secondary);
@@ -810,94 +934,106 @@
     font-family: var(--font-interface);
     font-size: var(--text-body-sm);
     font-weight: 500;
-    gap: 0.4rem;
-    margin-top: 1.25rem;
-    transition: color var(--motion-transition) var(--motion-ease);
+    gap: var(--space-1);
+    margin-top: var(--space-4);
   }
 
-  .orbix-vehicle-card:hover .orbix-vehicle-card__cta {
-    color: var(--orbix-division-accent);
+  .orbix-vehicle-card[data-variant="compact"] .orbix-vehicle-card__name {
+    font-size: var(--text-h4);
+  }
+
+  .orbix-home-vehicles
+    .orbix-vehicle-card[data-variant="compact"]
+    .orbix-vehicle-card__classification {
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    display: -webkit-box;
+    overflow: hidden;
+  }
+
+  .orbix-vehicle-card[data-variant="compact"] .orbix-vehicle-card__specs {
+    grid-template-columns: minmax(0, 1fr);
+    margin-top: var(--space-4);
+    padding-top: var(--space-3);
+  }
+
+  .orbix-vehicle-card[data-variant="compact"] .orbix-vehicle-card__cta {
+    margin-top: var(--space-3);
   }
 
   /* ==================================================================== *
-   * HOMEPAGE LINKS AND CALLS TO ACTION
+   * DEPRECATED HOME CALLS TO ACTION
    *
-   * Two levels only. The previous homepage carried `.orbix-button` with an
-   * uppercase letter-spaced monospace label, a gradient fill, a glow shadow
-   * and a hover shimmer sweep; these are quiet by comparison and use the
-   * interface face.
+   * Render as the standard primary / secondary / link button until the home
+   * task moves to `ButtonLink`. Deleted in phase C.
    * ==================================================================== */
 
   .orbix-home-cta {
     align-items: center;
-    background: var(--orbix-division-accent);
-    border: 1px solid var(--orbix-division-accent);
-    border-radius: var(--radius-md);
-    color: var(--orbix-division-accent-contrast);
+    background: var(--orbix-accent);
+    border: 1px solid var(--orbix-accent);
+    border-radius: var(--radius-2);
+    color: var(--orbix-text-on-accent);
     display: inline-flex;
     font-family: var(--font-interface);
     font-size: var(--text-body-sm);
-    font-weight: 600;
-    gap: 0.5rem;
-    min-height: 2.875rem;
-    padding-inline: 1.25rem;
+    font-weight: 500;
+    gap: var(--space-2);
+    min-height: 2.5rem;
+    padding: 0.5rem 1rem;
     transition:
-      background-color var(--motion-transition) var(--motion-ease),
-      border-color var(--motion-transition) var(--motion-ease);
+      background-color var(--motion-fast) var(--motion-ease),
+      border-color var(--motion-fast) var(--motion-ease);
   }
 
   .orbix-home-cta:hover {
-    background: var(--orbix-division-accent-hover);
-    border-color: var(--orbix-division-accent-hover);
+    background: var(--orbix-accent-hover);
+    border-color: var(--orbix-accent-hover);
   }
 
   .orbix-home-cta--secondary {
-    background: transparent;
-    border-color: var(--orbix-border);
+    background: var(--orbix-surface);
+    border-color: var(--orbix-border-control);
     color: var(--orbix-text-primary);
   }
 
   .orbix-home-cta--secondary:hover {
-    background: transparent;
-    border-color: var(--orbix-division-accent);
-    color: var(--orbix-division-accent);
+    background: var(--orbix-surface-raised);
+    border-color: var(--orbix-text-muted);
   }
 
   .orbix-home-cta:focus-visible,
   .orbix-home-link:focus-visible {
     outline: 2px solid var(--orbix-focus);
-    outline-offset: 3px;
+    outline-offset: 2px;
   }
 
-  /* Inline text link used for section destinations. */
   .orbix-home-link {
     align-items: center;
-    border-radius: var(--radius-sm);
-    color: var(--orbix-division-accent);
+    color: var(--orbix-accent);
     display: inline-flex;
     font-family: var(--font-interface);
     font-size: var(--text-body-sm);
     font-weight: 500;
-    gap: 0.4rem;
-    min-height: 2.75rem;
-    transition: color var(--motion-transition) var(--motion-ease);
+    gap: var(--space-1);
+    min-height: 2.5rem;
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 0.2em;
+    transition: color var(--motion-fast) var(--motion-ease);
   }
 
   .orbix-home-link:hover {
-    color: var(--orbix-text-primary);
+    color: var(--orbix-accent-hover);
   }
 
   /* ==================================================================== *
    * COMPARE IDENTITY STRIP
-   *
-   * Column identity for the comparison matrix, sized to sit above it. One
-   * category per comparison means one media aspect per strip, so heights
-   * stay even without any cross-domain logic.
    * ==================================================================== */
 
   .orbix-compare-identity {
     display: grid;
-    gap: 1.25rem;
+    gap: var(--space-4);
     grid-template-columns: repeat(auto-fit, minmax(min(11rem, 100%), 1fr));
     list-style: none;
     margin: 0;
@@ -905,9 +1041,6 @@
   }
 
   @media (min-width: 768px) {
-    /* Matches the matrix, which reserves a leading label column: the
-     * identity strip is inset by the same amount so each block sits over its
-     * own value column. */
     .orbix-compare-identity {
       grid-template-columns: 14rem repeat(
           var(--orbix-compare-columns, 3),
@@ -922,37 +1055,28 @@
 
   .orbix-compare-identity__name {
     color: var(--orbix-text-primary);
-    font-family: var(--font-display);
-    font-size: 1.125rem;
-    font-stretch: var(--font-display-stretch);
+    font-family: var(--font-interface);
+    font-size: var(--text-h3);
     font-weight: 600;
-    letter-spacing: var(--tracking-tight);
-    margin-top: 0.75rem;
+    letter-spacing: 0;
+    margin-top: var(--space-3);
   }
 
   .orbix-compare-identity__meta {
     color: var(--orbix-text-muted);
     font-family: var(--font-interface);
     font-size: var(--text-body-sm);
-    margin-top: 0.2rem;
+    margin-top: var(--space-1);
   }
 
-  /* Engineering Laboratory model notes.
-   *
-   * Assumptions, model limits and reference caveats. These were rendered as
-   * filled amber panels with a warning triangle in 22 modules, which gave
-   * "standard gravity is fixed at 9.80665 m/s²" the same visual weight as a
-   * fault. Nothing here is a warning; it is the honest statement of what the
-   * model does and does not cover, and it should read as reference text.
-   *
-   * A marked rule and normal-size copy instead. The signal colour is kept only
-   * on the heading, so the section is still findable at a glance without the
-   * page appearing to be in an error state. `ValidationErrorSummary` keeps the
-   * signal treatment, so a real problem still looks different from a note. */
+  /* ==================================================================== *
+   * ENGINEERING LAB
+   * ==================================================================== */
+
+  /* Model notes: reference text, not warnings. */
   .orbix-lab-note {
-    border-left: 2px solid
-      color-mix(in srgb, var(--orbix-accent) 45%, transparent);
-    padding-left: 1.25rem;
+    border-left: 2px solid var(--orbix-border-strong);
+    padding-left: var(--space-4);
   }
 
   .orbix-lab-note__title {
@@ -962,39 +1086,29 @@
     font-family: var(--font-interface);
     font-size: var(--text-body-sm);
     font-weight: 600;
-    gap: 0.5rem;
+    gap: var(--space-2);
   }
 
   .orbix-lab-note__title svg {
-    color: var(--orbix-accent);
+    color: var(--orbix-text-muted);
   }
 
-  /* Equation model.
-   *
-   * The equation is the module's thesis, so it is set on the page rather than
-   * inside a nested box with its own border and background. Telemetry
-   * typography at reading size, with the variable list that follows it left as
-   * an ordinary definition list. */
+  /* Equation block: an input-tone well, Plex Mono, scrolls if long. */
   .orbix-lab-equation {
+    background: var(--orbix-surface-input);
+    border-radius: var(--radius-2);
     color: var(--orbix-text-primary);
     font-family: var(--font-telemetry);
-    font-size: var(--text-body-lg);
-    letter-spacing: var(--tracking-normal);
+    font-size: var(--text-body);
+    letter-spacing: 0;
     overflow-x: auto;
-    padding-block: 0.35rem;
+    padding: var(--space-3) var(--space-4);
   }
 
-  /* Engineering Laboratory module index.
-   *
-   * A horizontal-wrapping row of module buttons above the active module. Not a
-   * scroller: with six or seven modules a scroller hides half of them, and the
-   * whole point of this control is that every module in the workflow is visible
-   * at once. Interface typography, not monospace — these are names, not
-   * readings. */
   .orbix-lab-tools {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.5rem;
+    gap: var(--space-2);
     list-style: none;
     margin: 0;
     padding: 0;
@@ -1002,24 +1116,18 @@
 
   .orbix-lab-tool {
     align-items: center;
-    background-color: color-mix(
-      in srgb,
-      var(--orbix-bg-surface) 55%,
-      transparent
-    );
-    border: 1px solid var(--orbix-border-subtle);
-    border-radius: var(--radius-sm);
-    color: var(--orbix-text-muted);
+    background-color: var(--orbix-surface);
+    border: 1px solid var(--orbix-border);
+    border-radius: var(--radius-2);
+    color: var(--orbix-text-secondary);
     display: flex;
-    gap: 0.7rem;
-    /* Comfortably above the 44px touch target minimum, because on a phone this
-     * is the primary way to move between modules. */
-    min-height: 3.25rem;
-    padding: 0.55rem 0.9rem;
+    gap: var(--space-3);
+    min-height: 3rem;
+    padding: var(--space-2) var(--space-3);
     text-align: left;
     transition:
-      border-color var(--motion-transition) var(--motion-ease),
-      color var(--motion-transition) var(--motion-ease);
+      border-color var(--motion-fast) var(--motion-ease),
+      color var(--motion-fast) var(--motion-ease);
     width: 100%;
   }
 
@@ -1030,13 +1138,17 @@
   }
 
   .orbix-lab-tool:hover {
-    border-color: color-mix(in srgb, var(--orbix-accent) 40%, transparent);
+    border-color: var(--orbix-border-strong);
     color: var(--orbix-text-primary);
   }
 
-  .orbix-lab-tool[data-active="true"] {
-    background-color: color-mix(in srgb, var(--orbix-accent) 10%, transparent);
-    border-color: color-mix(in srgb, var(--orbix-accent) 55%, transparent);
+  .orbix-lab-tool[data-active="true"],
+  .orbix-lab-tool[aria-current="page"],
+  .orbix-lab-tool[aria-current="true"] {
+    background-color: var(--orbix-accent-subtle);
+    border-color: var(--orbix-border);
+    /* Spec 7.2: the only accent rule is a 2px left border on the selected item. */
+    border-left: 2px solid var(--orbix-accent);
     color: var(--orbix-text-primary);
   }
 
@@ -1047,14 +1159,10 @@
     font-variant-numeric: tabular-nums;
   }
 
-  .orbix-lab-tool[data-active="true"] .orbix-lab-tool__index {
-    color: var(--orbix-accent);
-  }
-
   .orbix-lab-tool__body {
     display: flex;
     flex-direction: column;
-    gap: 0.15rem;
+    gap: 0.125rem;
     min-width: 0;
   }
 
@@ -1068,63 +1176,55 @@
   .orbix-lab-tool__kind {
     color: var(--orbix-text-muted);
     font-family: var(--font-interface);
-    font-size: var(--text-caption);
+    font-size: var(--text-label);
     line-height: 1.3;
   }
 
-  /* Magnitude track.
-   *
-   * Deliberately the quietest thing in the cell: a 2px hairline, one accent at
-   * reduced opacity, no gradient, no glow, no semantic red/green. The published
-   * figure above it is the value; this only makes relative scale easier to
-   * perceive at a glance, and it is never the only way a difference is
-   * communicated. Constrained in width so a full-length track reads as a
-   * measurement rule rather than a progress bar filling the column. */
+  /* Magnitude bar: flat 4px track (spec 14, compare). Never the only way a
+   * difference is communicated. */
   .orbix-magnitude {
-    background-color: color-mix(
-      in srgb,
-      var(--orbix-border-subtle) 70%,
-      transparent
-    );
-    border-radius: 999px;
-    /* Width is left to normal block flow rather than set to 100%: inside an
-     * auto-layout table cell a percentage width resolves against a cell whose
-     * own width is still being computed, and collapses to zero. */
+    background-color: var(--orbix-border-subtle);
+    border-radius: var(--radius-1);
     display: block;
-    height: 2px;
-    margin-top: 0.6rem;
+    height: 4px;
+    margin-top: var(--space-2);
     max-width: 11rem;
     overflow: hidden;
   }
 
   .orbix-magnitude__fill {
-    background-color: color-mix(in srgb, var(--orbix-accent) 55%, transparent);
+    background-color: var(--orbix-accent);
     border-radius: inherit;
     display: block;
     height: 100%;
-    /* Clamped so a rounding artefact can never render a negative or
-     * overlong track. The value itself is already normalized to 0..1. */
     width: calc(clamp(0, var(--orbix-magnitude, 0), 1) * 100%);
   }
 
-  /* Profile section navigation. The numeric mono badge was dropped: it
-   * duplicated the ordering the list already communicates, and it was the
-   * last monospace in the profile chrome. */
+  /* ==================================================================== *
+   * VEHICLE PROFILE
+   * ==================================================================== */
+
   .orbix-profile-nav-link {
     align-items: center;
-    border: 1px solid transparent;
-    border-radius: var(--radius-sm);
-    color: var(--orbix-text-muted);
+    border-left: 2px solid transparent;
+    color: var(--orbix-text-secondary);
     display: inline-flex;
     font-family: var(--font-interface);
     font-size: var(--text-body-sm);
-    min-height: 2.75rem;
-    padding-inline: 0.75rem;
-    transition: color var(--motion-transition) var(--motion-ease);
+    min-height: 2.5rem;
+    padding-inline: var(--space-3);
+    transition:
+      color var(--motion-fast) var(--motion-ease),
+      border-color var(--motion-fast) var(--motion-ease);
     white-space: nowrap;
   }
 
   .orbix-profile-nav-link:hover {
+    color: var(--orbix-text-primary);
+  }
+
+  .orbix-profile-nav-link[aria-current] {
+    border-left-color: var(--orbix-accent);
     color: var(--orbix-text-primary);
   }
 
@@ -1133,150 +1233,94 @@
     outline-offset: 2px;
   }
 
-  /* Compact related-vehicle card. Same primitive and same accent as the
-   * discovery index card, tightened so a profile does not end with five
-   * full-height index cards. Scoped to `[data-variant="compact"]` so the
-   * default discovery rendering is untouched. */
-  .orbix-vehicle-card[data-variant="compact"] .orbix-vehicle-card__name {
-    font-size: 1.25rem;
-  }
-
-  /* Some launch vehicles support six orbit regimes; unclamped, that
-   * classification line runs to five wrapped rows and dwarfs the vehicle
-   * name in the homepage's two-up layout.
-   *
-   * Scoped to the homepage wrapper, NOT to the compact variant itself:
-   * profile related-vehicle strips also use `compact`, and clamping there
-   * would change vehicle profile rendering, which is outside this phase.
-   * The full list remains everywhere else. */
-  .orbix-home-vehicles
-    .orbix-vehicle-card[data-variant="compact"]
-    .orbix-vehicle-card__classification {
-    -webkit-box-orient: vertical;
-    -webkit-line-clamp: 2;
-    display: -webkit-box;
-    overflow: hidden;
-  }
-
-  .orbix-vehicle-card[data-variant="compact"] .orbix-vehicle-card__specs {
-    grid-template-columns: minmax(0, 1fr);
-    margin-top: 1rem;
-    padding-top: 0.875rem;
-  }
-
-  .orbix-vehicle-card[data-variant="compact"] .orbix-vehicle-card__cta {
-    margin-top: 0.875rem;
-  }
-
-  /* ==================================================================== *
-   * VEHICLE PROFILE SECTION
-   *
-   * One grammar, five modes. The mode changes the header/content
-   * relationship and the vertical rhythm — not the typography, tokens or
-   * accent, which stay shared so a profile reads as one document.
-   * ==================================================================== */
-
   .orbix-profile-section {
     border-top: 1px solid var(--orbix-border-subtle);
-    padding-block: clamp(3.5rem, 6vw, 5.5rem);
+    padding-block: var(--space-7);
   }
 
-  /* Editorial passages get more air around them; they are the places a
-   * reader slows down. */
-  .orbix-profile-section[data-profile-mode="editorial"] {
-    padding-block: clamp(4.5rem, 8vw, 7rem);
-  }
-
-  /* Media sections let the imagery meet the section edge rather than sitting
-   * inside another bordered box. */
-  .orbix-profile-section[data-profile-mode="media"] {
-    padding-block: clamp(3rem, 5vw, 4.5rem);
+  @media (min-width: 640px) {
+    .orbix-profile-section {
+      padding-block: var(--space-8);
+    }
   }
 
   .orbix-profile-section__eyebrow {
-    color: var(--orbix-division-accent);
+    color: var(--orbix-text-muted);
     font-family: var(--font-interface);
     font-size: var(--text-label);
-    font-weight: 600;
-    letter-spacing: var(--tracking-label);
-    line-height: var(--leading-tight);
-    text-transform: uppercase;
+    font-weight: 500;
+    letter-spacing: 0;
+    line-height: 1.4;
+    text-transform: none;
   }
 
   .orbix-profile-section__title {
     color: var(--orbix-text-primary);
-    font-family: var(--font-display);
-    font-size: var(--text-h3);
-    font-stretch: var(--font-display-stretch);
+    font-family: var(--font-interface);
+    font-size: var(--text-h2);
     font-weight: 600;
-    letter-spacing: var(--tracking-tight);
-    line-height: var(--leading-heading);
-    margin-top: 0.75rem;
+    letter-spacing: -0.01em;
+    line-height: 1.25;
+    margin-top: var(--space-2);
   }
 
   .orbix-profile-section__description {
-    color: var(--orbix-text-muted);
-    font-size: var(--text-body-sm);
-    line-height: 1.7;
-    margin-top: 1rem;
+    color: var(--orbix-text-secondary);
+    font-size: var(--text-body);
+    line-height: 1.6;
+    margin-top: var(--space-3);
+    max-width: var(--measure-copy);
   }
 
-  /* ==================================================================== *
-   * VEHICLE PROFILE HERO
-   * ==================================================================== */
-
   .orbix-profile-hero {
-    border-bottom: 1px solid var(--orbix-border-subtle);
+    border-bottom: 1px solid var(--orbix-border);
     position: relative;
   }
 
   .orbix-profile-hero__classification {
-    color: var(--orbix-division-accent);
+    color: var(--orbix-text-muted);
     font-family: var(--font-interface);
     font-size: var(--text-label);
-    font-weight: 600;
-    letter-spacing: var(--tracking-label);
-    text-transform: uppercase;
+    font-weight: 500;
+    letter-spacing: 0;
+    text-transform: none;
   }
 
   .orbix-profile-hero__name {
     color: var(--orbix-text-primary);
-    font-family: var(--font-display);
-    font-size: var(--text-h2);
-    font-stretch: var(--font-display-stretch);
-    font-weight: 650;
-    letter-spacing: var(--tracking-display);
-    line-height: 1.02;
-    margin-top: 0.75rem;
+    font-family: var(--font-interface);
+    font-size: var(--text-h1);
+    font-weight: 600;
+    letter-spacing: -0.015em;
+    line-height: 1.15;
+    margin-top: var(--space-2);
     text-wrap: balance;
   }
 
-  /* The defining technical record. Rules rather than boxes: a small set of
-   * figures reads faster as a row of columns than as tiled micro-cards. */
   .orbix-profile-hero__record {
     border-top: 1px solid var(--orbix-border);
     display: grid;
     gap: 1px;
-    margin-top: 2.5rem;
+    margin-top: var(--space-6);
   }
 
   @media (min-width: 640px) {
     .orbix-profile-hero__record {
-      grid-auto-flow: column;
       grid-auto-columns: minmax(0, 1fr);
+      grid-auto-flow: column;
     }
   }
 
   .orbix-profile-hero__record > div {
     border-bottom: 1px solid var(--orbix-border-subtle);
-    padding-block: 1rem;
+    padding-block: var(--space-4);
   }
 
   @media (min-width: 640px) {
     .orbix-profile-hero__record > div {
       border-bottom: 0;
       border-left: 1px solid var(--orbix-border-subtle);
-      padding-inline: 1.25rem;
+      padding-inline: var(--space-4);
     }
 
     .orbix-profile-hero__record > div:first-child {
@@ -1295,8 +1339,8 @@
   .orbix-profile-hero__record dd {
     color: var(--orbix-text-primary);
     font-family: var(--font-telemetry);
-    font-size: 1.0625rem;
+    font-size: var(--text-data);
     font-variant-numeric: tabular-nums;
-    margin-top: 0.4rem;
+    margin-top: var(--space-1);
   }
 }

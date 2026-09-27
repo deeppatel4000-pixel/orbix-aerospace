@@ -4,6 +4,7 @@ import { cn } from "@/lib/cn";
 
 type TechnicalLabelProps = ComponentPropsWithoutRef<"span">;
 
+/** Deprecated alias that renders the `.orbix-label` role (spec 5). */
 export function TechnicalLabel({ className, ...props }: TechnicalLabelProps) {
-  return <span className={cn("orbix-technical-label", className)} {...props} />;
+  return <span className={cn("orbix-label", className)} {...props} />;
 }

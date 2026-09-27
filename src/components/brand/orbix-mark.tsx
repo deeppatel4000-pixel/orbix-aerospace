@@ -9,6 +9,7 @@ interface OrbixMarkProps {
   title?: string;
 }
 
+/** The owner-supplied ORBIX emblem, shown as supplied, with no glow. */
 export function OrbixMark({
   className,
   priority = false,
@@ -20,7 +21,7 @@ export function OrbixMark({
       aria-hidden={title ? undefined : true}
       aria-label={title}
       className={cn(
-        "orbix-official-emblem relative block aspect-square shrink-0 drop-shadow-[0_0_18px_var(--plasma-violet)]",
+        "orbix-official-emblem relative block aspect-square shrink-0",
         className,
       )}
       role={title ? "img" : undefined}

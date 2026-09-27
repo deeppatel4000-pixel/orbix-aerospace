@@ -7,17 +7,18 @@ interface SiteLogoProps {
   priority?: boolean;
 }
 
+/** Owner-supplied wordmark at 1.25rem tall (spec 10). No glow, no scale. */
 export function SiteLogo({ priority = false }: SiteLogoProps) {
   return (
     <Link
       aria-label={`${siteConfig.name} home`}
-      className="group relative inline-flex shrink-0 items-center rounded-md"
+      className="inline-flex shrink-0 items-center rounded py-1"
       href="/"
     >
       <OrbixWordmark
-        className="h-10 w-[6.6rem] transition-[filter,transform] duration-300 group-hover:drop-shadow-[0_0_18px_rgb(88_220_255/0.2)] motion-safe:group-hover:scale-[1.02] motion-reduce:transition-none sm:h-11 sm:w-[7.25rem]"
+        className="h-5 w-[3.3rem]"
         priority={priority}
-        sizes="116px"
+        sizes="53px"
         source="/brand/orbix-wordmark-transparent.png?surface=site-chrome"
       />
       <span className="sr-only">{siteConfig.wordmark}</span>

@@ -1,21 +1,25 @@
 import type { ComponentProps } from "react";
 import Link from "next/link";
 
-import { cn } from "@/lib/cn";
+import {
+  buttonClass,
+  type ButtonSize,
+  type ButtonVariant,
+} from "@/components/ui/button-class";
 
 type ButtonLinkProps = ComponentProps<typeof Link> & {
-  variant?: "primary" | "secondary" | "tertiary";
+  size?: ButtonSize;
+  variant?: ButtonVariant;
 };
 
+/** A `<Link>` styled as a button (spec 8). */
 export function ButtonLink({
   className,
+  size,
   variant = "primary",
   ...props
 }: ButtonLinkProps) {
   return (
-    <Link
-      className={cn("orbix-button", `orbix-button--${variant}`, className)}
-      {...props}
-    />
+    <Link className={buttonClass({ className, size, variant })} {...props} />
   );
 }

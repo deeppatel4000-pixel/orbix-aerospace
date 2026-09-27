@@ -9,13 +9,12 @@ export default function SiteLayout({
   children: React.ReactNode;
 }>) {
   return (
-    // `SiteShell` only replaces the flex wrapper that was already here, adding
-    // `data-orbix-division` so the header, page and footer all inherit the
-    // current route's accent. Everything below it stays a Server Component.
+    // `SiteShell` is the only client boundary here; the header, page and
+    // footer below it stay Server Components.
     <SiteShell>
       <SkipLink />
       <SiteHeader />
-      <main id="main-content" className="orbix-page-transition flex-1">
+      <main id="main-content" className="flex-1">
         {children}
       </main>
       <SiteFooter />
