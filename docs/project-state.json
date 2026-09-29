@@ -8,7 +8,7 @@
   "commitNote": "Resolve the immutable handoff checkpoint with git rev-parse HEAD after clone; a commit cannot contain its own final hash.",
   "productionUrl": "https://orbix-aerospace.vercel.app",
   "vercelProject": "orbix-aerospace",
-  "currentMilestone": "2026 redesign integrated on redesign/anti-vibe-legal (not yet merged to main)",
+  "currentMilestone": "Design v2 \"Flight manual\" (docs/design-system/orbix-design-v2.md) integrated on redesign/anti-vibe-legal (not yet merged to main)",
   "completedMilestones": [
     "Typed aircraft and rocket architecture",
     "Engineering calculators and analyses",
@@ -25,7 +25,8 @@
     "Dependency/security audit and security-header regression guard",
     "Next.js 16.3.0 security upgrade (advisories resolved, deployed to production)",
     "Browser test-coverage hardening (compare query params, laboratory click path, showcase captures)",
-    "2026 redesign to docs/design-system/orbix-redesign-2026.md: all pages, legal pages, credited WebP vehicle photographs, AI and unsourced images deleted, dead code removed, 320px overflow fixed, e2e suite updated and site-integrity sweep added"
+    "2026 redesign to docs/design-system/orbix-redesign-2026.md: all pages, legal pages, credited WebP vehicle photographs, AI and unsourced images deleted, dead code removed, 320px overflow fixed, e2e suite updated and site-integrity sweep added",
+    "Design v2 \"Flight manual\": photo heroes, IBM Plex Sans and B612 Mono, shared UI primitives, /build-log and /verification pages, dead code removed, e2e suite and visual baselines updated, README screenshots recaptured; second pass fixed feature-card gaps, the empty reentry plate, table scroll cues, equation wrapping, RecordRow alignment and photo repetition on 404 and About; third pass fixed the lab RecordRow clip at 390px, the rocket equation at 320px, portrait hero plates for rockets below 48rem, matching 2x2 feature-card figures, one spec-sheet layout on rocket profiles (no repeated photograph), a 3:2 crop for the aircraft overview figure, the Showcase title (Inside ORBIX) and README screenshot encoding"
   ],
   "completedDays": [
     "1-80 (exact early-day mapping partially unavailable; implemented state documented in CLAUDE_HANDOFF.md)",
@@ -45,7 +46,8 @@
     "Owner review of legal page text before merging to main",
     "Move the root loading.tsx fallback under (site) so the chrome stays visible on first paint",
     "Sentence-case the Compare tool links and mission preset names",
-    "Authentic portfolio screenshots"
+    "Give the Compare sheet one labelled, focusable scroll region instead of six non-scrolling focusable regions",
+    "Owner decision on raising the 600 KB cap for the two photo-heavy README screenshots"
   ],
   "deferredWork": [
     "New physics or operational-fidelity models",
@@ -54,13 +56,15 @@
     "External engineering APIs"
   ],
   "knownIssues": [
+    "Compare: each group table is a focusable role=region that does not scroll, while the element that scrolls sideways on a phone is an unlabelled wrapper",
     "Root src/app/loading.tsx wraps the (site) layout, so first paint can briefly show a 'Loading' main without the header before the streamed page is revealed",
     "Compare row links use Title Case tool names and mission presets use Title Case names; one demo string reads 'Orbix'",
     "Full-page screenshots of Mission Control replay paint the sticky header mid-page (capture artifact, stable)",
     "Engineering Laboratory first-load JavaScript was measured at 232 kB (pre-redesign figure, not re-measured)",
-    "Authentic screenshot gallery is empty; all six folders contain only a README",
     "Day 1-17 per-day history is not fully recoverable",
-    "Soft 404: /showcase-capture/<unknown> returns 200 with the not-found UI because that route does not set dynamicParams = false; asserted as current behaviour in tests/e2e/smoke/showcase-capture.spec.ts"
+    "Soft 404: /showcase-capture/<unknown> returns 200 with the not-found UI because that route does not set dynamicParams = false; asserted as current behaviour in tests/e2e/smoke/showcase-capture.spec.ts",
+    "README home.png (1.44 MB) and aircraft-sr-71.png (1.18 MB) are 256-colour palettes and exceed the 600 KB target; meeting it needs about 22 to 39 colours, which posterizes the photographs. Owner decision: accept the size or the posterization",
+    "Photographs repeat across pages: SR-71 on home and its profile (hero, and the overview figure at a 3:2 crop), Saturn V on home, the rockets hero and learn"
   ],
   "inventory": {
     "aircraft": 5,
@@ -69,28 +73,29 @@
     "engineeringLabAnalyzers": 33,
     "calculatorModules": 20,
     "analysisModules": 23,
-    "prerenderedRoutesTotal": 32,
-    "prerenderedUserFacingPages": 27,
-    "prerenderedFrameworkOutputs": 5,
+    "prerenderedRoutesTotal": 36,
+    "prerenderedUserFacingPages": 29,
+    "prerenderedFrameworkOutputs": 7,
     "dynamicRouteTemplates": 3,
-    "playwrightBrowserTests": 617,
-    "playwrightSkipped": 419,
+    "playwrightBrowserTests": 626,
+    "playwrightSkipped": 425,
     "visualBaselines": 27,
-    "learningPathways": 6
+    "learningPathways": 6,
+    "readmeScreenshots": 8
   },
   "validation": {
-    "auditedAt": "2026-09-27",
+    "auditedAt": "2026-09-29",
     "node": "22.17.0",
     "npm": "10.9.2",
-    "tests": "76 files, 980 tests passed",
+    "tests": "90 files, 1255 tests passed",
     "format": "passed",
     "lint": "passed with zero warnings",
     "typecheck": "passed",
-    "build": "passed; 27 user-facing prerendered pages (6 about/legal pages added in the redesign) plus /compare, which is dynamic by design",
+    "build": "passed; 29 user-facing prerendered pages (adds /build-log and /verification) plus /compare, which is dynamic by design; 7 framework outputs including /opengraph-image and /twitter-image",
     "fullValidation": "npm run validate passed",
     "npmAudit": "0 vulnerabilities (was 3 high; resolved by the Next 16.3.0 upgrade)",
-    "browserSuite": "npm run test:e2e: 617 passed, 419 skipped (project-conditional), 0 failed; desktop/tablet/mobile plus 28 visual checks",
-    "visualBaselines": "27 committed, platform-specific (win32), all regenerated on 2026-09-27 after review",
+    "browserSuite": "npm run test:e2e: 626 passed, 425 skipped (project-conditional), 0 failed; desktop/tablet/mobile plus 28 visual checks",
+    "visualBaselines": "27 committed, platform-specific (win32), all regenerated on 2026-09-29 for design v2 after review",
     "securityHeaders": "guarded by tests/e2e/smoke/security-headers.spec.ts; guard verified by deliberate header removal (10/11 failed) then restored",
     "frameworkVersions": "next 16.3.0, react/react-dom 19.2.0, eslint-config-next 16.3.0, postcss 8.5.23, sharp 0.35.3",
     "productionCommit": "ac1aebce55e487245c25879e9fad9c3d929ad8be",

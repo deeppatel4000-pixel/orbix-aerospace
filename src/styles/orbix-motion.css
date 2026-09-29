@@ -1,15 +1,59 @@
 /**
- * Motion (spec 11).
+ * Motion (spec 7). CSS only.
  *
- * Allowed: short colour, border, opacity and disclosure transitions triggered
- * by hover, focus or a state change the user made. The only infinite
- * animation is the functional loading spinner, and it stops under reduced
- * motion.
+ * Allowed:
+ * - colour, border, fill and transform transitions of 180 to 500ms on
+ *   `--motion-ease` (cubic-bezier(0.16, 1, 0.3, 1)), triggered by hover,
+ *   focus, press or a state change the user made;
+ * - one hero entrance on first paint: `.orbix-rise` children fade and rise
+ *   12px over 400ms, staggered 60ms per line, once;
+ * - the loading spinner, the only infinite animation.
+ *
+ * Not allowed: scroll-triggered reveals, parallax, cursor effects, looping
+ * decoration. Under `prefers-reduced-motion: reduce` everything is off.
  */
 
 @keyframes orbix-spin {
   to {
     transform: rotate(360deg);
+  }
+}
+
+@keyframes orbix-rise {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .orbix-rise > * {
+    animation: orbix-rise var(--motion-slow) var(--motion-ease) both;
+  }
+
+  .orbix-rise > :nth-child(2) {
+    animation-delay: 60ms;
+  }
+
+  .orbix-rise > :nth-child(3) {
+    animation-delay: 120ms;
+  }
+
+  .orbix-rise > :nth-child(4) {
+    animation-delay: 180ms;
+  }
+
+  .orbix-rise > :nth-child(5) {
+    animation-delay: 240ms;
+  }
+
+  .orbix-rise > :nth-child(n + 6) {
+    animation-delay: 300ms;
   }
 }
 
@@ -24,6 +68,10 @@
   }
 
   .orbix-spinner {
+    animation: none !important;
+  }
+
+  .orbix-rise > * {
     animation: none !important;
   }
 }

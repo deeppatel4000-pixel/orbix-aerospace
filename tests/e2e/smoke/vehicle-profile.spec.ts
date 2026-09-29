@@ -11,9 +11,10 @@ import {
  *
  * A profile is a documentation page: a breadcrumb, one h1, a credited
  * photograph, an "On this page" list, then one flat section per topic, each
- * an h2, ending with three related vehicles. The earlier hero record,
- * `data-profile-mode` section grammar and full-bleed hero image were removed
- * by design; these tests pin the structure that replaced them.
+ * an h2, ending with three related vehicles. Design v2 (spec 9) puts the
+ * photograph behind the heading as a full-bleed hero with a credit line and
+ * shows it large once more, credited, in the overview; the aircraft history
+ * timeline section was removed. These tests pin that structure.
  *
  * Deliberately NOT asserted: pixel geometry, class names or copy beyond
  * section names. The contracts here are structural: which sections exist in
@@ -27,7 +28,6 @@ const AIRCRAFT_SECTIONS = [
   "specifications",
   "propulsion",
   "performance",
-  "history",
   "variants",
   "engineering-notes",
   "related-aircraft",
@@ -136,7 +136,34 @@ test.describe("Vehicle profile structure", () => {
     for (const { path } of PROFILES) {
       await page.goto(path, { waitUntil: "domcontentloaded" });
 
-      const figure = page.locator("#main-content figure").first();
+      // Every profile's hero photograph carries alt text and a visible
+      // credit, licence and source link.
+      const hero = page.locator("#main-content .orbix-photo-hero__figure");
+      await expect(hero).toHaveCount(1);
+      const heroAlt = (await hero.locator("img").getAttribute("alt")) ?? "";
+      expect(
+        heroAlt.trim().length,
+        `${path} hero photograph needs alt text`,
+      ).toBeGreaterThan(10);
+      const heroCaption = hero.locator("figcaption");
+      await expect(heroCaption).toContainText(/public domain|CC BY/i);
+      await expect(heroCaption).toContainText(/Photo: /);
+      await expect(
+        heroCaption.getByRole("link", { name: "Source file" }),
+      ).toHaveAttribute("href", /^https:\/\//);
+
+      // The overview photograph: the figure whose source link names the
+      // vehicle. Aircraft profiles show it at a crop of its own, because
+      // the hero overlay darkens the aircraft. Rocket profiles do not
+      // repeat it: the hero already shows the whole rocket (design v2).
+      const figure = page.locator("#main-content figure", {
+        has: page.getByRole("link", { name: /^Source file of the / }),
+      });
+      if (path.startsWith(ROUTES.rockets)) {
+        await expect(figure).toHaveCount(0);
+        continue;
+      }
+      await expect(figure).toHaveCount(1);
       await expect(figure).toBeVisible();
 
       const alt = (await figure.locator("img").getAttribute("alt")) ?? "";
@@ -147,8 +174,9 @@ test.describe("Vehicle profile structure", () => {
 
       const caption = figure.locator("figcaption");
       await expect(caption).toContainText(/public domain|CC BY/i);
+      await expect(caption).toContainText(/Photo: /);
       await expect(
-        caption.getByRole("link", { name: /^Source of the / }),
+        caption.getByRole("link", { name: /^Source file of the / }),
       ).toHaveAttribute("href", /^https:\/\//);
     }
   });

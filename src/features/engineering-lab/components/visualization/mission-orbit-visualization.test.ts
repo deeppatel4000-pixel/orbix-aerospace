@@ -47,7 +47,7 @@ describe("MissionOrbitVisualization", () => {
     );
 
     expect(markup).toContain("Orbit lowering");
-    expect(markup).toContain("200,000 m altitude");
+    expect(markup).toContain("200 km altitude");
   });
 
   it("supports a circular plane-change orbit without a transfer", () => {
@@ -68,7 +68,7 @@ describe("MissionOrbitVisualization", () => {
     expect(markup).toContain("Circular orbit");
     expect(markup).toContain("Maneuver orbit");
     expect(markup).toContain(
-      '<span class="orbix-data">5 deg</span> plane change',
+      '<dt>Plane change</dt><dd>5<span class="orbix-record-row__unit">deg</span></dd>',
     );
   });
 

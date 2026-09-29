@@ -2,6 +2,7 @@ import type {
   MissionProfileAnalysis,
   MissionReport,
 } from "@/features/engineering-lab/types";
+import { LabHeading } from "../visualization/lab-heading";
 
 export interface BriefingObjectivesProps {
   readonly missionProfile: MissionProfileAnalysis;
@@ -51,12 +52,9 @@ export function BriefingObjectives({
 
   return (
     <section aria-labelledby="mission-briefing-objectives-title">
-      <h4
-        className="orbix-h4 text-foreground"
-        id="mission-briefing-objectives-title"
-      >
+      <LabHeading offset={1} id="mission-briefing-objectives-title">
         Mission objectives
-      </h4>
+      </LabHeading>
       <p className="mt-1 text-sm leading-6 text-muted">
         What this briefing reviews, based on the analyses the mission includes.
       </p>

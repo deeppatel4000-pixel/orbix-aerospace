@@ -1,135 +1,156 @@
 /**
- * ORBIX DESIGN TOKENS, Redesign 2026.
+ * ORBIX DESIGN TOKENS, design v2 "Flight manual".
  *
- * This file is the single authority for colour, typography, spacing, geometry
- * and motion. The binding specification is
- * `docs/design-system/orbix-redesign-2026.md`; section numbers below refer to
- * it. Components consume these roles rather than declaring their own values,
- * and `scripts/check-raw-colors.mjs` enforces that for component code.
+ * Binding spec: `docs/design-system/orbix-design-v2.md` (sections 4 to 7).
+ * This file is the only place literal colours appear; component code uses
+ * the roles below, and `scripts/check-raw-colors.mjs` enforces that.
  *
  * ## How to read this file
  *
- * 1. CANONICAL ROLES  `--orbix-*`, the only place literal colours appear.
- * 2. TYPE, SPACE, GEOMETRY, MOTION scales.
- * 3. COMPATIBILITY    the historic short names (`--accent`, `--muted`, ...),
- *                     aliased onto the canonical roles so existing Tailwind
- *                     utilities keep working while page tasks migrate.
- * 4. @theme inline    the Tailwind v4 bridge.
+ * 1. PALETTE        the spec 4 table, under the spec's own names
+ *                   (`--bg-page`, `--text-muted`, `--accent-aircraft`, ...).
+ * 2. DIVISIONS      `data-division="space|aircraft|lab"` swaps `--accent`.
+ * 3. CANONICAL ROLES `--orbix-*`, the names feature code already uses,
+ *                   remapped onto the palette.
+ * 4. TYPE, SPACE, GEOMETRY, ELEVATION, MOTION scales.
+ * 5. COMPATIBILITY  historic short names used through Tailwind utilities.
+ * 6. @theme inline  the Tailwind v4 bridge.
  *
- * There is ONE accent sitewide (instrument blue). The five-division accent
- * system and the legacy environment themes have been removed; no CSS keys off
- * `data-orbix-division`, `data-orbix-theme` or `data-orbix-environment`.
+ * No violet, purple or indigo exists anywhere in this system. The ORBIX
+ * logo image is the one accepted exception and nothing here echoes it.
  */
 
 :root {
-  /* ------------------------------------------------------------------ *
-   * 1. CANONICAL COLOUR ROLES (spec 4.1). Contrast ratios are recorded
-   * in spec 4.2; any new colour must be measured and added there.
-   * ------------------------------------------------------------------ */
-
-  /* Ground and surfaces */
-  --orbix-bg-page: #0e1114; /* page ground */
-  --orbix-surface: #14181d; /* panels, cards, table body */
-  --orbix-surface-raised: #1a1f25; /* table header rows, popovers, active tab */
-  --orbix-surface-input: #101317; /* text inputs, selects, code wells */
-
-  /* Borders */
-  --orbix-border-subtle: #20262d; /* dividers inside a panel */
-  --orbix-border: #2a3139; /* panel edges, table rules */
-  --orbix-border-strong: #3a434d; /* emphasis rules, section breaks */
-  --orbix-border-control: #6b7580; /* control edges, meets 3:1 for UI */
-
-  /* Text */
-  --orbix-text-primary: #e6e9ec;
-  --orbix-text-secondary: #b7bfc8;
-  --orbix-text-muted: #949ea9;
-  --orbix-text-disabled: #6a737d; /* only on disabled controls (AA exempt) */
-  --orbix-text-on-accent: #0e1114;
-
-  /* The one accent: instrument blue */
-  --orbix-accent: #6fb3dc;
-  --orbix-accent-hover: #93c7e7;
-  --orbix-accent-subtle: color-mix(
-    in srgb,
-    #6fb3dc 12%,
-    transparent
-  ); /* selected row / active tab fill only */
-  --orbix-focus: #6fb3dc;
-
-  /* Status: describes supplied state only, never decoration */
-  --orbix-status-success: #6cc08e;
-  --orbix-status-warning: #dcab4e;
-  --orbix-status-danger: #ec8479;
-  --orbix-status-info: var(--orbix-text-secondary);
-
-  /* Data visualisation. Chart marks and legends only. */
-  --orbix-data-1: #6fb3dc; /* series 1 = accent */
-  --orbix-data-2: #dcab4e; /* series 2 */
-  --orbix-data-3: #6cc08e; /* series 3 */
-  --orbix-data-4: #b7bfc8; /* series 4 / reference */
-  --orbix-data-grid: #2a3139;
-  --orbix-data-axis: #949ea9;
-
-  /* Shadows use this, never black */
-  --orbix-shadow-color: #05070a;
-
-  /* Deprecated role aliases, kept so existing consumers compile. Removed in
-   * phase C. */
-  --orbix-bg-elevated: var(--orbix-surface-raised);
-  --orbix-surface-interactive: var(--orbix-surface-raised);
-  --orbix-text-inverse: var(--orbix-text-on-accent);
-  --orbix-accent-contrast: var(--orbix-text-on-accent);
-  --orbix-accent-muted: var(--orbix-accent-subtle);
-  --orbix-division-accent: var(--orbix-accent);
-  --orbix-division-accent-hover: var(--orbix-accent-hover);
-  --orbix-division-accent-muted: var(--orbix-accent-subtle);
-  --orbix-division-accent-subtle: var(--orbix-accent-subtle);
-  --orbix-division-accent-contrast: var(--orbix-text-on-accent);
+  color-scheme: dark;
 
   /* ------------------------------------------------------------------ *
-   * 2. TYPOGRAPHY (spec 5)
+   * 1. PALETTE (spec 4). Contrast measured with the WCAG formula.
+   *
+   *                    vs page  vs surface  vs raised
+   * text-primary        18.69     17.91      16.66
+   * text-secondary      12.45     11.93      11.10
+   * text-muted           7.85      7.52       7.00
+   * border-control       3.45      3.30       3.07   (UI boundary, >= 3:1)
+   * accent-space        11.65     11.17      10.39
+   * accent-aircraft     10.09      9.67       9.00
+   * accent-lab          10.16      9.74       9.06
+   * on-accent: 11.65 on space, 10.09 on aircraft, 10.16 on lab.
    * ------------------------------------------------------------------ */
 
-  /* Families are loaded in `src/app/layout.tsx` via `next/font` (SIL OFL
-   * 1.1). Plex Sans for prose and interface, Plex Mono for machine values. */
+  --bg-page: #03060c; /* page ground */
+  --bg-surface: #080d17; /* panels, footer */
+  --bg-raised: #0d1627; /* inputs, selected rows, hovered cards */
+
+  --text-primary: #f2f6fb; /* headings, body */
+  --text-secondary: #c1ccd7; /* secondary body */
+  --text-muted: #91a3b7; /* labels, captions, credits */
+  --text-disabled: #5d6f84; /* disabled controls only (AA exempt) */
+
+  --border-subtle: #17243a; /* hairline dividers (decorative) */
+  --border-default: #22344d; /* panel outlines (decorative) */
+  --border-emphasis: #2c4262; /* section rules (decorative) */
+  --border-control: #4a6785; /* input and button outlines, 3:1 */
+
+  --accent-space: #5fd3f0; /* default: home, rockets, showcase */
+  --accent-aircraft: #e3ae54; /* aircraft division */
+  --accent-lab: #78bdff; /* engineering lab, learn, verification */
+  --on-accent: #03060c; /* text on accent fills */
+
+  /* Status: only where a colour encodes state. All >= 7:1 on page. */
+  --status-success: #72e9b5;
+  --status-warning: #f2bc68;
+  --status-danger: #ff7d83;
+
+  /* Overlay shadow tint (spec 7). Never used on cards. */
+  --shadow-tint: #010308;
+
+  /* ------------------------------------------------------------------ *
+   * 2. DIVISION ACCENT (spec 4). The default is space; see the
+   * `[data-division]` rules after this block.
+   * ------------------------------------------------------------------ */
+
+  --accent: var(--accent-space);
+
+  /* ------------------------------------------------------------------ *
+   * 3. CANONICAL ROLES. Feature code uses these names; values follow the
+   * palette above. Accent-derived roles are declared in the division
+   * block below so they re-resolve inside every `[data-division]`.
+   * ------------------------------------------------------------------ */
+
+  --orbix-bg-page: var(--bg-page);
+  --orbix-surface: var(--bg-surface);
+  --orbix-surface-raised: var(--bg-raised);
+  --orbix-surface-input: var(--bg-raised); /* spec 8: inputs sit on raised */
+
+  --orbix-border-subtle: var(--border-subtle);
+  --orbix-border: var(--border-default);
+  --orbix-border-strong: var(--border-emphasis);
+  --orbix-border-control: var(--border-control);
+
+  --orbix-text-primary: var(--text-primary);
+  --orbix-text-secondary: var(--text-secondary);
+  --orbix-text-muted: var(--text-muted);
+  --orbix-text-disabled: var(--text-disabled);
+  --orbix-text-on-accent: var(--on-accent);
+
+  --orbix-status-success: var(--status-success);
+  --orbix-status-warning: var(--status-warning);
+  --orbix-status-danger: var(--status-danger);
+  --orbix-status-info: var(--text-secondary);
+
+  /* Data visualisation: chart marks and legends only. Fixed hues so a
+   * chart reads the same in every division. */
+  --orbix-data-1: var(--accent-space);
+  --orbix-data-2: var(--accent-aircraft);
+  --orbix-data-3: var(--status-success);
+  --orbix-data-4: var(--text-secondary);
+  --orbix-data-grid: var(--border-default);
+  --orbix-data-axis: var(--text-muted);
+
+  --orbix-shadow-color: var(--shadow-tint);
+
+  /* ------------------------------------------------------------------ *
+   * 4a. TYPOGRAPHY (spec 5)
+   *
+   * Families are self-hosted through `next/font/google` in
+   * `src/app/layout.tsx` (SIL OFL 1.1): IBM Plex Sans with the `wdth` axis
+   * for display and body, B612 Mono for data, units and small labels.
+   * ------------------------------------------------------------------ */
+
   --font-interface:
     var(--font-plex-sans), "Segoe UI", system-ui, -apple-system, sans-serif;
   --font-display: var(--font-interface);
   --font-telemetry:
-    var(--font-plex-mono), ui-monospace, "Cascadia Mono", Consolas, monospace;
+    var(--font-b612-mono), ui-monospace, "Cascadia Mono", Consolas, monospace;
 
-  /* No condensed display cut. */
-  --font-display-stretch: 100%;
+  /* The condensed display cut. */
+  --font-display-stretch: 84%;
+  --font-display-weight: 640;
+  --tracking-display: -0.045em;
 
-  /* Scale (spec 5.1). `clamp()` only on H1 and H2. Nothing below 12px. */
-  --text-h1: clamp(1.875rem, 1.5rem + 1.2vw, 2.5rem);
-  --text-h2: clamp(1.375rem, 1.2rem + 0.6vw, 1.75rem);
-  --text-h3: 1.125rem;
-  --text-h4: 1rem;
+  /* Scale. `clamp()` on display, H1, H2 and the large readout only. */
+  --text-display: clamp(3.25rem, 7.5vw, 7rem);
+  --text-h1: clamp(2.75rem, 6vw, 5.5rem);
+  --text-h2: clamp(2rem, 4vw, 3.5rem);
+  --text-h3: 1.375rem;
+  --text-h4: 1.125rem;
+  --text-readout-lg: clamp(1.75rem, 3vw, 2.5rem);
   --text-lead: 1.125rem;
   --text-body: 1rem;
   --text-body-sm: 0.875rem;
-  --text-label: 0.8125rem;
-  --text-caps: 0.75rem;
+  --text-button: 0.9375rem; /* 15px, spec 8 */
+  --text-label: 0.8125rem; /* 13px sans labels, eyebrows */
+  --text-caps: 0.75rem; /* 12px mono uppercase labels */
+  --text-micro: 0.6875rem; /* 11px mono: credits, spec labels */
   --text-data: 0.875rem;
-  --text-data-lg: 1.5rem;
 
-  --tracking-caps: 0.06em;
+  --tracking-caps: 0.12em;
   --tracking-tight: -0.01em;
   --tracking-normal: 0;
   --measure-copy: 68ch;
 
-  /* Deprecated type aliases, mapped onto the scale above. */
-  --text-body-lg: var(--text-lead);
-  --text-caption: var(--text-label);
-  --text-data-sm: var(--text-caps);
-  --tracking-label: var(--tracking-caps);
-  --leading-heading: 1.25;
-  --leading-body: 1.6;
-  --leading-tight: 1.4;
-
   /* ------------------------------------------------------------------ *
-   * 3. SPACING AND CONTENT WIDTH (spec 6)
+   * 4b. SPACING AND CONTENT WIDTH
    * ------------------------------------------------------------------ */
 
   --space-1: 0.25rem;
@@ -146,141 +167,181 @@
   --width-standard: 72rem;
   --width-wide: 84rem;
 
-  /* Deprecated spacing aliases. */
-  --space-section: var(--space-8);
+  --header-height: 4rem; /* 64px, spec 8 */
+
+  /* Section rhythm (v1): generous, fluid. */
+  --space-section: clamp(4rem, 8vw, 7.5rem);
   --space-section-compact: var(--space-7);
   --space-panel: var(--space-5);
   --space-stack: var(--space-5);
   --space-stack-compact: var(--space-3);
 
   /* ------------------------------------------------------------------ *
-   * 4. GEOMETRY (spec 7)
+   * 4c. GEOMETRY (spec 7). Never above 12px.
    * ------------------------------------------------------------------ */
 
   --radius-0: 0;
-  --radius-1: 2px; /* tags, status labels, checkboxes, inline code */
-  --radius-2: 4px; /* buttons, inputs, selects, tabs, tooltips */
-  --radius-3: 6px; /* panels, cards, images, dialogs. The maximum. */
+  --radius-1: 2px; /* tags, small labels */
+  --radius-2: 4px; /* controls: buttons, inputs, selects, tabs */
+  --radius-photo: 6px; /* framed photos */
+  --radius-3: 8px; /* panels and cards */
   --radius-circle: 50%; /* non-interactive circular shapes only */
 
-  /* Deprecated radius aliases. Nothing renders round while pages migrate. */
-  --radius-control: var(--radius-2);
-  --radius-card: var(--radius-3);
-  --radius-panel: var(--radius-3);
-  --radius-pill: var(--radius-2);
-  --radius-full: var(--radius-3);
-
   /* ------------------------------------------------------------------ *
-   * 5. ELEVATION (spec 7.3). Flat by default.
+   * 4d. ELEVATION (spec 7). No shadows on cards. Overlays only.
    * ------------------------------------------------------------------ */
 
   --elevation-0: none;
-  --elevation-overlay: 0 8px 24px
-    color-mix(in srgb, var(--orbix-shadow-color) 60%, transparent);
-  --orbix-scrim: color-mix(in srgb, var(--orbix-bg-page) 80%, transparent);
+  --elevation-overlay: 0 24px 48px -24px
+    color-mix(in srgb, var(--shadow-tint) 80%, transparent);
+  --orbix-scrim: color-mix(in srgb, var(--bg-page) 80%, transparent);
 
   /* ------------------------------------------------------------------ *
-   * 6. MOTION (spec 11). 200ms is the maximum.
+   * 4e. TEXTURE (spec 6). Static, pointer-events none.
    * ------------------------------------------------------------------ */
 
-  --motion-fast: 120ms;
-  --motion-base: 160ms;
-  --motion-slow: 200ms;
-  --motion-ease: cubic-bezier(0.2, 0, 0, 1);
-
-  /* Deprecated motion aliases. */
-  --motion-feedback: var(--motion-fast);
-  --motion-transition: var(--motion-base);
-  --duration-fast: var(--motion-fast);
+  --grid-line: color-mix(in srgb, var(--accent-space) 4.5%, transparent);
+  --grid-line-minor: color-mix(in srgb, var(--accent-space) 1.2%, transparent);
+  --grid-cell: 72px;
+  --grid-cell-minor: 12px;
+  --grain-opacity: 0.02;
+  /* The one static light field. Blue, never violet. */
+  --light-field-tint: color-mix(in srgb, #4963b7 22%, transparent);
 
   /* ------------------------------------------------------------------ *
-   * 7. COMPATIBILITY LAYER
-   *
-   * Historic names used heavily through Tailwind utilities (`text-muted`,
-   * `text-accent`, `border-border`). Kept, pointing at the new values.
+   * 4f. MOTION (spec 7). 180 to 500ms, one easing, no linear UI easing.
    * ------------------------------------------------------------------ */
 
-  --background: var(--orbix-bg-page);
-  --surface: var(--orbix-surface);
-  --surface-elevated: var(--orbix-surface-raised);
-  --foreground: var(--orbix-text-primary);
-  --muted: var(--orbix-text-muted);
-  --muted-strong: var(--orbix-text-secondary);
-  --border: var(--orbix-border);
-  --border-bright: var(--orbix-border-strong);
-  --accent: var(--orbix-accent);
-  --accent-strong: var(--orbix-accent-hover);
-  --signal: var(--orbix-status-warning);
-  --positive: var(--orbix-status-success);
-  --critical: var(--orbix-status-danger);
+  --motion-fast: 180ms;
+  --motion-base: 240ms;
+  --motion-slow: 400ms;
+  --motion-photo: 500ms;
+  --motion-ease: cubic-bezier(0.16, 1, 0.3, 1);
+
+  /* ------------------------------------------------------------------ *
+   * 5. COMPATIBILITY LAYER. Historic names used through Tailwind
+   * utilities (`text-muted`, `bg-surface`, `border-border`).
+   * ------------------------------------------------------------------ */
+
+  --background: var(--bg-page);
+  --surface: var(--bg-surface);
+  --surface-elevated: var(--bg-raised);
+  --foreground: var(--text-primary);
+  --muted: var(--text-muted);
+  --muted-strong: var(--text-secondary);
+  --border: var(--border-default);
+  --border-bright: var(--border-emphasis);
+  --signal: var(--status-warning);
+  --positive: var(--status-success);
+  --critical: var(--status-danger);
+}
+
+/* -------------------------------------------------------------------- *
+ * DIVISIONS (spec 4)
+ *
+ * A route sets `data-division` on a wrapper (the site shell does it for
+ * every page from the pathname). A division overrides `--accent` and
+ * nothing else; every accent-derived role is re-declared here so it
+ * resolves against the nearest division rather than the root.
+ * -------------------------------------------------------------------- */
+
+[data-division="space"] {
+  --accent: var(--accent-space);
+}
+
+[data-division="aircraft"] {
+  --accent: var(--accent-aircraft);
+}
+
+[data-division="lab"] {
+  --accent: var(--accent-lab);
+}
+
+:root,
+[data-division] {
+  /* Hover lightens the fill by 8 percent (spec 8). */
+  --accent-strong: color-mix(in srgb, var(--accent) 92%, var(--text-primary));
+  --accent-rule: color-mix(in srgb, var(--accent) 45%, transparent);
+
+  --orbix-accent: var(--accent);
+  --orbix-accent-hover: var(--accent-strong);
+  --orbix-accent-subtle: color-mix(in srgb, var(--accent) 12%, transparent);
+  --orbix-focus: var(--accent);
 }
 
 /* ==================================================================== *
  * TAILWIND v4 BRIDGE
  *
- * Existing utility names are preserved. The legacy environment names
- * (`bg-orbital`, `text-tactical`, `text-laboratory`, ...) now resolve to
- * neutral roles or the single accent, and are removed in phase C once page
- * tasks stop using them. The former fifth accent name has been deleted.
+ * `inline` makes every utility reference the variable directly, so an
+ * accent utility (`text-accent`, `bg-division`) follows the nearest
+ * `data-division` wrapper.
  * ==================================================================== */
 
 @theme inline {
-  --color-background: var(--background);
-  --color-surface: var(--surface);
-  --color-surface-elevated: var(--surface-elevated);
-  --color-foreground: var(--foreground);
-  --color-muted: var(--muted);
-  --color-border: var(--border);
+  --color-background: var(--bg-page);
+  --color-surface: var(--bg-surface);
+  --color-surface-elevated: var(--bg-raised);
+  --color-foreground: var(--text-primary);
+  --color-muted: var(--text-muted);
+  --color-border: var(--border-default);
   --color-accent: var(--accent);
   --color-accent-strong: var(--accent-strong);
-  --color-signal: var(--signal);
+  --color-on-accent: var(--on-accent);
+  --color-signal: var(--status-warning);
 
-  /* Deprecated environment names (phase C removes them). */
-  --color-orbital: var(--orbix-bg-page);
-  --color-graphite: var(--orbix-surface);
-  --color-cosmic: var(--orbix-surface-raised);
-  --color-atmosphere: var(--orbix-accent);
-  --color-telemetry: var(--orbix-status-success);
-  --color-tactical: var(--orbix-text-muted);
-  --color-tactical-amber: var(--orbix-status-warning);
-  --color-laboratory: var(--orbix-accent);
+  /* Division accents by name, for the rare element that must show a
+   * division other than its own (the home page's section index). */
+  --color-accent-space: var(--accent-space);
+  --color-accent-aircraft: var(--accent-aircraft);
+  --color-accent-lab: var(--accent-lab);
 
   /* Canonical roles, available as utilities. */
-  --color-text-primary: var(--orbix-text-primary);
-  --color-text-secondary: var(--orbix-text-secondary);
-  --color-text-disabled: var(--orbix-text-disabled);
-  --color-text-on-accent: var(--orbix-text-on-accent);
-  --color-border-subtle: var(--orbix-border-subtle);
-  --color-border-strong: var(--orbix-border-strong);
-  --color-border-control: var(--orbix-border-control);
-  --color-surface-raised: var(--orbix-surface-raised);
-  --color-surface-input: var(--orbix-surface-input);
-  --color-surface-interactive: var(--orbix-surface-raised);
-  --color-recessed: var(--orbix-surface-input);
-  --color-status-success: var(--orbix-status-success);
-  --color-status-warning: var(--orbix-status-warning);
-  --color-status-danger: var(--orbix-status-danger);
-  --color-status-info: var(--orbix-status-info);
+  --color-text-primary: var(--text-primary);
+  --color-text-secondary: var(--text-secondary);
+  --color-text-muted: var(--text-muted);
+  --color-text-disabled: var(--text-disabled);
+  --color-text-on-accent: var(--on-accent);
+  --color-border-subtle: var(--border-subtle);
+  --color-border-default: var(--border-default);
+  --color-border-strong: var(--border-emphasis);
+  --color-border-control: var(--border-control);
+  --color-surface-raised: var(--bg-raised);
+  --color-surface-input: var(--bg-raised);
+  --color-surface-interactive: var(--bg-raised);
+  --color-recessed: var(--bg-page);
+  --color-page: var(--bg-page);
+  --color-raised: var(--bg-raised);
+  --color-status-success: var(--status-success);
+  --color-status-warning: var(--status-warning);
+  --color-status-danger: var(--status-danger);
+  --color-status-info: var(--text-secondary);
   --color-data-1: var(--orbix-data-1);
   --color-data-2: var(--orbix-data-2);
   --color-data-3: var(--orbix-data-3);
   --color-data-4: var(--orbix-data-4);
-  --color-division: var(--orbix-accent);
-  --color-division-hover: var(--orbix-accent-hover);
+  --color-division: var(--accent);
+  --color-division-hover: var(--accent-strong);
 
   --font-sans: var(--font-interface);
   --font-mono: var(--font-telemetry);
 
-  /* Radius (spec 7.1): any `rounded-xl` left behind degrades to 6px. */
+  /* Radius (spec 7): controls 4px, tags 2px, panels 8px, never above 12px.
+   * Any `rounded-2xl` left behind degrades to the panel radius. */
   --radius-xs: 2px;
   --radius-sm: 2px;
   --radius: 4px;
   --radius-md: 6px;
-  --radius-lg: 6px;
-  --radius-xl: 6px;
-  --radius-2xl: 6px;
-  --radius-3xl: 6px;
-  --radius-4xl: 6px;
+  --radius-lg: 8px;
+  --radius-xl: 8px;
+  --radius-2xl: 8px;
+  --radius-3xl: 8px;
+  --radius-4xl: 8px;
+
+  --ease-orbix: cubic-bezier(0.16, 1, 0.3, 1);
+
+  /* Bare `transition-*` utilities inherit the one spec curve (spec 7). */
+  --default-transition-duration: 180ms;
+  --default-transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
 
   /* `--font-display` is deliberately NOT registered here: the hand-written
    * `.font-display` class in `orbix-foundations.css` owns that name. */

@@ -66,6 +66,16 @@ export const INFO_ROUTES = {
   accessibility: "/accessibility",
 } as const;
 
+/**
+ * The pages that document how ORBIX was built and checked (design v2): the
+ * build log and the verification cases. Both are linked from the home page
+ * section index; the build log is also in the footer.
+ */
+export const PROJECT_ROUTES = {
+  buildLog: "/build-log",
+  verification: "/verification",
+} as const;
+
 /** The site's contact address, shown as a mailto: link in the footer. */
 export const CONTACT_EMAIL = "deep.patel4000@gmail.com";
 

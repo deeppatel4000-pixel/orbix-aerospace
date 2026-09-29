@@ -27,9 +27,10 @@ const toc: readonly LegalTocItem[] = [
 export function TermsPage() {
   return (
     <LegalPage
-      crumb="Terms"
+      eyebrow="Policies"
       lead="The conditions for using ORBIX, including what the calculators are and are not for."
-      title="Terms of use"
+      title="Terms of"
+      titleAccent="use"
       toc={toc}
     >
       <LegalSection id="about-these-terms" title="About these terms">

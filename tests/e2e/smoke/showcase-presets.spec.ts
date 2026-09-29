@@ -30,9 +30,9 @@ test.describe("Showcase mission presets", () => {
   test("the page is titled for what it is", async ({ page }) => {
     await page.goto(ROUTES.showcase, { waitUntil: "domcontentloaded" });
 
-    await expect(page).toHaveTitle("How ORBIX is built | ORBIX");
+    await expect(page).toHaveTitle("Inside ORBIX | ORBIX");
     await expect(page.getByRole("heading", { level: 1 })).toHaveText(
-      "How ORBIX is built",
+      "Inside ORBIX",
     );
   });
 

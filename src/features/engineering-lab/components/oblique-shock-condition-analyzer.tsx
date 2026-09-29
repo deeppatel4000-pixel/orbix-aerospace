@@ -1,23 +1,34 @@
 "use client";
 
-import { Button } from "@/components/ui";
+import { Button, EquationBlock } from "@/components/ui";
 import { useMemo, useState, type FormEvent } from "react";
-import { AlertTriangle, RotateCcw, Wind } from "lucide-react";
 
 import { analyzeObliqueShockCondition } from "@/features/engineering-lab/analysis";
 import {
+  EQ_CONT,
+  EQ_LINE,
+  EQ_TERM,
   CalculatorNumberField,
   focusFirstInvalidField,
+  GEOPOTENTIAL_ALTITUDE_HINT,
+  GEOPOTENTIAL_ALTITUDE_LABEL,
   focusFirstInvalidFieldOnEnter,
   CalculatorResultSection,
+  LAB_TOOL_SPLIT,
+  LabToolLayout,
   NotCalculated,
+  ReadoutGrid,
   ValidationErrorSummary,
+  LabFigure,
+  LabSymbol,
+  EqDot,
+  EqSubSup,
+  EQ_SUP,
 } from "@/features/engineering-lab/components/shared";
 import type {
   ObliqueShockConditionAnalysis,
   ObliqueShockConditionInputs,
 } from "@/features/engineering-lab/types";
-import { STANDARD_ATMOSPHERE_MAX_ALTITUDE_METRES } from "@/features/engineering-lab/types";
 import {
   validateAtmosphereInputs,
   validateObliqueShockInputs,
@@ -110,6 +121,84 @@ function deriveViewState(
   }
 }
 
+const toolEquation = (
+  <EquationBlock
+    equation={
+      <>
+        <span className={EQ_LINE}>
+          <span className={EQ_TERM}>tan θ</span>
+        </span>
+        <span className={EQ_CONT}>
+          <span className={EQ_TERM}>= 2 cot β</span>
+          <wbr />
+          <span className={EQ_TERM}>
+            <EqDot />
+            (M
+            <EqSubSup sub="1" sup="2" /> sin<sup className={EQ_SUP}>2</sup>β
+          </span>{" "}
+          <span className={EQ_TERM}>− 1)</span>
+        </span>
+        <span className={EQ_CONT}>
+          <span className={EQ_TERM}>
+            /(M
+            <EqSubSup sub="1" sup="2" />
+          </span>
+          <wbr />
+          <span className={EQ_TERM}>
+            <EqDot />
+            (γ+cos 2β)
+          </span>{" "}
+          <span className={EQ_TERM}>+ 2)</span>
+        </span>
+        <span className={EQ_LINE}>
+          <span className={EQ_TERM}>
+            M<sub>n1</sub> = M<sub>1</sub> sin β
+          </span>
+        </span>
+        <span className={EQ_LINE}>
+          <span className={EQ_TERM}>
+            M<sub>2</sub> = M<sub>n2</sub>
+          </span>
+          <wbr />
+          <span className={EQ_TERM}>/sin(β−θ)</span>
+        </span>
+      </>
+    }
+    label="Oblique shock, weak solution"
+    spokenAs="Tan theta equals 2 cot beta times M 1 squared sine squared beta minus 1, over M 1 squared times gamma plus cos 2 beta, plus 2. The normal Mach number M n 1 equals M 1 sine beta. M 2 equals M n 2 over the sine of beta minus theta."
+    variables={[
+      { symbol: "θ", meaning: "Flow deflection angle", unit: "deg" },
+      {
+        symbol: "β",
+        meaning: "Shock wave angle, solved numerically for the weak shock",
+        unit: "deg",
+      },
+      {
+        symbol: (
+          <>
+            M<sub>1</sub>
+          </>
+        ),
+        meaning: "Upstream Mach number",
+      },
+      {
+        symbol: (
+          <>
+            M<sub>n1</sub>, M<sub>n2</sub>
+          </>
+        ),
+        meaning: (
+          <>
+            Normal Mach components; the normal shock relations applied to M
+            <sub>n1</sub> give the pressure, density and temperature ratios
+          </>
+        ),
+      },
+      { symbol: "γ", meaning: "Ratio of specific heats for dry air, 1.4" },
+    ]}
+  />
+);
+
 export function ObliqueShockConditionAnalyzer() {
   const [values, setValues] =
     useState<ObliqueShockConditionFormValues>(initialFormValues);
@@ -132,98 +221,113 @@ export function ObliqueShockConditionAnalyzer() {
     "oblique-shock-condition-altitudeMeters oblique-shock-condition-machNumber oblique-shock-condition-deflectionAngleDegrees";
 
   return (
-    <div className="grid gap-8 xl:grid-cols-[minmax(0,0.9fr)_minmax(24rem,1.1fr)] xl:gap-10">
-      <div>
-        <form
-          noValidate
-          onKeyDown={focusFirstInvalidFieldOnEnter}
-          onSubmit={preventSubmission}
-        >
-          <div className="grid gap-5 sm:grid-cols-2">
-            <CalculatorNumberField
-              error={errors.altitudeMeters}
-              field="altitudeMeters"
-              hint={
-                "Geometric altitude within the 0 to " +
-                STANDARD_ATMOSPHERE_MAX_ALTITUDE_METRES.toLocaleString(
-                  "en-US",
-                ) +
-                " metre atmosphere model."
-              }
-              idPrefix="oblique-shock-condition"
-              label="Altitude"
-              onChange={updateValue}
-              unit="m"
-              value={values.altitudeMeters}
-            />
-            <CalculatorNumberField
-              error={errors.machNumber}
-              field="machNumber"
-              hint="Supersonic upstream Mach number greater than one."
-              idPrefix="oblique-shock-condition"
-              label="Upstream Mach number"
-              onChange={updateValue}
-              unit="Mach"
-              value={values.machNumber}
-            />
-            <CalculatorNumberField
-              error={errors.deflectionAngleDegrees}
-              field="deflectionAngleDegrees"
-              hint="Positive flow-turning angle that must permit an attached weak shock."
-              idPrefix="oblique-shock-condition"
-              label="Flow deflection angle"
-              onChange={updateValue}
-              unit="deg"
-              value={values.deflectionAngleDegrees}
-            />
-          </div>
+    <LabToolLayout equation={toolEquation}>
+      <div className={LAB_TOOL_SPLIT}>
+        <div className="@container/col min-w-0">
+          <form
+            noValidate
+            onKeyDown={focusFirstInvalidFieldOnEnter}
+            onSubmit={preventSubmission}
+          >
+            <div className="grid gap-5 @min-[36rem]/col:grid-cols-2">
+              <CalculatorNumberField
+                error={errors.altitudeMeters}
+                field="altitudeMeters"
+                hint={GEOPOTENTIAL_ALTITUDE_HINT}
+                idPrefix="oblique-shock-condition"
+                label={GEOPOTENTIAL_ALTITUDE_LABEL}
+                onChange={updateValue}
+                unit="m"
+                value={values.altitudeMeters}
+              />
+              <CalculatorNumberField
+                error={errors.machNumber}
+                field="machNumber"
+                hint="Supersonic upstream Mach number greater than one."
+                idPrefix="oblique-shock-condition"
+                label="Upstream Mach number"
+                onChange={updateValue}
+                unit="Mach"
+                value={values.machNumber}
+              />
+              <CalculatorNumberField
+                error={errors.deflectionAngleDegrees}
+                field="deflectionAngleDegrees"
+                hint="Positive flow-turning angle that must permit an attached weak shock."
+                idPrefix="oblique-shock-condition"
+                label="Flow deflection angle"
+                onChange={updateValue}
+                unit="deg"
+                value={values.deflectionAngleDegrees}
+              />
+            </div>
 
-          <ValidationErrorSummary
-            errors={errors}
-            idPrefix="oblique-shock-condition"
-          />
+            <ValidationErrorSummary
+              errors={errors}
+              idPrefix="oblique-shock-condition"
+            />
 
-          <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:items-center">
-            <p className="text-sm leading-6 text-muted">
-              Valid attached-shock inputs update the flow state immediately.
-            </p>
-            <Button
-              className="shrink-0 whitespace-nowrap sm:ml-auto"
-              variant="secondary"
-              onClick={resetAnalyzer}
-            >
-              <RotateCcw aria-hidden="true" size={16} />
-              Reset inputs
-            </Button>
-          </div>
-        </form>
-      </div>
+            <div className="mt-7 flex flex-wrap items-center gap-x-5 gap-y-3">
+              <p className="min-w-0 flex-[1_1_16rem] text-sm leading-6 text-muted">
+                Valid attached-shock inputs update the flow state immediately.
+              </p>
+              <Button
+                className="shrink-0 whitespace-nowrap"
+                variant="secondary"
+                onClick={resetAnalyzer}
+              >
+                Reset inputs
+              </Button>
+            </div>
+          </form>
+        </div>
 
-      <div className="space-y-5">
-        <CalculatorResultSection
-          eyebrow="Weak oblique-shock state change"
-          icon={Wind}
-          id="oblique-shock-condition-result"
-          title="Oblique shock conditions"
-        >
-          {result ? (
-            <div className="space-y-6">
-              <section aria-labelledby="oblique-shock-upstream-title">
-                <h4
-                  className="text-sm font-semibold text-foreground"
-                  id="oblique-shock-upstream-title"
-                >
-                  Upstream conditions
-                </h4>
-                <dl className="mt-3 grid gap-4 sm:grid-cols-2">
+        <div className="@container/col min-w-0 space-y-5">
+          <CalculatorResultSection
+            id="oblique-shock-condition-result"
+            title="Oblique shock conditions"
+          >
+            {result ? (
+              <>
+                <ReadoutGrid columns={2}>
+                  <div>
+                    <dt className="orbix-label">Downstream Mach</dt>
+                    <dd className="mt-1">
+                      <output className="orbix-readout-lg" htmlFor={outputIds}>
+                        <LabFigure>
+                          {precisionFormatter.format(
+                            result.downstream.machNumber,
+                          )}
+                        </LabFigure>
+                      </output>
+                    </dd>
+                  </div>
+                  <div>
+                    <dt className="orbix-label">
+                      Shock angle <LabSymbol>β</LabSymbol>
+                    </dt>
+                    <dd className="mt-1">
+                      <output className="orbix-readout-lg" htmlFor={outputIds}>
+                        <LabFigure unit="°">
+                          {precisionFormatter.format(
+                            result.shock.shockAngleDegrees,
+                          )}
+                        </LabFigure>
+                      </output>
+                    </dd>
+                  </div>
+                </ReadoutGrid>
+
+                <ReadoutGrid columns={2} title="Downstream conditions">
                   <div>
                     <dt className="orbix-label">Temperature</dt>
                     <dd className="mt-1">
                       <output className="orbix-data" htmlFor={outputIds}>
-                        {conditionFormatter.format(
-                          result.upstream.temperatureKelvin,
-                        )}{" "}
-                        K
+                        <LabFigure unit="K">
+                          {conditionFormatter.format(
+                            result.downstream.temperatureKelvin,
+                          )}
+                        </LabFigure>
                       </output>
                     </dd>
                   </div>
@@ -231,10 +335,11 @@ export function ObliqueShockConditionAnalyzer() {
                     <dt className="orbix-label">Pressure</dt>
                     <dd className="mt-1">
                       <output className="orbix-data" htmlFor={outputIds}>
-                        {conditionFormatter.format(
-                          result.upstream.pressurePascals,
-                        )}{" "}
-                        Pa
+                        <LabFigure unit="Pa">
+                          {conditionFormatter.format(
+                            result.downstream.pressurePascals,
+                          )}
+                        </LabFigure>
                       </output>
                     </dd>
                   </div>
@@ -242,10 +347,109 @@ export function ObliqueShockConditionAnalyzer() {
                     <dt className="orbix-label">Density</dt>
                     <dd className="mt-1">
                       <output className="orbix-data" htmlFor={outputIds}>
-                        {densityFormatter.format(
-                          result.upstream.densityKilogramsPerCubicMetre,
-                        )}{" "}
-                        kg/m³
+                        <LabFigure unit="kg/m³">
+                          {densityFormatter.format(
+                            result.downstream.densityKilogramsPerCubicMetre,
+                          )}
+                        </LabFigure>
+                      </output>
+                    </dd>
+                  </div>
+                  <div>
+                    <dt className="orbix-label">
+                      Flow deflection angle <LabSymbol>θ</LabSymbol>
+                    </dt>
+                    <dd className="mt-1">
+                      <output className="orbix-data" htmlFor={outputIds}>
+                        <LabFigure unit="°">
+                          {precisionFormatter.format(
+                            result.shock.deflectionAngleDegrees,
+                          )}
+                        </LabFigure>
+                      </output>
+                    </dd>
+                  </div>
+                </ReadoutGrid>
+
+                <ReadoutGrid columns={3} title="Ratios">
+                  <div>
+                    <dt className="orbix-label">
+                      Pressure ratio <LabSymbol>(p₂/p₁)</LabSymbol>
+                    </dt>
+                    <dd className="mt-1">
+                      <output className="orbix-data" htmlFor={outputIds}>
+                        <LabFigure>
+                          {precisionFormatter.format(
+                            result.ratios.pressureRatio,
+                          )}
+                        </LabFigure>
+                      </output>
+                    </dd>
+                  </div>
+                  <div>
+                    <dt className="orbix-label">
+                      Temperature ratio <LabSymbol>(T₂/T₁)</LabSymbol>
+                    </dt>
+                    <dd className="mt-1">
+                      <output className="orbix-data" htmlFor={outputIds}>
+                        <LabFigure>
+                          {precisionFormatter.format(
+                            result.ratios.temperatureRatio,
+                          )}
+                        </LabFigure>
+                      </output>
+                    </dd>
+                  </div>
+                  <div>
+                    <dt className="orbix-label">
+                      Density ratio <LabSymbol>(ρ₂/ρ₁)</LabSymbol>
+                    </dt>
+                    <dd className="mt-1">
+                      <output className="orbix-data" htmlFor={outputIds}>
+                        <LabFigure>
+                          {precisionFormatter.format(
+                            result.ratios.densityRatio,
+                          )}
+                        </LabFigure>
+                      </output>
+                    </dd>
+                  </div>
+                </ReadoutGrid>
+
+                <ReadoutGrid columns={2} title="Upstream conditions">
+                  <div>
+                    <dt className="orbix-label">Temperature</dt>
+                    <dd className="mt-1">
+                      <output className="orbix-data" htmlFor={outputIds}>
+                        <LabFigure unit="K">
+                          {conditionFormatter.format(
+                            result.upstream.temperatureKelvin,
+                          )}
+                        </LabFigure>
+                      </output>
+                    </dd>
+                  </div>
+                  <div>
+                    <dt className="orbix-label">Pressure</dt>
+                    <dd className="mt-1">
+                      <output className="orbix-data" htmlFor={outputIds}>
+                        <LabFigure unit="Pa">
+                          {conditionFormatter.format(
+                            result.upstream.pressurePascals,
+                          )}
+                        </LabFigure>
+                      </output>
+                    </dd>
+                  </div>
+                  <div>
+                    <dt className="orbix-label">Density</dt>
+                    <dd className="mt-1">
+                      <output className="orbix-data" htmlFor={outputIds}>
+                        <LabFigure unit="kg/m³">
+                          {densityFormatter.format(
+                            result.upstream.densityKilogramsPerCubicMetre,
+                          )}
+                        </LabFigure>
                       </output>
                     </dd>
                   </div>
@@ -253,170 +457,42 @@ export function ObliqueShockConditionAnalyzer() {
                     <dt className="orbix-label">Mach number</dt>
                     <dd className="mt-1">
                       <output className="orbix-data" htmlFor={outputIds}>
-                        {precisionFormatter.format(result.upstream.machNumber)}
+                        <LabFigure>
+                          {precisionFormatter.format(
+                            result.upstream.machNumber,
+                          )}
+                        </LabFigure>
                       </output>
                     </dd>
                   </div>
-                </dl>
-              </section>
+                </ReadoutGrid>
+              </>
+            ) : (
+              <NotCalculated invalid={Object.values(errors).some(Boolean)}>
+                Enter valid supersonic, atmospheric, and attached-shock inputs
+                to restore the live flow state.
+              </NotCalculated>
+            )}
+          </CalculatorResultSection>
+        </div>
 
-              <section
-                aria-labelledby="oblique-shock-geometry-title"
-                className="border-t border-border pt-5"
-              >
-                <h4
-                  className="text-sm font-semibold text-foreground"
-                  id="oblique-shock-geometry-title"
-                >
-                  Shock geometry
-                </h4>
-                <dl className="mt-3 grid gap-4 sm:grid-cols-2">
-                  <div>
-                    <dt className="orbix-label">Shock angle β</dt>
-                    <dd className="mt-1">
-                      <output className="orbix-data-lg" htmlFor={outputIds}>
-                        {precisionFormatter.format(
-                          result.shock.shockAngleDegrees,
-                        )}
-                        °
-                      </output>
-                    </dd>
-                  </div>
-                  <div>
-                    <dt className="orbix-label">Flow deflection angle θ</dt>
-                    <dd className="mt-1">
-                      <output className="orbix-data-lg" htmlFor={outputIds}>
-                        {precisionFormatter.format(
-                          result.shock.deflectionAngleDegrees,
-                        )}
-                        °
-                      </output>
-                    </dd>
-                  </div>
-                </dl>
-              </section>
-
-              <section
-                aria-labelledby="oblique-shock-downstream-title"
-                className="border-t border-border pt-5"
-              >
-                <h4
-                  className="text-sm font-semibold text-foreground"
-                  id="oblique-shock-downstream-title"
-                >
-                  Downstream conditions
-                </h4>
-                <dl className="mt-3 grid gap-4 sm:grid-cols-2">
-                  <div>
-                    <dt className="orbix-label">Downstream Mach</dt>
-                    <dd className="mt-1">
-                      <output className="orbix-data-lg" htmlFor={outputIds}>
-                        {precisionFormatter.format(
-                          result.downstream.machNumber,
-                        )}
-                      </output>
-                    </dd>
-                  </div>
-                  <div>
-                    <dt className="orbix-label">Temperature</dt>
-                    <dd className="mt-1">
-                      <output className="orbix-data-lg" htmlFor={outputIds}>
-                        {conditionFormatter.format(
-                          result.downstream.temperatureKelvin,
-                        )}{" "}
-                        K
-                      </output>
-                    </dd>
-                  </div>
-                  <div>
-                    <dt className="orbix-label">Pressure</dt>
-                    <dd className="mt-1">
-                      <output className="orbix-data-lg" htmlFor={outputIds}>
-                        {conditionFormatter.format(
-                          result.downstream.pressurePascals,
-                        )}{" "}
-                        Pa
-                      </output>
-                    </dd>
-                  </div>
-                  <div>
-                    <dt className="orbix-label">Density</dt>
-                    <dd className="mt-1">
-                      <output className="orbix-data-lg" htmlFor={outputIds}>
-                        {densityFormatter.format(
-                          result.downstream.densityKilogramsPerCubicMetre,
-                        )}{" "}
-                        kg/m³
-                      </output>
-                    </dd>
-                  </div>
-                </dl>
-              </section>
-
-              <section
-                aria-labelledby="oblique-shock-ratios-title"
-                className="border-t border-border pt-5"
-              >
-                <h4
-                  className="text-sm font-semibold text-foreground"
-                  id="oblique-shock-ratios-title"
-                >
-                  Ratios
-                </h4>
-                <dl className="mt-3 grid gap-4 sm:grid-cols-3">
-                  <div>
-                    <dt className="orbix-label">Pressure ratio (P₂/P₁)</dt>
-                    <dd className="mt-1">
-                      <output className="orbix-data" htmlFor={outputIds}>
-                        {precisionFormatter.format(result.ratios.pressureRatio)}
-                      </output>
-                    </dd>
-                  </div>
-                  <div>
-                    <dt className="orbix-label">Temperature ratio (T₂/T₁)</dt>
-                    <dd className="mt-1">
-                      <output className="orbix-data" htmlFor={outputIds}>
-                        {precisionFormatter.format(
-                          result.ratios.temperatureRatio,
-                        )}
-                      </output>
-                    </dd>
-                  </div>
-                  <div>
-                    <dt className="orbix-label">Density ratio (ρ₂/ρ₁)</dt>
-                    <dd className="mt-1">
-                      <output className="orbix-data" htmlFor={outputIds}>
-                        {precisionFormatter.format(result.ratios.densityRatio)}
-                      </output>
-                    </dd>
-                  </div>
-                </dl>
-              </section>
-            </div>
-          ) : (
-            <NotCalculated invalid={Object.values(errors).some(Boolean)}>
-              Enter valid supersonic, atmospheric, and attached-shock inputs to
-              restore the live flow state.
-            </NotCalculated>
-          )}
-        </CalculatorResultSection>
-
-        <aside className="orbix-lab-note">
-          <p className="orbix-lab-note__title">
-            <AlertTriangle aria-hidden="true" size={17} />
-            Engineering assumptions
-          </p>
-          <ul className="mt-4 grid list-disc gap-2 pl-5 text-sm leading-6 text-muted sm:grid-cols-2">
-            <li>Perfect gas approximation</li>
-            <li>Constant γ = 1.4 unless changed internally</li>
-            <li>Inviscid flow</li>
-            <li>Attached weak oblique shock solution</li>
-            <li>No boundary layer effects</li>
-            <li>No heat transfer</li>
-            <li>No chemical dissociation</li>
-          </ul>
-        </aside>
+        <div className="@container/col min-w-0 space-y-5">
+          <aside className="orbix-lab-note">
+            <p className="orbix-lab-note__title font-medium">
+              Engineering assumptions
+            </p>
+            <ul className="mt-4 grid list-disc gap-2 pl-5 text-sm leading-6 text-muted @min-[36rem]/col:grid-cols-2">
+              <li>Perfect gas approximation</li>
+              <li>Constant γ = 1.4 unless changed internally</li>
+              <li>Inviscid flow</li>
+              <li>Attached weak oblique shock solution</li>
+              <li>No boundary layer effects</li>
+              <li>No heat transfer</li>
+              <li>No chemical dissociation</li>
+            </ul>
+          </aside>
+        </div>
       </div>
-    </div>
+    </LabToolLayout>
   );
 }

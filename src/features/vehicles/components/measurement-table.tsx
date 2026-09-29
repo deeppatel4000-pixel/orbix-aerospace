@@ -1,10 +1,10 @@
-import type { Measurement, MeasurementUnit } from "@/features/vehicles/types";
-import {
-  formatMeasurementParts,
-  formatQualifierLabel,
-} from "@/features/vehicles/utils/format-measurement";
+import type { ReactNode } from "react";
 
-import { DataTable } from "./data-table";
+import { DataTable } from "@/components/ui/data-table";
+import type { Measurement, MeasurementUnit } from "@/features/vehicles/types";
+import { formatQualifierLabel } from "@/features/vehicles/utils/format-measurement";
+
+import { renderDualMeasurement } from "./measurement-display";
 
 export interface MeasurementRow {
   readonly label: string;
@@ -13,40 +13,49 @@ export interface MeasurementRow {
 
 interface MeasurementTableProps {
   caption: string;
+  /**
+   * A note under the table. The first table on a profile carries the
+   * page's figures note (`CONVERSION_NOTE`); the others carry none.
+   */
+  note?: ReactNode;
   rows: readonly MeasurementRow[];
 }
 
 /**
- * Specification | Value | Unit | Basis. The basis column keeps the source's
- * qualifier ("Approximate", "Published minimum") beside every figure.
+ * A spec-sheet table (spec 8): Specification | Figure | Basis. The figure
+ * column gives the published value with its ORBIX conversion on a second
+ * line; the basis column keeps the source's qualifier ("Approximate",
+ * "Published minimum") beside every figure.
  */
-export function MeasurementTable({ caption, rows }: MeasurementTableProps) {
+export function MeasurementTable({
+  caption,
+  note,
+  rows,
+}: MeasurementTableProps) {
   return (
     <DataTable
       caption={caption}
       columns={[
-        { label: "Specification" },
-        { label: "Value", numeric: true },
-        { label: "Unit" },
-        { label: "Basis" },
+        { cell: (row) => row.label, header: "Specification", key: "label" },
+        {
+          cell: (row) => renderDualMeasurement(row.measurement),
+          header: "Figure",
+          key: "value",
+          numeric: true,
+        },
+        {
+          cell: (row) => (
+            <span className="text-muted">
+              {formatQualifierLabel(row.measurement.qualifier)}
+            </span>
+          ),
+          header: "Basis",
+          key: "basis",
+        },
       ]}
-      rows={rows.map(({ label, measurement }) => {
-        const { unit, value } = formatMeasurementParts(measurement);
-
-        return {
-          cells: [
-            value,
-            <span className="orbix-table-unit" key="unit">
-              {unit}
-            </span>,
-            <span className="text-muted" key="basis">
-              {formatQualifierLabel(measurement.qualifier)}
-            </span>,
-          ],
-          header: label,
-          key: label,
-        };
-      })}
+      getRowKey={(row) => row.label}
+      note={note}
+      rows={rows}
     />
   );
 }

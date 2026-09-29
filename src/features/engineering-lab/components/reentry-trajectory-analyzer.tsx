@@ -1,31 +1,32 @@
 "use client";
 
-import { Button } from "@/components/ui";
+import { Button, DataTable, EquationBlock } from "@/components/ui";
 import { useMemo, useState, type FormEvent } from "react";
-import {
-  AlertTriangle,
-  CloudSun,
-  Gauge,
-  Plane,
-  RotateCcw,
-  Scale,
-} from "lucide-react";
 
 import { analyzeReentryTrajectory } from "@/features/engineering-lab/analysis";
 import {
+  EQ_LINE,
+  EQ_TERM,
   CalculatorNumberField,
   focusFirstInvalidField,
   focusFirstInvalidFieldOnEnter,
   CalculatorResultSection,
+  LAB_TOOL_STACK,
+  GEOPOTENTIAL_ALTITUDE_HINT,
+  INITIAL_GEOPOTENTIAL_ALTITUDE_LABEL,
+  LabToolLayout,
   NotCalculated,
+  ReadoutGrid,
   ValidationErrorSummary,
+  LabFigure,
+  EqDot,
+  EQ_SUP,
 } from "@/features/engineering-lab/components/shared";
 import type {
   ReentryTrajectoryAnalysis,
   ReentryTrajectoryInputs,
   ReentryTrajectoryPoint,
 } from "@/features/engineering-lab/types";
-import { STANDARD_ATMOSPHERE_MAX_ALTITUDE_METRES } from "@/features/engineering-lab/types";
 
 const MAXIMUM_VISIBLE_TRAJECTORY_POINTS = 50;
 
@@ -204,6 +205,71 @@ function sampleTrajectoryPoints(
   return sampledPoints;
 }
 
+const toolEquation = (
+  <EquationBlock
+    equation={
+      <>
+        <span className={EQ_LINE}>
+          <span className={EQ_TERM}>β = m</span>
+          <wbr />
+          <span className={EQ_TERM}>
+            /(C<sub>D</sub>
+            <EqDot />
+            A)
+          </span>
+        </span>
+        <span className={EQ_LINE}>
+          <span className={EQ_TERM}>
+            a = ½ρV<sup className={EQ_SUP}>2</sup>/β
+          </span>
+        </span>
+        <span className={EQ_LINE}>
+          <span className={EQ_TERM}>
+            V<sub>n+1</sub> = V<sub>n</sub>
+          </span>{" "}
+          <span className={EQ_TERM}>
+            + (g<sub>0</sub> sin|γ|
+          </span>{" "}
+          <span className={EQ_TERM}>
+            − a<sub>n</sub>) Δt
+          </span>
+        </span>
+        <span className={EQ_LINE}>
+          <span className={EQ_TERM}>
+            h<sub>n+1</sub> = h<sub>n</sub>
+          </span>{" "}
+          <span className={EQ_TERM}>
+            − V<sub>n</sub> sin|γ| Δt
+          </span>
+        </span>
+      </>
+    }
+    label="Entry trajectory, explicit time steps"
+    spokenAs="Ballistic coefficient beta equals m over C D times A, and deceleration a equals one half rho V squared over beta. Each step, the next velocity equals V plus g zero times the sine of the flight path angle minus a, times delta t, and the next altitude equals h minus V times the sine of the flight path angle times delta t."
+    variables={[
+      { symbol: "β", meaning: "Ballistic coefficient", unit: "kg/m²" },
+      { symbol: "a", meaning: "Drag deceleration", unit: "m/s²" },
+      {
+        symbol: "ρ",
+        meaning:
+          "Air density from the standard troposphere at geopotential altitude h",
+        unit: "kg/m³",
+      },
+      { symbol: "γ", meaning: "Flight path angle, held constant", unit: "deg" },
+      { symbol: "Δt", meaning: "Time step", unit: "s" },
+      {
+        symbol: (
+          <>
+            g<sub>0</sub>
+          </>
+        ),
+        meaning: "Standard gravity, 9.80665",
+        unit: "m/s²",
+      },
+    ]}
+  />
+);
+
 export function ReentryTrajectoryAnalyzer() {
   const [values, setValues] =
     useState<ReentryTrajectoryFormValues>(initialFormValues);
@@ -229,186 +295,167 @@ export function ReentryTrajectoryAnalyzer() {
   }
 
   return (
-    <div className="grid gap-8 xl:grid-cols-[minmax(0,0.9fr)_minmax(24rem,1.1fr)] xl:gap-10">
-      <div>
-        <form
-          noValidate
-          onKeyDown={focusFirstInvalidFieldOnEnter}
-          onSubmit={preventSubmission}
-        >
-          <fieldset>
-            <legend className="text-base font-semibold text-foreground">
-              Initial trajectory state
-            </legend>
-            <div className="mt-5 grid gap-5 sm:grid-cols-2">
-              <CalculatorNumberField
-                error={errors.initialAltitudeMeters}
-                field="initialAltitudeMeters"
-                hint={`Starting altitude from sea level through ${STANDARD_ATMOSPHERE_MAX_ALTITUDE_METRES.toLocaleString("en-US")} metres.`}
-                idPrefix="reentry-trajectory"
-                label="Initial altitude"
-                onChange={updateValue}
-                unit="m"
-                value={values.initialAltitudeMeters}
-              />
-              <CalculatorNumberField
-                error={errors.initialVelocityMetersPerSecond}
-                field="initialVelocityMetersPerSecond"
-                hint="Positive initial velocity along the fixed descent path."
-                idPrefix="reentry-trajectory"
-                label="Initial velocity"
-                onChange={updateValue}
-                unit="m/s"
-                value={values.initialVelocityMetersPerSecond}
-              />
-              <CalculatorNumberField
-                error={errors.vehicleMassKilograms}
-                field="vehicleMassKilograms"
-                hint="Positive vehicle mass held constant throughout the simulation."
-                idPrefix="reentry-trajectory"
-                label="Vehicle mass"
-                onChange={updateValue}
-                unit="kg"
-                value={values.vehicleMassKilograms}
-              />
-              <CalculatorNumberField
-                error={errors.dragCoefficient}
-                field="dragCoefficient"
-                hint="Positive dimensionless drag coefficient held constant during descent."
-                idPrefix="reentry-trajectory"
-                label="Drag coefficient"
-                onChange={updateValue}
-                unit=""
-                value={values.dragCoefficient}
-              />
-              <CalculatorNumberField
-                error={errors.referenceAreaSquareMetres}
-                field="referenceAreaSquareMetres"
-                hint="Positive aerodynamic reference area for the vehicle configuration."
-                idPrefix="reentry-trajectory"
-                label="Reference area"
-                onChange={updateValue}
-                unit="m²"
-                value={values.referenceAreaSquareMetres}
-              />
-            </div>
-          </fieldset>
-
-          <fieldset className="mt-8 border-t border-border pt-7">
-            <legend className="text-base font-semibold text-foreground">
-              Integration controls (optional)
-            </legend>
-            <div className="mt-5 grid gap-5 sm:grid-cols-2">
-              <CalculatorNumberField
-                error={errors.timeStepSeconds}
-                field="timeStepSeconds"
-                hint="Positive fixed Euler timestep. Leave blank to use the one-second default."
-                idPrefix="reentry-trajectory"
-                label="Time step (optional)"
-                optional
-                onChange={updateValue}
-                unit="s"
-                value={values.timeStepSeconds}
-              />
-              <CalculatorNumberField
-                error={errors.initialFlightPathAngleDegrees}
-                field="initialFlightPathAngleDegrees"
-                hint="Fixed descent angle from -90 to 0 degrees. Leave blank for vertical descent."
-                idPrefix="reentry-trajectory"
-                label="Flight path angle (optional)"
-                optional
-                onChange={updateValue}
-                unit="deg"
-                value={values.initialFlightPathAngleDegrees}
-              />
-            </div>
-          </fieldset>
-
-          <ValidationErrorSummary
-            errors={[
-              errors.initialAltitudeMeters,
-              errors.initialVelocityMetersPerSecond,
-              errors.vehicleMassKilograms,
-              errors.dragCoefficient,
-              errors.referenceAreaSquareMetres,
-              errors.timeStepSeconds,
-              errors.initialFlightPathAngleDegrees,
-              errors.form,
-            ]}
-          />
-
-          <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:items-center">
-            <p className="text-sm leading-6 text-muted">
-              Valid changes rerun the complete trajectory immediately.
-            </p>
-            <Button
-              className="shrink-0 whitespace-nowrap sm:ml-auto"
-              variant="secondary"
-              onClick={resetAnalyzer}
-            >
-              <RotateCcw aria-hidden="true" size={16} />
-              Reset inputs
-            </Button>
-          </div>
-        </form>
-
-        <section
-          aria-labelledby="reentry-trajectory-relationships-title"
-          className="mt-8 border-t border-border pt-7"
-        >
-          <p className="orbix-label">Educational visualization</p>
-          <h3
-            className="mt-1 text-lg font-semibold"
-            id="reentry-trajectory-relationships-title"
+    <LabToolLayout equation={toolEquation}>
+      <div className={LAB_TOOL_STACK}>
+        <div className="@container/col min-w-0">
+          <form
+            noValidate
+            onKeyDown={focusFirstInvalidFieldOnEnter}
+            onSubmit={preventSubmission}
           >
-            Why the trajectory changes
-          </h3>
-          <div className="mt-5 grid gap-4 sm:grid-cols-3 xl:grid-cols-1">
-            <article className="rounded-md border border-border-subtle bg-surface-raised p-4">
-              <Gauge aria-hidden="true" className="text-muted" size={18} />
-              <h4 className="mt-3 text-sm font-semibold">Velocity</h4>
-              <p className="mt-2 text-sm leading-6 text-muted">
-                Aerodynamic drag opposes the flight direction, removing velocity
-                as the vehicle moves through the atmosphere.
-              </p>
-            </article>
-            <article className="rounded-md border border-border-subtle bg-surface-raised p-4">
-              <CloudSun aria-hidden="true" className="text-muted" size={18} />
-              <h4 className="mt-3 text-sm font-semibold">Density</h4>
-              <p className="mt-2 text-sm leading-6 text-muted">
-                Atmospheric density generally rises during descent, increasing
-                dynamic pressure and the drag acting on the vehicle.
-              </p>
-            </article>
-            <article className="rounded-md border border-border-subtle bg-surface-raised p-4">
-              <Scale aria-hidden="true" className="text-muted" size={18} />
-              <h4 className="mt-3 text-sm font-semibold">G-load</h4>
-              <p className="mt-2 text-sm leading-6 text-muted">
-                G-load changes as velocity and density evolve, so the strongest
-                deceleration can occur between the initial and final states.
-              </p>
-            </article>
-          </div>
-        </section>
-      </div>
+            <fieldset>
+              <legend className="text-base font-semibold text-foreground">
+                Initial trajectory state
+              </legend>
+              <div className="mt-4 grid gap-5 @min-[36rem]/col:grid-cols-2">
+                <CalculatorNumberField
+                  error={errors.initialAltitudeMeters}
+                  field="initialAltitudeMeters"
+                  hint={GEOPOTENTIAL_ALTITUDE_HINT}
+                  idPrefix="reentry-trajectory"
+                  label={INITIAL_GEOPOTENTIAL_ALTITUDE_LABEL}
+                  onChange={updateValue}
+                  unit="m"
+                  value={values.initialAltitudeMeters}
+                />
+                <CalculatorNumberField
+                  error={errors.initialVelocityMetersPerSecond}
+                  field="initialVelocityMetersPerSecond"
+                  hint="Positive initial velocity along the fixed descent path."
+                  idPrefix="reentry-trajectory"
+                  label="Initial velocity"
+                  onChange={updateValue}
+                  unit="m/s"
+                  value={values.initialVelocityMetersPerSecond}
+                />
+                <CalculatorNumberField
+                  error={errors.vehicleMassKilograms}
+                  field="vehicleMassKilograms"
+                  hint="Positive vehicle mass held constant throughout the simulation."
+                  idPrefix="reentry-trajectory"
+                  label="Vehicle mass"
+                  onChange={updateValue}
+                  unit="kg"
+                  value={values.vehicleMassKilograms}
+                />
+                <CalculatorNumberField
+                  error={errors.dragCoefficient}
+                  field="dragCoefficient"
+                  hint="Positive dimensionless drag coefficient held constant during descent."
+                  idPrefix="reentry-trajectory"
+                  label="Drag coefficient"
+                  onChange={updateValue}
+                  unit=""
+                  value={values.dragCoefficient}
+                />
+                <CalculatorNumberField
+                  error={errors.referenceAreaSquareMetres}
+                  field="referenceAreaSquareMetres"
+                  hint="Positive aerodynamic reference area for the vehicle configuration."
+                  idPrefix="reentry-trajectory"
+                  label="Reference area"
+                  onChange={updateValue}
+                  unit="m²"
+                  value={values.referenceAreaSquareMetres}
+                />
+              </div>
+            </fieldset>
 
-      <div className="min-w-0 space-y-5">
-        <CalculatorResultSection
-          eyebrow="Integrated descent history"
-          icon={Plane}
-          id="reentry-trajectory-result"
-          title="Reentry trajectory analysis"
-        >
-          {result ? (
-            <div className="space-y-6">
-              <section aria-labelledby="reentry-trajectory-initial-title">
-                <h4
-                  className="text-sm font-semibold text-foreground"
-                  id="reentry-trajectory-initial-title"
-                >
-                  Initial state
-                </h4>
-                <dl className="mt-3 grid gap-4 sm:grid-cols-2">
+            <fieldset className="mt-10">
+              <legend className="text-base font-semibold text-foreground">
+                Integration controls (optional)
+              </legend>
+              <div className="mt-4 grid gap-5 @min-[36rem]/col:grid-cols-2">
+                <CalculatorNumberField
+                  error={errors.timeStepSeconds}
+                  field="timeStepSeconds"
+                  hint="Positive fixed Euler timestep. Leave blank to use the one-second default."
+                  idPrefix="reentry-trajectory"
+                  label="Time step (optional)"
+                  optional
+                  onChange={updateValue}
+                  unit="s"
+                  value={values.timeStepSeconds}
+                />
+                <CalculatorNumberField
+                  error={errors.initialFlightPathAngleDegrees}
+                  field="initialFlightPathAngleDegrees"
+                  hint="Fixed descent angle from -90 to 0 degrees. Leave blank for vertical descent."
+                  idPrefix="reentry-trajectory"
+                  label="Flight path angle (optional)"
+                  optional
+                  onChange={updateValue}
+                  unit="deg"
+                  value={values.initialFlightPathAngleDegrees}
+                />
+              </div>
+            </fieldset>
+
+            <ValidationErrorSummary
+              errors={[
+                errors.initialAltitudeMeters,
+                errors.initialVelocityMetersPerSecond,
+                errors.vehicleMassKilograms,
+                errors.dragCoefficient,
+                errors.referenceAreaSquareMetres,
+                errors.timeStepSeconds,
+                errors.initialFlightPathAngleDegrees,
+                errors.form,
+              ]}
+            />
+
+            <div className="mt-7 flex flex-wrap items-center gap-x-5 gap-y-3">
+              <p className="min-w-0 flex-[1_1_16rem] text-sm leading-6 text-muted">
+                Valid changes rerun the complete trajectory immediately.
+              </p>
+              <Button
+                className="shrink-0 whitespace-nowrap"
+                variant="secondary"
+                onClick={resetAnalyzer}
+              >
+                Reset inputs
+              </Button>
+            </div>
+          </form>
+        </div>
+
+        <div className="@container/col min-w-0 space-y-5">
+          <CalculatorResultSection
+            id="reentry-trajectory-result"
+            title="Reentry trajectory analysis"
+          >
+            {result ? (
+              <>
+                <ReadoutGrid columns={1}>
+                  <div>
+                    <dt className="orbix-label">Peak deceleration</dt>
+                    <dd>
+                      <output
+                        className="orbix-readout-lg"
+                        htmlFor={allOutputIds}
+                      >
+                        <LabFigure unit="m/s²">
+                          {stateFormatter.format(
+                            result.peakDeceleration
+                              .decelerationMetersPerSecondSquared,
+                          )}
+                        </LabFigure>
+                      </output>
+                      <output
+                        className="lab-figure-note"
+                        htmlFor={allOutputIds}
+                      >
+                        <LabFigure unit="g">
+                          {loadFormatter.format(
+                            result.peakDeceleration.decelerationGs,
+                          )}
+                        </LabFigure>
+                      </output>
+                    </dd>
+                  </div>
+                </ReadoutGrid>
+
+                <ReadoutGrid columns={2} title="Initial state">
                   <div>
                     <dt className="orbix-label">Altitude</dt>
                     <dd className="mt-1">
@@ -416,10 +463,11 @@ export function ReentryTrajectoryAnalyzer() {
                         className="orbix-data"
                         htmlFor="reentry-trajectory-initialAltitudeMeters"
                       >
-                        {stateFormatter.format(
-                          result.initialState.altitudeMeters,
-                        )}{" "}
-                        m
+                        <LabFigure unit="m">
+                          {stateFormatter.format(
+                            result.initialState.altitudeMeters,
+                          )}
+                        </LabFigure>
                       </output>
                     </dd>
                   </div>
@@ -430,35 +478,26 @@ export function ReentryTrajectoryAnalyzer() {
                         className="orbix-data"
                         htmlFor="reentry-trajectory-initialVelocityMetersPerSecond"
                       >
-                        {stateFormatter.format(
-                          result.initialState.velocityMetersPerSecond,
-                        )}{" "}
-                        m/s
+                        <LabFigure unit="m/s">
+                          {stateFormatter.format(
+                            result.initialState.velocityMetersPerSecond,
+                          )}
+                        </LabFigure>
                       </output>
                     </dd>
                   </div>
-                </dl>
-              </section>
+                </ReadoutGrid>
 
-              <section
-                aria-labelledby="reentry-trajectory-final-title"
-                className="border-t border-border pt-5"
-              >
-                <h4
-                  className="text-sm font-semibold text-foreground"
-                  id="reentry-trajectory-final-title"
-                >
-                  Final state
-                </h4>
-                <dl className="mt-3 grid gap-4 sm:grid-cols-3">
+                <ReadoutGrid columns={3} title="Final state">
                   <div>
                     <dt className="orbix-label">Altitude</dt>
                     <dd className="mt-1">
                       <output className="orbix-data" htmlFor={allOutputIds}>
-                        {stateFormatter.format(
-                          result.finalState.altitudeMeters,
-                        )}{" "}
-                        m
+                        <LabFigure unit="m">
+                          {stateFormatter.format(
+                            result.finalState.altitudeMeters,
+                          )}
+                        </LabFigure>
                       </output>
                     </dd>
                   </div>
@@ -466,10 +505,11 @@ export function ReentryTrajectoryAnalyzer() {
                     <dt className="orbix-label">Velocity</dt>
                     <dd className="mt-1">
                       <output className="orbix-data" htmlFor={allOutputIds}>
-                        {stateFormatter.format(
-                          result.finalState.velocityMetersPerSecond,
-                        )}{" "}
-                        m/s
+                        <LabFigure unit="m/s">
+                          {stateFormatter.format(
+                            result.finalState.velocityMetersPerSecond,
+                          )}
+                        </LabFigure>
                       </output>
                     </dd>
                   </div>
@@ -477,196 +517,218 @@ export function ReentryTrajectoryAnalyzer() {
                     <dt className="orbix-label">Elapsed time</dt>
                     <dd className="mt-1">
                       <output className="orbix-data" htmlFor={allOutputIds}>
-                        {stateFormatter.format(result.durationSeconds)} s
+                        <LabFigure unit="s">
+                          {stateFormatter.format(result.durationSeconds)}
+                        </LabFigure>
                       </output>
                     </dd>
                   </div>
-                </dl>
-              </section>
+                </ReadoutGrid>
 
-              <section
-                aria-labelledby="reentry-trajectory-performance-title"
-                className="border-t border-border pt-5"
-              >
-                <h4
-                  className="text-sm font-semibold text-foreground"
-                  id="reentry-trajectory-performance-title"
-                >
-                  Performance summary
-                </h4>
-                <dl className="mt-3 grid gap-4 sm:grid-cols-2">
+                <ReadoutGrid columns={3} title="Peak velocity state">
                   <div>
-                    <dt className="orbix-label">Peak deceleration</dt>
-                    <dd className="mt-1">
-                      <output className="orbix-data-lg" htmlFor={allOutputIds}>
-                        {stateFormatter.format(
-                          result.peakDeceleration
-                            .decelerationMetersPerSecondSquared,
-                        )}{" "}
-                        m/s²
+                    <dt className="orbix-label">Velocity</dt>
+                    <dd>
+                      <output className="orbix-data" htmlFor={allOutputIds}>
+                        <LabFigure unit="m/s">
+                          {stateFormatter.format(
+                            result.peakHeatingVelocityState
+                              .velocityMetersPerSecond,
+                          )}
+                        </LabFigure>
                       </output>
                     </dd>
                   </div>
                   <div>
-                    <dt className="orbix-label">Peak deceleration</dt>
-                    <dd className="mt-1">
-                      <output className="orbix-data-lg" htmlFor={allOutputIds}>
-                        {loadFormatter.format(
-                          result.peakDeceleration.decelerationGs,
-                        )}{" "}
-                        g
+                    <dt className="orbix-label">Altitude</dt>
+                    <dd>
+                      <output className="orbix-data" htmlFor={allOutputIds}>
+                        <LabFigure unit="m">
+                          {stateFormatter.format(
+                            result.peakHeatingVelocityState.altitudeMeters,
+                          )}
+                        </LabFigure>
                       </output>
                     </dd>
                   </div>
-                  <div className="sm:col-span-2">
-                    <dt className="orbix-label">Peak velocity state</dt>
-                    <dd className="mt-2 grid gap-3 rounded-md border border-border-subtle bg-surface-raised p-4 sm:grid-cols-3">
-                      <output className="orbix-data" htmlFor={allOutputIds}>
-                        {stateFormatter.format(
-                          result.peakHeatingVelocityState
-                            .velocityMetersPerSecond,
-                        )}{" "}
-                        m/s
-                      </output>
-                      <output className="orbix-data" htmlFor={allOutputIds}>
-                        {stateFormatter.format(
-                          result.peakHeatingVelocityState.altitudeMeters,
-                        )}{" "}
-                        m altitude
-                      </output>
-                      <output className="orbix-data" htmlFor={allOutputIds}>
-                        {stateFormatter.format(
-                          result.peakHeatingVelocityState.timeSeconds,
-                        )}{" "}
-                        s
-                      </output>
-                    </dd>
-                  </div>
-                </dl>
-              </section>
-
-              <section
-                aria-labelledby="reentry-trajectory-table-title"
-                className="border-t border-border pt-5"
-              >
-                <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
                   <div>
-                    <h4
-                      className="text-sm font-semibold text-foreground"
-                      id="reentry-trajectory-table-title"
-                    >
-                      Trajectory table
-                    </h4>
-                    <p className="mt-2 text-sm leading-6 text-muted">
-                      Showing {visibleTrajectoryPoints.length} sampled points
-                      from {result.trajectoryPoints.length} total simulation
-                      points.
-                    </p>
+                    <dt className="orbix-label">Time</dt>
+                    <dd>
+                      <output className="orbix-data" htmlFor={allOutputIds}>
+                        <LabFigure unit="s">
+                          {stateFormatter.format(
+                            result.peakHeatingVelocityState.timeSeconds,
+                          )}
+                        </LabFigure>
+                      </output>
+                    </dd>
                   </div>
-                </div>
+                </ReadoutGrid>
+              </>
+            ) : (
+              <NotCalculated invalid={Object.values(errors).some(Boolean)}>
+                Enter a valid initial state and vehicle configuration to
+                integrate the descent trajectory.
+              </NotCalculated>
+            )}
+          </CalculatorResultSection>
 
-                <div
-                  aria-label="Sampled reentry trajectory data"
-                  className="orbix-table-wrap mt-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
-                  role="region"
-                  tabIndex={0}
-                >
-                  <table className="orbix-table w-full min-w-[62rem]">
-                    <caption className="sr-only">
-                      Evenly sampled states from the complete reentry trajectory
-                      simulation
-                    </caption>
-                    <thead>
-                      <tr>
-                        <th scope="col">Time (s)</th>
-                        <th scope="col">Altitude (m)</th>
-                        <th scope="col">Velocity (m/s)</th>
-                        <th scope="col">Density (kg/m³)</th>
-                        <th scope="col">Dynamic pressure (Pa)</th>
-                        <th scope="col">Deceleration (m/s²)</th>
-                        <th scope="col">G-load</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {visibleTrajectoryPoints.map(
-                        ({ originalIndex, point }) => (
-                          <tr key={originalIndex}>
-                            <th className="orbix-num" scope="row">
-                              <output htmlFor={allOutputIds}>
-                                {stateFormatter.format(point.timeSeconds)}
-                              </output>
-                            </th>
-                            <td className="orbix-num">
-                              <output htmlFor={allOutputIds}>
-                                {stateFormatter.format(point.altitudeMeters)}
-                              </output>
-                            </td>
-                            <td className="orbix-num">
-                              <output htmlFor={allOutputIds}>
-                                {stateFormatter.format(
-                                  point.velocityMetersPerSecond,
-                                )}
-                              </output>
-                            </td>
-                            <td className="orbix-num">
-                              <output htmlFor={allOutputIds}>
-                                {densityFormatter.format(
-                                  point.densityKilogramsPerCubicMetre,
-                                )}
-                              </output>
-                            </td>
-                            <td className="orbix-num">
-                              <output htmlFor={allOutputIds}>
-                                {stateFormatter.format(
-                                  point.dynamicPressurePascals,
-                                )}
-                              </output>
-                            </td>
-                            <td className="orbix-num">
-                              <output htmlFor={allOutputIds}>
-                                {stateFormatter.format(
-                                  point.decelerationMetersPerSecondSquared,
-                                )}
-                              </output>
-                            </td>
-                            <td className="orbix-num">
-                              <output htmlFor={allOutputIds}>
-                                {loadFormatter.format(point.decelerationGs)}
-                              </output>
-                            </td>
-                          </tr>
-                        ),
+          {result ? (
+            <DataTable
+              caption={
+                "Trajectory, " +
+                visibleTrajectoryPoints.length +
+                " evenly sampled points of " +
+                result.trajectoryPoints.length +
+                " simulated"
+              }
+              columns={[
+                {
+                  key: "time",
+                  header: "Time",
+                  unit: "s",
+                  numeric: true,
+                  cell: ({ point }) => (
+                    <output htmlFor={allOutputIds}>
+                      {stateFormatter.format(point.timeSeconds)}
+                    </output>
+                  ),
+                },
+                {
+                  key: "altitude",
+                  header: "Altitude",
+                  unit: "m",
+                  numeric: true,
+                  cell: ({ point }) => (
+                    <output htmlFor={allOutputIds}>
+                      {stateFormatter.format(point.altitudeMeters)}
+                    </output>
+                  ),
+                },
+                {
+                  key: "velocity",
+                  header: "Velocity",
+                  unit: "m/s",
+                  numeric: true,
+                  cell: ({ point }) => (
+                    <output htmlFor={allOutputIds}>
+                      {stateFormatter.format(point.velocityMetersPerSecond)}
+                    </output>
+                  ),
+                },
+                {
+                  key: "density",
+                  header: "Density",
+                  unit: "kg/m³",
+                  numeric: true,
+                  cell: ({ point }) => (
+                    <output htmlFor={allOutputIds}>
+                      {densityFormatter.format(
+                        point.densityKilogramsPerCubicMetre,
                       )}
-                    </tbody>
-                  </table>
-                </div>
-              </section>
-            </div>
-          ) : (
-            <NotCalculated invalid={Object.values(errors).some(Boolean)}>
-              Enter a valid initial state and vehicle configuration to integrate
-              the descent trajectory.
-            </NotCalculated>
-          )}
-        </CalculatorResultSection>
+                    </output>
+                  ),
+                },
+                {
+                  key: "dynamic-pressure",
+                  header: "Dynamic pressure",
+                  unit: "Pa",
+                  numeric: true,
+                  cell: ({ point }) => (
+                    <output htmlFor={allOutputIds}>
+                      {stateFormatter.format(point.dynamicPressurePascals)}
+                    </output>
+                  ),
+                },
+                {
+                  key: "deceleration",
+                  header: "Deceleration",
+                  unit: "m/s²",
+                  numeric: true,
+                  cell: ({ point }) => (
+                    <output htmlFor={allOutputIds}>
+                      {stateFormatter.format(
+                        point.decelerationMetersPerSecondSquared,
+                      )}
+                    </output>
+                  ),
+                },
+                {
+                  key: "g-load",
+                  header: "G-load",
+                  numeric: true,
+                  cell: ({ point }) => (
+                    <output htmlFor={allOutputIds}>
+                      {loadFormatter.format(point.decelerationGs)}
+                    </output>
+                  ),
+                },
+              ]}
+              getRowKey={({ originalIndex }) => String(originalIndex)}
+              rows={visibleTrajectoryPoints}
+            />
+          ) : null}
+        </div>
 
-        <aside className="orbix-lab-note">
-          <p className="orbix-lab-note__title">
-            <AlertTriangle aria-hidden="true" size={17} />
-            Engineering assumptions
-          </p>
-          <ul className="mt-4 grid list-disc gap-2 pl-5 text-sm leading-6 text-muted sm:grid-cols-2">
-            <li>Simplified point-mass model</li>
-            <li>Constant vehicle properties</li>
-            <li>Fixed flight-path angle</li>
-            <li>No lift</li>
-            <li>No winds</li>
-            <li>No planetary rotation</li>
-            <li>No heating feedback</li>
-            <li>No structural limits</li>
-          </ul>
-        </aside>
+        <div className="@container/col min-w-0 space-y-5">
+          <section
+            aria-labelledby="reentry-trajectory-relationships-title"
+            className="border-t border-border pt-7"
+          >
+            <h3
+              className="text-lg font-semibold"
+              id="reentry-trajectory-relationships-title"
+            >
+              Why the trajectory changes
+            </h3>
+            <div className="mt-4 border-t border-border">
+              <article className="border-b border-border py-4">
+                <h4 className="text-sm font-semibold text-foreground">
+                  Velocity
+                </h4>
+                <p className="mt-2 text-sm leading-6 text-muted">
+                  Aerodynamic drag opposes the flight direction, removing
+                  velocity as the vehicle moves through the atmosphere.
+                </p>
+              </article>
+              <article className="border-b border-border py-4">
+                <h4 className="text-sm font-semibold text-foreground">
+                  Density
+                </h4>
+                <p className="mt-2 text-sm leading-6 text-muted">
+                  Atmospheric density generally rises during descent, increasing
+                  dynamic pressure and the drag acting on the vehicle.
+                </p>
+              </article>
+              <article className="border-b border-border py-4">
+                <h4 className="text-sm font-semibold text-foreground">
+                  G-load
+                </h4>
+                <p className="mt-2 text-sm leading-6 text-muted">
+                  G-load changes as velocity and density evolve, so the
+                  strongest deceleration can occur between the initial and final
+                  states.
+                </p>
+              </article>
+            </div>
+          </section>
+          <aside className="orbix-lab-note">
+            <p className="orbix-lab-note__title font-medium">
+              Engineering assumptions
+            </p>
+            <ul className="mt-4 grid list-disc gap-2 pl-5 text-sm leading-6 text-muted @min-[36rem]/col:grid-cols-2">
+              <li>Simplified point-mass model</li>
+              <li>Constant vehicle properties</li>
+              <li>Fixed flight-path angle</li>
+              <li>No lift</li>
+              <li>No winds</li>
+              <li>No planetary rotation</li>
+              <li>No heating feedback</li>
+              <li>No structural limits</li>
+            </ul>
+          </aside>
+        </div>
       </div>
-    </div>
+    </LabToolLayout>
   );
 }

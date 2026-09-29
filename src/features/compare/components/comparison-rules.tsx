@@ -1,0 +1,57 @@
+import { cn } from "@/lib/cn";
+
+/**
+ * The rules the spec sheet follows. Each is true of the rendering code: no
+ * score is computed, `MISSING_VALUE_TEXT` replaces absent values, and
+ * `normalizeRowMagnitudes` only draws bars for same-unit rows, scaled to
+ * the largest figure in the row.
+ */
+const comparisonRules = [
+  {
+    term: "Published units",
+    detail: "Shown as the sources give them, never converted.",
+  },
+  {
+    term: "No scoring",
+    detail: "The sheet never ranks vehicles or picks a winner.",
+  },
+  {
+    term: "Gaps stay visible",
+    detail: "A missing value reads “Not published”, never zero.",
+  },
+  {
+    term: "Bars need one unit",
+    detail:
+      "Scaled to the row’s largest figure, only when the row shares a unit.",
+  },
+] as const;
+
+interface ComparisonRulesProps {
+  className?: string;
+}
+
+/**
+ * Compact legend for the spec sheet: hairline rows, sans terms, muted
+ * details. The rules are not a sequence, so they carry no numbers. Sits in
+ * the empty top-left cell of the identity strip from 64rem and after the
+ * sheet below that.
+ */
+export function ComparisonRules({ className }: ComparisonRulesProps) {
+  return (
+    <dl aria-label="How the spec sheet reads" className={className}>
+      {comparisonRules.map((rule) => (
+        <div
+          className={cn("border-t border-border py-2.5 last:border-b")}
+          key={rule.term}
+        >
+          <dt className="text-sm leading-5 font-medium text-foreground">
+            {rule.term}
+          </dt>
+          <dd className="mt-0.5 text-[0.8125rem] leading-5 text-muted">
+            {rule.detail}
+          </dd>
+        </div>
+      ))}
+    </dl>
+  );
+}

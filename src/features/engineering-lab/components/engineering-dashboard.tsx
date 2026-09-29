@@ -1,8 +1,16 @@
 import type { ReactNode } from "react";
-import Link from "next/link";
 
 import { Container } from "@/components/layout/container";
-import { analyzeMissionProfile } from "@/features/engineering-lab/analysis";
+import { ButtonArrowIcon } from "@/components/ui/button-arrow";
+import { buttonClass } from "@/components/ui/button-class";
+import { ButtonLink } from "@/components/ui/button-link";
+import { Eyebrow } from "@/components/ui/eyebrow";
+import { RecordRow } from "@/components/ui/record-row";
+import { formatIndexNumber } from "@/components/ui/section-index";
+import {
+  analyzeHohmannTransfer,
+  analyzeMissionProfile,
+} from "@/features/engineering-lab/analysis";
 import { AtmosphereCalculator } from "@/features/engineering-lab/components/atmosphere-calculator";
 import { CalculatorCard } from "@/features/engineering-lab/components/calculator-card";
 import { DragEquationCalculator } from "@/features/engineering-lab/components/drag-equation-calculator";
@@ -50,6 +58,7 @@ import {
   MissionControlDashboard,
   MissionOrbitVisualization,
   MissionViewer,
+  OrbitDiagram,
   ReentryProfileVisualization,
 } from "@/features/engineering-lab/components/visualization";
 import {
@@ -123,6 +132,26 @@ function createTradeStudyPreview() {
 }
 
 const tradeStudyPreview = createTradeStudyPreview();
+
+/**
+ * The hero figure: the Hohmann transfer analyzer's own default case, a
+ * 400 km circular orbit raised to geostationary altitude, computed with the
+ * same analysis the tool runs, so every figure beside the drawing is real.
+ */
+const HERO_TRANSFER_INPUTS = {
+  finalAltitudeMetres: 35_786_000,
+  initialAltitudeMetres: 400_000,
+} as const;
+
+const heroTransfer = analyzeHohmannTransfer(HERO_TRANSFER_INPUTS);
+
+const metresPerSecond = new Intl.NumberFormat("en-US", {
+  maximumFractionDigits: 0,
+});
+const hours = new Intl.NumberFormat("en-US", {
+  maximumFractionDigits: 2,
+  minimumFractionDigits: 2,
+});
 
 /**
  * Every module in the lab, keyed by its DOM id (which is also its deep-link
@@ -418,11 +447,24 @@ const WORKFLOWS = [
 
 type WorkflowIndex = 0 | 1 | 2 | 3 | 4 | 5;
 
+/** Each tool's index number, so the card and the index agree. */
+const TOOL_NUMBERS: ReadonlyMap<string, string> = new Map(
+  WORKFLOWS.flatMap((workflow) => workflow.tools).map((entry, index) => [
+    entry.id,
+    formatIndexNumber(index + 1),
+  ]),
+);
+
 function Module({ children, id }: { children: ReactNode; id: ModuleId }) {
   const { description, title } = MODULES[id];
 
   return (
-    <CalculatorCard description={description} id={id} title={title}>
+    <CalculatorCard
+      description={description}
+      id={id}
+      number={TOOL_NUMBERS.get(id)}
+      title={title}
+    >
       {children}
     </CalculatorCard>
   );
@@ -454,29 +496,116 @@ export function EngineeringDashboard() {
 
   return (
     <>
-      <header className="border-b border-border pt-12 pb-8">
-        <Container wide>
-          <h1 className="orbix-h1 text-foreground">Engineering Lab</h1>
-          <p className="orbix-lead mt-4">
-            Calculators for rocket propulsion, aerodynamics, compressible flow,
-            atmospheric entry and orbital mechanics, each with its equation,
-            units and stated assumptions.
-          </p>
-          <p className="mt-4 max-w-[68ch] text-sm leading-6 text-muted">
-            For education only. The models are simplified and must not be used
-            for operational, safety or certification decisions. See the{" "}
-            <Link
-              className="text-accent underline underline-offset-4 hover:text-accent-strong"
-              href="/terms"
-            >
-              terms of use
-            </Link>
-            .
-          </p>
+      <header className="orbix-blueprint-minor relative border-b border-border">
+        <Container className="grid gap-10 pt-10 pb-12 sm:pt-14 lg:grid-cols-[minmax(0,6fr)_minmax(0,5fr)] lg:items-start lg:gap-14 lg:pt-14 lg:pb-16">
+          {/* Top-aligned, with the text dropped to meet the diagram frame's
+           * top registration marks, so the H1 does not sink to mid-height. */}
+          <div className="orbix-rise min-w-0 lg:pt-6">
+            <Eyebrow>Calculators and mission tools</Eyebrow>
+            <h1 className="orbix-display mt-6 text-foreground">
+              Engineering <span className="orbix-accent-word">Lab</span>
+            </h1>
+            <p className="orbix-lead mt-6">
+              Calculators for rocket propulsion, aerodynamics, compressible
+              flow, atmospheric entry and orbital mechanics, each with its
+              equation, units and stated assumptions, and mission tools that
+              combine them.
+            </p>
+            <div className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-3">
+              {/* A plain anchor: the index is on this page. */}
+              <a
+                className={buttonClass({ variant: "secondary" })}
+                href="#laboratory-tools"
+              >
+                Browse the tools
+                <ButtonArrowIcon direction="down" />
+              </a>
+              <ButtonLink
+                arrow="right"
+                className="w-fit text-left [text-wrap:balance]"
+                href="/verification"
+                variant="tertiary"
+              >
+                See how ORBIX compares with published values
+              </ButtonLink>
+            </div>
+            <p className="mt-8 max-w-[60ch] text-sm leading-6 text-muted">
+              For education only. The models are simplified and must not be used
+              for operational, safety or certification decisions. See the{" "}
+              <ButtonLink href="/terms" variant="link">
+                terms of use
+              </ButtonLink>
+              .
+            </p>
+          </div>
+
+          <div className="mx-auto w-full max-w-[26rem] min-w-0 sm:max-w-[30rem] lg:mr-0 lg:max-w-[28rem]">
+            <OrbitDiagram
+              caption={
+                <>
+                  {metresPerSecond.format(
+                    HERO_TRANSFER_INPUTS.initialAltitudeMetres / 1000,
+                  )}{" "}
+                  km to{" "}
+                  {metresPerSecond.format(
+                    HERO_TRANSFER_INPUTS.finalAltitudeMetres / 1000,
+                  )}{" "}
+                  km, drawn to scale: the Hohmann transfer analyzer&apos;s
+                  default case.{" "}
+                  <a
+                    className={buttonClass({ variant: "link" })}
+                    href="#hohmann-transfer-analyzer"
+                  >
+                    Open it in the analyzer
+                  </a>
+                  .
+                </>
+              }
+              description={`A circular orbit at ${metresPerSecond.format(
+                HERO_TRANSFER_INPUTS.initialAltitudeMetres / 1000,
+              )} km, a circular orbit at ${metresPerSecond.format(
+                HERO_TRANSFER_INPUTS.finalAltitudeMetres / 1000,
+              )} km, and the half ellipse that joins them, drawn to scale around Earth. Marks show the first burn at the low orbit and the second at the high orbit, and a dimension line gives the high orbit's radius.`}
+              finalAltitudeMetres={HERO_TRANSFER_INPUTS.finalAltitudeMetres}
+              initialAltitudeMetres={HERO_TRANSFER_INPUTS.initialAltitudeMetres}
+              size="large"
+              title="Hohmann transfer from low Earth orbit to geostationary altitude"
+            />
+            {/* Always three columns; on a phone they turn compact (value
+             * over unit) rather than wrapping 2 + 1. */}
+            <RecordRow
+              className="mt-6 max-[30rem]:[--record-inset:0.75rem] max-[30rem]:[&_dd>span:last-child]:mt-0.5 max-[30rem]:[&_dd>span:last-child]:ml-0 max-[30rem]:[&_dd>span:last-child]:block [&_dl]:grid-cols-3"
+              items={[
+                {
+                  label: "First burn",
+                  unit: "m/s",
+                  value: metresPerSecond.format(
+                    heroTransfer.transfer.firstBurnDeltaVMetresPerSecond,
+                  ),
+                },
+                {
+                  label: "Second burn",
+                  unit: "m/s",
+                  value: metresPerSecond.format(
+                    heroTransfer.transfer.secondBurnDeltaVMetresPerSecond,
+                  ),
+                },
+                {
+                  label: "Transfer time",
+                  unit: "h",
+                  value: hours.format(heroTransfer.transfer.transferTimeHours),
+                },
+              ]}
+            />
+          </div>
         </Container>
       </header>
 
-      <Container className="py-8 lg:py-12" wide>
+      <Container
+        className="pt-0 pb-12 lg:py-12"
+        id="laboratory-tools"
+        tabIndex={-1}
+      >
         <LaboratoryShell workflows={WORKFLOWS}>
           <Workflow index={0}>
             <Module id="rocket-equation">
@@ -569,9 +698,12 @@ export function EngineeringDashboard() {
 
           <Workflow index={4}>
             <Module id="mission-visualization">
-              <div className="space-y-6">
+              {/* Same section rule as the viewer and Mission control. */}
+              <div className="space-y-8">
                 <MissionOrbitVisualization analysis={missionPreview.analysis} />
-                <ReentryProfileVisualization analysis={reentryEvaluation} />
+                <div className="border-t border-border-subtle pt-8">
+                  <ReentryProfileVisualization analysis={reentryEvaluation} />
+                </div>
               </div>
             </Module>
             <Module id="interactive-mission-viewer">

@@ -3,6 +3,12 @@
 import type { ReactNode } from "react";
 
 import type { MissionReport } from "@/features/engineering-lab/types";
+import { formatFigure } from "@/components/ui/readout";
+import {
+  altitudeReadout,
+  formatLabValue,
+} from "@/features/engineering-lab/components/visualization/format-lab-value";
+import { LabHeading } from "@/features/engineering-lab/components/visualization/lab-heading";
 
 interface MissionReportViewerProps {
   readonly report: MissionReport;
@@ -12,29 +18,22 @@ interface ReportMetricProps {
   readonly label: string;
   /** Set for a word value (a classification), which is not set in mono. */
   readonly text?: boolean;
+  /** Muted unit after the value, as in the metrics grid and briefing. */
+  readonly unit?: string;
   readonly value: ReactNode;
 }
 
-const measurementFormatter = new Intl.NumberFormat("en-US", {
-  maximumFractionDigits: 3,
-  minimumFractionDigits: 2,
-});
-
-const preciseFormatter = new Intl.NumberFormat("en-US", {
-  maximumFractionDigits: 6,
-  minimumFractionDigits: 3,
-});
-
-function measure(value: number, unit: string): string {
-  return `${measurementFormatter.format(value)} ${unit}`;
-}
-
-function precise(value: number, unit: string): string {
-  return `${preciseFormatter.format(value)} ${unit}`;
+/**
+ * Every figure goes through the lab's shared formatter, so the report
+ * matches the briefing, mission control and the viewer: two decimals at
+ * most, three significant figures below 1, no padded zeros.
+ */
+function figure(value: number): string {
+  return formatLabValue(value);
 }
 
 /** One labelled value: label left, value right in tabular mono. */
-function ReportMetric({ label, text = false, value }: ReportMetricProps) {
+function ReportMetric({ label, text = false, unit, value }: ReportMetricProps) {
   return (
     <div className="flex items-baseline justify-between gap-4 border-t border-border-subtle py-2">
       <dt className="text-sm text-muted">{label}</dt>
@@ -44,11 +43,24 @@ function ReportMetric({ label, text = false, value }: ReportMetricProps) {
             text ? "text-sm text-foreground" : "orbix-data text-foreground"
           }
         >
-          {value}
+          {text ? value : formatFigure(value)}
+          {unit ? <span className="ml-1 text-muted">{unit}</span> : null}
         </output>
       </dd>
     </div>
   );
+}
+
+/** An altitude row in km from 1 km up, as the orbit diagrams label it. */
+function AltitudeMetric({
+  label,
+  metres,
+}: {
+  readonly label: string;
+  readonly metres: number;
+}) {
+  const { unit, value } = altitudeReadout(metres);
+  return <ReportMetric label={label} unit={unit} value={figure(value)} />;
 }
 
 function MetricList({ children }: { readonly children: ReactNode }) {
@@ -65,29 +77,23 @@ export function MissionReportViewer({ report }: MissionReportViewerProps) {
   const tps = thermal?.tpsRecommendation;
 
   return (
-    <article
-      aria-labelledby="mission-report-title"
-      aria-live="polite"
-      className="min-w-0"
-      role="region"
-    >
+    <article aria-labelledby="mission-report-title" className="min-w-0">
       <header className="border-b border-border-subtle pb-4">
-        <h3 className="orbix-h3 text-foreground" id="mission-report-title">
+        <LabHeading id="mission-report-title">
           Mission engineering report
-        </h3>
-        <p className="sr-only">
+        </LabHeading>
+        {/* Only this line is live, so an update announces one sentence
+         * rather than every value in the report. */}
+        <p className="sr-only" role="status">
           Report updated for {missionSummary.missionName}.
         </p>
       </header>
 
       <div className="space-y-8 pt-6">
         <section aria-labelledby="mission-report-overview-title">
-          <h4
-            className="orbix-h4 text-foreground"
-            id="mission-report-overview-title"
-          >
+          <LabHeading id="mission-report-overview-title" offset={1}>
             Mission overview
-          </h4>
+          </LabHeading>
           <p className="orbix-label mt-3">Mission name</p>
           <output className="mt-1 block text-base font-semibold text-foreground">
             {missionSummary.missionName}
@@ -116,17 +122,15 @@ export function MissionReportViewer({ report }: MissionReportViewerProps) {
             aria-labelledby="mission-report-orbital-title"
             className="border-t border-border-subtle pt-8"
           >
-            <h4
-              className="orbix-h4 text-foreground"
-              id="mission-report-orbital-title"
-            >
+            <LabHeading id="mission-report-orbital-title" offset={1}>
               Orbital analysis
-            </h4>
+            </LabHeading>
 
             <MetricList>
               <ReportMetric
                 label="Total mission delta-v"
-                value={measure(orbital.totalDeltaVMetresPerSecond, "m/s")}
+                unit="m/s"
+                value={figure(orbital.totalDeltaVMetresPerSecond)}
               />
               <ReportMetric
                 label="Maneuvers reported"
@@ -135,7 +139,8 @@ export function MissionReportViewer({ report }: MissionReportViewerProps) {
               {transfer ? (
                 <ReportMetric
                   label="Transfer duration"
-                  value={measure(transfer.transfer.transferTimeHours, "h")}
+                  unit="h"
+                  value={figure(transfer.transfer.transferTimeHours)}
                 />
               ) : null}
             </MetricList>
@@ -145,48 +150,47 @@ export function MissionReportViewer({ report }: MissionReportViewerProps) {
                 aria-labelledby="mission-report-transfer-title"
                 className="mt-6"
               >
-                <h5
-                  className="text-sm font-semibold text-foreground"
+                <LabHeading
                   id="mission-report-transfer-title"
+                  offset={2}
+                  variant="sub"
                 >
                   Hohmann transfer
-                </h5>
+                </LabHeading>
                 <MetricList>
-                  <ReportMetric
+                  <AltitudeMetric
                     label="Initial orbit altitude"
-                    value={measure(transfer.initialOrbit.altitudeMetres, "m")}
+                    metres={transfer.initialOrbit.altitudeMetres}
                   />
-                  <ReportMetric
+                  <AltitudeMetric
                     label="Final orbit altitude"
-                    value={measure(transfer.finalOrbit.altitudeMetres, "m")}
+                    metres={transfer.finalOrbit.altitudeMetres}
                   />
                   <ReportMetric
                     label="Transfer semi-major axis"
-                    value={measure(
-                      transfer.transfer.transferSemiMajorAxisMetres,
-                      "m",
+                    unit="km"
+                    value={figure(
+                      transfer.transfer.transferSemiMajorAxisMetres / 1_000,
                     )}
                   />
                   <ReportMetric
                     label="First burn delta-v"
-                    value={measure(
+                    unit="m/s"
+                    value={figure(
                       transfer.transfer.firstBurnDeltaVMetresPerSecond,
-                      "m/s",
                     )}
                   />
                   <ReportMetric
                     label="Second burn delta-v"
-                    value={measure(
+                    unit="m/s"
+                    value={figure(
                       transfer.transfer.secondBurnDeltaVMetresPerSecond,
-                      "m/s",
                     )}
                   />
                   <ReportMetric
                     label="Transfer delta-v"
-                    value={measure(
-                      transfer.transfer.totalDeltaVMetresPerSecond,
-                      "m/s",
-                    )}
+                    unit="m/s"
+                    value={figure(transfer.transfer.totalDeltaVMetresPerSecond)}
                   />
                 </MetricList>
               </section>
@@ -197,67 +201,58 @@ export function MissionReportViewer({ report }: MissionReportViewerProps) {
                 aria-labelledby="mission-report-plane-change-title"
                 className="mt-6"
               >
-                <h5
-                  className="text-sm font-semibold text-foreground"
+                <LabHeading
                   id="mission-report-plane-change-title"
+                  offset={2}
+                  variant="sub"
                 >
                   Orbital plane change
-                </h5>
+                </LabHeading>
                 <MetricList>
                   <ReportMetric
                     label="Inclination change"
-                    value={measure(planeChange.inclinationChangeDegrees, "deg")}
+                    unit="deg"
+                    value={figure(planeChange.inclinationChangeDegrees)}
                   />
                   <ReportMetric
                     label="Maneuver orbital velocity"
-                    value={measure(
-                      planeChange.orbitalVelocityMetresPerSecond,
-                      "m/s",
-                    )}
+                    unit="m/s"
+                    value={figure(planeChange.orbitalVelocityMetresPerSecond)}
                   />
                   <ReportMetric
                     label="Plane-change delta-v"
-                    value={measure(planeChange.deltaVMetresPerSecond, "m/s")}
+                    unit="m/s"
+                    value={figure(planeChange.deltaVMetresPerSecond)}
                   />
                 </MetricList>
               </section>
             ) : null}
 
             {orbital.maneuvers.length > 0 ? (
-              <div
-                aria-label="Delta-v maneuver breakdown"
-                className="orbix-table-wrap mt-6"
-                role="region"
-                tabIndex={0}
+              // Name and value pairs on hairlines, like the rows above; a
+              // bordered table here would be a second panel in the tool.
+              <section
+                aria-labelledby="mission-report-maneuvers-title"
+                className="mt-6"
               >
-                <table className="orbix-table">
-                  <caption className="sr-only">
-                    Delta-v maneuver breakdown
-                  </caption>
-                  <thead>
-                    <tr>
-                      <th scope="col">Maneuver</th>
-                      <th className="text-right" scope="col">
-                        Delta-v (m/s)
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {orbital.maneuvers.map((maneuver) => (
-                      <tr key={maneuver.id}>
-                        <th scope="row">{maneuver.name}</th>
-                        <td className="orbix-data text-right">
-                          <output>
-                            {measurementFormatter.format(
-                              maneuver.deltaVMetresPerSecond,
-                            )}
-                          </output>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+                <LabHeading
+                  id="mission-report-maneuvers-title"
+                  offset={2}
+                  variant="sub"
+                >
+                  Delta-v maneuver breakdown
+                </LabHeading>
+                <MetricList>
+                  {orbital.maneuvers.map((maneuver) => (
+                    <ReportMetric
+                      key={maneuver.id}
+                      label={maneuver.name}
+                      unit="m/s"
+                      value={figure(maneuver.deltaVMetresPerSecond)}
+                    />
+                  ))}
+                </MetricList>
+              </section>
             ) : null}
           </section>
         ) : null}
@@ -267,69 +262,69 @@ export function MissionReportViewer({ report }: MissionReportViewerProps) {
             aria-labelledby="mission-report-vehicle-title"
             className="border-t border-border-subtle pt-8"
           >
-            <h4
-              className="orbix-h4 text-foreground"
-              id="mission-report-vehicle-title"
-            >
+            <LabHeading id="mission-report-vehicle-title" offset={1}>
               Vehicle analysis
-            </h4>
+            </LabHeading>
             <p className="orbix-label mt-3">Selected vehicle</p>
             <output className="mt-1 block text-base font-semibold text-foreground">
               {vehicle.selectedVehicle.vehicleName}
             </output>
             <MetricList>
-              <ReportMetric
+              <AltitudeMetric
                 label="Initial altitude"
-                value={measure(
-                  vehicle.performanceSummary.flight.initialAltitudeMeters,
-                  "m",
-                )}
+                metres={vehicle.performanceSummary.flight.initialAltitudeMeters}
               />
               <ReportMetric
                 label="Initial velocity"
-                value={measure(
+                unit="m/s"
+                value={figure(
                   vehicle.performanceSummary.flight
                     .initialVelocityMetersPerSecond,
-                  "m/s",
                 )}
               />
               <ReportMetric
                 label="Final velocity"
-                value={measure(
+                unit="m/s"
+                value={figure(
                   vehicle.performanceSummary.flight.finalState
                     .velocityMetersPerSecond,
-                  "m/s",
                 )}
               />
               <ReportMetric
                 label="Reentry duration"
-                value={measure(
+                unit="s"
+                value={figure(
                   vehicle.performanceSummary.flight.reentryDurationSeconds,
-                  "s",
                 )}
               />
+              {/* g first, as in every mission view; m/s² as the
+               * secondary unit. */}
               <ReportMetric
                 label="Peak deceleration"
-                value={measure(
-                  vehicle.performanceSummary.dynamics.peakDeceleration
-                    .decelerationMetersPerSecondSquared,
-                  "m/s²",
-                )}
-              />
-              <ReportMetric
-                label="Peak deceleration load"
-                value={measure(
-                  vehicle.performanceSummary.dynamics.peakDeceleration
-                    .decelerationGs,
-                  "g",
-                )}
+                value={
+                  <>
+                    {figure(
+                      vehicle.performanceSummary.dynamics.peakDeceleration
+                        .decelerationGs,
+                    )}
+                    <span className="ml-1 text-muted">g</span>
+                    <span className="ml-2 text-muted">
+                      (
+                      {figure(
+                        vehicle.performanceSummary.dynamics.peakDeceleration
+                          .decelerationMetersPerSecondSquared,
+                      )}{" "}
+                      m/s²)
+                    </span>
+                  </>
+                }
               />
               {thermal ? (
                 <ReportMetric
                   label="Peak heating"
-                  value={measure(
+                  unit="kW/m²"
+                  value={figure(
                     thermal.thermalSummary.peakHeatFluxKilowattsPerSquareMetre,
-                    "kW/m²",
                   )}
                 />
               ) : null}
@@ -342,34 +337,28 @@ export function MissionReportViewer({ report }: MissionReportViewerProps) {
             aria-labelledby="mission-report-thermal-title"
             className="border-t border-border-subtle pt-8"
           >
-            <h4
-              className="orbix-h4 text-foreground"
-              id="mission-report-thermal-title"
-            >
+            <LabHeading id="mission-report-thermal-title" offset={1}>
               Thermal protection
-            </h4>
+            </LabHeading>
 
             <MetricList>
               <ReportMetric
                 label="Peak heat flux"
-                value={measure(
-                  thermal.thermalSummary.peakHeatFluxWattsPerSquareMetre,
-                  "W/m²",
+                unit="kW/m²"
+                value={figure(
+                  thermal.thermalSummary.peakHeatFluxKilowattsPerSquareMetre,
                 )}
               />
               <ReportMetric
                 label="Total heat load"
-                value={precise(
+                unit="MJ/m²"
+                value={figure(
                   thermal.thermalSummary.totalHeatLoadMegajoulesPerSquareMetre,
-                  "MJ/m²",
                 )}
               />
-              <ReportMetric
+              <AltitudeMetric
                 label="Peak heating altitude"
-                value={measure(
-                  thermal.thermalSummary.peakHeatingAltitudeMeters,
-                  "m",
-                )}
+                metres={thermal.thermalSummary.peakHeatingAltitudeMeters}
               />
             </MetricList>
 
@@ -385,19 +374,18 @@ export function MissionReportViewer({ report }: MissionReportViewerProps) {
                 <MetricList>
                   <ReportMetric
                     label="Required thickness"
-                    value={precise(tps.requiredThickness.millimetres, "mm")}
+                    unit="mm"
+                    value={figure(tps.requiredThickness.millimetres)}
                   />
                   <ReportMetric
                     label="Estimated TPS mass"
-                    value={precise(tps.estimatedTPSMassKilograms, "kg")}
+                    unit="kg"
+                    value={figure(tps.estimatedTPSMassKilograms)}
                   />
                   <ReportMetric
                     label="Thermal margin"
-                    value={
-                      measurementFormatter.format(
-                        tps.thermalMargin.marginPercentage,
-                      ) + "%"
-                    }
+                    unit="%"
+                    value={figure(tps.thermalMargin.marginPercentage)}
                   />
                   <ReportMetric
                     label="Margin classification"
@@ -418,20 +406,17 @@ export function MissionReportViewer({ report }: MissionReportViewerProps) {
           aria-labelledby="mission-report-assumptions-title"
           className="border-t border-border-subtle pt-8"
         >
-          <h4
-            className="orbix-h4 text-foreground"
-            id="mission-report-assumptions-title"
-          >
+          <LabHeading id="mission-report-assumptions-title" offset={1}>
             Assumptions and limits
-          </h4>
+          </LabHeading>
           <p className="mt-3 max-w-[68ch] text-sm leading-6 text-text-secondary">
             {missionAssessment.educationalSummary}
           </p>
           <div className="mt-4 grid gap-6 sm:grid-cols-2">
             <div>
-              <h5 className="text-sm font-semibold text-foreground">
+              <LabHeading offset={2} variant="sub">
                 Model assumptions
-              </h5>
+              </LabHeading>
               <ul className="mt-2 list-disc space-y-1 pl-5 text-sm leading-6 text-muted">
                 {missionAssessment.modelAssumptions.map((assumption) => (
                   <li key={assumption}>{assumption}</li>
@@ -439,7 +424,9 @@ export function MissionReportViewer({ report }: MissionReportViewerProps) {
               </ul>
             </div>
             <div>
-              <h5 className="text-sm font-semibold text-foreground">Limits</h5>
+              <LabHeading offset={2} variant="sub">
+                Limits
+              </LabHeading>
               <ul className="mt-2 list-disc space-y-1 pl-5 text-sm leading-6 text-muted">
                 {missionAssessment.limitations.map((limitation) => (
                   <li key={limitation}>{limitation}</li>

@@ -8,7 +8,7 @@ import {
 } from "../fixtures/orbix";
 
 /**
- * The 7 nav links in mobile-navigation.tsx's declared order (mirrors
+ * The 7 site links in mobile-navigation.tsx's declared order (mirrors
  * src/config/navigation.ts). Kept inline rather than imported so this a11y
  * suite stays decoupled from internal app config.
  */
@@ -23,9 +23,20 @@ const expectedLabels = [
 ];
 
 /**
- * The toggle's visible text is its accessible name (WCAG 2.5.3): "Menu" when
- * closed, "Close menu" when open. Matched exactly, because a substring match
- * on "Menu" would also find "Close menu".
+ * Design v2 (spec 8): the sheet also anchors a quieter group to its foot,
+ * About, How I built ORBIX and Image credits, then the operator line with
+ * the contact address as an inline link.
+ */
+const secondaryLabels = ["About", "How I built ORBIX", "Image credits"];
+
+/** The contact address link in the operator line. */
+const CONTACT_LINK = 'a[href^="mailto:"]';
+
+/**
+ * The toggle reads "Menu" when closed and "Close" when open (spec 8); open,
+ * its accessible name is "Close menu", which starts with the visible word
+ * (WCAG 2.5.3 label in name). Matched exactly, because a substring match on
+ * "Menu" would also find "Close menu".
  */
 function closedToggle(page: Page) {
   return page.getByRole("button", { name: "Menu", exact: true });
@@ -82,7 +93,7 @@ test.describe("Mobile navigation toggle", () => {
     await closedToggle(page).click();
 
     await expect(openToggle(page)).toHaveAttribute("aria-expanded", "true");
-    await expect(openToggle(page)).toHaveText("Close menu");
+    await expect(openToggle(page)).toHaveText("Close");
     // Same underlying <button>; its name genuinely changes with state rather
     // than a second control appearing alongside the first.
     await expect(closedToggle(page)).toHaveCount(0);
@@ -126,10 +137,11 @@ test.describe("Mobile navigation menu contents", () => {
 
     await expect(mobileNav(page)).toBeVisible();
     await expect(mobileNav(page).getByRole("link")).toHaveCount(
-      expectedLabels.length,
+      expectedLabels.length + secondaryLabels.length + 1,
     );
+    await expect(mobileNav(page).locator(CONTACT_LINK)).toHaveCount(1);
 
-    for (const label of expectedLabels) {
+    for (const label of [...expectedLabels, ...secondaryLabels]) {
       await expect(
         mobileNav(page).getByRole("link", { name: label, exact: true }),
       ).toBeVisible();
@@ -233,16 +245,33 @@ test.describe("Mobile navigation menu contents", () => {
     await openHome(page);
 
     await closedToggle(page).click();
+    // Every site and secondary link is a 44px target. The contact address
+    // is an inline link inside the operator sentence, which WCAG 2.5.8
+    // exempts from the target size; that it really is inline is asserted.
     const heights = await mobileNav(page)
       .getByRole("link")
       .evaluateAll((links) =>
-        links.map((link) => link.getBoundingClientRect().height),
+        links
+          .filter((link) => !link.matches('a[href^="mailto:"]'))
+          .map((link) => link.getBoundingClientRect().height),
       );
 
-    expect(heights).toHaveLength(expectedLabels.length);
+    expect(heights).toHaveLength(
+      expectedLabels.length + secondaryLabels.length,
+    );
     for (const height of heights) {
       expect(height).toBeGreaterThanOrEqual(44);
     }
+
+    const contactIsInline = await mobileNav(page)
+      .locator(CONTACT_LINK)
+      .evaluate((link) => {
+        const line = link.parentElement;
+        const lineText = (line?.textContent ?? "").trim();
+        const linkText = (link.textContent ?? "").trim();
+        return lineText.length > linkText.length;
+      });
+    expect(contactIsInline).toBe(true);
   });
 
   test("menu open does not cause horizontal overflow", async ({ page }) => {

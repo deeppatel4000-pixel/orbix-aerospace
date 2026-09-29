@@ -20,6 +20,7 @@ import { MissionShowcase } from "../presentation/mission-showcase";
 import { MissionStartupSequence } from "../presentation/mission-startup-sequence";
 import { MissionTradeStudy } from "../presentation/mission-trade-study";
 import { GroundTrackVisualization } from "./ground-track-visualization";
+import { HeadingLevel, LabHeading } from "./lab-heading";
 import { Mission3DScene } from "./mission-3d-scene";
 import { MissionControlShell } from "./mission-control-shell";
 import {
@@ -59,7 +60,7 @@ function WorkspaceEmptyState({
 }: WorkspaceEmptyStateProps) {
   return (
     <div className="orbix-empty-state">
-      <h4 className="orbix-h4 text-foreground">{title}</h4>
+      <LabHeading variant="sub">{title}</LabHeading>
       <p className="mt-2 max-w-[68ch] text-sm leading-6 text-muted">
         {message}
       </p>
@@ -237,6 +238,7 @@ export function MissionControlDashboard({
 
     return missionProfileAnalysis && missionReport ? (
       <MissionViewer
+        embedded
         missionProfileAnalysis={missionProfileAnalysis}
         missionReport={missionReport}
         vehicleReentryEvaluation={vehicleReentryEvaluation}
@@ -251,15 +253,19 @@ export function MissionControlDashboard({
     );
   }
 
+  // The shell's header holds the mission title (H3); everything below it
+  // is one level down, and each workspace view titles itself at that level.
   return (
-    <MissionStartupSequence
-      missionCategory={missionCategory}
-      missionProfileAnalysis={missionProfileAnalysis}
-      missionReport={missionReport}
-      vehicleReentryEvaluation={vehicleReentryEvaluation}
-    >
+    <HeadingLevel level={4}>
       <MissionControlShell
         activeWorkspace={activeView}
+        checks={
+          <MissionStartupSequence
+            missionProfileAnalysis={missionProfileAnalysis}
+            missionReport={missionReport}
+            vehicleReentryEvaluation={vehicleReentryEvaluation}
+          />
+        }
         missionCategory={missionCategory}
         missionPreset={missionPreset}
         missionProfileAnalysis={missionProfileAnalysis}
@@ -274,25 +280,19 @@ export function MissionControlDashboard({
             vehicleReentryEvaluation={vehicleReentryEvaluation}
           />
 
+          {/* The workspace is marked by a muted label, not a heading, so
+           * the view's own title is the first heading inside it. */}
           <section
-            aria-labelledby="mission-workspace-title"
+            aria-label="Mission visualization workspace"
             className="border-t border-border-subtle pt-8"
           >
-            <div className="flex flex-col gap-1 sm:flex-row sm:items-baseline sm:justify-between">
-              <h4
-                className="orbix-h4 text-foreground"
-                id="mission-workspace-title"
-              >
-                Mission visualization workspace
-              </h4>
-              <p className="text-sm text-muted">
-                Showing: {activeWorkspace?.label ?? "Overview"}
-              </p>
-            </div>
+            <p className="orbix-label">
+              Workspace: {activeWorkspace?.label ?? "Overview"}
+            </p>
 
             <div
               aria-labelledby={`mission-workspace-${activeView}-tab`}
-              className="mt-4 min-h-48"
+              className="mt-3 min-h-48"
               id="mission-workspace-panel"
               ref={workspacePanelRef}
               role="tabpanel"
@@ -306,33 +306,32 @@ export function MissionControlDashboard({
             aria-labelledby="engineering-review-title"
             className="border-t border-border-subtle pt-8"
           >
-            <h4
-              className="orbix-h4 text-foreground"
-              id="engineering-review-title"
-            >
+            <LabHeading id="engineering-review-title">
               Engineering review
-            </h4>
+            </LabHeading>
 
             {missionReport ? (
               <div className="mt-3 grid gap-6 lg:grid-cols-3">
                 <section aria-labelledby="engineering-review-scope-title">
-                  <h5
-                    className="text-sm font-semibold text-foreground"
+                  <LabHeading
                     id="engineering-review-scope-title"
+                    offset={1}
+                    variant="sub"
                   >
                     Modeling scope
-                  </h5>
+                  </LabHeading>
                   <p className="mt-2 text-sm leading-6 text-text-secondary">
                     {missionReport.missionAssessment.educationalSummary}
                   </p>
                 </section>
                 <section aria-labelledby="engineering-review-assumptions-title">
-                  <h5
-                    className="text-sm font-semibold text-foreground"
+                  <LabHeading
                     id="engineering-review-assumptions-title"
+                    offset={1}
+                    variant="sub"
                   >
                     Assumptions
-                  </h5>
+                  </LabHeading>
                   <ul className="mt-2 list-disc space-y-1 pl-5 text-sm leading-6 text-muted">
                     {missionReport.missionAssessment.modelAssumptions.map(
                       (assumption) => (
@@ -342,12 +341,13 @@ export function MissionControlDashboard({
                   </ul>
                 </section>
                 <section aria-labelledby="engineering-review-limits-title">
-                  <h5
-                    className="text-sm font-semibold text-foreground"
+                  <LabHeading
                     id="engineering-review-limits-title"
+                    offset={1}
+                    variant="sub"
                   >
                     Limits
-                  </h5>
+                  </LabHeading>
                   <ul className="mt-2 list-disc space-y-1 pl-5 text-sm leading-6 text-muted">
                     {missionReport.missionAssessment.limitations.map(
                       (limitation) => (
@@ -370,6 +370,6 @@ export function MissionControlDashboard({
           </section>
         </div>
       </MissionControlShell>
-    </MissionStartupSequence>
+    </HeadingLevel>
   );
 }

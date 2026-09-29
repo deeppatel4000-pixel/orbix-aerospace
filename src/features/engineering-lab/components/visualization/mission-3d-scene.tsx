@@ -11,7 +11,13 @@ import type {
 
 import { OrbitDiagram } from "./orbit-diagram";
 import { ReentryProfileChart } from "./reentry-profile-visualization";
-import { formatLabValue } from "./format-lab-value";
+import {
+  altitudeReadout,
+  formatLabAltitude,
+  formatLabValue,
+} from "./format-lab-value";
+import { formatFigure } from "@/components/ui/readout";
+import { LabHeading } from "./lab-heading";
 
 export type Mission3DMode = "orbital" | "reentry";
 
@@ -50,7 +56,7 @@ function SceneValue({
           }
         >
           {typeof value === "number"
-            ? formatLabValue(value)
+            ? formatFigure(formatLabValue(value))
             : (value ?? "Not reported")}
           {value !== undefined && unit ? ` ${unit}` : ""}
         </output>
@@ -83,10 +89,6 @@ export function Mission3DScene({
     initialMode ?? (hasOrbitalScene ? "orbital" : "reentry"),
   );
   const modeRefs = useRef<Array<HTMLButtonElement | null>>([]);
-  const missionName =
-    missionReport?.missionSummary.missionName ??
-    missionProfileAnalysis?.missionName ??
-    "Mission visualization";
 
   if (!hasOrbitalScene && !hasReentryScene) {
     return (
@@ -124,10 +126,7 @@ export function Mission3DScene({
   return (
     <section aria-labelledby={`${baseId}-title`} className="min-w-0">
       <header className="border-b border-border-subtle pb-4">
-        <h3 className="orbix-h3 text-foreground" id={`${baseId}-title`}>
-          Mission scene
-        </h3>
-        <p className="mt-1 text-sm text-muted">{missionName}</p>
+        <LabHeading id={`${baseId}-title`}>Mission scene</LabHeading>
       </header>
 
       <div
@@ -177,8 +176,8 @@ export function Mission3DScene({
             <OrbitDiagram
               description={
                 transfer
-                  ? `Initial orbit at ${formatLabValue(transfer.initialOrbit.altitudeMetres)} m, target orbit at ${formatLabValue(transfer.finalOrbit.altitudeMetres)} m, joined by a Hohmann transfer.`
-                  : `Maneuver orbit of radius ${formatLabValue(planeChange?.orbitalRadiusMetres ?? 0)} m.`
+                  ? `Initial orbit at ${formatLabAltitude(transfer.initialOrbit.altitudeMetres)}, target orbit at ${formatLabAltitude(transfer.finalOrbit.altitudeMetres)}, joined by a Hohmann transfer.`
+                  : `Maneuver orbit of radius ${formatLabAltitude(planeChange?.orbitalRadiusMetres ?? 0)}.`
               }
               finalAltitudeMetres={transfer?.finalOrbit.altitudeMetres}
               initialAltitudeMetres={transfer?.initialOrbit.altitudeMetres}
@@ -188,9 +187,12 @@ export function Mission3DScene({
               title="Earth with orbital mission paths"
             />
             <dl>
+              {/* The case drawn, not a phase: inside the replay the phase
+               * is whichever step is selected, so naming one here would
+               * contradict it. */}
               <SceneValue
-                label="Mission phase"
-                value={transfer ? "Orbit transfer" : "Orbital maneuver"}
+                label="Orbital case"
+                value={transfer ? "Hohmann transfer" : "Plane change"}
               />
               <SceneValue
                 label="Total delta-v"
@@ -202,8 +204,8 @@ export function Mission3DScene({
               />
               <SceneValue
                 label="Transfer duration"
-                unit="s"
-                value={transfer?.transfer.transferTimeSeconds}
+                unit="h"
+                value={transfer?.transfer.transferTimeHours}
               />
               <SceneValue
                 label="Plane change"
@@ -226,10 +228,9 @@ export function Mission3DScene({
               />
               <SceneValue
                 label="Initial altitude"
-                unit="m"
-                value={
-                  vehicleReentryEvaluation.summary.flight.initialAltitudeMeters
-                }
+                {...altitudeReadout(
+                  vehicleReentryEvaluation.summary.flight.initialAltitudeMeters,
+                )}
               />
               <SceneValue
                 label="Reentry duration"

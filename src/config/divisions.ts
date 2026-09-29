@@ -1,10 +1,13 @@
 /**
  * ORBIX route divisions.
  *
- * Since the 2026 redesign there is ONE accent sitewide, and no CSS keys off
- * `data-orbix-division` (see `docs/design-system/orbix-redesign-2026.md`,
- * section 4.3). `SiteShell` still writes the attribute because tests assert
- * it; it has no visual effect.
+ * `SiteShell` writes two attributes from the pathname:
+ *
+ * - `data-orbix-division`, the route's content division (asserted by tests,
+ *   no visual effect), and
+ * - `data-division`, the accent division from design v2 spec 4
+ *   (`space | aircraft | lab`), which swaps `--accent` in
+ *   `src/styles/orbix-tokens.css`. `accentDivisionFor` maps one to the other.
  *
  * The mapping is longest-prefix-wins on path segments:
  *
@@ -13,6 +16,7 @@
  *   /compare           engineering
  *   /engineering-lab   engineering
  *   /learn             research
+ *   /verification      research
  *   /showcase          space
  *   anything else      space (default)
  *
@@ -40,6 +44,7 @@ const divisionRoutes: ReadonlyArray<readonly [string, OrbixDivision]> = [
   ["/engineering-lab", "engineering"],
   ["/learn", "research"],
   ["/showcase", "space"],
+  ["/verification", "research"],
 ];
 
 /**
@@ -60,4 +65,24 @@ export function resolveDivision(pathname: string): OrbixDivision {
   }
 
   return match?.[1] ?? DEFAULT_DIVISION;
+}
+
+/** The three accent divisions of design v2 (spec 4). */
+export type AccentDivision = "aircraft" | "lab" | "space";
+
+const accentByDivision: Readonly<Record<OrbixDivision, AccentDivision>> = {
+  aircraft: "aircraft",
+  defense: "aircraft",
+  engineering: "lab",
+  research: "lab",
+  space: "space",
+};
+
+/**
+ * The accent a content division is drawn in: amber for aircraft, laboratory
+ * blue for the engineering and research routes (compare, the lab, learn,
+ * verification), cyan for everything else.
+ */
+export function accentDivisionFor(division: OrbixDivision): AccentDivision {
+  return accentByDivision[division];
 }

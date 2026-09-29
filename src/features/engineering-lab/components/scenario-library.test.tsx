@@ -66,9 +66,13 @@ describe("ScenarioLibrary", () => {
 
     expect(markup).toContain("No saved mission scenarios");
     expect(markup).toContain(
-      "Configure and analyze a mission in the mission scenario builder",
+      "Analyze a mission in the mission scenario builder",
     );
-    expect(markup).toContain("orbix-empty-state");
+    // Heading first, then one sentence, which is also the save hint.
+    expect(markup.indexOf("No saved mission scenarios")).toBeLessThan(
+      markup.indexOf('id="save-current-mission-hint"'),
+    );
+    expect(markup.match(/mission scenario builder/g)).toHaveLength(1);
     expect(markup).not.toContain('aria-label="Saved mission scenarios"');
   });
 

@@ -1,3 +1,4 @@
+import { cn } from "@/lib/cn";
 import { EmptyState } from "@/components/ui/empty-state";
 import type { MissionScenario } from "@/features/engineering-lab/missions";
 import type {
@@ -11,6 +12,7 @@ import {
   TradeStudyMetrics,
   type MissionTradeStudyEntry,
 } from "./trade-study-metrics";
+import { LabHeading } from "../visualization/lab-heading";
 
 export interface MissionTradeStudyProps {
   readonly analyses?: readonly MissionProfileAnalysis[];
@@ -38,9 +40,7 @@ export function MissionTradeStudy({
       className="min-w-0 text-foreground"
     >
       <header className="border-b border-border-subtle pb-4">
-        <h3 className="orbix-h3 text-foreground">
-          Architecture comparison review
-        </h3>
+        <LabHeading>Architecture comparison review</LabHeading>
         <p className="mt-2 max-w-[68ch] text-sm leading-6 text-muted">
           Mission trade study of saved architectures, using completed results
           only. It does not score, rank, or pick a preferred mission.
@@ -55,14 +55,27 @@ export function MissionTradeStudy({
           />
         ) : (
           <>
-            <section aria-labelledby="trade-study-scenarios-title">
-              <h4
-                className="orbix-h4 text-foreground"
-                id="trade-study-scenarios-title"
-              >
+            <section
+              aria-labelledby="trade-study-scenarios-title"
+              className="@container/trade"
+            >
+              <LabHeading offset={1} id="trade-study-scenarios-title">
                 Mission architectures
-              </h4>
-              <div className="mt-3 grid gap-4 lg:grid-cols-2 2xl:grid-cols-3">
+              </LabHeading>
+              {/* Open hairline grid: each architecture sits on a top
+               * rule; no outer box inside the tool frame. */}
+              <div
+                className={cn(
+                  "mt-3 grid gap-x-8",
+                  // One column per architecture up to three, matching the
+                  // mission columns of the table below, with no orphan.
+                  entries.length % 3 === 0
+                    ? "@[44rem]/trade:grid-cols-3"
+                    : entries.length % 2 === 0
+                      ? "@[30rem]/trade:grid-cols-2"
+                      : "@[30rem]/trade:grid-cols-2 @[44rem]/trade:grid-cols-3",
+                )}
+              >
                 {entries.map(({ scenario }, index) => (
                   <TradeStudyCard
                     index={index}
@@ -81,12 +94,9 @@ export function MissionTradeStudy({
               aria-labelledby="trade-study-insights-title"
               className="border-t border-border-subtle pt-8"
             >
-              <h4
-                className="orbix-h4 text-foreground"
-                id="trade-study-insights-title"
-              >
+              <LabHeading offset={1} id="trade-study-insights-title">
                 Trade study notes
-              </h4>
+              </LabHeading>
               <p className="mt-1 text-sm leading-6 text-muted">
                 Factual differences only. No recommendation.
               </p>

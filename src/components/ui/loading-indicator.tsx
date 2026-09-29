@@ -6,7 +6,7 @@ interface LoadingIndicatorProps {
 }
 
 /**
- * The one permitted infinite animation (spec 11): a 16px ring beside visible
+ * The one permitted infinite animation (spec 7): a 16px ring beside visible
  * text, shown only while something is loading. It stops rotating under
  * reduced motion.
  */

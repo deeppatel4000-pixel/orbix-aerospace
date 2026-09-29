@@ -3,6 +3,8 @@ import type {
   MissionReport,
 } from "@/features/engineering-lab/types";
 import { formatLabValue } from "../visualization/format-lab-value";
+import { formatFigure } from "@/components/ui/readout";
+import { LabHeading } from "../visualization/lab-heading";
 
 export interface ShowcaseTelemetryProps {
   readonly missionProfile: MissionProfileAnalysis;
@@ -30,7 +32,7 @@ function TelemetryCard({ label, unit, value }: TelemetryValue) {
           }
         >
           {typeof value === "number"
-            ? formatLabValue(value)
+            ? formatFigure(formatLabValue(value))
             : (value ?? "Not reported")}
           {value !== undefined && unit ? (
             <span className="ml-1 text-muted">{unit}</span>
@@ -75,8 +77,8 @@ export function ShowcaseTelemetry({
         },
         {
           label: "Transfer time",
-          unit: "s",
-          value: transfer?.transfer.transferTimeSeconds,
+          unit: "h",
+          value: transfer?.transfer.transferTimeHours,
         },
       ],
     },
@@ -117,9 +119,9 @@ export function ShowcaseTelemetry({
 
   return (
     <section aria-labelledby="showcase-telemetry-title">
-      <h4 className="orbix-h4 text-foreground" id="showcase-telemetry-title">
+      <LabHeading offset={1} id="showcase-telemetry-title">
         Mission values
-      </h4>
+      </LabHeading>
       <p className="mt-1 text-sm leading-6 text-muted">
         Values from the completed calculation. No values recalculated.
       </p>
@@ -130,12 +132,13 @@ export function ShowcaseTelemetry({
             aria-labelledby={`showcase-telemetry-${group.id}`}
             key={group.id}
           >
-            <h5
-              className="text-sm font-semibold text-foreground"
+            <LabHeading
+              offset={2}
+              variant="sub"
               id={`showcase-telemetry-${group.id}`}
             >
               {group.label}
-            </h5>
+            </LabHeading>
             <dl className="mt-2">
               {group.values.map((value) => (
                 <TelemetryCard key={value.label} {...value} />

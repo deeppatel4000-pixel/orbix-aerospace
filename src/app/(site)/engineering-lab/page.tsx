@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 
 import { EngineeringDashboard } from "@/features/engineering-lab";
+import { socialOpenGraph } from "@/lib/social-image";
 
 const title = "Engineering Lab";
 const description =
@@ -10,6 +11,7 @@ export const metadata: Metadata = {
   title,
   description,
   openGraph: {
+    ...socialOpenGraph,
     title: `${title} | ORBIX`,
     description,
   },

@@ -1,7 +1,9 @@
+import Image from "next/image";
 import Link from "next/link";
 
+import { licenceLabel } from "@/components/ui/photo-hero";
 import { siteLegal } from "@/config/site-legal";
-import { listAircraft } from "@/features/aircraft/data";
+import { getAircraftVisual, listAircraft } from "@/features/aircraft/data";
 import { ContactEmailLink } from "@/features/legal/components/contact-email-link";
 import {
   LegalPage,
@@ -18,6 +20,65 @@ const toc: readonly LegalTocItem[] = [
   { id: "contact", title: "Contact" },
 ];
 
+/** Visual "/" between credit items, not read out. */
+function Separator() {
+  return (
+    <span aria-hidden="true" className="text-muted">
+      /
+    </span>
+  );
+}
+
+const PLATE_AIRCRAFT_ID = "f-15-eagle";
+
+/**
+ * The page's one photograph: a framed 16:9 plate on the wide track with
+ * the credit, licence and source underneath in B612 Mono (spec 8). It has
+ * no registration marks: those are for hero plates below 48rem and
+ * showcase diagrams (spec 6). Renders nothing if the visual record is
+ * missing.
+ */
+function AboutPlate() {
+  const aircraft = listAircraft().find((item) => item.id === PLATE_AIRCRAFT_ID);
+  const visual = getAircraftVisual(PLATE_AIRCRAFT_ID);
+  if (!aircraft || !visual) return null;
+
+  const licence = licenceLabel(visual.license);
+
+  return (
+    <figure className="mt-6! mb-0">
+      <div className="relative">
+        <div className="aspect-video overflow-hidden rounded-md border border-border-subtle">
+          <Image
+            alt={visual.alt}
+            className="h-full w-full object-cover saturate-[0.85]"
+            height={visual.height}
+            sizes="(min-width: 80rem) 54rem, (min-width: 40rem) 90vw, 100vw"
+            src={visual.src}
+            style={{ objectPosition: visual.objectPosition }}
+            width={visual.width}
+          />
+        </div>
+      </div>
+      <figcaption className="orbix-micro mt-4 text-muted [&_a]:text-text-secondary [&_a]:decoration-border-control [&_a]:underline-offset-3 [&_a:hover]:text-text-primary">
+        {aircraft.name}. Photo: {visual.credit} <Separator />{" "}
+        {visual.licenseUrl ? (
+          <a
+            aria-label={licence.isShortened ? licence.full : undefined}
+            href={visual.licenseUrl}
+            rel="license"
+          >
+            {licence.short}
+          </a>
+        ) : (
+          licence.full
+        )}{" "}
+        <Separator /> <a href={visual.sourceUrl}>Source file</a>
+      </figcaption>
+    </figure>
+  );
+}
+
 function countLabel(count: number, singular: string, plural: string): string {
   return `${count} ${count === 1 ? singular : plural}`;
 }
@@ -28,16 +89,20 @@ export function AboutPage() {
 
   return (
     <LegalPage
-      crumb="About"
-      lead="ORBIX is an educational website about aircraft, launch vehicles and the engineering behind them, built as a student project."
-      title="About ORBIX"
+      eyebrow="The project"
+      lead={`ORBIX is an educational website about aircraft, launch vehicles and the engineering behind them. It is a personal project created by ${siteLegal.operatorName}, a high school student who plans to study aerospace engineering.`}
+      title="About"
+      titleAccent="ORBIX"
       toc={toc}
     >
       <LegalSection id="what-orbix-is" title="What ORBIX is">
         <p>
-          ORBIX is a free learning resource. It is written and built by{" "}
-          {siteLegal.operatorName}, a student, to explain aerospace engineering
-          through real vehicles. The site has five parts:
+          ORBIX is a free learning resource that explains aerospace engineering
+          through real vehicles. {siteLegal.operatorName} came up with the idea,
+          researched the content and directed the build; his account of how he
+          made it, including how he used AI coding assistants, is on{" "}
+          <Link href="/build-log">How I built ORBIX</Link>. The site has five
+          parts:
         </p>
         <ul>
           <li>
@@ -65,6 +130,7 @@ export function AboutPage() {
             built.
           </li>
         </ul>
+        <AboutPlate />
       </LegalSection>
 
       <LegalSection id="what-orbix-is-not" title="What ORBIX is not">
@@ -121,9 +187,11 @@ export function AboutPage() {
 
       <LegalSection id="who" title="Who runs it">
         <p>
-          ORBIX is run by {siteLegal.operatorName}, an individual in
-          Massachusetts, United States. The source code is public on{" "}
-          <a href={siteLegal.sourceCodeUrl}>GitHub</a> under the MIT License.
+          ORBIX is a personal project created and run by{" "}
+          {siteLegal.operatorName}, a high school student in Massachusetts,
+          United States, who plans to study aerospace engineering. The source
+          code is public on <a href={siteLegal.sourceCodeUrl}>GitHub</a> under
+          the MIT License.
         </p>
       </LegalSection>
 

@@ -5,17 +5,29 @@ import { useId, useRef, useState, type ReactNode } from "react";
 
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
+import { Eyebrow } from "@/components/ui/eyebrow";
+import { cn } from "@/lib/cn";
 
 export interface VehicleRegistryEntry {
   /** The rendered card. */
   readonly card: ReactNode;
+  /**
+   * Spans two grid columns from 64rem (spec 8: vary emphasis, the first
+   * card in a registry spans two columns). Render its card with the
+   * `feature` layout.
+   */
+  readonly featured?: boolean;
   readonly id: string;
   /** Text the search matches against: name, maker, roles and so on. */
   readonly keywords: string;
 }
 
 interface VehicleRegistryProps {
+  /** One sentence under the heading. */
+  description: string;
   entries: readonly VehicleRegistryEntry[];
+  /** Short label above the heading, sentence case. */
+  eyebrow: string;
   /** Id of the results section, kept stable for deep links. */
   id: string;
   /** "aircraft" / "launch vehicle", used in the count and messages. */
@@ -24,6 +36,8 @@ interface VehicleRegistryProps {
   searchLabel: string;
   /** Help text under the search field. */
   searchHelp: string;
+  /** The section's visible H2. */
+  title: string;
 }
 
 function normalise(value: string) {
@@ -31,17 +45,21 @@ function normalise(value: string) {
 }
 
 /**
- * The registry filter row and results (spec 14): a labelled search field, a
- * live result count, and a grid of card links (1 column, 2 from 640px, 3 from
- * 1024px). Every card is rendered on the server, so the full list is present
- * without JavaScript; the search only hides non-matching cards.
+ * The registry (spec 8, 9): a heading row with the search field and a live
+ * result count, then a grid of card links (1 column, 2 from 40rem, 3 from
+ * 64rem) whose featured first card spans two columns. Every card is
+ * rendered on the server, so the full list is present without JavaScript;
+ * the search only hides non-matching cards.
  */
 export function VehicleRegistry({
+  description,
   entries,
+  eyebrow,
   id,
   noun,
   searchHelp,
   searchLabel,
+  title,
 }: VehicleRegistryProps) {
   const [query, setQuery] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
@@ -57,45 +75,56 @@ export function VehicleRegistry({
   const countLabel = `${count} ${count === 1 ? noun.singular : noun.plural}`;
 
   return (
-    <section aria-labelledby={`${id}-title`} id={id}>
-      <h2 className="sr-only" id={`${id}-title`}>
-        Results
-      </h2>
-
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-        <div className="orbix-field w-full sm:max-w-sm">
-          <label className="orbix-field__label" htmlFor={inputId}>
-            {searchLabel}
-          </label>
-          <div className="orbix-field__control">
-            <Search
-              aria-hidden="true"
-              className="orbix-field__icon orbix-field__icon--start"
-              size={16}
-            />
-            <input
-              aria-controls={`${id}-list`}
-              aria-describedby={helpId}
-              autoComplete="off"
-              className="orbix-input"
-              id={inputId}
-              ref={inputRef}
-              onChange={(event) => setQuery(event.target.value)}
-              spellCheck={false}
-              type="search"
-              value={query}
-            />
-          </div>
-          <p className="orbix-field__help" id={helpId}>
-            {searchHelp}
+    <section aria-labelledby={`${id}-title`} className="scroll-mt-24" id={id}>
+      <div className="grid gap-8 border-b border-border pb-8 lg:grid-cols-12 lg:items-end lg:gap-6">
+        <div className="lg:col-span-7">
+          <Eyebrow>{eyebrow}</Eyebrow>
+          <h2 className="orbix-h2 mt-4 text-foreground" id={`${id}-title`}>
+            {title}
+          </h2>
+          <p className="mt-4 max-w-[60ch] text-pretty text-text-secondary">
+            {description}
           </p>
         </div>
 
-        <p aria-live="polite" className="text-sm text-muted" role="status">
-          {query.trim() === ""
-            ? countLabel
-            : `${countLabel} ${count === 1 ? "matches" : "match"} “${query.trim()}”`}
-        </p>
+        <div className="lg:col-span-5">
+          <div className="orbix-field w-full">
+            <label className="orbix-field__label" htmlFor={inputId}>
+              {searchLabel}
+            </label>
+            <div className="orbix-field__control">
+              <Search
+                aria-hidden="true"
+                className="orbix-field__icon orbix-field__icon--start"
+                size={16}
+              />
+              <input
+                aria-controls={`${id}-list`}
+                aria-describedby={helpId}
+                autoComplete="off"
+                className="orbix-input"
+                id={inputId}
+                ref={inputRef}
+                onChange={(event) => setQuery(event.target.value)}
+                spellCheck={false}
+                type="search"
+                value={query}
+              />
+            </div>
+            <p className="orbix-field__help" id={helpId}>
+              {searchHelp}
+            </p>
+          </div>
+          <p
+            aria-live="polite"
+            className="orbix-caps mt-4 text-muted"
+            role="status"
+          >
+            {query.trim() === ""
+              ? `Showing ${countLabel}`
+              : `${countLabel} ${count === 1 ? "matches" : "match"} “${query.trim()}”`}
+          </p>
+        </div>
       </div>
 
       <ul
@@ -104,7 +133,11 @@ export function VehicleRegistry({
         id={`${id}-list`}
       >
         {entries.map((entry) => (
-          <li hidden={!matches.includes(entry)} key={entry.id}>
+          <li
+            className={cn(entry.featured && "lg:col-span-2")}
+            hidden={!matches.includes(entry)}
+            key={entry.id}
+          >
             {entry.card}
           </li>
         ))}

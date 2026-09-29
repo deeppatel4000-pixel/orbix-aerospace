@@ -3,7 +3,6 @@ export { AircraftExplorer } from "./aircraft-explorer";
 export { AircraftImage } from "./aircraft-image";
 export { AircraftProfile } from "./aircraft-profile";
 export { EngineeringNotesPanel } from "./engineering-notes-panel";
-export { HistoricalTimeline } from "./historical-timeline";
 export { PerformancePanel } from "./performance-panel";
 export { PropulsionPanel } from "./propulsion-panel";
 export { RelatedAircraft } from "./related-aircraft";

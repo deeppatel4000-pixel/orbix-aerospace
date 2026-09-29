@@ -451,9 +451,12 @@ test.describe("Engineering Laboratory modules", () => {
       );
       expect(["auto", "scroll"]).toContain(geometry?.wrapperOverflowX);
       expect(geometry?.moduleClip, "the module must not clip").toBe(0);
-      expect(geometry?.bodyOverflow, "the page must not scroll sideways").toBe(
-        0,
-      );
+      // At most 0: with `scrollbar-gutter: stable` on the root (design v2)
+      // the document can be narrower than the client box, never wider.
+      expect(
+        geometry?.bodyOverflow,
+        "the page must not scroll sideways",
+      ).toBeLessThanOrEqual(0);
       // Still a table: values were not dropped to make it fit.
       expect(geometry?.headers).toBeGreaterThan(0);
       expect(geometry?.rows).toBeGreaterThan(0);

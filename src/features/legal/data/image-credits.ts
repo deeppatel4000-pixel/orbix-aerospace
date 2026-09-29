@@ -26,6 +26,8 @@ export type ImageCreditGroup = "Aircraft" | "Launch vehicles";
 
 export interface ImageCredit {
   readonly alt: string;
+  /** `object-position` for the registry card crop, which keeps the whole vehicle in frame. */
+  readonly cardObjectPosition: string;
   readonly credit: string | null;
   readonly group: ImageCreditGroup;
   readonly license: string | null;
@@ -50,6 +52,7 @@ function toCredit(
 ): ImageCredit {
   return {
     alt: visual.alt,
+    cardObjectPosition: visual.cardObjectPosition,
     credit: clean(visual.credit),
     group,
     license: clean(visual.license),

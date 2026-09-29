@@ -173,8 +173,9 @@ test.describe("Mission replay transport", () => {
   }) => {
     // Mission Replay supports selecting a phase, not seeking to a time. A
     // slider would advertise a capability the product does not implement, so
-    // this is a product-honesty contract rather than a styling one. The
-    // `<progress>` element reports position and is not interactive.
+    // this is a product-honesty contract rather than a styling one. Design
+    // v2 reports position in words (the status line) and in the phase step
+    // row, whose current step is marked; neither is a seek control.
     await openReplay(page);
 
     const seekControls = await page.evaluate(
@@ -185,9 +186,15 @@ test.describe("Mission replay transport", () => {
     );
     expect(seekControls, "no scrubber may exist in Mission Replay").toBe(0);
 
+    await expect(page.getByRole("progressbar")).toHaveCount(0);
     await expect(
-      page.getByRole("progressbar", { name: "Mission replay progress" }),
+      page
+        .locator('section[aria-labelledby="mission-replay-title"]')
+        .getByText(/^Phase 1 of \d+, paused: \S.*$/),
     ).toBeVisible();
+    await expect(
+      page.getByRole("button", { name: /^Show replay phase: .*, Current$/ }),
+    ).toHaveAttribute("aria-current", "step");
   });
 
   test("the transport stays reachable on a phone without body overflow", async ({

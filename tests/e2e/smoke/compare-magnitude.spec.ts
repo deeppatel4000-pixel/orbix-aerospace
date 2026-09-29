@@ -30,21 +30,45 @@ const ROCKETS = `${ROUTES.compare}?category=rockets&vehicles=falcon-9,falcon-hea
 
 const FILL = ".orbix-magnitude__fill";
 
-function row(page: import("@playwright/test").Page, id: string) {
-  return page.locator(`tr[data-row-id="${id}"]`);
+/**
+ * The row header text of each row this file inspects. Design v2 renders the
+ * comparison as one spec-sheet table per engineering group, and rows are
+ * found by their visible row header (the first line of the `th[scope=row]`,
+ * before its "What this measures" disclosure) rather than by a test hook.
+ */
+const ROW_LABELS = {
+  ceiling: "Ceiling",
+  "first-flight": "First flight",
+  height: "Height",
+  manufacturer: "Manufacturer",
+  mass: "Mass",
+  "orbit-capability": "Orbit capability",
+  "payload-capability": "Payload capability",
+  speed: "Speed",
+  stages: "Stages",
+  thrust: "Thrust",
+} as const;
+
+type RowId = keyof typeof ROW_LABELS;
+
+function row(page: import("@playwright/test").Page, id: RowId) {
+  return page.locator("tbody tr").filter({
+    has: page
+      .locator('th[scope="row"] > span > span:first-child')
+      .getByText(ROW_LABELS[id], { exact: true }),
+  });
 }
 
 /** Rendered fill widths for a row, left to right. */
 async function fillWidths(
   page: import("@playwright/test").Page,
-  id: string,
+  id: RowId,
 ): Promise<number[]> {
-  return page.evaluate((rowId) => {
-    const target = document.querySelector(`tr[data-row-id="${rowId}"]`);
-    return [...(target?.querySelectorAll(".orbix-magnitude__fill") ?? [])].map(
-      (node) => node.getBoundingClientRect().width,
+  return row(page, id)
+    .locator(FILL)
+    .evaluateAll((nodes) =>
+      nodes.map((node) => node.getBoundingClientRect().width),
     );
-  }, id);
 }
 
 /**
@@ -58,7 +82,7 @@ async function fillWidths(
  */
 async function settledFillWidths(
   page: import("@playwright/test").Page,
-  id: string,
+  id: RowId,
   expectedCount: number,
 ): Promise<number[]> {
   await expect
@@ -82,6 +106,8 @@ test.describe("Compare magnitude encoding", () => {
   }) => {
     await page.goto(MIXED_SPEED, { waitUntil: "domcontentloaded" });
 
+    // The row itself must exist, or the absence below would prove nothing.
+    await expect(row(page, "speed")).toHaveCount(1);
     await expect(row(page, "speed").locator(FILL)).toHaveCount(0);
 
     // The numbers themselves are untouched, in their own source units.
@@ -137,6 +163,7 @@ test.describe("Compare magnitude encoding", () => {
     await expect(row(page, "height").locator(FILL)).toHaveCount(3);
     await expect(row(page, "mass").locator(FILL)).toHaveCount(3);
     // Falcon 9 and Falcon Heavy publish kN; Saturn V publishes MN.
+    await expect(row(page, "thrust")).toHaveCount(1);
     await expect(row(page, "thrust").locator(FILL)).toHaveCount(0);
   });
 
@@ -159,7 +186,8 @@ test.describe("Compare magnitude encoding", () => {
       "stages",
       "payload-capability",
       "orbit-capability",
-    ]) {
+    ] as const) {
+      await expect(row(page, id), `${id} row must exist`).toHaveCount(1);
       await expect(
         row(page, id).locator(FILL),
         `${id} must remain text only`,
@@ -186,7 +214,10 @@ test.describe("Compare magnitude encoding", () => {
     expect(exposed).toBe(0);
 
     // No winner, best, rank or medal semantics anywhere in the matrix.
-    const matrix = (await page.locator("table").innerText()).toLowerCase();
+    // The sheet is one table per engineering group; read all of them.
+    const matrix = (await page.locator("table").allInnerTexts())
+      .join("\n")
+      .toLowerCase();
     for (const word of ["winner", "best", "rank", "fastest", "biggest"]) {
       expect(matrix, `the matrix must not claim a ${word}`).not.toContain(word);
     }

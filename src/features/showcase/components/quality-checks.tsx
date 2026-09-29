@@ -1,111 +1,181 @@
+import { Fragment } from "react";
+
+import { DataTable, type DataTableColumn } from "@/components/ui/data-table";
+import { formatCode } from "@/components/ui/readout";
+import { cn } from "@/lib/cn";
 import { ShowcaseSection } from "@/features/showcase/components/showcase-section";
 
-const ON_PUSH = "Every push to main and every pull request";
+interface QualityCheck {
+  readonly check: string;
+  readonly command: string;
+  readonly tool: string;
+}
 
 /**
- * What the two GitHub Actions workflows in `.github/workflows` run. Stated as
- * commands, with no test counts: counts would go stale the day they shipped.
+ * What the two GitHub Actions workflows in `.github/workflows` run, grouped
+ * by workflow. Stated as commands, with no test counts: counts would go
+ * stale the day they shipped.
  */
-const checks = [
+const validateChecks: readonly QualityCheck[] = [
   {
     check: "Formatting",
     command: "npm run format:check",
     tool: "Prettier",
-    when: ON_PUSH,
   },
   {
     check: "Lint, zero warnings allowed",
     command: "npm run lint",
     tool: "ESLint",
-    when: ON_PUSH,
   },
   {
     check:
       "Design rules: no file may add raw color values beyond its recorded baseline",
     command: "npm run check:design",
     tool: "Node script",
-    when: ON_PUSH,
   },
   {
     check: "Type check",
     command: "npm run typecheck",
     tool: "TypeScript",
-    when: ON_PUSH,
   },
   {
     check: "Unit tests for calculators, analyses and components",
     command: "npm run test",
     tool: "Vitest",
-    when: ON_PUSH,
   },
   {
     check: "Production build",
     command: "npm run build",
     tool: "Next.js",
-    when: ON_PUSH,
+  },
+];
+
+const browserChecks: readonly QualityCheck[] = [
+  {
+    check:
+      "Smoke and accessibility tests at desktop, tablet and mobile sizes, on every push to main and every pull request",
+    command:
+      "npx playwright test tests/e2e/smoke tests/e2e/a11y --project=desktop --project=tablet --project=mobile",
+    tool: "Playwright, Chromium",
   },
   {
     check:
-      "Browser smoke and accessibility tests at desktop, tablet and mobile sizes",
-    command: "npx playwright test tests/e2e/smoke tests/e2e/a11y",
-    tool: "Playwright, Chromium",
-    when: ON_PUSH,
-  },
-  {
-    check: "Visual regression screenshots",
+      "Visual regression screenshots, only when the workflow is run by hand",
     command: "npm run test:visual",
     tool: "Playwright, Chromium",
-    when: "Manual workflow run only",
   },
-] as const;
+];
+
+/**
+ * One command argument, kept on one line except at safe points: after a `/`
+ * in a path such as `tests/e2e/smoke`, and before the `=` of a flag such as
+ * `--project=desktop`.
+ */
+function CommandArgument({ part }: { part: string }) {
+  const flag = /^(--[\w-]+)(=.+)$/.exec(part);
+
+  return (
+    <span className="whitespace-nowrap">
+      {flag ? (
+        <>
+          {flag[1]}
+          <wbr />
+          {flag[2]}
+        </>
+      ) : (
+        formatCode(part, { breakAfterSlash: part.includes("/") })
+      )}
+    </span>
+  );
+}
+
+/**
+ * Check, then command, then tool. Below 48rem the Tool column is hidden and
+ * each tool is set under its check, the Check column narrows to 8rem, and
+ * long arguments break after a path `/` or before a flag's `=`, so both
+ * tables fit a 320px screen without scrolling.
+ */
+const columns: readonly DataTableColumn<QualityCheck>[] = [
+  {
+    cell: (row) => (
+      <span className="block w-[8rem] md:w-auto">
+        {row.check}
+        {/* Below 48rem the Tool column is hidden and the tool rides here. */}
+        <span className="mt-1 block font-normal text-text-muted md:hidden">
+          {row.tool}
+        </span>
+      </span>
+    ),
+    header: "Check",
+    key: "check",
+  },
+  {
+    cell: (row) => (
+      <code className="orbix-data orbix-data--sm block leading-[1.4rem] font-normal text-text-secondary md:min-w-[14rem]">
+        {row.command.split(" ").map((part, index) => (
+          <Fragment key={index}>
+            {index > 0 ? " " : null}
+            <CommandArgument part={part} />
+          </Fragment>
+        ))}
+      </code>
+    ),
+    header: "Command",
+    key: "command",
+  },
+  {
+    cell: (row) => <span className="whitespace-nowrap">{row.tool}</span>,
+    header: "Tool",
+    key: "tool",
+  },
+];
+
+/**
+ * From 48rem both tables share fixed column widths, so the two workflows
+ * line up as one list; the Command column takes the largest share, so
+ * long commands break as rarely as possible. Below that the third (Tool) column is hidden, and
+ * below 40rem the cells take 12px side padding instead of 16px.
+ */
+const alignedColumns = cn(
+  "max-md:[&_tr>:nth-child(3)]:hidden max-sm:[&_:is(th,td)]:px-3",
+  "md:[&_table]:table-fixed md:[&_thead_th:nth-child(1)]:w-[36%] md:[&_thead_th:nth-child(2)]:w-[46%]",
+  // Check, command and tool share one baseline in each row.
+  "[&_tbody_:is(th,td)]:align-baseline",
+);
 
 export function QualityChecks() {
   return (
     <ShowcaseSection
       id="quality-checks"
-      lead="Two GitHub Actions workflows run these checks. The first six run together as npm run validate."
+      lead={
+        <>
+          Two GitHub Actions workflows run these checks. The first six run
+          together as{" "}
+          <code className="orbix-data orbix-data--sm whitespace-nowrap">
+            {formatCode("npm run validate", { breakAfterSlash: false })}
+          </code>
+          .
+        </>
+      }
+      number={4}
       title="Quality checks"
     >
-      <div
-        aria-label="Quality checks run in continuous integration"
-        className="orbix-table-wrap"
-        role="region"
-        tabIndex={0}
-      >
-        <table className="orbix-table w-full">
-          <caption className="sr-only">
-            Checks run in continuous integration, with the command and when each
-            one runs
-          </caption>
-          <thead>
-            <tr>
-              <th scope="col">Check</th>
-              <th scope="col">Tool</th>
-              <th scope="col">Command</th>
-              <th scope="col">Runs on</th>
-            </tr>
-          </thead>
-          <tbody>
-            {checks.map((row) => (
-              <tr key={row.command}>
-                <th className="min-w-[12rem]" scope="row">
-                  {row.check}
-                </th>
-                <td className="whitespace-nowrap text-text-secondary">
-                  {row.tool}
-                </td>
-                <td>
-                  <code className="orbix-data orbix-data--sm whitespace-nowrap text-text-primary">
-                    {row.command}
-                  </code>
-                </td>
-                <td className="min-w-[10rem] text-text-secondary">
-                  {row.when}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+      <div className="grid grid-cols-[minmax(0,1fr)] gap-10">
+        <DataTable<QualityCheck>
+          caption="Validate workflow: every push to main and every pull request"
+          className={alignedColumns}
+          columns={columns}
+          getRowKey={(row) => row.command}
+          rows={validateChecks}
+        />
+        <DataTable<QualityCheck>
+          caption="Browser tests workflow"
+          className={alignedColumns}
+          columns={columns}
+          getRowKey={(row) => row.command}
+          note="Both workflows can also be started by hand from GitHub Actions."
+          rows={browserChecks}
+        />
       </div>
     </ShowcaseSection>
   );

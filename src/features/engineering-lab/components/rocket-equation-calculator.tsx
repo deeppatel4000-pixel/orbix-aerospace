@@ -1,25 +1,25 @@
 "use client";
 
-import { Button } from "@/components/ui";
+import { Button, EquationBlock } from "@/components/ui";
 import { useState, type FormEvent } from "react";
-import {
-  AlertTriangle,
-  Calculator,
-  Gauge,
-  RotateCcw,
-  Sigma,
-} from "lucide-react";
 
 import {
   calculateRocketEquation,
   STANDARD_GRAVITY_METRES_PER_SECOND_SQUARED,
 } from "@/features/engineering-lab/calculators";
 import {
+  EQ_LINE,
+  EQ_TERM,
   CalculatorNumberField,
   focusFirstInvalidField,
   CalculatorResultSection,
+  LAB_TOOL_SPLIT_STICKY,
+  LabToolLayout,
   NotCalculated,
+  ReadoutGrid,
   ValidationErrorSummary,
+  LabFigure,
+  EqDot,
 } from "@/features/engineering-lab/components/shared";
 import type {
   RocketEquationField,
@@ -62,11 +62,85 @@ function parseFormValues(
   };
 }
 
+const toolEquation = (
+  <EquationBlock
+    equation={
+      <>
+        <span className={EQ_LINE}>
+          <span className={EQ_TERM}>
+            Δv = I<sub>sp</sub>
+            <EqDot />g<sub>0</sub>
+          </span>
+          <wbr />
+          <span className={EQ_TERM}>
+            <EqDot />
+            ln(m<sub>0</sub>/m<sub>f</sub>)
+          </span>
+        </span>
+      </>
+    }
+    label="Ideal velocity change"
+    spokenAs="Delta v equals I s p times g zero times the natural log of m zero over m f."
+    variables={[
+      { symbol: "Δv", meaning: "Ideal velocity change", unit: "m/s" },
+      {
+        symbol: (
+          <>
+            I<sub>sp</sub>
+          </>
+        ),
+        meaning: "Specific impulse",
+        unit: "s",
+      },
+      {
+        symbol: (
+          <>
+            g<sub>0</sub>
+          </>
+        ),
+        meaning: (
+          <>Standard gravity, {STANDARD_GRAVITY_METRES_PER_SECOND_SQUARED}</>
+        ),
+        unit: "m/s²",
+      },
+      {
+        symbol: (
+          <>
+            m<sub>0</sub>
+          </>
+        ),
+        meaning: "Initial vehicle mass",
+        unit: "kg",
+      },
+      {
+        symbol: (
+          <>
+            m<sub>f</sub>
+          </>
+        ),
+        meaning: "Final vehicle mass",
+        unit: "kg",
+      },
+    ]}
+  />
+);
+
+/**
+ * The result for the default inputs, shown on first load so the tool never
+ * opens on an empty panel. The same calculation the form runs.
+ */
+const initialResult = calculateRocketEquation(
+  parseFormValues(initialFormValues),
+);
+
 export function RocketEquationCalculator() {
   const [values, setValues] =
     useState<RocketEquationFormValues>(initialFormValues);
   const [errors, setErrors] = useState<RocketEquationValidationErrors>({});
-  const [result, setResult] = useState<RocketEquationResult | null>(null);
+  const [result, setResult] = useState<RocketEquationResult | null>(
+    initialResult,
+  );
+  const [stale, setStale] = useState(false);
 
   function updateValue(field: RocketEquationField, value: string) {
     setValues((current) => ({ ...current, [field]: value }));
@@ -75,11 +149,12 @@ export function RocketEquationCalculator() {
       void removedError;
       return remainingErrors;
     });
-    setResult(null);
+    setStale(true);
   }
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    setStale(false);
 
     const inputs = parseFormValues(values);
     const validationErrors = validateRocketEquationInputs(inputs);
@@ -96,166 +171,145 @@ export function RocketEquationCalculator() {
   }
 
   function resetCalculator() {
+    setStale(false);
     setValues(initialFormValues);
     setErrors({});
-    setResult(null);
+    setResult(initialResult);
   }
 
   return (
-    <div className="grid gap-8 xl:grid-cols-[minmax(0,0.95fr)_minmax(22rem,1.05fr)] xl:gap-10">
-      <div>
-        <form noValidate onSubmit={handleSubmit}>
-          <div className="grid gap-5">
-            <CalculatorNumberField
-              error={errors.initialMassKg}
-              field="initialMassKg"
-              hint="Total vehicle mass before the modeled propellant burn."
-              idPrefix="rocket-equation"
-              label="Initial mass"
-              onChange={updateValue}
-              unit="kg"
-              value={values.initialMassKg}
-            />
-            <CalculatorNumberField
-              error={errors.finalMassKg}
-              field="finalMassKg"
-              hint="Vehicle mass after the modeled propellant has been expended."
-              idPrefix="rocket-equation"
-              label="Final mass"
-              onChange={updateValue}
-              unit="kg"
-              value={values.finalMassKg}
-            />
-            <CalculatorNumberField
-              error={errors.specificImpulseSeconds}
-              field="specificImpulseSeconds"
-              hint="A measure of propulsion efficiency expressed in seconds."
-              idPrefix="rocket-equation"
-              label="Specific impulse"
-              onChange={updateValue}
-              unit="s"
-              value={values.specificImpulseSeconds}
-            />
-          </div>
+    <LabToolLayout equation={toolEquation}>
+      <div className={LAB_TOOL_SPLIT_STICKY}>
+        <div className="@container/col min-w-0">
+          <form noValidate onSubmit={handleSubmit}>
+            <div className="grid gap-5">
+              <CalculatorNumberField
+                error={errors.initialMassKg}
+                field="initialMassKg"
+                hint="Total vehicle mass before the modeled propellant burn."
+                idPrefix="rocket-equation"
+                label="Initial mass"
+                onChange={updateValue}
+                unit="kg"
+                value={values.initialMassKg}
+              />
+              <CalculatorNumberField
+                error={errors.finalMassKg}
+                field="finalMassKg"
+                hint="Vehicle mass after the modeled propellant has been expended."
+                idPrefix="rocket-equation"
+                label="Final mass"
+                onChange={updateValue}
+                unit="kg"
+                value={values.finalMassKg}
+              />
+              <CalculatorNumberField
+                error={errors.specificImpulseSeconds}
+                field="specificImpulseSeconds"
+                hint="A measure of propulsion efficiency expressed in seconds."
+                idPrefix="rocket-equation"
+                label="Specific impulse"
+                onChange={updateValue}
+                unit="s"
+                value={values.specificImpulseSeconds}
+              />
+            </div>
 
-          <ValidationErrorSummary errors={errors} idPrefix="rocket-equation" />
+            <ValidationErrorSummary
+              errors={errors}
+              idPrefix="rocket-equation"
+            />
 
-          <div className="mt-7 flex flex-col gap-3 sm:flex-row">
-            <Button variant="primary" type="submit">
-              <Calculator aria-hidden="true" size={16} />
-              Calculate delta-v
-            </Button>
-            <Button variant="secondary" onClick={resetCalculator}>
-              <RotateCcw aria-hidden="true" size={16} />
-              Reset inputs
-            </Button>
-          </div>
-        </form>
-      </div>
-
-      <div className="space-y-5">
-        <CalculatorResultSection
-          eyebrow="Computed performance"
-          icon={Gauge}
-          id="rocket-equation-result"
-          title="Ideal delta-v"
-        >
-          {result ? (
-            <>
-              <output
-                className="orbix-data-lg block"
-                htmlFor="rocket-equation-initialMassKg rocket-equation-finalMassKg rocket-equation-specificImpulseSeconds"
+            <div className="mt-7 flex flex-wrap gap-3">
+              <Button
+                className="whitespace-nowrap"
+                variant="primary"
+                type="submit"
               >
-                {numberFormatter.format(result.deltaVMetresPerSecond)} m/s
-              </output>
-              <dl className="mt-6 grid gap-3 border-t border-border pt-5 sm:grid-cols-2">
+                Calculate delta-v
+              </Button>
+              <Button
+                className="whitespace-nowrap"
+                variant="secondary"
+                onClick={resetCalculator}
+              >
+                Reset inputs
+              </Button>
+            </div>
+          </form>
+        </div>
+
+        <div className="@container/col min-w-0 space-y-5">
+          <CalculatorResultSection
+            id="rocket-equation-result"
+            stale={stale && result !== null}
+            title="Ideal burn"
+          >
+            {result ? (
+              <ReadoutGrid>
+                <div>
+                  <dt className="orbix-label">Delta-v</dt>
+                  <dd>
+                    <output
+                      className="orbix-readout-lg"
+                      htmlFor="rocket-equation-initialMassKg rocket-equation-finalMassKg rocket-equation-specificImpulseSeconds"
+                    >
+                      <LabFigure unit="m/s">
+                        {numberFormatter.format(result.deltaVMetresPerSecond)}
+                      </LabFigure>
+                    </output>
+                  </dd>
+                </div>
                 <div>
                   <dt className="orbix-label">Mass ratio</dt>
                   <dd className="orbix-data mt-1">
-                    {numberFormatter.format(result.massRatio)}
+                    <LabFigure>
+                      {numberFormatter.format(result.massRatio)}
+                    </LabFigure>
                   </dd>
                 </div>
                 <div>
                   <dt className="orbix-label">Effective exhaust velocity</dt>
                   <dd className="orbix-data mt-1">
-                    {numberFormatter.format(
-                      result.effectiveExhaustVelocityMetresPerSecond,
-                    )}{" "}
-                    m/s
+                    <LabFigure unit="m/s">
+                      {numberFormatter.format(
+                        result.effectiveExhaustVelocityMetresPerSecond,
+                      )}
+                    </LabFigure>
                   </dd>
                 </div>
-              </dl>
-            </>
-          ) : (
-            <NotCalculated invalid={Object.values(errors).some(Boolean)}>
-              Validate the inputs and run the calculation to produce an ideal
-              delta-v result.
-            </NotCalculated>
-          )}
-        </CalculatorResultSection>
+              </ReadoutGrid>
+            ) : (
+              <NotCalculated invalid={Object.values(errors).some(Boolean)}>
+                Validate the inputs and run the calculation to produce an ideal
+                delta-v result.
+              </NotCalculated>
+            )}
+          </CalculatorResultSection>
+        </div>
 
-        <section className="rounded-md border border-border bg-surface p-4 sm:p-6">
-          <p className="orbix-label flex items-center gap-2">
-            <Sigma aria-hidden="true" size={15} />
-            Equation model
-          </p>
-          <p
-            aria-label="Delta v equals specific impulse multiplied by standard gravity multiplied by the natural logarithm of initial mass divided by final mass"
-            className="orbix-lab-equation mt-4"
-          >
-            Δv = Isp × g0 × ln(m0 / mf)
-          </p>
-          <dl className="mt-5 grid gap-4 text-sm sm:grid-cols-2">
-            <div>
-              <dt className="orbix-data text-foreground">Δv</dt>
-              <dd className="mt-1 text-muted">Ideal velocity change</dd>
-            </div>
-            <div>
-              <dt className="orbix-data text-foreground">Isp</dt>
-              <dd className="mt-1 text-muted">Specific impulse in seconds</dd>
-            </div>
-            <div>
-              <dt className="orbix-data text-foreground">g0</dt>
-              <dd className="mt-1 text-muted">
-                {STANDARD_GRAVITY_METRES_PER_SECOND_SQUARED} m/s²
-              </dd>
-            </div>
-            <div>
-              <dt className="orbix-data text-foreground">ln</dt>
-              <dd className="mt-1 text-muted">Natural logarithm</dd>
-            </div>
-            <div>
-              <dt className="orbix-data text-foreground">m0</dt>
-              <dd className="mt-1 text-muted">Initial vehicle mass</dd>
-            </div>
-            <div>
-              <dt className="orbix-data text-foreground">mf</dt>
-              <dd className="mt-1 text-muted">Final vehicle mass</dd>
-            </div>
-          </dl>
-        </section>
-
-        <aside className="orbix-lab-note">
-          <p className="orbix-lab-note__title">
-            <AlertTriangle aria-hidden="true" size={17} />
-            Engineering notes
-          </p>
-          <ul className="mt-4 list-disc space-y-2 pl-5 text-sm leading-6 text-muted">
-            <li>
-              This is an ideal, one-dimensional model with constant specific
-              impulse.
-            </li>
-            <li>
-              Gravity, aerodynamic drag, steering losses, and finite burn time
-              are excluded.
-            </li>
-            <li>
-              Final mass should include dry structure, engines, residual
-              propellant, and payload remaining after the burn.
-            </li>
-          </ul>
-        </aside>
+        <div className="@container/col min-w-0 space-y-5">
+          <aside className="orbix-lab-note">
+            <p className="orbix-lab-note__title font-medium">
+              Engineering notes
+            </p>
+            <ul className="mt-4 list-disc space-y-2 pl-5 text-sm leading-6 text-muted">
+              <li>
+                This is an ideal, one-dimensional model with constant specific
+                impulse.
+              </li>
+              <li>
+                Gravity, aerodynamic drag, steering losses, and finite burn time
+                are excluded.
+              </li>
+              <li>
+                Final mass should include dry structure, engines, residual
+                propellant, and payload remaining after the burn.
+              </li>
+            </ul>
+          </aside>
+        </div>
       </div>
-    </div>
+    </LabToolLayout>
   );
 }

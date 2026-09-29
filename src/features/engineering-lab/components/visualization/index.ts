@@ -39,10 +39,6 @@ export {
   resolveWorkspaceNavigationIndex,
 } from "./mission-control-sidebar";
 export {
-  MissionControlStatusBar,
-  type MissionControlStatusBarProps,
-} from "./mission-control-status-bar";
-export {
   type Mission3DMode,
   Mission3DScene,
   type Mission3DSceneProps,

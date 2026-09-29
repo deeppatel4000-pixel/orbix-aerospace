@@ -1,31 +1,32 @@
 "use client";
 
-import { Button } from "@/components/ui";
+import { Button, EquationBlock } from "@/components/ui";
 import { useMemo, useState, type FormEvent } from "react";
-import {
-  AlertTriangle,
-  CircleDot,
-  CloudSun,
-  Flame,
-  Gauge,
-  RotateCcw,
-} from "lucide-react";
 
 import { analyzeHypersonicHeating } from "@/features/engineering-lab/analysis";
 import {
+  EQ_LINE,
+  EQ_TERM,
   CalculatorNumberField,
   focusFirstInvalidField,
+  GEOPOTENTIAL_ALTITUDE_HINT,
+  GEOPOTENTIAL_ALTITUDE_LABEL,
   focusFirstInvalidFieldOnEnter,
   CalculatorResultSection,
+  LAB_TOOL_SPLIT,
+  LabToolLayout,
   NotCalculated,
+  ReadoutGrid,
   ValidationErrorSummary,
+  LabFigure,
+  EqDot,
+  EQ_SUP,
 } from "@/features/engineering-lab/components/shared";
 import type {
   FlowRegime,
   HypersonicHeatingAnalysis,
   HypersonicHeatingInputs,
 } from "@/features/engineering-lab/types";
-import { STANDARD_ATMOSPHERE_MAX_ALTITUDE_METRES } from "@/features/engineering-lab/types";
 
 type HypersonicHeatingField =
   | "altitudeMetres"
@@ -149,6 +150,65 @@ function deriveViewState(
   }
 }
 
+const toolEquation = (
+  <EquationBlock
+    equation={
+      <>
+        <span className={EQ_LINE}>
+          <span className={EQ_TERM}>q̇ = k</span>
+          <wbr />
+          <span className={EQ_TERM}>
+            <EqDot />
+            √(ρ/r<sub>n</sub>)
+          </span>
+          <wbr />
+          <span className={EQ_TERM}>
+            <EqDot />V<sup className={EQ_SUP}>3</sup>
+          </span>
+        </span>
+        <span className={EQ_LINE}>
+          <span className={EQ_TERM}>M = V/a</span>
+        </span>
+      </>
+    }
+    label="Stagnation-point heating, Sutton-Graves form"
+    spokenAs="Heat flux equals k times the square root of density over nose radius, times velocity cubed. Mach number M equals V over a."
+    variables={[
+      {
+        symbol: "q̇",
+        meaning: "Stagnation-point convective heat flux",
+        unit: "W/m²",
+      },
+      {
+        symbol: "k",
+        meaning:
+          "Heating coefficient; by default 1.83 × 10⁻⁴ in SI units, for Earth air",
+      },
+      {
+        symbol: "ρ",
+        meaning:
+          "Air density from the standard troposphere at geopotential altitude",
+        unit: "kg/m³",
+      },
+      {
+        symbol: (
+          <>
+            r<sub>n</sub>
+          </>
+        ),
+        meaning: "Nose radius",
+        unit: "m",
+      },
+      { symbol: "V", meaning: "Flight velocity", unit: "m/s" },
+      {
+        symbol: "a",
+        meaning: "Speed of sound at the same altitude",
+        unit: "m/s",
+      },
+    ]}
+  />
+);
+
 export function HypersonicHeatingAnalyzer() {
   const [values, setValues] =
     useState<HypersonicHeatingFormValues>(initialFormValues);
@@ -173,147 +233,97 @@ export function HypersonicHeatingAnalyzer() {
   }
 
   return (
-    <div className="grid gap-8 xl:grid-cols-[minmax(0,0.95fr)_minmax(22rem,1.05fr)] xl:gap-10">
-      <div>
-        <form
-          noValidate
-          onKeyDown={focusFirstInvalidFieldOnEnter}
-          onSubmit={preventSubmission}
-        >
-          <fieldset>
-            <legend className="text-base font-semibold text-foreground">
-              Thermal analysis inputs
-            </legend>
-            <div className="mt-5 grid gap-5 sm:grid-cols-2">
-              <CalculatorNumberField
-                error={errors.altitudeMetres}
-                field="altitudeMetres"
-                hint={`Geometric altitude from sea level through ${STANDARD_ATMOSPHERE_MAX_ALTITUDE_METRES.toLocaleString("en-US")} metres.`}
-                idPrefix="hypersonic-heating"
-                label="Altitude"
-                onChange={updateValue}
-                unit="m"
-                value={values.altitudeMetres}
-              />
-              <CalculatorNumberField
-                error={errors.velocityMetresPerSecond}
-                field="velocityMetresPerSecond"
-                hint="Positive vehicle velocity relative to the surrounding atmosphere."
-                idPrefix="hypersonic-heating"
-                label="Velocity"
-                onChange={updateValue}
-                unit="m/s"
-                value={values.velocityMetresPerSecond}
-              />
-              <CalculatorNumberField
-                error={errors.noseRadiusMetres}
-                field="noseRadiusMetres"
-                hint="Positive local radius of curvature at the stagnation point."
-                idPrefix="hypersonic-heating"
-                label="Nose radius"
-                onChange={updateValue}
-                unit="m"
-                value={values.noseRadiusMetres}
-              />
-              <CalculatorNumberField
-                error={errors.heatingCoefficient}
-                field="heatingCoefficient"
-                hint="Optional positive empirical coefficient. Leave blank to use the educational default."
-                idPrefix="hypersonic-heating"
-                label="Heating coefficient k (optional)"
-                optional
-                onChange={updateValue}
-                unit="kg½/m"
-                value={values.heatingCoefficient}
-              />
-            </div>
-          </fieldset>
-
-          <ValidationErrorSummary
-            errors={[
-              errors.altitudeMetres,
-              errors.velocityMetresPerSecond,
-              errors.noseRadiusMetres,
-              errors.heatingCoefficient,
-              errors.form,
-            ]}
-          />
-
-          <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:items-center">
-            <p className="text-sm leading-6 text-muted">
-              Valid changes update the atmospheric, flow, and thermal states
-              immediately.
-            </p>
-            <Button
-              className="shrink-0 whitespace-nowrap sm:ml-auto"
-              variant="secondary"
-              onClick={resetAnalyzer}
-            >
-              <RotateCcw aria-hidden="true" size={16} />
-              Reset inputs
-            </Button>
-          </div>
-        </form>
-
-        <section
-          aria-labelledby="hypersonic-heating-relationships-title"
-          className="mt-8 border-t border-border pt-7"
-        >
-          <p className="orbix-label">Educational visualization</p>
-          <h3
-            className="mt-1 text-lg font-semibold"
-            id="hypersonic-heating-relationships-title"
+    <LabToolLayout equation={toolEquation}>
+      <div className={LAB_TOOL_SPLIT}>
+        <div className="@container/col min-w-0">
+          <form
+            noValidate
+            onKeyDown={focusFirstInvalidFieldOnEnter}
+            onSubmit={preventSubmission}
           >
-            What shapes stagnation heating?
-          </h3>
-          <div className="mt-5 grid gap-4 sm:grid-cols-3 xl:grid-cols-1">
-            <article className="rounded-md border border-border-subtle bg-surface-raised p-4">
-              <Gauge aria-hidden="true" className="text-muted" size={18} />
-              <h4 className="mt-3 text-sm font-semibold">Velocity</h4>
-              <p className="mt-2 text-sm leading-6 text-muted">
-                Velocity has the strongest influence in this approximation, so
-                modest speed increases can produce much larger heat flux.
-              </p>
-            </article>
-            <article className="rounded-md border border-border-subtle bg-surface-raised p-4">
-              <CloudSun aria-hidden="true" className="text-muted" size={18} />
-              <h4 className="mt-3 text-sm font-semibold">
-                Altitude and density
-              </h4>
-              <p className="mt-2 text-sm leading-6 text-muted">
-                Standard-atmosphere density falls with altitude, leaving fewer
-                air particles available to transfer convective heat.
-              </p>
-            </article>
-            <article className="rounded-md border border-border-subtle bg-surface-raised p-4">
-              <CircleDot aria-hidden="true" className="text-muted" size={18} />
-              <h4 className="mt-3 text-sm font-semibold">Nose radius</h4>
-              <p className="mt-2 text-sm leading-6 text-muted">
-                A larger, blunter radius spreads the stagnation region and
-                lowers the model&apos;s predicted peak heating.
-              </p>
-            </article>
-          </div>
-        </section>
-      </div>
+            <fieldset>
+              <legend className="text-base font-semibold text-foreground">
+                Thermal analysis inputs
+              </legend>
+              <div className="mt-4 grid gap-5 @min-[36rem]/col:grid-cols-2">
+                <CalculatorNumberField
+                  error={errors.altitudeMetres}
+                  field="altitudeMetres"
+                  hint={GEOPOTENTIAL_ALTITUDE_HINT}
+                  idPrefix="hypersonic-heating"
+                  label={GEOPOTENTIAL_ALTITUDE_LABEL}
+                  onChange={updateValue}
+                  unit="m"
+                  value={values.altitudeMetres}
+                />
+                <CalculatorNumberField
+                  error={errors.velocityMetresPerSecond}
+                  field="velocityMetresPerSecond"
+                  hint="Positive vehicle velocity relative to the surrounding atmosphere."
+                  idPrefix="hypersonic-heating"
+                  label="Velocity"
+                  onChange={updateValue}
+                  unit="m/s"
+                  value={values.velocityMetresPerSecond}
+                />
+                <CalculatorNumberField
+                  error={errors.noseRadiusMetres}
+                  field="noseRadiusMetres"
+                  hint="Positive local radius of curvature at the stagnation point."
+                  idPrefix="hypersonic-heating"
+                  label="Nose radius"
+                  onChange={updateValue}
+                  unit="m"
+                  value={values.noseRadiusMetres}
+                />
+                <CalculatorNumberField
+                  error={errors.heatingCoefficient}
+                  field="heatingCoefficient"
+                  hint="Optional positive empirical coefficient. Leave blank to use the educational default."
+                  idPrefix="hypersonic-heating"
+                  label="Heating coefficient k (optional)"
+                  optional
+                  onChange={updateValue}
+                  unit="kg½/m"
+                  value={values.heatingCoefficient}
+                />
+              </div>
+            </fieldset>
 
-      <div className="space-y-5">
-        <CalculatorResultSection
-          eyebrow="Atmosphere, flow and heating"
-          icon={Flame}
-          id="hypersonic-heating-result"
-          title="Hypersonic heating analysis"
-        >
-          {result ? (
-            <div className="space-y-6">
-              <section aria-labelledby="hypersonic-heating-atmosphere-title">
-                <h4
-                  className="text-sm font-semibold text-foreground"
-                  id="hypersonic-heating-atmosphere-title"
-                >
-                  Atmospheric state
-                </h4>
-                <dl className="mt-3 grid gap-4 sm:grid-cols-2">
+            <ValidationErrorSummary
+              errors={[
+                errors.altitudeMetres,
+                errors.velocityMetresPerSecond,
+                errors.noseRadiusMetres,
+                errors.heatingCoefficient,
+                errors.form,
+              ]}
+            />
+
+            <div className="mt-7 flex flex-wrap items-center gap-x-5 gap-y-3">
+              <p className="min-w-0 flex-[1_1_16rem] text-sm leading-6 text-muted">
+                Valid changes update the atmospheric, flow, and thermal states
+                immediately.
+              </p>
+              <Button
+                className="shrink-0 whitespace-nowrap"
+                variant="secondary"
+                onClick={resetAnalyzer}
+              >
+                Reset inputs
+              </Button>
+            </div>
+          </form>
+        </div>
+
+        <div className="@container/col min-w-0 space-y-5">
+          <CalculatorResultSection
+            id="hypersonic-heating-result"
+            title="Hypersonic heating analysis"
+          >
+            {result ? (
+              <>
+                <ReadoutGrid columns={2} title="Atmospheric state">
                   <div>
                     <dt className="orbix-label">Temperature</dt>
                     <dd className="mt-1">
@@ -321,10 +331,11 @@ export function HypersonicHeatingAnalyzer() {
                         className="orbix-data"
                         htmlFor={atmosphericOutputIds}
                       >
-                        {stateFormatter.format(
-                          result.atmosphere.temperatureKelvin,
-                        )}{" "}
-                        K
+                        <LabFigure unit="K">
+                          {stateFormatter.format(
+                            result.atmosphere.temperatureKelvin,
+                          )}
+                        </LabFigure>
                       </output>
                     </dd>
                   </div>
@@ -335,10 +346,11 @@ export function HypersonicHeatingAnalyzer() {
                         className="orbix-data"
                         htmlFor={atmosphericOutputIds}
                       >
-                        {stateFormatter.format(
-                          result.atmosphere.pressurePascals,
-                        )}{" "}
-                        Pa
+                        <LabFigure unit="Pa">
+                          {stateFormatter.format(
+                            result.atmosphere.pressurePascals,
+                          )}
+                        </LabFigure>
                       </output>
                     </dd>
                   </div>
@@ -349,10 +361,11 @@ export function HypersonicHeatingAnalyzer() {
                         className="orbix-data"
                         htmlFor={atmosphericOutputIds}
                       >
-                        {densityFormatter.format(
-                          result.atmosphere.densityKilogramsPerCubicMetre,
-                        )}{" "}
-                        kg/m³
+                        <LabFigure unit="kg/m³">
+                          {densityFormatter.format(
+                            result.atmosphere.densityKilogramsPerCubicMetre,
+                          )}
+                        </LabFigure>
                       </output>
                     </dd>
                   </div>
@@ -363,35 +376,26 @@ export function HypersonicHeatingAnalyzer() {
                         className="orbix-data"
                         htmlFor={atmosphericOutputIds}
                       >
-                        {stateFormatter.format(
-                          result.atmosphere.speedOfSoundMetersPerSecond,
-                        )}{" "}
-                        m/s
+                        <LabFigure unit="m/s">
+                          {stateFormatter.format(
+                            result.atmosphere.speedOfSoundMetersPerSecond,
+                          )}
+                        </LabFigure>
                       </output>
                     </dd>
                   </div>
-                </dl>
-              </section>
+                </ReadoutGrid>
 
-              <section
-                aria-labelledby="hypersonic-heating-flow-title"
-                className="border-t border-border pt-5"
-              >
-                <h4
-                  className="text-sm font-semibold text-foreground"
-                  id="hypersonic-heating-flow-title"
-                >
-                  Flow state
-                </h4>
-                <dl className="mt-3 grid gap-4 sm:grid-cols-2">
+                <ReadoutGrid columns={2} title="Flow state">
                   <div>
                     <dt className="orbix-label">Velocity</dt>
                     <dd className="mt-1">
                       <output className="orbix-data" htmlFor={flowOutputIds}>
-                        {stateFormatter.format(
-                          result.flow.velocityMetresPerSecond,
-                        )}{" "}
-                        m/s
+                        <LabFigure unit="m/s">
+                          {stateFormatter.format(
+                            result.flow.velocityMetresPerSecond,
+                          )}
+                        </LabFigure>
                       </output>
                     </dd>
                   </div>
@@ -399,7 +403,9 @@ export function HypersonicHeatingAnalyzer() {
                     <dt className="orbix-label">Mach number</dt>
                     <dd className="mt-1">
                       <output className="orbix-data" htmlFor={flowOutputIds}>
-                        {machFormatter.format(result.flow.machNumber)}
+                        <LabFigure>
+                          {machFormatter.format(result.flow.machNumber)}
+                        </LabFigure>
                       </output>
                     </dd>
                   </div>
@@ -407,52 +413,42 @@ export function HypersonicHeatingAnalyzer() {
                     <dt className="orbix-label">Flow regime</dt>
                     <dd className="mt-1">
                       <output
-                        className="text-sm font-semibold"
+                        className="lab-value-text"
                         htmlFor={flowOutputIds}
                       >
                         {flowRegimeLabels[result.flow.flowRegime]}
                       </output>
                     </dd>
                   </div>
-                </dl>
-              </section>
+                </ReadoutGrid>
 
-              <section
-                aria-labelledby="hypersonic-heating-thermal-title"
-                className="border-t border-border pt-5"
-              >
-                <h4
-                  className="text-sm font-semibold text-foreground"
-                  id="hypersonic-heating-thermal-title"
-                >
-                  Thermal state
-                </h4>
-                <dl className="mt-3 grid gap-4 sm:grid-cols-2">
+                <ReadoutGrid columns={2} title="Thermal state">
                   <div>
                     <dt className="orbix-label">Heat flux</dt>
                     <dd className="mt-1">
                       <output
-                        className="orbix-data-lg"
+                        className="orbix-readout-lg"
                         htmlFor={thermalOutputIds}
                       >
-                        {heatFluxFormatter.format(
-                          result.thermal.heatFluxWattsPerSquareMetre,
-                        )}{" "}
-                        W/m²
+                        <LabFigure unit="kW/m²">
+                          {heatFluxFormatter.format(
+                            result.thermal.heatFluxKilowattsPerSquareMetre,
+                          )}
+                        </LabFigure>
                       </output>
                     </dd>
                   </div>
                   <div>
-                    <dt className="orbix-label">Heat flux</dt>
+                    <dt className="orbix-label">
+                      Heat flux, watts per square metre
+                    </dt>
                     <dd className="mt-1">
-                      <output
-                        className="orbix-data-lg"
-                        htmlFor={thermalOutputIds}
-                      >
-                        {heatFluxFormatter.format(
-                          result.thermal.heatFluxKilowattsPerSquareMetre,
-                        )}{" "}
-                        kW/m²
+                      <output className="orbix-data" htmlFor={thermalOutputIds}>
+                        <LabFigure unit="W/m²">
+                          {heatFluxFormatter.format(
+                            result.thermal.heatFluxWattsPerSquareMetre,
+                          )}
+                        </LabFigure>
                       </output>
                     </dd>
                   </div>
@@ -460,40 +456,82 @@ export function HypersonicHeatingAnalyzer() {
                     <dt className="orbix-label">Heating coefficient used</dt>
                     <dd className="mt-1">
                       <output className="orbix-data" htmlFor={thermalOutputIds}>
-                        {coefficientFormatter.format(
-                          result.thermal.heatingCoefficient,
-                        )}{" "}
-                        kg½/m
+                        <LabFigure unit="kg½/m">
+                          {coefficientFormatter.format(
+                            result.thermal.heatingCoefficient,
+                          )}
+                        </LabFigure>
                       </output>
                     </dd>
                   </div>
-                </dl>
-              </section>
-            </div>
-          ) : (
-            <NotCalculated invalid={Object.values(errors).some(Boolean)}>
-              Enter valid atmospheric and vehicle conditions to resolve the flow
-              regime and estimated stagnation-point heat flux.
-            </NotCalculated>
-          )}
-        </CalculatorResultSection>
+                </ReadoutGrid>
+              </>
+            ) : (
+              <NotCalculated invalid={Object.values(errors).some(Boolean)}>
+                Enter valid atmospheric and vehicle conditions to resolve the
+                flow regime and estimated stagnation-point heat flux.
+              </NotCalculated>
+            )}
+          </CalculatorResultSection>
+        </div>
 
-        <aside className="orbix-lab-note">
-          <p className="orbix-lab-note__title">
-            <AlertTriangle aria-hidden="true" size={17} />
-            Engineering assumptions
-          </p>
-          <ul className="mt-4 grid list-disc gap-2 pl-5 text-sm leading-6 text-muted sm:grid-cols-2">
-            <li>Dry-air standard atmosphere</li>
-            <li>Convective stagnation-point heating only</li>
-            <li>Sutton-Graves style approximation</li>
-            <li>No radiation</li>
-            <li>No ablation</li>
-            <li>No real-gas chemistry</li>
-            <li>No thermal protection system modeling</li>
-          </ul>
-        </aside>
+        <div className="@container/col min-w-0 space-y-5">
+          <section
+            aria-labelledby="hypersonic-heating-relationships-title"
+            className="border-t border-border pt-7"
+          >
+            <h3
+              className="text-lg font-semibold"
+              id="hypersonic-heating-relationships-title"
+            >
+              What shapes stagnation heating?
+            </h3>
+            <div className="mt-4 border-t border-border">
+              <article className="border-b border-border py-4">
+                <h4 className="text-sm font-semibold text-foreground">
+                  Velocity
+                </h4>
+                <p className="mt-2 text-sm leading-6 text-muted">
+                  Velocity has the strongest influence in this approximation, so
+                  modest speed increases can produce much larger heat flux.
+                </p>
+              </article>
+              <article className="border-b border-border py-4">
+                <h4 className="text-sm font-semibold text-foreground">
+                  Altitude and density
+                </h4>
+                <p className="mt-2 text-sm leading-6 text-muted">
+                  Standard-atmosphere density falls with altitude, leaving fewer
+                  air particles available to transfer convective heat.
+                </p>
+              </article>
+              <article className="border-b border-border py-4">
+                <h4 className="text-sm font-semibold text-foreground">
+                  Nose radius
+                </h4>
+                <p className="mt-2 text-sm leading-6 text-muted">
+                  A larger, blunter radius spreads the stagnation region and
+                  lowers the model&apos;s predicted peak heating.
+                </p>
+              </article>
+            </div>
+          </section>
+          <aside className="orbix-lab-note">
+            <p className="orbix-lab-note__title font-medium">
+              Engineering assumptions
+            </p>
+            <ul className="mt-4 grid list-disc gap-2 pl-5 text-sm leading-6 text-muted @min-[36rem]/col:grid-cols-2">
+              <li>Dry-air standard atmosphere</li>
+              <li>Convective stagnation-point heating only</li>
+              <li>Sutton-Graves style approximation</li>
+              <li>No radiation</li>
+              <li>No ablation</li>
+              <li>No real-gas chemistry</li>
+              <li>No thermal protection system modeling</li>
+            </ul>
+          </aside>
+        </div>
       </div>
-    </div>
+    </LabToolLayout>
   );
 }

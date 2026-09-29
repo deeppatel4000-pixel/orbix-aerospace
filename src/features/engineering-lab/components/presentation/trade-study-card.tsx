@@ -1,4 +1,5 @@
 import type { MissionScenario } from "@/features/engineering-lab/missions";
+import { LabHeading } from "../visualization/lab-heading";
 
 export interface TradeStudyCardProps {
   readonly index: number;
@@ -24,17 +25,18 @@ export function TradeStudyCard({ index, scenario }: TradeStudyCardProps) {
   return (
     <article
       aria-labelledby={`trade-study-scenario-${scenario.id}-title`}
-      className="rounded-md border border-border p-4"
+      className="min-w-0 border-t border-border-subtle py-4"
     >
       <p className="orbix-label">
         Architecture {index + 1}: {formatCategory(scenario.category)}
       </p>
-      <h5
-        className="orbix-h4 mt-1 text-foreground"
+      <LabHeading
+        offset={2}
+        className="mt-1"
         id={`trade-study-scenario-${scenario.id}-title`}
       >
         {scenario.name}
-      </h5>
+      </LabHeading>
       <p className="mt-2 text-sm leading-6 text-muted">
         {scenario.description}
       </p>

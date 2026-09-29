@@ -110,7 +110,7 @@ const showcaseMissionDetails = {
     availableVisualizations: [
       LOADED_BY_PRESET_TOOL,
       TRADE_STUDY,
-      "Example mission in the Mission diagrams, Mission viewer, Mission control dashboard, Mission briefing and Mission report viewer tools",
+      "Example mission in the Mission diagrams, viewer, control dashboard, briefing and report viewer",
     ],
     engineeringFocus: [
       "Orbital logistics",

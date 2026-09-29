@@ -79,7 +79,9 @@ describe("MissionReplay", () => {
     expect(markup).toContain("0.5x");
     expect(markup).toContain("1x");
     expect(markup).toContain("2x");
-    expect(markup).toContain("Mission replay progress");
+    // One status line, no progress bar (the step row shows progress).
+    expect(markup).toContain("of <span");
+    expect(markup).not.toContain("<progress");
     expect(markup).toContain("Values for this mission");
     expect(markup).toContain("Mission scene");
   });

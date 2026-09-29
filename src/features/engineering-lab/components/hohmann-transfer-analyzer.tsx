@@ -1,23 +1,26 @@
 "use client";
 
-import { Button } from "@/components/ui";
+import { Button, EquationBlock } from "@/components/ui";
 import { useMemo, useState, type FormEvent } from "react";
-import {
-  AlertTriangle,
-  CircleDot,
-  Gauge,
-  MoveRight,
-  RotateCcw,
-} from "lucide-react";
 
 import { analyzeHohmannTransfer } from "@/features/engineering-lab/analysis";
 import {
+  EQ_LINE,
+  EQ_TERM,
   CalculatorNumberField,
   focusFirstInvalidField,
   focusFirstInvalidFieldOnEnter,
   CalculatorResultSection,
+  LAB_TOOL_SPLIT,
+  LabToolLayout,
   NotCalculated,
+  ReadoutGrid,
   ValidationErrorSummary,
+  LabFigure,
+  LabSymbol,
+  EqDot,
+  EqSubSup,
+  EQ_SUP,
 } from "@/features/engineering-lab/components/shared";
 import type {
   HohmannTransferAnalysisInputs,
@@ -144,6 +147,123 @@ function deriveViewState(
   }
 }
 
+const toolEquation = (
+  <EquationBlock
+    equation={
+      <>
+        <span className={EQ_LINE}>
+          <span className={EQ_TERM}>
+            a<sub>t</sub>
+          </span>{" "}
+          <span className={EQ_TERM}>
+            = (r<sub>1</sub>+r<sub>2</sub>)/2
+          </span>
+        </span>
+        <span className={EQ_LINE}>
+          <span className={EQ_TERM}>
+            v<sub>c</sub>(r)<sup className={EQ_SUP}>2</sup>
+          </span>{" "}
+          <span className={EQ_TERM}>= μ/r</span>
+        </span>
+        <span className={EQ_LINE}>
+          <span className={EQ_TERM}>
+            v<sub>t</sub>(r)<sup className={EQ_SUP}>2</sup>
+          </span>{" "}
+          <span className={EQ_TERM}>
+            = μ(2/r−1/a<sub>t</sub>)
+          </span>
+        </span>
+        <span className={EQ_LINE}>
+          <span className={EQ_TERM}>
+            Δv<sub>1</sub>
+          </span>{" "}
+          <span className={EQ_TERM}>
+            = |v<sub>t</sub>(r<sub>1</sub>)
+          </span>
+          <wbr />
+          <span className={EQ_TERM}>
+            −v<sub>c</sub>(r<sub>1</sub>)|
+          </span>
+        </span>
+        <span className={EQ_LINE}>
+          <span className={EQ_TERM}>
+            Δv<sub>2</sub>
+          </span>{" "}
+          <span className={EQ_TERM}>
+            = |v<sub>c</sub>(r<sub>2</sub>)
+          </span>
+          <wbr />
+          <span className={EQ_TERM}>
+            −v<sub>t</sub>(r<sub>2</sub>)|
+          </span>
+        </span>
+        <span className={EQ_LINE}>
+          <span className={EQ_TERM}>t</span>{" "}
+          <span className={EQ_TERM}>= π</span>
+          <span className={EQ_TERM}>
+            <EqDot />
+            √(a
+            <EqSubSup sub="t" sup="3" />
+            /μ)
+          </span>
+        </span>
+      </>
+    }
+    label="Hohmann transfer"
+    spokenAs="The transfer semi-major axis a t equals r 1 plus r 2 over 2. The circular speed squared at radius r is mu over r. The transfer-orbit speed squared at radius r is mu times 2 over r minus 1 over a t. Delta v 1 is the size of the transfer speed at r 1 minus the circular speed at r 1. Delta v 2 is the size of the circular speed at r 2 minus the transfer speed at r 2. Transfer time t equals pi times the square root of a t cubed over mu."
+    variables={[
+      {
+        symbol: (
+          <>
+            r<sub>1</sub>, r<sub>2</sub>
+          </>
+        ),
+        meaning:
+          "Orbit radii: central-body radius plus altitude; Earth mean radius, 6,371,000 m, by default",
+        unit: "m",
+      },
+      {
+        symbol: (
+          <>
+            a<sub>t</sub>
+          </>
+        ),
+        meaning: "Semi-major axis of the transfer ellipse",
+        unit: "m",
+      },
+      {
+        symbol: (
+          <>
+            v<sub>c</sub>(r)
+          </>
+        ),
+        meaning: "Circular orbit speed at radius r",
+        unit: "m/s",
+      },
+      {
+        symbol: (
+          <>
+            v<sub>t</sub>(r)
+          </>
+        ),
+        meaning: "Transfer orbit speed at radius r, from the vis-viva equation",
+        unit: "m/s",
+      },
+      {
+        symbol: "μ",
+        meaning:
+          "Gravitational parameter; Earth, 3.986004418 × 10¹⁴, by default",
+        unit: "m³/s²",
+      },
+      {
+        symbol: "t",
+        meaning: "Transfer time, half the transfer orbit period",
+        unit: "s",
+      },
+    ]}
+  />
+);
+
 export function HohmannTransferAnalyzer() {
   const [values, setValues] =
     useState<HohmannTransferFormValues>(initialFormValues);
@@ -174,141 +294,113 @@ export function HohmannTransferAnalyzer() {
   }
 
   return (
-    <div className="grid gap-8 xl:grid-cols-[minmax(0,0.95fr)_minmax(22rem,1.05fr)] xl:gap-10">
-      <div>
-        <form
-          noValidate
-          onKeyDown={focusFirstInvalidFieldOnEnter}
-          onSubmit={preventSubmission}
-        >
-          <fieldset>
-            <legend className="text-base font-semibold text-foreground">
-              Initial orbit
-            </legend>
-            <div className="mt-5">
-              <CalculatorNumberField
-                error={errors.initialAltitudeMetres}
-                field="initialAltitudeMetres"
-                hint="Altitude above the modeled central body's reference radius."
-                idPrefix="hohmann-transfer"
-                label="Initial altitude"
-                onChange={updateValue}
-                unit="m"
-                value={values.initialAltitudeMetres}
-              />
-            </div>
-          </fieldset>
-
-          <fieldset className="mt-7 border-t border-border pt-7">
-            <legend className="text-base font-semibold text-foreground">
-              Final orbit
-            </legend>
-            <div className="mt-5">
-              <CalculatorNumberField
-                error={errors.finalAltitudeMetres}
-                field="finalAltitudeMetres"
-                hint="Target circular-orbit altitude above the same reference radius."
-                idPrefix="hohmann-transfer"
-                label="Final altitude"
-                onChange={updateValue}
-                unit="m"
-                value={values.finalAltitudeMetres}
-              />
-            </div>
-          </fieldset>
-
-          <fieldset className="mt-7 border-t border-border pt-7">
-            <legend className="text-base font-semibold text-foreground">
-              Central-body constants
-            </legend>
-            <div className="mt-5 grid gap-5 sm:grid-cols-2">
-              <CalculatorNumberField
-                error={errors.gravitationalParameter}
-                field="gravitationalParameter"
-                hint="Optional. Leave blank to use Earth's standard gravitational parameter."
-                idPrefix="hohmann-transfer"
-                label="Gravitational parameter (optional)"
-                optional
-                onChange={updateValue}
-                unit="m³/s²"
-                value={values.gravitationalParameter}
-              />
-              <CalculatorNumberField
-                error={errors.planetRadiusMetres}
-                field="planetRadiusMetres"
-                hint="Optional. Leave blank to use Earth's mean radius."
-                idPrefix="hohmann-transfer"
-                label="Planet radius (optional)"
-                optional
-                onChange={updateValue}
-                unit="m"
-                value={values.planetRadiusMetres}
-              />
-            </div>
-          </fieldset>
-
-          <ValidationErrorSummary
-            errors={[
-              errors.initialAltitudeMetres,
-              errors.finalAltitudeMetres,
-              errors.gravitationalParameter,
-              errors.planetRadiusMetres,
-              errors.form,
-            ]}
-          />
-
-          <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:items-center">
-            <p className="text-sm leading-6 text-muted">
-              Valid changes update the ideal transfer solution immediately.
-            </p>
-            <Button
-              className="shrink-0 whitespace-nowrap sm:ml-auto"
-              variant="secondary"
-              onClick={resetAnalyzer}
-            >
-              <RotateCcw aria-hidden="true" size={16} />
-              Reset inputs
-            </Button>
-          </div>
-        </form>
-
-        <section
-          aria-labelledby="hohmann-transfer-explanation-title"
-          className="mt-8 border-t border-border pt-7"
-        >
-          <p className="orbix-label">Educational context</p>
-          <h3
-            className="mt-1 text-lg font-semibold"
-            id="hohmann-transfer-explanation-title"
+    <LabToolLayout equation={toolEquation}>
+      <div className={LAB_TOOL_SPLIT}>
+        <div className="@container/col min-w-0">
+          <form
+            noValidate
+            onKeyDown={focusFirstInvalidFieldOnEnter}
+            onSubmit={preventSubmission}
           >
-            Two impulses, one transfer ellipse
-          </h3>
-          <p className="mt-3 text-sm leading-6 text-muted">
-            A Hohmann transfer uses one ideal burn to enter an elliptical
-            transfer orbit and a second burn to circularize at the destination.
-            It is the classical minimum-energy two-impulse transfer between two
-            circular, coplanar orbits.
-          </p>
-        </section>
-      </div>
+            <fieldset>
+              <legend className="text-base font-semibold text-foreground">
+                Initial orbit
+              </legend>
+              <div className="mt-4">
+                <CalculatorNumberField
+                  error={errors.initialAltitudeMetres}
+                  field="initialAltitudeMetres"
+                  hint="Altitude above the modeled central body's reference radius."
+                  idPrefix="hohmann-transfer"
+                  label="Initial altitude"
+                  onChange={updateValue}
+                  unit="m"
+                  value={values.initialAltitudeMetres}
+                />
+              </div>
+            </fieldset>
 
-      <div className="space-y-5">
-        <CalculatorResultSection
-          eyebrow="Circular orbits and transfer"
-          icon={CircleDot}
-          id="hohmann-transfer-result"
-          title="Hohmann transfer solution"
-        >
-          {result ? (
-            <div className="space-y-6">
-              <section aria-labelledby="hohmann-transfer-initial-title">
-                <h4
-                  className="text-sm font-semibold text-foreground"
-                  id="hohmann-transfer-initial-title"
-                >
-                  Initial orbit
-                </h4>
-                <dl className="mt-3 grid gap-4 sm:grid-cols-3">
+            <fieldset className="mt-10">
+              <legend className="text-base font-semibold text-foreground">
+                Final orbit
+              </legend>
+              <div className="mt-4">
+                <CalculatorNumberField
+                  error={errors.finalAltitudeMetres}
+                  field="finalAltitudeMetres"
+                  hint="Target circular-orbit altitude above the same reference radius."
+                  idPrefix="hohmann-transfer"
+                  label="Final altitude"
+                  onChange={updateValue}
+                  unit="m"
+                  value={values.finalAltitudeMetres}
+                />
+              </div>
+            </fieldset>
+
+            <fieldset className="mt-10">
+              <legend className="text-base font-semibold text-foreground">
+                Central-body constants
+              </legend>
+              <div className="mt-4 grid gap-5">
+                <CalculatorNumberField
+                  error={errors.gravitationalParameter}
+                  field="gravitationalParameter"
+                  hint="Optional. Leave blank to use Earth's standard gravitational parameter."
+                  idPrefix="hohmann-transfer"
+                  label="Gravitational parameter (optional)"
+                  optional
+                  onChange={updateValue}
+                  unit="m³/s²"
+                  value={values.gravitationalParameter}
+                />
+                <CalculatorNumberField
+                  error={errors.planetRadiusMetres}
+                  field="planetRadiusMetres"
+                  hint="Optional. Leave blank to use Earth's mean radius."
+                  idPrefix="hohmann-transfer"
+                  label="Planet radius (optional)"
+                  optional
+                  onChange={updateValue}
+                  unit="m"
+                  value={values.planetRadiusMetres}
+                />
+              </div>
+            </fieldset>
+
+            <ValidationErrorSummary
+              errors={[
+                errors.initialAltitudeMetres,
+                errors.finalAltitudeMetres,
+                errors.gravitationalParameter,
+                errors.planetRadiusMetres,
+                errors.form,
+              ]}
+            />
+
+            <div className="mt-7 flex flex-wrap items-center gap-x-5 gap-y-3">
+              <p className="min-w-0 flex-[1_1_16rem] text-sm leading-6 text-muted">
+                Valid changes update the ideal transfer solution immediately.
+              </p>
+              <Button
+                className="shrink-0 whitespace-nowrap"
+                variant="secondary"
+                onClick={resetAnalyzer}
+              >
+                Reset inputs
+              </Button>
+            </div>
+          </form>
+        </div>
+
+        <div className="@container/col min-w-0 space-y-5">
+          <CalculatorResultSection
+            id="hohmann-transfer-result"
+            title="Hohmann transfer solution"
+          >
+            {result ? (
+              <>
+                <ReadoutGrid columns={3} title="Initial orbit">
                   <div>
                     <dt className="orbix-label">Altitude</dt>
                     <dd className="mt-1">
@@ -316,10 +408,11 @@ export function HohmannTransferAnalyzer() {
                         className="orbix-data"
                         htmlFor={initialOrbitOutputIds}
                       >
-                        {distanceFormatter.format(
-                          result.initialOrbit.altitudeMetres,
-                        )}{" "}
-                        m
+                        <LabFigure unit="m">
+                          {distanceFormatter.format(
+                            result.initialOrbit.altitudeMetres,
+                          )}
+                        </LabFigure>
                       </output>
                     </dd>
                   </div>
@@ -330,10 +423,11 @@ export function HohmannTransferAnalyzer() {
                         className="orbix-data"
                         htmlFor={initialOrbitOutputIds}
                       >
-                        {distanceFormatter.format(
-                          result.initialOrbit.orbitalRadiusMetres,
-                        )}{" "}
-                        m
+                        <LabFigure unit="m">
+                          {distanceFormatter.format(
+                            result.initialOrbit.orbitalRadiusMetres,
+                          )}
+                        </LabFigure>
                       </output>
                     </dd>
                   </div>
@@ -344,27 +438,17 @@ export function HohmannTransferAnalyzer() {
                         className="orbix-data"
                         htmlFor={initialOrbitOutputIds}
                       >
-                        {velocityFormatter.format(
-                          result.initialOrbit.circularVelocityMetresPerSecond,
-                        )}{" "}
-                        m/s
+                        <LabFigure unit="m/s">
+                          {velocityFormatter.format(
+                            result.initialOrbit.circularVelocityMetresPerSecond,
+                          )}
+                        </LabFigure>
                       </output>
                     </dd>
                   </div>
-                </dl>
-              </section>
+                </ReadoutGrid>
 
-              <section
-                aria-labelledby="hohmann-transfer-final-title"
-                className="border-t border-border pt-5"
-              >
-                <h4
-                  className="text-sm font-semibold text-foreground"
-                  id="hohmann-transfer-final-title"
-                >
-                  Final orbit
-                </h4>
-                <dl className="mt-3 grid gap-4 sm:grid-cols-3">
+                <ReadoutGrid columns={3} title="Final orbit">
                   <div>
                     <dt className="orbix-label">Altitude</dt>
                     <dd className="mt-1">
@@ -372,10 +456,11 @@ export function HohmannTransferAnalyzer() {
                         className="orbix-data"
                         htmlFor={finalOrbitOutputIds}
                       >
-                        {distanceFormatter.format(
-                          result.finalOrbit.altitudeMetres,
-                        )}{" "}
-                        m
+                        <LabFigure unit="m">
+                          {distanceFormatter.format(
+                            result.finalOrbit.altitudeMetres,
+                          )}
+                        </LabFigure>
                       </output>
                     </dd>
                   </div>
@@ -386,10 +471,11 @@ export function HohmannTransferAnalyzer() {
                         className="orbix-data"
                         htmlFor={finalOrbitOutputIds}
                       >
-                        {distanceFormatter.format(
-                          result.finalOrbit.orbitalRadiusMetres,
-                        )}{" "}
-                        m
+                        <LabFigure unit="m">
+                          {distanceFormatter.format(
+                            result.finalOrbit.orbitalRadiusMetres,
+                          )}
+                        </LabFigure>
                       </output>
                     </dd>
                   </div>
@@ -400,28 +486,34 @@ export function HohmannTransferAnalyzer() {
                         className="orbix-data"
                         htmlFor={finalOrbitOutputIds}
                       >
-                        {velocityFormatter.format(
-                          result.finalOrbit.circularVelocityMetresPerSecond,
-                        )}{" "}
-                        m/s
+                        <LabFigure unit="m/s">
+                          {velocityFormatter.format(
+                            result.finalOrbit.circularVelocityMetresPerSecond,
+                          )}
+                        </LabFigure>
                       </output>
                     </dd>
                   </div>
-                </dl>
-              </section>
+                </ReadoutGrid>
 
-              <section
-                aria-labelledby="hohmann-transfer-orbit-title"
-                className="border-t border-border pt-5"
-              >
-                <h4
-                  className="flex items-center gap-2 text-sm font-semibold text-foreground"
-                  id="hohmann-transfer-orbit-title"
-                >
-                  <MoveRight aria-hidden="true" size={14} />
-                  Transfer orbit
-                </h4>
-                <dl className="mt-3 grid gap-4 sm:grid-cols-2">
+                <ReadoutGrid columns={2} title="Transfer orbit">
+                  <div>
+                    <dt className="orbix-label">
+                      Total <LabSymbol>Δv</LabSymbol>
+                    </dt>
+                    <dd className="mt-1">
+                      <output
+                        className="orbix-readout-lg"
+                        htmlFor={transferOutputIds}
+                      >
+                        <LabFigure unit="m/s">
+                          {velocityFormatter.format(
+                            result.transfer.totalDeltaVMetresPerSecond,
+                          )}
+                        </LabFigure>
+                      </output>
+                    </dd>
+                  </div>
                   <div>
                     <dt className="orbix-label">Semi-major axis</dt>
                     <dd className="mt-1">
@@ -429,153 +521,169 @@ export function HohmannTransferAnalyzer() {
                         className="orbix-data"
                         htmlFor={transferOutputIds}
                       >
-                        {distanceFormatter.format(
-                          result.transfer.transferSemiMajorAxisMetres,
-                        )}{" "}
-                        m
+                        <LabFigure unit="m">
+                          {distanceFormatter.format(
+                            result.transfer.transferSemiMajorAxisMetres,
+                          )}
+                        </LabFigure>
                       </output>
                     </dd>
                   </div>
                   <div>
-                    <dt className="orbix-label">First burn Δv</dt>
+                    <dt className="orbix-label">
+                      First burn <LabSymbol>Δv</LabSymbol>
+                    </dt>
                     <dd className="mt-1">
                       <output
                         className="orbix-data"
                         htmlFor={transferOutputIds}
                       >
-                        {velocityFormatter.format(
-                          result.transfer.firstBurnDeltaVMetresPerSecond,
-                        )}{" "}
-                        m/s
+                        <LabFigure unit="m/s">
+                          {velocityFormatter.format(
+                            result.transfer.firstBurnDeltaVMetresPerSecond,
+                          )}
+                        </LabFigure>
                       </output>
                     </dd>
                   </div>
                   <div>
-                    <dt className="orbix-label">Second burn Δv</dt>
+                    <dt className="orbix-label">
+                      Second burn <LabSymbol>Δv</LabSymbol>
+                    </dt>
                     <dd className="mt-1">
                       <output
                         className="orbix-data"
                         htmlFor={transferOutputIds}
                       >
-                        {velocityFormatter.format(
-                          result.transfer.secondBurnDeltaVMetresPerSecond,
-                        )}{" "}
-                        m/s
+                        <LabFigure unit="m/s">
+                          {velocityFormatter.format(
+                            result.transfer.secondBurnDeltaVMetresPerSecond,
+                          )}
+                        </LabFigure>
                       </output>
                     </dd>
                   </div>
                   <div>
-                    <dt className="orbix-label">Total Δv</dt>
-                    <dd className="mt-1">
-                      <output
-                        className="orbix-data-lg"
-                        htmlFor={transferOutputIds}
-                      >
-                        {velocityFormatter.format(
-                          result.transfer.totalDeltaVMetresPerSecond,
-                        )}{" "}
-                        m/s
-                      </output>
-                    </dd>
-                  </div>
-                  <div>
-                    <dt className="orbix-label">Transfer duration</dt>
+                    <dt className="orbix-label">Transfer duration, seconds</dt>
                     <dd className="mt-1">
                       <output
                         className="orbix-data"
                         htmlFor={transferOutputIds}
                       >
-                        {timeFormatter.format(
-                          result.transfer.transferTimeSeconds,
-                        )}{" "}
-                        s
+                        <LabFigure unit="s">
+                          {timeFormatter.format(
+                            result.transfer.transferTimeSeconds,
+                          )}
+                        </LabFigure>
                       </output>
                     </dd>
                   </div>
                   <div>
-                    <dt className="orbix-label">Transfer duration</dt>
+                    <dt className="orbix-label">Transfer duration, hours</dt>
                     <dd className="mt-1">
                       <output
                         className="orbix-data"
                         htmlFor={transferOutputIds}
                       >
-                        {timeFormatter.format(
-                          result.transfer.transferTimeHours,
-                        )}{" "}
-                        h
+                        <LabFigure unit="h">
+                          {timeFormatter.format(
+                            result.transfer.transferTimeHours,
+                          )}
+                        </LabFigure>
                       </output>
                     </dd>
                   </div>
-                </dl>
-              </section>
-            </div>
-          ) : (
-            <NotCalculated invalid={Object.values(errors).some(Boolean)}>
-              Enter two valid, different circular-orbit altitudes to resolve the
-              ideal transfer.
-            </NotCalculated>
-          )}
-        </CalculatorResultSection>
+                </ReadoutGrid>
+              </>
+            ) : (
+              <NotCalculated invalid={Object.values(errors).some(Boolean)}>
+                Enter two valid, different circular-orbit altitudes to resolve
+                the ideal transfer.
+              </NotCalculated>
+            )}
+          </CalculatorResultSection>
 
-        <CalculatorResultSection
-          eyebrow="Mission interpretation"
-          icon={Gauge}
-          id="hohmann-transfer-mission-summary"
-          title="Mission summary"
-        >
-          {result && transferDirection ? (
-            <div className="space-y-5">
-              <div>
-                <p className="orbix-label">Transfer classification</p>
-                <output
-                  className="mt-2 block text-lg font-semibold"
-                  htmlFor="hohmann-transfer-initialAltitudeMetres hohmann-transfer-finalAltitudeMetres"
-                >
-                  {transferDirection}
-                </output>
-              </div>
-              <div className="border-t border-border pt-5">
-                <h4 className="text-sm font-semibold">
-                  Delta-v interpretation
-                </h4>
-                <p className="mt-2 text-sm leading-6 text-muted">
-                  Total Δv is the ideal velocity-change budget across both
-                  impulses. It does not include finite-burn, launch, drag, or
-                  operational correction losses.
-                </p>
-              </div>
-              <div className="border-t border-border pt-5">
-                <h4 className="text-sm font-semibold">Transfer character</h4>
-                <p className="mt-2 text-sm leading-6 text-muted">
-                  The spacecraft coasts along half of an ideal transfer ellipse
-                  between the two circular orbits before the second impulse.
-                </p>
-              </div>
-            </div>
-          ) : (
-            <NotCalculated>
-              A valid solution will classify the transfer and summarize its
-              ideal mission-level meaning.
-            </NotCalculated>
-          )}
-        </CalculatorResultSection>
+          <CalculatorResultSection
+            id="hohmann-transfer-mission-summary"
+            title="Mission summary"
+          >
+            {result && transferDirection ? (
+              <>
+                <ReadoutGrid columns={1}>
+                  <div>
+                    <dt className="orbix-label">Transfer classification</dt>
+                    <dd>
+                      <output
+                        className="lab-value-text"
+                        htmlFor="hohmann-transfer-initialAltitudeMetres hohmann-transfer-finalAltitudeMetres"
+                      >
+                        {transferDirection}
+                      </output>
+                    </dd>
+                  </div>
+                </ReadoutGrid>
+                <div className="border-t border-border pt-5">
+                  <h4 className="text-sm font-semibold">
+                    Delta-v interpretation
+                  </h4>
+                  <p className="mt-2 text-sm leading-6 text-muted">
+                    Total Δv is the ideal velocity-change budget across both
+                    impulses. It does not include finite-burn, launch, drag, or
+                    operational correction losses.
+                  </p>
+                </div>
+                <div className="border-t border-border pt-5">
+                  <h4 className="text-sm font-semibold">Transfer character</h4>
+                  <p className="mt-2 text-sm leading-6 text-muted">
+                    The spacecraft coasts along half of an ideal transfer
+                    ellipse between the two circular orbits before the second
+                    impulse.
+                  </p>
+                </div>
+              </>
+            ) : (
+              <NotCalculated>
+                A valid solution will classify the transfer and summarize its
+                ideal mission-level meaning.
+              </NotCalculated>
+            )}
+          </CalculatorResultSection>
+        </div>
 
-        <aside className="orbix-lab-note">
-          <p className="orbix-lab-note__title">
-            <AlertTriangle aria-hidden="true" size={17} />
-            Modeling assumptions
-          </p>
-          <ul className="mt-4 grid list-disc gap-2 pl-5 text-sm leading-6 text-muted sm:grid-cols-2">
-            <li>Two-body gravity model</li>
-            <li>Circular initial and final orbits</li>
-            <li>Instantaneous impulsive burns</li>
-            <li>Coplanar orbit assumption</li>
-            <li>No atmospheric drag</li>
-            <li>No gravity assists</li>
-            <li>No launch losses</li>
-          </ul>
-        </aside>
+        <div className="@container/col min-w-0 space-y-5">
+          <section
+            aria-labelledby="hohmann-transfer-explanation-title"
+            className="border-t border-border pt-7"
+          >
+            <h3
+              className="text-lg font-semibold"
+              id="hohmann-transfer-explanation-title"
+            >
+              Two impulses, one transfer ellipse
+            </h3>
+            <p className="mt-3 text-sm leading-6 text-muted">
+              A Hohmann transfer uses one ideal burn to enter an elliptical
+              transfer orbit and a second burn to circularize at the
+              destination. It is the classical minimum-energy two-impulse
+              transfer between two circular, coplanar orbits.
+            </p>
+          </section>
+          <aside className="orbix-lab-note">
+            <p className="orbix-lab-note__title font-medium">
+              Modeling assumptions
+            </p>
+            <ul className="mt-4 grid list-disc gap-2 pl-5 text-sm leading-6 text-muted @min-[36rem]/col:grid-cols-2">
+              <li>Two-body gravity model</li>
+              <li>Circular initial and final orbits</li>
+              <li>Instantaneous impulsive burns</li>
+              <li>Coplanar orbit assumption</li>
+              <li>No atmospheric drag</li>
+              <li>No gravity assists</li>
+              <li>No launch losses</li>
+            </ul>
+          </aside>
+        </div>
       </div>
-    </div>
+    </LabToolLayout>
   );
 }

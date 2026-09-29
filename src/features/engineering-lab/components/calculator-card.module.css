@@ -1,57 +1,475 @@
 /**
- * The Engineering Laboratory module shell (spec 7 and 14).
+ * The Engineering Laboratory module shell (design v2, spec 3, 7 and 9).
  *
- * One flat panel per module: surface fill, a 1px border, the 6px maximum
- * radius, and a divided header. No shadow, no gradient, no accent rule. Every
- * colour comes from a semantic token.
+ * The module is a sheet on the page ground, not a panel: no fill, no
+ * outline, no radius, opened by a 1px `--border-default` rule above the
+ * accent number and the H2. Inside it the equation block and the result
+ * sheet are the only panels, so nothing sits in a card inside a card
+ * (spec 3). Every colour comes from a semantic token.
+ *
+ * The rules after the shell style the lab's own shared pieces: the tool
+ * split, the field unit slot, the result panel body, `ReadoutGrid`,
+ * `LabFigure`, `LabSymbol`, `LabValueText` and the `EQ_*` spans inside an
+ * equation. They live here, scoped to `.workspace`, because the shared
+ * components are imported by Vitest component tests, which cannot load CSS
+ * modules. Every tool renders inside this card. Foundation primitives
+ * (`EquationBlock`, `Button`, the `.orbix-field` parts) are not restyled
+ * here; the lab only adds its own classes beside them.
  */
 
 .card {
-  background-color: var(--orbix-surface);
-  border: 1px solid var(--orbix-border);
-  border-radius: var(--radius-3);
+  border-top: 1px solid var(--orbix-border);
   min-width: 0;
-  overflow: hidden;
   position: relative;
   scroll-margin-top: 5rem;
 }
 
 .header {
-  border-bottom: 1px solid var(--orbix-border-subtle);
-  padding: var(--space-5);
-}
-
-.headerLayout {
-  align-items: start;
-  display: grid;
-  gap: var(--space-4);
-  grid-template-columns: auto minmax(0, 1fr);
-}
-
-/* A quiet marker for the module's discipline: square, one hairline in a
- * neutral tone, the icon in secondary text. */
-.iconWell {
-  align-items: center;
-  border: 1px solid var(--orbix-border-strong);
-  border-radius: var(--radius-2);
-  color: var(--orbix-text-secondary);
-  display: flex;
-  height: 2.5rem;
-  justify-content: center;
-  width: 2.5rem;
+  padding: var(--space-5) 0 0;
 }
 
 .workspace {
-  padding: var(--space-5);
+  padding: var(--space-6) 0 0;
 }
 
-@media (max-width: 39.999rem) {
-  .header,
-  .workspace {
-    padding: var(--space-4);
+/* ==================================================================== *
+ * TOOL SPLIT: form and results side by side from a 44rem tool
+ * (`LAB_TOOL_SPLIT`). The split has three children in reading order:
+ * the form, the results, then the notes (model assumptions, explainers).
+ * Stacked, they read in that order. Side by side, the notes go under the
+ * form in the left column and the results span both rows on the right,
+ * so neither column ends in a large empty area.
+ *
+ * `lab-tool-split--sticky` (`LAB_TOOL_SPLIT_STICKY`) also holds the
+ * results column in view while the left column scrolls, but only on a
+ * viewport at least 56rem (896px) tall, and only tools whose result panel
+ * is short opt in. Under the 88px sticky offset that leaves at least
+ * 808px for the panel. A results column taller than that would keep its
+ * lower part below the fold until the left column ended, so the tall
+ * panels (normal shock and every multi-grid analyzer) do not opt in.
+ * ==================================================================== */
+
+@container tool (min-width: 44rem) {
+  .workspace :global(.lab-tool-split) {
+    grid-template-rows: auto 1fr;
   }
 
-  .headerLayout {
-    grid-template-columns: 1fr;
+  .workspace :global(.lab-tool-split > :nth-child(1)) {
+    grid-column: 1;
+    grid-row: 1;
   }
+
+  .workspace :global(.lab-tool-split > :nth-child(2)) {
+    align-self: start;
+    grid-column: 2;
+    grid-row: 1 / span 2;
+  }
+
+  .workspace :global(.lab-tool-split > :nth-child(3)) {
+    align-self: start;
+    grid-column: 1;
+    grid-row: 2;
+  }
+
+  @media (min-height: 56rem) {
+    .workspace :global(.lab-tool-split--sticky > :nth-child(2)) {
+      position: sticky;
+      top: calc(4rem + 1.5rem);
+    }
+  }
+}
+
+/* ==================================================================== *
+ * FIELDS: every unit suffix one width, and an empty slot of that width
+ * for a dimensionless value, so inputs and their numbers line up.
+ * ==================================================================== */
+
+.workspace :global(.lab-field__unit) {
+  justify-content: center;
+  min-width: 4.5rem;
+}
+
+.workspace :global(.lab-field__unit-slot) {
+  flex: none;
+  width: 4.5rem;
+}
+
+/* ==================================================================== *
+ * EQUATIONS: the lab's own spans inside `EquationBlock`'s expression.
+ * The block keeps the primitive's size and panel. Terms are short
+ * `nowrap` spans (see `EQ_TERM`), so a relation wraps only between terms
+ * and a continuation hangs 1ch in; nothing scrolls sideways.
+ * ==================================================================== */
+
+.workspace :global(.lab-eq-line) {
+  display: block;
+  padding-block: 0.2em;
+  padding-inline-start: 1ch;
+  text-indent: -1ch;
+}
+
+.workspace :global(.lab-eq-line--cont) {
+  padding-inline-start: 2ch;
+}
+
+.workspace :global(.lab-eq-sup) {
+  font-size: 0.6em;
+  line-height: 1;
+  /* Tailwind preflight also sets `sup { position: relative; top: -0.5em }`.
+   * That offset reserves no line-box space, so it would lift the exponent
+   * into the line above. The raise comes from vertical-align alone. */
+  position: static;
+  top: auto;
+  vertical-align: 0.75em;
+}
+
+/* A continuation line clears the exponents of the line above it. */
+.workspace :global(.lab-eq-line--cont) {
+  padding-block-start: 0.45em;
+}
+
+/* B612 Mono draws U+00B7 at the left of its cell, so a product read as
+ * "m. g". The dot is shifted to the middle of its cell; the advance and
+ * the copied text are unchanged. */
+.workspace :global(.lab-eq-dot) {
+  inset-inline-start: 0.18em;
+  position: relative;
+}
+
+/* A symbol carrying both a subscript and an exponent (M1 squared): the
+ * two are stacked in one column rather than set side by side. */
+.workspace :global(.lab-eq-subsup) {
+  display: inline-grid;
+  font-size: 0.6em;
+  grid-template-rows: auto auto;
+  line-height: 1;
+  /* The line's hanging indent is inherited; the stack must not take it. */
+  text-indent: 0;
+  /* The exponent row carries the baseline: raise it as far as EQ_SUP,
+   * so the subscript row falls just under the base line. */
+  vertical-align: 0.75em;
+}
+
+.workspace :global(.lab-eq-subsup > *) {
+  grid-column: 1;
+}
+
+/* ==================================================================== *
+ * RESULT PANEL BODY: no padding of its own. A readout grid placed
+ * directly in it runs edge to edge; every other child gets the inset.
+ * ==================================================================== */
+
+.workspace :global(.lab-result-body) {
+  display: flow-root;
+}
+
+.workspace :global(.lab-result-body > :not(.lab-readout-grid)) {
+  margin: var(--space-4);
+}
+
+/* Inputs edited since the last calculation: the figures stay in place,
+ * muted, under a first compartment row saying so, until the next submit.
+ * The row is edge to edge over a 1px rule, like a readout grid head, and
+ * set in primary text so it leads the muted figures below it. */
+.workspace :global(.lab-result-body > .lab-result-stale) {
+  border-bottom: 1px solid var(--orbix-border);
+  color: var(--orbix-text-primary);
+  font-size: 0.875rem;
+  font-weight: 500;
+  line-height: 1.4;
+  margin: 0;
+  padding: 0.625rem var(--space-4);
+}
+
+.workspace
+  :global(
+    .lab-result-body > .lab-result-stale + .lab-readout-grid:not(:first-child)
+  ) {
+  border-top: 0;
+}
+
+.workspace :global(.lab-result-body[data-stale] dd),
+.workspace :global(.lab-result-body[data-stale] dd *) {
+  color: var(--orbix-text-muted);
+}
+
+@container col (min-width: 30rem) {
+  .workspace :global(.lab-result-body > :not(.lab-readout-grid)) {
+    margin: var(--space-5);
+  }
+
+  .workspace :global(.lab-result-body > .lab-result-stale) {
+    margin: 0;
+    padding-inline: var(--space-5);
+  }
+}
+
+/* ==================================================================== *
+ * READOUT GRID (spec 6 and 8): hairline compartments on a 1px gap, one
+ * sheet per result panel. No grid draws an outline: grids are separated
+ * by 1px rules, and a titled grid opens with a plain head row: sans 500,
+ * 0.8125rem, sentence case, over a 1px rule, with no raised fill, so it
+ * never stacks a second grey bar under the result panel head.
+ * ==================================================================== */
+
+/* The size variables live on the grid's children: a container query
+ * cannot style the container itself. */
+.workspace :global(.lab-readout-grid > *) {
+  --lab-figure-primary: 1.75rem;
+  --lab-figure-secondary: 1.125rem;
+  --lab-cell-inline: 0.75rem;
+}
+
+.workspace :global(.lab-readout-grid) {
+  border-block: 1px solid var(--orbix-border);
+  container: readout / inline-size;
+}
+
+.workspace :global(.lab-result-body > .lab-readout-grid) {
+  border-block: 0;
+  margin: 0;
+}
+
+.workspace :global(.lab-result-body > .lab-readout-grid:not(:first-child)) {
+  border-top: 1px solid var(--orbix-border);
+}
+
+.workspace :global(.lab-result-body > .lab-readout-grid:not(:last-child)) {
+  border-bottom: 1px solid var(--orbix-border);
+}
+
+.workspace :global(.lab-readout-grid__head) {
+  align-items: center;
+  border-bottom: 1px solid var(--orbix-border);
+  color: var(--orbix-text-secondary);
+  display: flex;
+  font-family: var(--font-interface);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  letter-spacing: 0;
+  line-height: 1.35;
+  min-height: 2.25rem;
+  padding: 0.5rem var(--lab-cell-inline);
+}
+
+.workspace :global(.lab-readout-grid > dl) {
+  background: var(--orbix-border);
+  display: grid;
+  gap: 1px;
+  grid-template-columns: minmax(0, 1fr);
+  margin: 0;
+}
+
+.workspace :global(.lab-readout-grid > dl > div) {
+  background: var(--orbix-surface);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  min-width: 0;
+  padding: 0.75rem var(--lab-cell-inline) 1rem;
+}
+
+.workspace :global(.lab-readout-grid dt) {
+  color: var(--orbix-text-muted);
+  font-family: var(--font-telemetry);
+  font-size: var(--text-micro);
+  font-weight: 400;
+  letter-spacing: var(--tracking-caps);
+  line-height: 1.35;
+  text-transform: uppercase;
+}
+
+.workspace :global(.lab-readout-grid dd) {
+  margin: 0;
+  min-width: 0;
+}
+
+/* When one label in a row wraps, the figures still share a baseline:
+ * each value sits at the foot of its compartment. */
+.workspace :global(.lab-readout-grid > dl > div > dd:first-of-type) {
+  margin-top: auto;
+}
+
+/* Two fixed figure sizes per grid, set by the grid's width, never by the
+ * compartment: a primary figure (`orbix-readout-lg`) and a secondary one
+ * (`orbix-data`). A compartment that spans a row keeps the same size. */
+.workspace :global(.lab-readout-grid .orbix-readout-lg) {
+  font-size: var(--lab-figure-primary);
+}
+
+.workspace :global(.lab-readout-grid .orbix-data) {
+  font-size: var(--lab-figure-secondary);
+}
+
+@container readout (min-width: 22rem) {
+  .workspace :global(.lab-readout-grid > *) {
+    --lab-figure-primary: 2.25rem;
+    --lab-figure-secondary: 1.375rem;
+  }
+}
+
+@container readout (min-width: 26rem) {
+  .workspace :global(.lab-readout-grid > *) {
+    --lab-cell-inline: 1rem;
+  }
+}
+
+/* Columns. A primary compartment takes a whole row (in a grid of
+ * primaries only, from 40rem two share a row). Secondary
+ * compartments share rows, and the last one spans what is left of its
+ * row, so no empty cell is left. The `of S` counts skip primaries. Each
+ * rule in the 40rem block has the same specificity as the 19rem rule it
+ * replaces, so source order decides. A column never shrinks below its
+ * widest unbreakable figure. */
+@container readout (min-width: 19rem) {
+  .workspace :global(.lab-readout-grid:not([data-columns="1"]) > dl) {
+    grid-template-columns: repeat(2, minmax(min-content, 1fr));
+  }
+
+  .workspace
+    :global(
+      .lab-readout-grid:not([data-columns="1"])
+        > dl
+        > div:has(.orbix-readout-lg)
+    ) {
+    grid-column: 1 / -1;
+  }
+
+  .workspace
+    :global(
+      .lab-readout-grid:not([data-columns="1"])
+        > dl
+        > div:nth-last-child(1 of :not(:has(.orbix-readout-lg))):nth-child(
+          odd of :not(:has(.orbix-readout-lg))
+        )
+    ) {
+    grid-column: 1 / -1;
+  }
+}
+
+@container readout (min-width: 40rem) {
+  .workspace :global(.lab-readout-grid[data-columns="3"] > dl) {
+    grid-template-columns: repeat(3, minmax(min-content, 1fr));
+  }
+
+  .workspace
+    :global(
+      .lab-readout-grid[data-columns="3"]
+        > dl
+        > div:nth-last-child(1 of :not(:has(.orbix-readout-lg))):nth-child(
+          n of :not(:has(.orbix-readout-lg))
+        )
+    ) {
+    grid-column: auto;
+  }
+
+  .workspace
+    :global(
+      .lab-readout-grid[data-columns="3"]
+        > dl
+        > div:nth-last-child(1 of :not(:has(.orbix-readout-lg))):nth-child(
+          3n + 1 of :not(:has(.orbix-readout-lg))
+        )
+    ) {
+    grid-column: 1 / -1;
+  }
+
+  .workspace
+    :global(
+      .lab-readout-grid[data-columns="3"]
+        > dl
+        > div:nth-last-child(1 of :not(:has(.orbix-readout-lg))):nth-child(
+          3n + 2 of :not(:has(.orbix-readout-lg))
+        )
+    ) {
+    grid-column: span 2;
+  }
+
+  /* A grid of primary figures only goes two across here, at most. */
+  .workspace
+    :global(
+      .lab-readout-grid:not([data-columns="1"])
+        > dl:not(:has(> div:not(:has(.orbix-readout-lg))))
+    ) {
+    grid-template-columns: repeat(2, minmax(min-content, 1fr));
+  }
+
+  .workspace
+    :global(
+      .lab-readout-grid:not([data-columns="1"])
+        > dl:not(:has(> div:not(:has(.orbix-readout-lg))))
+        > div:has(.orbix-readout-lg)
+    ) {
+    grid-column: auto;
+  }
+
+  .workspace
+    :global(
+      .lab-readout-grid:not([data-columns="1"])
+        > dl:not(:has(> div:not(:has(.orbix-readout-lg))))
+        > div:has(.orbix-readout-lg):last-child:nth-child(odd)
+    ) {
+    grid-column: 1 / -1;
+  }
+}
+
+/* A symbol inside an uppercase label keeps its case (ρ, not Ρ) and
+ * follows the label's size and baseline. */
+.workspace :global(.lab-symbol) {
+  font-family: var(--font-telemetry);
+  font-size: 1.1em;
+  letter-spacing: 0;
+  line-height: 1;
+  text-transform: none;
+}
+
+/* A unit in a table head keeps its case: "mm", not "MM" (megametres). */
+.workspace :global(.orbix-table-unit) {
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+/* A worded result: sans 500, never a readout face. */
+.workspace :global(.lab-value-text) {
+  color: var(--orbix-text-primary);
+  font-family: var(--font-interface);
+  font-size: 1.125rem;
+  font-weight: 500;
+  letter-spacing: 0;
+  line-height: 1.4;
+}
+
+/* ==================================================================== *
+ * FIGURES: the number never breaks; the unit is smaller and muted. A
+ * second figure for the same quantity (the g load beside m/s²) is a
+ * muted line under the first.
+ * ==================================================================== */
+
+.workspace :global(.lab-figure),
+.workspace :global(.lab-figure__value),
+.workspace :global(.lab-figure__unit) {
+  white-space: nowrap;
+}
+
+.workspace :global(.lab-figure__gap) {
+  font-size: 0.4em;
+}
+
+.workspace :global(.lab-figure__unit) {
+  color: var(--orbix-text-muted);
+  font-size: 0.8em;
+}
+
+.workspace :global(.orbix-readout-lg .lab-figure__unit) {
+  font-size: max(0.55em, 0.75rem);
+  letter-spacing: 0;
+}
+
+.workspace :global(.lab-figure-note) {
+  color: var(--orbix-text-muted);
+  display: block;
+  font-family: var(--font-telemetry);
+  font-size: var(--text-caps);
+  letter-spacing: 0;
+  line-height: 1.4;
 }

@@ -8,6 +8,8 @@ import {
   type LegalTocItem,
 } from "@/features/legal/components/legal-page";
 import { LegalSection } from "@/features/legal/components/legal-section";
+import { StorageKey } from "@/features/legal/components/storage-key";
+import { withoutFinalStop } from "@/features/legal/lib/without-final-stop";
 
 const toc: readonly LegalTocItem[] = [
   { id: "no-cookies", title: "ORBIX sets no cookies" },
@@ -20,9 +22,10 @@ const toc: readonly LegalTocItem[] = [
 export function CookiesPage() {
   return (
     <LegalPage
-      crumb="Cookies"
+      eyebrow="Policies"
       lead="ORBIX does not use cookies. This page explains the one kind of browser storage it does use, and how to clear it."
-      title="Cookies and local storage"
+      title="Cookies and"
+      titleAccent="local storage"
       toc={toc}
     >
       <LegalSection id="no-cookies" title="ORBIX sets no cookies">
@@ -36,9 +39,9 @@ export function CookiesPage() {
 
       <LegalSection id="hosting" title="The hosting provider">
         <p>
-          ORBIX is hosted by {siteLegal.hostName}. Responses from the public
-          ORBIX site do not include any cookies from Vercel. Vercel still
-          processes standard request logs, as described in the{" "}
+          ORBIX is hosted by {withoutFinalStop(siteLegal.hostName)}. Responses
+          from the public ORBIX site do not include any cookies from Vercel.
+          Vercel still processes standard request logs, as described in the{" "}
           <Link href="/privacy#hosting">privacy policy</Link>.
         </p>
       </LegalSection>
@@ -53,8 +56,8 @@ export function CookiesPage() {
           ORBIX uses it for one thing: the Mission Scenario Library in the{" "}
           <Link href="/engineering-lab#scenario-library">Engineering Lab</Link>.
           When you choose to save a mission scenario, it is stored under the key{" "}
-          <code>{SCENARIO_LIBRARY_STORAGE_KEY}</code> so it is still there next
-          time you visit. The entry holds the scenarios&apos; names,
+          <StorageKey value={SCENARIO_LIBRARY_STORAGE_KEY} /> so it is still
+          there next time you visit. The entry holds the scenarios&apos; names,
           descriptions, mission inputs and the times they were saved.
         </p>
         <p>

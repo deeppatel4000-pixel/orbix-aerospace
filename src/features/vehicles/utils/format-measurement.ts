@@ -36,14 +36,6 @@ export function formatMeasurement<TUnit extends MeasurementUnit>(
   return measurement.unit === "Mach" ? unit + " " + value : value + " " + unit;
 }
 
-const qualifierShortLabels: Record<MeasurementQualifier, string | undefined> = {
-  approximate: "approximate",
-  exact: undefined,
-  maximum: "maximum",
-  minimum: "minimum",
-  nominal: "nominal",
-};
-
 const qualifierLabels: Record<MeasurementQualifier, string> = {
   approximate: "Approximate",
   exact: "Published value",
@@ -57,16 +49,6 @@ export function formatQualifierLabel(
   qualifier: MeasurementQualifier | undefined,
 ) {
   return qualifier ? qualifierLabels[qualifier] : "Published value";
-}
-
-/**
- * A lower-case qualifier for use after a value in a table cell ("approximate",
- * "minimum"). Exact values, and values with no qualifier, return undefined.
- */
-export function formatQualifierShort(
-  qualifier: MeasurementQualifier | undefined,
-) {
-  return qualifier ? qualifierShortLabels[qualifier] : undefined;
 }
 
 const countWords = [

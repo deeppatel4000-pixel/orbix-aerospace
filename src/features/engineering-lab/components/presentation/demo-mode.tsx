@@ -7,10 +7,7 @@ import {
   type KeyboardEvent,
   type ReactNode,
 } from "react";
-import { RotateCcw } from "lucide-react";
-
 import { Button } from "@/components/ui/button";
-import { EmptyState } from "@/components/ui/empty-state";
 import type { MissionScenario } from "@/features/engineering-lab/missions";
 import type {
   MissionInsightsAnalysis,
@@ -26,7 +23,16 @@ import { DemoNavigation } from "./demo-navigation";
 import { DEMO_STEPS, DemoStep } from "./demo-step";
 import { MissionBriefing } from "./mission-briefing";
 import { MissionShowcase } from "./mission-showcase";
-import { formatLabValue } from "../visualization/format-lab-value";
+import {
+  altitudeReadout,
+  formatLabValue,
+} from "../visualization/format-lab-value";
+import { formatFigure } from "@/components/ui/readout";
+import {
+  HeadingLevel,
+  LabHeading,
+  useHeadingLevel,
+} from "../visualization/lab-heading";
 
 export interface DemoModeProps {
   readonly insights?: MissionInsightsAnalysis;
@@ -108,7 +114,7 @@ function DemoMetric({
           }
         >
           {typeof value === "number"
-            ? formatLabValue(value)
+            ? formatFigure(formatLabValue(value))
             : (value ?? "Not reported")}
           {value !== undefined && unit ? (
             <span className="ml-1 text-muted">{unit}</span>
@@ -143,11 +149,13 @@ export function DemoMode({
   // workspace never pulls focus out of the tab that opened it.
   const pendingFocusRef = useRef(false);
   const activeStep = DEMO_STEPS[state.currentStepIndex] ?? DEMO_STEPS[0];
+  // The tour's title, then the step title one below, then step content.
+  const headingLevel = useHeadingLevel();
   const missionName =
     missionProfile?.missionName ??
     report?.missionSummary.missionName ??
     missionScenario?.name ??
-    "Orbix Guided Mission";
+    "ORBIX Guided Mission";
   const missionDescription =
     missionScenario?.description ??
     report?.missionSummary.description ??
@@ -210,7 +218,8 @@ export function DemoMode({
   function renderStepContent() {
     if (activeStep.id === "mission-concept") {
       return (
-        <div className="grid gap-6 lg:grid-cols-[minmax(0,1.3fr)_minmax(16rem,0.7fr)]">
+        // Objective and category share one top rule, like a record row.
+        <div className="grid gap-6 border-t border-border-subtle pt-3 lg:grid-cols-[minmax(0,1.3fr)_minmax(16rem,0.7fr)]">
           <section aria-labelledby="demo-objective-title">
             <p className="orbix-label" id="demo-objective-title">
               Mission objective
@@ -219,16 +228,14 @@ export function DemoMode({
               {missionName}
             </p>
             <p className="mt-2 max-w-[68ch] text-sm leading-6 text-text-secondary">
-              {report?.missionAssessment.educationalSummary ??
-                missionDescription}
+              {missionDescription}
             </p>
           </section>
-          <dl>
-            <DemoMetric label="Mission category" value={missionCategory} />
-            <div className="border-t border-border-subtle py-2 text-sm">
-              <dt className="text-muted">Scenario description</dt>
-              <dd className="mt-1 text-foreground">{missionDescription}</dd>
-            </div>
+          <dl className="lg:border-l lg:border-border-subtle lg:pl-6">
+            <dt className="orbix-label">Mission category</dt>
+            <dd className="mt-1 text-base text-foreground">
+              {missionCategory}
+            </dd>
           </dl>
         </div>
       );
@@ -238,12 +245,13 @@ export function DemoMode({
       return (
         <div className="space-y-6">
           <section aria-labelledby="demo-selected-systems-title">
-            <h5
-              className="text-sm font-semibold text-foreground"
+            <LabHeading
+              offset={2}
+              variant="sub"
               id="demo-selected-systems-title"
             >
               Selected systems
-            </h5>
+            </LabHeading>
             {systems.length ? (
               <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-text-secondary">
                 {systems.map((system) => (
@@ -259,32 +267,32 @@ export function DemoMode({
 
           <div className="grid gap-x-8 gap-y-6 lg:grid-cols-2">
             <section aria-labelledby="demo-orbital-design-title">
-              <h5
-                className="text-sm font-semibold text-foreground"
+              <LabHeading
+                offset={2}
+                variant="sub"
                 id="demo-orbital-design-title"
               >
                 Orbital design
-              </h5>
+              </LabHeading>
               <dl className="mt-2">
                 <DemoMetric
                   label="Initial altitude"
-                  unit="m"
-                  value={transfer?.initialOrbit.altitudeMetres}
+                  {...altitudeReadout(transfer?.initialOrbit.altitudeMetres)}
                 />
                 <DemoMetric
                   label="Target altitude"
-                  unit="m"
-                  value={transfer?.finalOrbit.altitudeMetres}
+                  {...altitudeReadout(transfer?.finalOrbit.altitudeMetres)}
                 />
               </dl>
             </section>
             <section aria-labelledby="demo-vehicle-configuration-title">
-              <h5
-                className="text-sm font-semibold text-foreground"
+              <LabHeading
+                offset={2}
+                variant="sub"
                 id="demo-vehicle-configuration-title"
               >
                 Vehicle configuration
-              </h5>
+              </LabHeading>
               <dl className="mt-2">
                 <DemoMetric label="Vehicle" value={vehicle?.vehicleName} />
                 <DemoMetric
@@ -318,8 +326,8 @@ export function DemoMode({
           />
           <DemoMetric
             label="Transfer duration"
-            unit="s"
-            value={transfer?.transfer.transferTimeSeconds}
+            unit="h"
+            value={transfer?.transfer.transferTimeHours}
           />
           <DemoMetric
             label="Peak deceleration"
@@ -339,9 +347,11 @@ export function DemoMode({
 
     if (activeStep.id === "mission-visualization") {
       return (
-        <div className="space-y-6">
+        <div className="space-y-8">
           <MissionOrbitVisualization analysis={missionProfile} />
-          <ReentryProfileVisualization analysis={evaluation} />
+          <div className="border-t border-border-subtle pt-8">
+            <ReentryProfileVisualization analysis={evaluation} />
+          </div>
         </div>
       );
     }
@@ -363,12 +373,13 @@ export function DemoMode({
           {report ? (
             <div className="grid gap-6 lg:grid-cols-2">
               <section aria-labelledby="demo-assumptions-title">
-                <h5
-                  className="text-sm font-semibold text-foreground"
+                <LabHeading
+                  offset={2}
+                  variant="sub"
                   id="demo-assumptions-title"
                 >
                   Assumptions
-                </h5>
+                </LabHeading>
                 <ul className="mt-2 list-disc space-y-1 pl-5 text-sm leading-6 text-muted">
                   {report.missionAssessment.modelAssumptions.map((item) => (
                     <li key={item}>{item}</li>
@@ -376,12 +387,13 @@ export function DemoMode({
                 </ul>
               </section>
               <section aria-labelledby="demo-limitations-title">
-                <h5
-                  className="text-sm font-semibold text-foreground"
+                <LabHeading
+                  offset={2}
+                  variant="sub"
                   id="demo-limitations-title"
                 >
                   Limits
-                </h5>
+                </LabHeading>
                 <ul className="mt-2 list-disc space-y-1 pl-5 text-sm leading-6 text-muted">
                   {report.missionAssessment.limitations.map((item) => (
                     <li key={item}>{item}</li>
@@ -417,12 +429,12 @@ export function DemoMode({
   return (
     <article
       aria-describedby="demo-mode-keyboard-help"
-      aria-label={`Orbix guided demo for ${missionName}`}
+      aria-label={`ORBIX guided demo for ${missionName}`}
       className="min-w-0 text-foreground"
       onKeyDown={handleKeyboard}
     >
       <header className="border-b border-border-subtle pb-4">
-        <h3 className="orbix-h3 text-foreground">Guided tour of a mission</h3>
+        <LabHeading>Guided tour of a mission</LabHeading>
         <p className="mt-2 max-w-[68ch] text-sm leading-6 text-muted">
           Six steps that follow one example mission from concept to analysis,
           diagrams, review and presentation. The tour only shows results that
@@ -432,7 +444,7 @@ export function DemoMode({
 
       <div className="space-y-6 pt-6">
         <ol
-          aria-label="Orbix demo steps"
+          aria-label="ORBIX demo steps"
           className="grid gap-x-4 gap-y-1 text-sm sm:grid-cols-3 xl:grid-cols-6"
         >
           {DEMO_STEPS.map((step, index) => {
@@ -463,7 +475,9 @@ export function DemoMode({
               step={activeStep}
               stepIndex={state.currentStepIndex}
             >
-              {renderStepContent()}
+              <HeadingLevel level={headingLevel + 2}>
+                {renderStepContent()}
+              </HeadingLevel>
             </DemoStep>
             <DemoNavigation
               currentStepIndex={state.currentStepIndex}
@@ -475,28 +489,30 @@ export function DemoMode({
             />
           </>
         ) : (
-          <div ref={statusFocusRef} tabIndex={-1} className="outline-none">
-            <EmptyState
-              action={
-                <Button
-                  onClick={() => dispatch({ type: "restart" })}
-                  variant="secondary"
-                >
-                  <RotateCcw aria-hidden="true" size={16} />
-                  Restart guided tour
-                </Button>
-              }
-              description={
-                state.status === "complete"
-                  ? "You have seen every step of the mission workflow using the example results."
-                  : "No mission data was changed. Restart the tour whenever you like."
-              }
-              title={
-                state.status === "complete"
-                  ? "Guided review complete"
-                  : "Demo tour skipped"
-              }
-            />
+          // The end state sits behind a hairline, not in a second box inside
+          // the tool frame, and its title is one level below the tour's.
+          <div
+            className="border-t border-border-subtle pt-5 outline-none"
+            ref={statusFocusRef}
+            tabIndex={-1}
+          >
+            <LabHeading offset={1}>
+              {state.status === "complete"
+                ? "Guided review complete"
+                : "Demo tour skipped"}
+            </LabHeading>
+            <p className="mt-2 max-w-prose text-sm leading-6 text-muted">
+              {state.status === "complete"
+                ? "You have seen every step of the mission workflow using the example results."
+                : "No mission data was changed. Restart the tour whenever you like."}
+            </p>
+            <Button
+              className="mt-4"
+              onClick={() => dispatch({ type: "restart" })}
+              variant="secondary"
+            >
+              Restart guided tour
+            </Button>
           </div>
         )}
 
@@ -512,8 +528,8 @@ export function DemoMode({
           {state.status === "active"
             ? `Demo step ${state.currentStepIndex + 1}: ${activeStep.label}.`
             : state.status === "complete"
-              ? "Orbix guided demo complete."
-              : "Orbix guided demo skipped."}
+              ? "ORBIX guided demo complete."
+              : "ORBIX guided demo skipped."}
         </p>
       </div>
     </article>

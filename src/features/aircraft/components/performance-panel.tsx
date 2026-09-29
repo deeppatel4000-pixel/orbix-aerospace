@@ -3,16 +3,22 @@ import { VehicleProfileSection } from "@/features/vehicles/components/vehicle-pr
 import type { AircraftPerformance } from "@/features/vehicles/types";
 
 interface PerformancePanelProps {
+  index?: number;
   name: string;
   performance: AircraftPerformance;
 }
 
-/** Performance (spec 14): speed, range and ceiling as published. */
-export function PerformancePanel({ name, performance }: PerformancePanelProps) {
+/** Performance (spec 9): speed, range and ceiling as published. */
+export function PerformancePanel({
+  index,
+  name,
+  performance,
+}: PerformancePanelProps) {
   return (
     <VehicleProfileSection
       description="Published figures for the baseline aircraft. Range depends on load and fuel, so it is a reference value rather than a mission figure."
       id="performance"
+      index={index}
       title="Performance"
     >
       <MeasurementTable

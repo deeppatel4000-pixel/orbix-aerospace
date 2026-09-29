@@ -1,12 +1,33 @@
 import { cn } from "@/lib/cn";
 
 /**
- * Button variants (spec 8). `tertiary` is the deprecated name for `ghost`
- * and is accepted until phase C.
+ * Button variants (design v2, spec 8). Five variants share one class
+ * system; `Button` and `ButtonLink` default to `primary`.
+ *
+ * - `primary`: solid division-accent fill with `--on-accent` text; the
+ *   fill lightens on hover. One per group, for the main action.
+ * - `secondary`: 1px `--border-control` outline, transparent fill,
+ *   `--bg-raised` on hover. With `aria-pressed="true"` the outline turns
+ *   accent (toggle buttons).
+ * - `tertiary`: a text link with a 1px accent underline at 4px offset, for
+ *   the third action in a group. Keeps the 44px target; pair it with
+ *   `arrow`.
+ * - `ghost`: a quiet toolbar control in the secondary text colour, no
+ *   outline, `--bg-raised` on hover. 44px target.
+ * - `link`: an inline accent link inside running text, no minimum height
+ *   and no padding.
+ *
+ * Every variant except `link` is at least 44px tall. All have a 4px radius
+ * (where a box shows), sans 500 at 15px, and press down 1px. None is a
+ * pill, a gradient or a glow.
  */
 export type ButtonVariant =
   "ghost" | "link" | "primary" | "secondary" | "tertiary";
 
+/**
+ * `default` is 44px tall; `lg` is 48px with wider padding, for a single
+ * hero action.
+ */
 export type ButtonSize = "default" | "lg";
 
 interface ButtonClassOptions {
@@ -18,18 +39,16 @@ interface ButtonClassOptions {
 /**
  * Class string for anything that must look like a button but cannot use the
  * `Button` or `ButtonLink` components (for example a `<summary>` or a third
- * party element). Square-ish 4px corners, flat fills, no pill shapes.
+ * party element).
  */
 export function buttonClass({
   className,
   size = "default",
   variant = "primary",
 }: ButtonClassOptions = {}) {
-  const resolved = variant === "tertiary" ? "ghost" : variant;
-
   return cn(
     "orbix-button",
-    `orbix-button--${resolved}`,
+    `orbix-button--${variant}`,
     size === "lg" && "orbix-button--lg",
     className,
   );

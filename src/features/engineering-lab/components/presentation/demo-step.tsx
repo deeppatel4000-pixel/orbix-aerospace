@@ -1,4 +1,5 @@
 import type { ReactNode, Ref } from "react";
+import { LabHeading } from "../visualization/lab-heading";
 
 export interface DemoStepDefinition {
   readonly description: string;
@@ -78,12 +79,13 @@ export function DemoStep({
         <p className="orbix-label">
           Step {stepIndex + 1} of {DEMO_STEPS.length}
         </p>
-        <h4
-          className="orbix-h3 mt-1 text-foreground"
+        <LabHeading
+          offset={1}
+          className="mt-1"
           id={`demo-step-${step.id}-title`}
         >
           {step.label}
-        </h4>
+        </LabHeading>
         <p className="mt-2 max-w-[68ch] text-sm leading-6 text-muted">
           {step.description}
         </p>

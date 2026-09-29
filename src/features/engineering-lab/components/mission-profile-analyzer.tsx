@@ -1,26 +1,27 @@
 "use client";
 
-import { Button, Tag } from "@/components/ui";
+import { Button, EquationBlock } from "@/components/ui";
 import { useEffect, useMemo, useState, type FormEvent } from "react";
-import {
-  CircleAlert,
-  AlertTriangle,
-  Gauge,
-  Layers,
-  Orbit,
-  Plane,
-  RotateCcw,
-  Shield,
-} from "lucide-react";
+import { CircleAlert } from "lucide-react";
 
 import { analyzeMissionProfile } from "@/features/engineering-lab/analysis";
 import {
+  EQ_LINE,
+  EQ_TERM,
   CalculatorNumberField,
+  LAB_TOOL_STACK,
+  GEOPOTENTIAL_ALTITUDE_HINT,
+  INITIAL_GEOPOTENTIAL_ALTITUDE_LABEL,
+  LabToolLayout,
   NotCalculated,
+  ReadoutGrid,
   focusFirstInvalidField,
   focusFirstInvalidFieldOnEnter,
   CalculatorResultSection,
   ValidationErrorSummary,
+  LabFigure,
+  EqDot,
+  EQ_SUP,
 } from "@/features/engineering-lab/components/shared";
 import type {
   DeltaVBudgetInputs,
@@ -789,7 +790,7 @@ function VehicleFields({
     "primaryNoseRadiusMetres" | "alternativeNoseRadiusMetres";
 
   return (
-    <fieldset className="rounded-md border border-border-subtle bg-surface-raised p-4 sm:p-6">
+    <fieldset className="border-t border-border pt-6">
       <legend className="px-2 text-base font-semibold">{label}</legend>
       <div>
         <label className="orbix-field__label block" htmlFor={nameId}>
@@ -818,7 +819,7 @@ function VehicleFields({
           </p>
         ) : null}
       </div>
-      <div className="mt-5 grid gap-5 sm:grid-cols-2">
+      <div className="mt-5 grid gap-5 @min-[36rem]/col:grid-cols-2">
         <CalculatorNumberField
           error={errors[massField]}
           field={massField}
@@ -862,6 +863,88 @@ function VehicleFields({
       </div>
     </fieldset>
   );
+}
+
+const toolEquation = (
+  <EquationBlock
+    equation={
+      <>
+        <span className={EQ_LINE}>
+          <span className={EQ_TERM}>
+            Δv<sub>total</sub> = Σ<sub>i</sub> Δv<sub>i</sub>
+          </span>
+        </span>
+        <span className={EQ_LINE}>
+          <span className={EQ_TERM}>
+            Δv<sub>plane</sub> = 2v
+          </span>
+          <wbr />
+          <span className={EQ_TERM}>
+            <EqDot />
+            sin(Δi/2)
+          </span>
+        </span>
+        <span className={EQ_LINE}>
+          <span className={EQ_TERM}>q̇ = k</span>
+          <wbr />
+          <span className={EQ_TERM}>
+            <EqDot />
+            √(ρ/r<sub>n</sub>)
+          </span>
+          <wbr />
+          <span className={EQ_TERM}>
+            <EqDot />V<sup className={EQ_SUP}>3</sup>
+          </span>
+        </span>
+      </>
+    }
+    label="Mission delta-v budget and entry heating"
+    spokenAs="Total delta v equals the sum of each maneuver's delta v. The plane change delta v equals 2 v times the sine of half the inclination change. heat flux equals k times the square root of density over nose radius, times velocity cubed."
+    variables={[
+      {
+        symbol: (
+          <>
+            Δv<sub>i</sub>
+          </>
+        ),
+        meaning:
+          "Delta-v of each maneuver, including the Hohmann transfer and the plane change",
+        unit: "m/s",
+      },
+      {
+        symbol: "v",
+        meaning: "Circular orbital velocity at the plane-change altitude",
+        unit: "m/s",
+      },
+      { symbol: "Δi", meaning: "Inclination change", unit: "deg" },
+      {
+        symbol: "ρ, V",
+        meaning:
+          "Air density and velocity at each step of the entry trajectory",
+      },
+      {
+        symbol: "k",
+        meaning:
+          "Heating coefficient; by default 1.83 × 10⁻⁴ in SI units, for Earth air",
+      },
+      {
+        symbol: (
+          <>
+            r<sub>n</sub>
+          </>
+        ),
+        meaning: "Nose radius",
+        unit: "m",
+      },
+    ]}
+  />
+);
+
+/** "A", "A and B", "A, B and C", in lower case after the first word. */
+function formatSystemList(systems: readonly string[]) {
+  const names = systems.map((system) => system.toLowerCase());
+  if (names.length <= 1) return names.join("");
+  return names.slice(0, -1).join(", ") + " and " + names[names.length - 1];
 }
 
 export function MissionProfileAnalyzer({
@@ -957,499 +1040,439 @@ export function MissionProfileAnalyzer({
   }
 
   return (
-    <div className="grid gap-8 xl:grid-cols-[minmax(0,0.9fr)_minmax(34rem,1.1fr)] xl:gap-10">
-      <div>
-        <form
-          noValidate
-          onKeyDown={focusFirstInvalidFieldOnEnter}
-          onSubmit={preventSubmission}
-        >
-          <fieldset>
-            <legend className="text-base font-semibold text-foreground">
-              Mission identity
-            </legend>
-            <div className="mt-5">
-              <label
-                className="orbix-field__label block"
-                htmlFor="mission-profile-missionName"
-              >
-                Mission name
-              </label>
-              <input
-                aria-describedby={
-                  errors.missionName
-                    ? "mission-profile-missionName-hint mission-profile-missionName-error"
-                    : "mission-profile-missionName-hint"
-                }
-                aria-errormessage={
-                  errors.missionName
-                    ? "mission-profile-missionName-error"
-                    : undefined
-                }
-                aria-invalid={Boolean(errors.missionName)}
-                className="orbix-input mt-2"
-                id="mission-profile-missionName"
-                onChange={(event) =>
-                  updateValue("missionName", event.target.value)
-                }
-                required
-                type="text"
-                value={values.missionName}
-              />
-              <p
-                className="orbix-field__help mt-2"
-                id="mission-profile-missionName-hint"
-              >
-                Identifies the integrated educational mission profile.
-              </p>
-              {errors.missionName ? (
-                <p
-                  className="orbix-field__error mt-1"
-                  id="mission-profile-missionName-error"
-                >
-                  <CircleAlert
-                    aria-hidden="true"
-                    className="shrink-0"
-                    size={14}
-                  />
-                  {errors.missionName}
-                </p>
-              ) : null}
-            </div>
-          </fieldset>
-
-          <fieldset className="mt-7 border-t border-border pt-7">
-            <legend className="text-base font-semibold text-foreground">
-              Optional systems
-            </legend>
-            <div className="mt-5 grid gap-3 sm:grid-cols-3">
-              {[
-                {
-                  checked: values.includeDeltaVBudget,
-                  controls: "mission-profile-delta-system",
-                  field: "includeDeltaVBudget" as const,
-                  label: "Delta-v budget",
-                },
-                {
-                  checked: values.includeVehicleReentryEvaluation,
-                  controls: "mission-profile-reentry-system",
-                  field: "includeVehicleReentryEvaluation" as const,
-                  label: "Vehicle evaluation",
-                },
-                {
-                  checked: values.includeVehicleComparison,
-                  controls: "mission-profile-reentry-system",
-                  field: "includeVehicleComparison" as const,
-                  label: "Vehicle comparison",
-                },
-              ].map((system) => (
-                <label
-                  className="flex min-h-12 cursor-pointer items-center gap-3 rounded border border-border-control bg-surface-input px-4 py-3 text-sm font-medium transition-colors hover:border-muted"
-                  key={system.field}
-                >
-                  <input
-                    aria-controls={system.controls}
-                    checked={system.checked}
-                    className="h-4 w-4 accent-accent"
-                    onChange={(event) =>
-                      updateToggle(system.field, event.target.checked)
-                    }
-                    type="checkbox"
-                  />
-                  {system.label}
-                </label>
-              ))}
-            </div>
-          </fieldset>
-
-          {values.includeDeltaVBudget ? (
-            <fieldset
-              className="mt-7 border-t border-border pt-7"
-              id="mission-profile-delta-system"
-            >
+    <LabToolLayout equation={toolEquation}>
+      <div className={LAB_TOOL_STACK}>
+        <div className="@container/col min-w-0">
+          <form
+            noValidate
+            onKeyDown={focusFirstInvalidFieldOnEnter}
+            onSubmit={preventSubmission}
+          >
+            <fieldset>
               <legend className="text-base font-semibold text-foreground">
-                Delta-v budget
+                Mission identity
               </legend>
-              <div className="mt-5 flex flex-wrap gap-3">
-                <label className="flex min-h-11 cursor-pointer items-center gap-3 rounded border border-border-control bg-surface-input px-4 py-2 text-sm font-medium hover:border-muted has-checked:border-accent has-checked:bg-surface-raised">
-                  <input
-                    aria-controls="mission-profile-hohmann-inputs"
-                    checked={values.includeHohmannTransfer}
-                    className="h-4 w-4 accent-accent"
-                    onChange={(event) =>
-                      updateToggle(
-                        "includeHohmannTransfer",
-                        event.target.checked,
-                      )
-                    }
-                    type="checkbox"
-                  />
-                  Hohmann transfer
+              <div className="mt-4">
+                <label
+                  className="orbix-field__label block"
+                  htmlFor="mission-profile-missionName"
+                >
+                  Mission name
                 </label>
-                <label className="flex min-h-11 cursor-pointer items-center gap-3 rounded border border-border-control bg-surface-input px-4 py-2 text-sm font-medium hover:border-muted has-checked:border-accent has-checked:bg-surface-raised">
-                  <input
-                    aria-controls="mission-profile-plane-change-inputs"
-                    checked={values.includeOrbitalPlaneChange}
-                    className="h-4 w-4 accent-accent"
-                    onChange={(event) =>
-                      updateToggle(
-                        "includeOrbitalPlaneChange",
-                        event.target.checked,
-                      )
-                    }
-                    type="checkbox"
-                  />
-                  Orbital plane change
-                </label>
+                <input
+                  aria-describedby={
+                    errors.missionName
+                      ? "mission-profile-missionName-hint mission-profile-missionName-error"
+                      : "mission-profile-missionName-hint"
+                  }
+                  aria-errormessage={
+                    errors.missionName
+                      ? "mission-profile-missionName-error"
+                      : undefined
+                  }
+                  aria-invalid={Boolean(errors.missionName)}
+                  className="orbix-input mt-2"
+                  id="mission-profile-missionName"
+                  onChange={(event) =>
+                    updateValue("missionName", event.target.value)
+                  }
+                  required
+                  type="text"
+                  value={values.missionName}
+                />
+                <p
+                  className="orbix-field__help mt-2"
+                  id="mission-profile-missionName-hint"
+                >
+                  Identifies the integrated educational mission profile.
+                </p>
+                {errors.missionName ? (
+                  <p
+                    className="orbix-field__error mt-1"
+                    id="mission-profile-missionName-error"
+                  >
+                    <CircleAlert
+                      aria-hidden="true"
+                      className="shrink-0"
+                      size={14}
+                    />
+                    {errors.missionName}
+                  </p>
+                ) : null}
               </div>
-
-              {values.includeHohmannTransfer ? (
-                <div
-                  className="mt-5 grid gap-5 sm:grid-cols-2"
-                  id="mission-profile-hohmann-inputs"
-                >
-                  <CalculatorNumberField
-                    error={errors.initialAltitudeMetres}
-                    field="initialAltitudeMetres"
-                    hint="Initial circular-orbit altitude."
-                    idPrefix="mission-profile"
-                    label="Initial orbit altitude"
-                    onChange={updateValue}
-                    unit="m"
-                    value={values.initialAltitudeMetres}
-                  />
-                  <CalculatorNumberField
-                    error={errors.finalAltitudeMetres}
-                    field="finalAltitudeMetres"
-                    hint="Destination circular-orbit altitude."
-                    idPrefix="mission-profile"
-                    label="Final orbit altitude"
-                    onChange={updateValue}
-                    unit="m"
-                    value={values.finalAltitudeMetres}
-                  />
-                </div>
-              ) : null}
-
-              {values.includeOrbitalPlaneChange ? (
-                <div
-                  className="mt-5 grid gap-5 sm:grid-cols-2"
-                  id="mission-profile-plane-change-inputs"
-                >
-                  <CalculatorNumberField
-                    error={errors.orbitalAltitudeMetres}
-                    field="orbitalAltitudeMetres"
-                    hint="Circular-orbit altitude where the plane change occurs."
-                    idPrefix="mission-profile"
-                    label="Plane-change altitude"
-                    onChange={updateValue}
-                    unit="m"
-                    value={values.orbitalAltitudeMetres}
-                  />
-                  <CalculatorNumberField
-                    error={errors.inclinationChangeDegrees}
-                    field="inclinationChangeDegrees"
-                    hint="Required change in orbital inclination."
-                    idPrefix="mission-profile"
-                    label="Inclination change"
-                    onChange={updateValue}
-                    unit="deg"
-                    value={values.inclinationChangeDegrees}
-                  />
-                </div>
-              ) : null}
-
-              {values.includeHohmannTransfer ||
-              values.includeOrbitalPlaneChange ? (
-                <div className="mt-5 grid gap-5 sm:grid-cols-2">
-                  <OptionalNumberField
-                    error={errors.gravitationalParameter}
-                    field="gravitationalParameter"
-                    hint="Leave blank to use Earth's default gravitational parameter."
-                    label="Gravitational parameter (optional)"
-                    onChange={updateValue}
-                    unit="m³/s²"
-                    value={values.gravitationalParameter}
-                  />
-                  <OptionalNumberField
-                    error={errors.planetRadiusMetres}
-                    field="planetRadiusMetres"
-                    hint="Leave blank to use Earth's mean radius."
-                    label="Planet radius (optional)"
-                    onChange={updateValue}
-                    unit="m"
-                    value={values.planetRadiusMetres}
-                  />
-                </div>
-              ) : null}
             </fieldset>
-          ) : null}
 
-          {reentryEnabled ? (
-            <div
-              className="mt-7 space-y-6 border-t border-border pt-7"
-              id="mission-profile-reentry-system"
-            >
-              <fieldset>
+            <fieldset className="mt-10">
+              <legend className="text-base font-semibold text-foreground">
+                Optional systems
+              </legend>
+              <div className="mt-4 grid gap-3 @min-[40rem]/col:grid-cols-3">
+                {[
+                  {
+                    checked: values.includeDeltaVBudget,
+                    controls: "mission-profile-delta-system",
+                    field: "includeDeltaVBudget" as const,
+                    label: "Delta-v budget",
+                  },
+                  {
+                    checked: values.includeVehicleReentryEvaluation,
+                    controls: "mission-profile-reentry-system",
+                    field: "includeVehicleReentryEvaluation" as const,
+                    label: "Vehicle evaluation",
+                  },
+                  {
+                    checked: values.includeVehicleComparison,
+                    controls: "mission-profile-reentry-system",
+                    field: "includeVehicleComparison" as const,
+                    label: "Vehicle comparison",
+                  },
+                ].map((system) => (
+                  <label
+                    className="flex min-h-12 cursor-pointer items-center gap-3 rounded border border-border-control bg-surface-input px-4 py-3 text-sm font-medium transition-colors hover:border-muted"
+                    key={system.field}
+                  >
+                    <input
+                      aria-controls={system.controls}
+                      checked={system.checked}
+                      className="h-4 w-4 accent-accent"
+                      onChange={(event) =>
+                        updateToggle(system.field, event.target.checked)
+                      }
+                      type="checkbox"
+                    />
+                    {system.label}
+                  </label>
+                ))}
+              </div>
+            </fieldset>
+
+            {values.includeDeltaVBudget ? (
+              <fieldset
+                className="mt-7 border-t border-border pt-7"
+                id="mission-profile-delta-system"
+              >
                 <legend className="text-base font-semibold text-foreground">
-                  Shared reentry scenario
+                  Delta-v budget
                 </legend>
-                <div className="mt-5 grid gap-5 sm:grid-cols-2">
-                  <CalculatorNumberField
-                    error={errors.initialAltitudeMeters}
-                    field="initialAltitudeMeters"
-                    hint="Starting altitude within the current atmosphere model."
-                    idPrefix="mission-profile"
-                    label="Initial altitude"
-                    onChange={updateValue}
-                    unit="m"
-                    value={values.initialAltitudeMeters}
-                  />
-                  <CalculatorNumberField
-                    error={errors.initialVelocityMetersPerSecond}
-                    field="initialVelocityMetersPerSecond"
-                    hint="Initial vehicle speed for the reentry workflow."
-                    idPrefix="mission-profile"
-                    label="Initial velocity"
-                    onChange={updateValue}
-                    unit="m/s"
-                    value={values.initialVelocityMetersPerSecond}
-                  />
-                  <CalculatorNumberField
-                    error={errors.safetyFactor}
-                    field="safetyFactor"
-                    hint="TPS sizing multiplier passed to the existing analysis."
-                    idPrefix="mission-profile"
-                    label="TPS safety factor"
-                    onChange={updateValue}
-                    unit="×"
-                    value={values.safetyFactor}
-                  />
-                  <OptionalNumberField
-                    error={errors.timestepSeconds}
-                    field="timestepSeconds"
-                    hint="Leave blank to preserve the trajectory default."
-                    label="Time step (optional)"
-                    onChange={updateValue}
-                    unit="s"
-                    value={values.timestepSeconds}
-                  />
-                  <OptionalNumberField
-                    error={errors.initialFlightPathAngleDegrees}
-                    field="initialFlightPathAngleDegrees"
-                    hint="Leave blank to preserve the trajectory default."
-                    label="Flight-path angle (optional)"
-                    onChange={updateValue}
-                    unit="deg"
-                    value={values.initialFlightPathAngleDegrees}
-                  />
-                  <OptionalNumberField
-                    error={errors.heatingCoefficient}
-                    field="heatingCoefficient"
-                    hint="Leave blank to preserve the heating-model default."
-                    label="Heating coefficient k (optional)"
-                    onChange={updateValue}
-                    unit="kg½/m"
-                    value={values.heatingCoefficient}
-                  />
+                <div className="mt-5 flex flex-wrap gap-3">
+                  <label className="flex min-h-11 cursor-pointer items-center gap-3 rounded border border-border-control bg-surface-input px-4 py-2 text-sm font-medium hover:border-muted has-checked:border-accent has-checked:bg-surface-raised">
+                    <input
+                      aria-controls="mission-profile-hohmann-inputs"
+                      checked={values.includeHohmannTransfer}
+                      className="h-4 w-4 accent-accent"
+                      onChange={(event) =>
+                        updateToggle(
+                          "includeHohmannTransfer",
+                          event.target.checked,
+                        )
+                      }
+                      type="checkbox"
+                    />
+                    Hohmann transfer
+                  </label>
+                  <label className="flex min-h-11 cursor-pointer items-center gap-3 rounded border border-border-control bg-surface-input px-4 py-2 text-sm font-medium hover:border-muted has-checked:border-accent has-checked:bg-surface-raised">
+                    <input
+                      aria-controls="mission-profile-plane-change-inputs"
+                      checked={values.includeOrbitalPlaneChange}
+                      className="h-4 w-4 accent-accent"
+                      onChange={(event) =>
+                        updateToggle(
+                          "includeOrbitalPlaneChange",
+                          event.target.checked,
+                        )
+                      }
+                      type="checkbox"
+                    />
+                    Orbital plane change
+                  </label>
                 </div>
+
+                {values.includeHohmannTransfer ? (
+                  <div
+                    className="mt-5 grid gap-5 @min-[36rem]/col:grid-cols-2"
+                    id="mission-profile-hohmann-inputs"
+                  >
+                    <CalculatorNumberField
+                      error={errors.initialAltitudeMetres}
+                      field="initialAltitudeMetres"
+                      hint="Initial circular-orbit altitude."
+                      idPrefix="mission-profile"
+                      label="Initial orbit altitude"
+                      onChange={updateValue}
+                      unit="m"
+                      value={values.initialAltitudeMetres}
+                    />
+                    <CalculatorNumberField
+                      error={errors.finalAltitudeMetres}
+                      field="finalAltitudeMetres"
+                      hint="Destination circular-orbit altitude."
+                      idPrefix="mission-profile"
+                      label="Final orbit altitude"
+                      onChange={updateValue}
+                      unit="m"
+                      value={values.finalAltitudeMetres}
+                    />
+                  </div>
+                ) : null}
+
+                {values.includeOrbitalPlaneChange ? (
+                  <div
+                    className="mt-5 grid gap-5 @min-[36rem]/col:grid-cols-2"
+                    id="mission-profile-plane-change-inputs"
+                  >
+                    <CalculatorNumberField
+                      error={errors.orbitalAltitudeMetres}
+                      field="orbitalAltitudeMetres"
+                      hint="Circular-orbit altitude where the plane change occurs."
+                      idPrefix="mission-profile"
+                      label="Plane-change altitude"
+                      onChange={updateValue}
+                      unit="m"
+                      value={values.orbitalAltitudeMetres}
+                    />
+                    <CalculatorNumberField
+                      error={errors.inclinationChangeDegrees}
+                      field="inclinationChangeDegrees"
+                      hint="Required change in orbital inclination."
+                      idPrefix="mission-profile"
+                      label="Inclination change"
+                      onChange={updateValue}
+                      unit="deg"
+                      value={values.inclinationChangeDegrees}
+                    />
+                  </div>
+                ) : null}
+
+                {values.includeHohmannTransfer ||
+                values.includeOrbitalPlaneChange ? (
+                  <div className="mt-5 grid gap-5 @min-[36rem]/col:grid-cols-2">
+                    <OptionalNumberField
+                      error={errors.gravitationalParameter}
+                      field="gravitationalParameter"
+                      hint="Leave blank to use Earth's default gravitational parameter."
+                      label="Gravitational parameter (optional)"
+                      onChange={updateValue}
+                      unit="m³/s²"
+                      value={values.gravitationalParameter}
+                    />
+                    <OptionalNumberField
+                      error={errors.planetRadiusMetres}
+                      field="planetRadiusMetres"
+                      hint="Leave blank to use Earth's mean radius."
+                      label="Planet radius (optional)"
+                      onChange={updateValue}
+                      unit="m"
+                      value={values.planetRadiusMetres}
+                    />
+                  </div>
+                ) : null}
               </fieldset>
+            ) : null}
 
-              <VehicleFields
-                errors={errors}
-                idPrefix="mission-profile-primary"
-                label="Primary vehicle"
-                nameField="primaryVehicleName"
-                onChange={updateValue}
-                values={values}
-                vehicle="primary"
-              />
+            {reentryEnabled ? (
+              <div
+                className="mt-7 space-y-6 border-t border-border pt-7"
+                id="mission-profile-reentry-system"
+              >
+                <fieldset>
+                  <legend className="text-base font-semibold text-foreground">
+                    Shared reentry scenario
+                  </legend>
+                  <div className="mt-4 grid gap-5 @min-[36rem]/col:grid-cols-2">
+                    <CalculatorNumberField
+                      error={errors.initialAltitudeMeters}
+                      field="initialAltitudeMeters"
+                      hint={GEOPOTENTIAL_ALTITUDE_HINT}
+                      idPrefix="mission-profile"
+                      label={INITIAL_GEOPOTENTIAL_ALTITUDE_LABEL}
+                      onChange={updateValue}
+                      unit="m"
+                      value={values.initialAltitudeMeters}
+                    />
+                    <CalculatorNumberField
+                      error={errors.initialVelocityMetersPerSecond}
+                      field="initialVelocityMetersPerSecond"
+                      hint="Initial vehicle speed for the reentry workflow."
+                      idPrefix="mission-profile"
+                      label="Initial velocity"
+                      onChange={updateValue}
+                      unit="m/s"
+                      value={values.initialVelocityMetersPerSecond}
+                    />
+                    <CalculatorNumberField
+                      error={errors.safetyFactor}
+                      field="safetyFactor"
+                      hint="TPS sizing multiplier passed to the existing analysis."
+                      idPrefix="mission-profile"
+                      label="TPS safety factor"
+                      onChange={updateValue}
+                      unit="×"
+                      value={values.safetyFactor}
+                    />
+                    <OptionalNumberField
+                      error={errors.timestepSeconds}
+                      field="timestepSeconds"
+                      hint="Leave blank to preserve the trajectory default."
+                      label="Time step (optional)"
+                      onChange={updateValue}
+                      unit="s"
+                      value={values.timestepSeconds}
+                    />
+                    <OptionalNumberField
+                      error={errors.initialFlightPathAngleDegrees}
+                      field="initialFlightPathAngleDegrees"
+                      hint="Leave blank to preserve the trajectory default."
+                      label="Flight-path angle (optional)"
+                      onChange={updateValue}
+                      unit="deg"
+                      value={values.initialFlightPathAngleDegrees}
+                    />
+                    <OptionalNumberField
+                      error={errors.heatingCoefficient}
+                      field="heatingCoefficient"
+                      hint="Leave blank to preserve the heating-model default."
+                      label="Heating coefficient k (optional)"
+                      onChange={updateValue}
+                      unit="kg½/m"
+                      value={values.heatingCoefficient}
+                    />
+                  </div>
+                </fieldset>
 
-              {values.includeVehicleComparison ? (
                 <VehicleFields
                   errors={errors}
-                  idPrefix="mission-profile-alternative"
-                  label="Comparison vehicle"
-                  nameField="alternativeVehicleName"
+                  idPrefix="mission-profile-primary"
+                  label="Primary vehicle"
+                  nameField="primaryVehicleName"
                   onChange={updateValue}
                   values={values}
-                  vehicle="alternative"
+                  vehicle="primary"
                 />
-              ) : null}
+
+                {values.includeVehicleComparison ? (
+                  <VehicleFields
+                    errors={errors}
+                    idPrefix="mission-profile-alternative"
+                    label="Comparison vehicle"
+                    nameField="alternativeVehicleName"
+                    onChange={updateValue}
+                    values={values}
+                    vehicle="alternative"
+                  />
+                ) : null}
+              </div>
+            ) : null}
+
+            <ValidationErrorSummary errors={[...Object.values(errors)]} />
+
+            <div className="mt-7 flex flex-wrap items-center gap-x-5 gap-y-3">
+              <p className="min-w-0 flex-[1_1_16rem] text-sm leading-6 text-muted">
+                Valid changes update the integrated mission profile immediately.
+              </p>
+              <Button
+                className="shrink-0 whitespace-nowrap"
+                variant="secondary"
+                onClick={resetAnalyzer}
+              >
+                Reset inputs
+              </Button>
             </div>
-          ) : null}
+          </form>
+        </div>
 
-          <ValidationErrorSummary errors={[...Object.values(errors)]} />
-
-          <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:items-center">
-            <p className="text-sm leading-6 text-muted">
-              Valid changes update the integrated mission profile immediately.
-            </p>
-            <Button
-              className="shrink-0 whitespace-nowrap sm:ml-auto"
-              variant="secondary"
-              onClick={resetAnalyzer}
-            >
-              <RotateCcw aria-hidden="true" size={16} />
-              Reset inputs
-            </Button>
-          </div>
-        </form>
-
-        <section
-          aria-labelledby="mission-profile-explanation-title"
-          className="mt-8 border-t border-border pt-7"
-        >
-          <p className="orbix-label">Educational integration</p>
-          <h3
-            className="mt-1 text-lg font-semibold"
-            id="mission-profile-explanation-title"
+        <div className="@container/col min-w-0 space-y-5">
+          <CalculatorResultSection
+            id="mission-profile-delta-v-result"
+            title="Delta-v summary"
           >
-            One profile, multiple engineering disciplines
-          </h3>
-          <p className="mt-3 text-sm leading-6 text-muted">
-            The mission profile composes existing orbital transfers, vehicle
-            reentry evaluation, thermal protection selection, and delta-v
-            budgeting. Each source analysis remains independent and retains
-            ownership of its equations, assumptions, and validation.
-          </p>
-          <p className="mt-3 text-sm leading-6 text-muted">
-            This integration is educational and does not determine mission
-            feasibility, flight readiness, or certification status.
-          </p>
-        </section>
-      </div>
+            {deltaVBudget ? (
+              <ReadoutGrid columns={3}>
+                <div>
+                  <dt className="orbix-label">Total mission delta-v</dt>
+                  <dd className="mt-1">
+                    <output
+                      className="orbix-readout-lg"
+                      htmlFor={deltaOutputIds}
+                    >
+                      <LabFigure unit="m/s">
+                        {standardFormatter.format(
+                          deltaVBudget.totalDeltaVMetresPerSecond,
+                        )}
+                      </LabFigure>
+                    </output>
+                  </dd>
+                </div>
+                <div>
+                  <dt className="orbix-label">Maneuver count</dt>
+                  <dd className="mt-1">
+                    <output className="orbix-data" htmlFor={deltaOutputIds}>
+                      <LabFigure>{deltaVBudget.numberOfManeuvers}</LabFigure>
+                    </output>
+                  </dd>
+                </div>
+                <div>
+                  <dt className="orbix-label">Largest contributor</dt>
+                  <dd className="mt-1">
+                    <output className="lab-value-text" htmlFor={deltaOutputIds}>
+                      {deltaVBudget.largestDeltaVContributor
+                        ? deltaVBudget.largestDeltaVContributor.name
+                        : "No maneuvers"}
+                    </output>
+                    {deltaVBudget.largestDeltaVContributor ? (
+                      <output
+                        className="lab-figure-note"
+                        htmlFor={deltaOutputIds}
+                      >
+                        <LabFigure unit="m/s">
+                          {standardFormatter.format(
+                            deltaVBudget.largestDeltaVContributor
+                              .deltaVMetresPerSecond,
+                          )}
+                        </LabFigure>
+                      </output>
+                    ) : null}
+                  </dd>
+                </div>
+              </ReadoutGrid>
+            ) : (
+              <NotCalculated>
+                Enable the delta-v budget to integrate orbital maneuver costs.
+              </NotCalculated>
+            )}
+          </CalculatorResultSection>
 
-      <div className="space-y-5">
-        <CalculatorResultSection
-          eyebrow="Mission: integrated systems"
-          icon={Layers}
-          id="mission-profile-overview-result"
-          title="Mission overview"
-        >
           {result ? (
-            <dl className="grid gap-4 sm:grid-cols-2">
-              <div>
-                <dt className="orbix-label">Mission name</dt>
-                <dd className="mt-1">
-                  <output
-                    className="text-lg font-semibold"
-                    htmlFor={missionOutputIds}
-                  >
-                    {result.missionName}
-                  </output>
-                </dd>
-              </div>
-              <div>
-                <dt className="orbix-label">Integrated analyses</dt>
-                <dd className="mt-1">
-                  <output className="orbix-data-lg" htmlFor={allOutputIds}>
-                    {result.missionSummaryState.analysesResolved}
-                  </output>
-                </dd>
-              </div>
-              <div className="sm:col-span-2">
-                <dt className="orbix-label">Systems resolved</dt>
-                <dd className="mt-2">
-                  <output htmlFor={allOutputIds}>
-                    {systemsResolved.length > 0 ? (
-                      <span className="flex flex-wrap gap-2">
-                        {systemsResolved.map((system) => (
-                          <Tag key={system}>{system}</Tag>
-                        ))}
-                      </span>
-                    ) : (
-                      <span className="text-sm text-muted">
-                        Mission identity only
-                      </span>
-                    )}
-                  </output>
-                </dd>
-              </div>
-            </dl>
+            <p className="text-sm leading-6 text-text-secondary">
+              <output htmlFor={allOutputIds}>
+                {systemsResolved.length > 0
+                  ? `Profile for ${result.missionName}, integrating the ${formatSystemList(systemsResolved)}.`
+                  : `Profile for ${result.missionName}. No analyses are enabled.`}
+              </output>
+            </p>
           ) : (
             <NotCalculated invalid={Object.values(errors).some(Boolean)}>
               Enter a valid mission configuration to resolve the profile.
             </NotCalculated>
           )}
-        </CalculatorResultSection>
 
-        <CalculatorResultSection
-          eyebrow="Mission: velocity budget"
-          icon={Orbit}
-          id="mission-profile-delta-v-result"
-          title="Delta-v summary"
-        >
-          {deltaVBudget ? (
-            <dl className="grid gap-4 sm:grid-cols-3">
-              <div>
-                <dt className="orbix-label">Total mission delta-v</dt>
-                <dd className="mt-1">
-                  <output className="orbix-data-lg" htmlFor={deltaOutputIds}>
-                    {standardFormatter.format(
-                      deltaVBudget.totalDeltaVMetresPerSecond,
-                    )}{" "}
-                    m/s
-                  </output>
-                </dd>
-              </div>
-              <div>
-                <dt className="orbix-label">Maneuver count</dt>
-                <dd className="mt-1">
-                  <output className="orbix-data-lg" htmlFor={deltaOutputIds}>
-                    {deltaVBudget.numberOfManeuvers}
-                  </output>
-                </dd>
-              </div>
-              <div>
-                <dt className="orbix-label">Largest contributor</dt>
-                <dd className="mt-1">
-                  <output
-                    className="text-sm font-semibold"
-                    htmlFor={deltaOutputIds}
-                  >
-                    {deltaVBudget.largestDeltaVContributor
-                      ? deltaVBudget.largestDeltaVContributor.name +
-                        ", " +
-                        standardFormatter.format(
-                          deltaVBudget.largestDeltaVContributor
-                            .deltaVMetresPerSecond,
-                        ) +
-                        " m/s"
-                      : "No maneuvers"}
-                  </output>
-                </dd>
-              </div>
-            </dl>
-          ) : (
-            <NotCalculated>
-              Enable the delta-v budget to integrate orbital maneuver costs.
-            </NotCalculated>
-          )}
-        </CalculatorResultSection>
-
-        <CalculatorResultSection
-          eyebrow="Mission: vehicle performance"
-          icon={Plane}
-          id="mission-profile-vehicle-result"
-          title="Selected vehicle"
-        >
-          {selectedVehicleName && flightSummary && peakDeceleration ? (
-            <div className="space-y-5">
-              <div>
-                <p className="orbix-label">
-                  {selectedComparisonVehicle
-                    ? "Comparison recommendation"
-                    : "Evaluated vehicle"}
-                </p>
-                <output
-                  className="mt-1 block text-xl font-semibold"
-                  htmlFor={allOutputIds}
-                >
-                  {selectedVehicleName}
-                </output>
-              </div>
-              <dl className="grid gap-4 sm:grid-cols-2">
+          <CalculatorResultSection
+            id="mission-profile-vehicle-result"
+            title="Selected vehicle"
+          >
+            {selectedVehicleName && flightSummary && peakDeceleration ? (
+              <ReadoutGrid columns={2}>
+                <div>
+                  <dt className="orbix-label">
+                    {selectedComparisonVehicle
+                      ? "Comparison recommendation"
+                      : "Evaluated vehicle"}
+                  </dt>
+                  <dd>
+                    <output className="lab-value-text" htmlFor={allOutputIds}>
+                      {selectedVehicleName}
+                    </output>
+                  </dd>
+                </div>
                 <div>
                   <dt className="orbix-label">Final velocity</dt>
                   <dd className="mt-1">
@@ -1457,10 +1480,11 @@ export function MissionProfileAnalyzer({
                       className="orbix-data"
                       htmlFor={reentryOutputIds + " " + primaryVehicleOutputIds}
                     >
-                      {standardFormatter.format(
-                        flightSummary.finalState.velocityMetersPerSecond,
-                      )}{" "}
-                      m/s
+                      <LabFigure unit="m/s">
+                        {standardFormatter.format(
+                          flightSummary.finalState.velocityMetersPerSecond,
+                        )}
+                      </LabFigure>
                     </output>
                   </dd>
                 </div>
@@ -1471,10 +1495,11 @@ export function MissionProfileAnalyzer({
                       className="orbix-data"
                       htmlFor={reentryOutputIds + " " + primaryVehicleOutputIds}
                     >
-                      {standardFormatter.format(
-                        flightSummary.reentryDurationSeconds,
-                      )}{" "}
-                      s
+                      <LabFigure unit="s">
+                        {standardFormatter.format(
+                          flightSummary.reentryDurationSeconds,
+                        )}
+                      </LabFigure>
                     </output>
                   </dd>
                 </div>
@@ -1482,68 +1507,72 @@ export function MissionProfileAnalyzer({
                   <dt className="orbix-label">Peak deceleration</dt>
                   <dd className="mt-1">
                     <output className="orbix-data" htmlFor={allOutputIds}>
-                      {standardFormatter.format(
-                        peakDeceleration.decelerationMetersPerSecondSquared,
-                      )}{" "}
-                      m/s²,{" "}
-                      {standardFormatter.format(
-                        peakDeceleration.decelerationGs,
-                      )}{" "}
-                      g
+                      <LabFigure unit="m/s²">
+                        {standardFormatter.format(
+                          peakDeceleration.decelerationMetersPerSecondSquared,
+                        )}
+                      </LabFigure>
+                    </output>
+                    <output className="lab-figure-note" htmlFor={allOutputIds}>
+                      <LabFigure unit="g">
+                        {standardFormatter.format(
+                          peakDeceleration.decelerationGs,
+                        )}
+                      </LabFigure>
                     </output>
                   </dd>
                 </div>
                 <div>
                   <dt className="orbix-label">Peak heat flux</dt>
                   <dd className="mt-1">
-                    <output className="orbix-data" htmlFor={allOutputIds}>
-                      {peakHeatFluxWattsPerSquareMetre === undefined
-                        ? "Unavailable"
-                        : heatFluxFormatter.format(
+                    {peakHeatFluxWattsPerSquareMetre === undefined ? (
+                      <output className="lab-value-text" htmlFor={allOutputIds}>
+                        Unavailable
+                      </output>
+                    ) : (
+                      <output className="orbix-data" htmlFor={allOutputIds}>
+                        <LabFigure unit="W/m²">
+                          {heatFluxFormatter.format(
                             peakHeatFluxWattsPerSquareMetre,
-                          ) + " W/m²"}
+                          )}
+                        </LabFigure>
+                      </output>
+                    )}
+                  </dd>
+                </div>
+              </ReadoutGrid>
+            ) : (
+              <NotCalculated>
+                Enable vehicle evaluation or comparison to inspect reentry
+                performance.
+              </NotCalculated>
+            )}
+          </CalculatorResultSection>
+
+          <CalculatorResultSection
+            id="mission-profile-tps-result"
+            title="TPS recommendation"
+          >
+            {result?.tpsRecommendation &&
+            tpsThickness &&
+            tpsMassKilograms !== undefined &&
+            thermalMargin ? (
+              <ReadoutGrid columns={3}>
+                <div>
+                  <dt className="orbix-label">Recommended material</dt>
+                  <dd>
+                    <output className="lab-value-text" htmlFor={allOutputIds}>
+                      {result.tpsRecommendation.name}
                     </output>
                   </dd>
                 </div>
-              </dl>
-            </div>
-          ) : (
-            <NotCalculated>
-              Enable vehicle evaluation or comparison to inspect reentry
-              performance.
-            </NotCalculated>
-          )}
-        </CalculatorResultSection>
-
-        <CalculatorResultSection
-          eyebrow="Mission: thermal protection"
-          icon={Shield}
-          id="mission-profile-tps-result"
-          title="TPS recommendation"
-        >
-          {result?.tpsRecommendation &&
-          tpsThickness &&
-          tpsMassKilograms !== undefined &&
-          thermalMargin ? (
-            <div className="space-y-5">
-              <div>
-                <p className="orbix-label">Recommended material</p>
-                <output
-                  className="mt-1 block text-xl font-semibold"
-                  htmlFor={allOutputIds}
-                >
-                  {result.tpsRecommendation.name}
-                </output>
-                <p className="mt-2 text-sm leading-6 text-muted">
-                  {result.tpsRecommendation.description}
-                </p>
-              </div>
-              <dl className="grid gap-4 sm:grid-cols-3">
                 <div>
                   <dt className="orbix-label">Required thickness</dt>
                   <dd className="mt-1">
                     <output className="orbix-data" htmlFor={allOutputIds}>
-                      {preciseFormatter.format(tpsThickness.millimetres)} mm
+                      <LabFigure unit="mm">
+                        {preciseFormatter.format(tpsThickness.millimetres)}
+                      </LabFigure>
                     </output>
                   </dd>
                 </div>
@@ -1551,7 +1580,9 @@ export function MissionProfileAnalyzer({
                   <dt className="orbix-label">Estimated TPS mass</dt>
                   <dd className="mt-1">
                     <output className="orbix-data" htmlFor={allOutputIds}>
-                      {preciseFormatter.format(tpsMassKilograms)} kg
+                      <LabFigure unit="kg">
+                        {preciseFormatter.format(tpsMassKilograms)}
+                      </LabFigure>
                     </output>
                   </dd>
                 </div>
@@ -1559,44 +1590,74 @@ export function MissionProfileAnalyzer({
                   <dt className="orbix-label">Thermal margin</dt>
                   <dd className="mt-1">
                     <output className="orbix-data" htmlFor={allOutputIds}>
-                      {standardFormatter.format(thermalMargin.marginPercentage)}
-                      %
+                      <LabFigure unit="%">
+                        {standardFormatter.format(
+                          thermalMargin.marginPercentage,
+                        )}
+                      </LabFigure>
                     </output>
-                    <p className="orbix-label mt-1">
+                    <output className="lab-figure-note" htmlFor={allOutputIds}>
                       {thermalMargin.classification}
-                    </p>
+                    </output>
                   </dd>
                 </div>
-              </dl>
-            </div>
-          ) : (
-            <NotCalculated>
-              Enable a vehicle system to resolve the educational TPS material
-              recommendation.
-            </NotCalculated>
-          )}
-        </CalculatorResultSection>
+                <div>
+                  <dt className="orbix-label">About</dt>
+                  <dd className="text-sm leading-6 text-muted">
+                    {result.tpsRecommendation.description}
+                  </dd>
+                </div>
+              </ReadoutGrid>
+            ) : (
+              <NotCalculated>
+                Enable a vehicle system to resolve the educational TPS material
+                recommendation.
+              </NotCalculated>
+            )}
+          </CalculatorResultSection>
+        </div>
 
-        <aside className="orbix-lab-note">
-          <p className="orbix-lab-note__title">
-            <AlertTriangle aria-hidden="true" size={17} />
-            Modeling boundary
-          </p>
-          <ul className="mt-4 grid list-disc gap-2 pl-5 text-sm leading-6 text-muted sm:grid-cols-2">
-            <li>Educational mission integration only</li>
-            <li>No mission-feasibility determination</li>
-            <li>Source-analysis assumptions remain in force</li>
-            <li>No guidance, operations, or contingency planning</li>
-            <li>No certified vehicle or TPS qualification data</li>
-            <li>No coupling beyond existing analysis outputs</li>
-          </ul>
-          <p className="mt-4 flex items-center gap-2 text-sm leading-6 text-muted">
-            <Gauge aria-hidden="true" size={15} />
-            Use the individual laboratory modules to inspect each source model
-            in detail.
-          </p>
-        </aside>
+        <div className="@container/col min-w-0 space-y-5">
+          <section
+            aria-labelledby="mission-profile-explanation-title"
+            className="border-t border-border pt-7"
+          >
+            <h3
+              className="text-lg font-semibold"
+              id="mission-profile-explanation-title"
+            >
+              One profile, multiple engineering disciplines
+            </h3>
+            <p className="mt-3 text-sm leading-6 text-muted">
+              The mission profile composes existing orbital transfers, vehicle
+              reentry evaluation, thermal protection selection, and delta-v
+              budgeting. Each source analysis remains independent and retains
+              ownership of its equations, assumptions, and validation.
+            </p>
+            <p className="mt-3 text-sm leading-6 text-muted">
+              This integration is educational and does not determine mission
+              feasibility, flight readiness, or certification status.
+            </p>
+          </section>
+          <aside className="orbix-lab-note">
+            <p className="orbix-lab-note__title font-medium">
+              Modeling boundary
+            </p>
+            <ul className="mt-4 grid list-disc gap-2 pl-5 text-sm leading-6 text-muted @min-[36rem]/col:grid-cols-2">
+              <li>Educational mission integration only</li>
+              <li>No mission-feasibility determination</li>
+              <li>Source-analysis assumptions remain in force</li>
+              <li>No guidance, operations, or contingency planning</li>
+              <li>No certified vehicle or TPS qualification data</li>
+              <li>No coupling beyond existing analysis outputs</li>
+            </ul>
+            <p className="mt-4 flex items-center gap-2 text-sm leading-6 text-muted">
+              Use the individual laboratory modules to inspect each source model
+              in detail.
+            </p>
+          </aside>
+        </div>
       </div>
-    </div>
+    </LabToolLayout>
   );
 }

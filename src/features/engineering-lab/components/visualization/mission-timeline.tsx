@@ -7,7 +7,9 @@ import type {
   MissionReport,
   VehicleReentryEvaluationAnalysis,
 } from "@/features/engineering-lab/types";
-import { formatLabValue } from "./format-lab-value";
+import { formatLabAltitude, formatLabValue } from "./format-lab-value";
+import { formatFigure } from "@/components/ui/readout";
+import { LabHeading } from "./lab-heading";
 
 export interface MissionTimelineProps {
   readonly missionProfileAnalysis: MissionProfileAnalysis;
@@ -50,13 +52,13 @@ function buildMissionPhases({
     {
       available: transfer !== undefined,
       detail: transfer
-        ? `Transfer from ${formatLabValue(transfer.initialOrbit.altitudeMetres)} m to ${formatLabValue(transfer.finalOrbit.altitudeMetres)} m.`
+        ? `Transfer from ${formatLabAltitude(transfer.initialOrbit.altitudeMetres)} to ${formatLabAltitude(transfer.finalOrbit.altitudeMetres)}.`
         : "No resolved orbit-transfer output is present.",
       id: "orbit-transfer",
       label: "Orbit transfer",
       timingLabel: transfer ? "reported duration" : "Timing not reported",
       timingValue: transfer
-        ? `${formatLabValue(transfer.transfer.transferTimeSeconds)} s`
+        ? `${formatLabValue(transfer.transfer.transferTimeHours)} h`
         : undefined,
     },
     {
@@ -71,7 +73,7 @@ function buildMissionPhases({
     {
       available: transfer !== undefined,
       detail: transfer
-        ? `${formatLabValue(transfer.finalOrbit.altitudeMetres)} m reported arrival-orbit altitude.`
+        ? `${formatLabAltitude(transfer.finalOrbit.altitudeMetres)} reported arrival-orbit altitude.`
         : "Arrival orbit is an educational sequence label without a resolved target orbit.",
       id: "arrival-orbit",
       label: "Arrival orbit",
@@ -111,8 +113,6 @@ export function MissionTimeline(props: MissionTimelineProps) {
   const [activeIndex, setActiveIndex] = useState(0);
   const buttonRefs = useRef<Array<HTMLButtonElement | null>>([]);
   const activePhase = phases[activeIndex] ?? phases[0];
-  const progressPercentage =
-    phases.length > 1 ? (activeIndex / (phases.length - 1)) * 100 : 0;
 
   function selectPhase(index: number) {
     setActiveIndex(index);
@@ -151,31 +151,20 @@ export function MissionTimeline(props: MissionTimelineProps) {
   return (
     <section aria-labelledby={`${timelineId}-title`}>
       <div className="flex flex-col gap-1 sm:flex-row sm:items-baseline sm:justify-between">
-        <h3 className="orbix-h4 text-foreground" id={`${timelineId}-title`}>
-          Mission phases
-        </h3>
+        <LabHeading id={`${timelineId}-title`}>Mission phases</LabHeading>
         <p className="text-sm text-muted">Arrow keys move between phases.</p>
       </div>
 
-      {/* A container query, not a viewport breakpoint: the timeline sits in
-       * columns of different widths, so it reflows to what it is given
-       * (2, then 3, then 6 across) instead of scrolling sideways. */}
+      {/* The same step row as the guided demo: B612 Mono number, label,
+       * 2px rule under each step, accent under the selected one. A
+       * container query, not a viewport breakpoint, sets 2, 3 or 6 across,
+       * so the row reflows to its column instead of scrolling sideways. */}
       <div className="@container mt-4">
         <div
           aria-label="Mission phases"
-          className="relative grid grid-cols-2 gap-x-2 gap-y-4 pt-2 @md:grid-cols-3 @3xl:grid-cols-6"
+          className="grid grid-cols-2 gap-x-4 gap-y-1 @md:grid-cols-3 @3xl:grid-cols-6"
           role="tablist"
         >
-          <div
-            aria-hidden="true"
-            className="absolute top-7 right-[8.5%] left-[8.5%] hidden h-px bg-border @3xl:block"
-          >
-            <span
-              className="block h-px bg-border-control"
-              style={{ width: `${progressPercentage}%` }}
-            />
-          </div>
-
           {phases.map((phase, index) => {
             const isActive = index === activeIndex;
             const buttonId = `${timelineId}-${phase.id}-tab`;
@@ -184,7 +173,14 @@ export function MissionTimeline(props: MissionTimelineProps) {
               <button
                 aria-controls={`${timelineId}-phase-detail`}
                 aria-selected={isActive}
-                className="group relative z-10 flex flex-col items-center rounded px-1 py-1 text-center"
+                className={
+                  "flex min-h-11 flex-col items-start justify-end border-b-2 py-2 text-left text-sm leading-5 transition-colors focus-visible:outline-offset-[-2px] " +
+                  (isActive
+                    ? "border-accent font-medium text-foreground"
+                    : phase.available
+                      ? "border-border text-text-secondary hover:border-border-control hover:text-foreground"
+                      : "border-border text-muted hover:border-border-control hover:text-foreground")
+                }
                 id={buttonId}
                 key={phase.id}
                 onClick={() => selectPhase(index)}
@@ -196,33 +192,15 @@ export function MissionTimeline(props: MissionTimelineProps) {
                 tabIndex={isActive ? 0 : -1}
                 type="button"
               >
-                {/* Timeline node: a circular, non-label shape. */}
-                <span
-                  className={
-                    "flex h-10 w-10 items-center justify-center rounded-full border text-sm transition-colors duration-150 " +
-                    (isActive
-                      ? "border-accent bg-accent font-semibold text-background"
-                      : phase.available
-                        ? "border-border-control bg-surface-raised text-foreground"
-                        : "border-border-subtle bg-surface text-muted")
-                  }
-                >
-                  <span aria-hidden="true" className="orbix-data">
+                {/* A status only when it differs from the norm. */}
+                {phase.available ? null : (
+                  <span className="orbix-label mb-1">Label only</span>
+                )}
+                <span className="[overflow-wrap:anywhere]">
+                  <span aria-hidden="true" className="orbix-data mr-2">
                     {index + 1}
                   </span>
-                </span>
-                <span
-                  className={
-                    "mt-2 text-sm leading-5 [overflow-wrap:anywhere] " +
-                    (isActive
-                      ? "font-semibold text-foreground"
-                      : "text-text-secondary group-hover:text-foreground")
-                  }
-                >
                   {phase.label}
-                </span>
-                <span className="orbix-label mt-1">
-                  {phase.available ? "Computed" : "Label only"}
                 </span>
               </button>
             );
@@ -250,7 +228,7 @@ export function MissionTimeline(props: MissionTimelineProps) {
             {activePhase.timingValue ? (
               <>
                 <span className="orbix-data">
-                  {activePhase.timingValue}
+                  {formatFigure(activePhase.timingValue)}
                 </span>{" "}
               </>
             ) : null}

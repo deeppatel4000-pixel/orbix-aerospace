@@ -8,10 +8,13 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { CircleCheck, Upload } from "lucide-react";
+import { Check, CircleCheck, Upload } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { ButtonArrowIcon } from "@/components/ui/button-arrow";
 import { buttonClass } from "@/components/ui/button-class";
+import { Tag } from "@/components/ui/tag";
+import { cn } from "@/lib/cn";
 import { MissionProfileAnalyzer } from "@/features/engineering-lab/components/mission-profile-analyzer";
 import {
   getMissionPresetById,
@@ -145,25 +148,41 @@ export function MissionPresetLauncher() {
       <fieldset className="orbix-fieldset">
         <legend className="text-foreground">Choose a mission preset</legend>
         <div className="grid gap-3 lg:grid-cols-2">
-          {presets.map((preset) => {
+          {presets.map((preset, presetIndex) => {
             const selected = preset.id === selectedPresetId;
             const loaded = preset.id === loadedPresetId;
             const inputId = `mission-preset-${preset.id}`;
 
             return (
               <label
-                className={
+                className={cn(
+                  // Only the chosen preset is boxed (accent outline); the
+                  // rest sit on a hairline top rule, so no box nests inside
+                  // the tool frame. Border width, radius and padding are
+                  // equal in both states, so choosing a preset changes only
+                  // colour and the hover fill has the same corners.
+                  "relative flex cursor-pointer gap-3 rounded-lg border p-4 transition-colors",
+                  // An odd last tile spans both columns, so no blank cell.
+                  presets.length % 2 === 1 &&
+                    presetIndex === presets.length - 1 &&
+                    "lg:col-span-2",
+                  "has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-[var(--orbix-focus)]",
                   selected
-                    ? "flex cursor-pointer gap-3 rounded-md border border-l-2 border-border-strong border-l-accent bg-accent/12 p-4"
-                    : "flex cursor-pointer gap-3 rounded-md border border-border bg-surface p-4 hover:border-border-strong"
-                }
+                    ? "border-accent bg-surface-raised"
+                    : "border-transparent border-t-border-subtle hover:bg-surface-raised",
+                )}
                 htmlFor={inputId}
                 key={preset.id}
               >
+                {/* Native radio for the group semantics and arrow keys.
+                    Single choice, so no empty box at rest (that reads as
+                    multi-select, like the Compare tiles): the chosen tile
+                    shows the accent outline and a check. The 16px slot
+                    stays so choosing a preset moves nothing. */}
                 <input
                   aria-describedby={`${inputId}-description`}
                   checked={selected}
-                  className="mt-1 h-4 w-4 shrink-0 accent-accent"
+                  className="absolute inset-0 m-0 cursor-pointer appearance-none opacity-0"
                   id={inputId}
                   name="mission-preset"
                   onChange={() => {
@@ -173,6 +192,17 @@ export function MissionPresetLauncher() {
                   type="radio"
                   value={preset.id}
                 />
+                <span
+                  aria-hidden="true"
+                  className={cn(
+                    "mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-[2px] border",
+                    selected
+                      ? "border-accent bg-accent text-on-accent"
+                      : "border-transparent",
+                  )}
+                >
+                  {selected ? <Check size={12} strokeWidth={3} /> : null}
+                </span>
                 <span className="min-w-0">
                   <span className="orbix-label block">
                     {formatCategory(preset.category)}
@@ -190,9 +220,9 @@ export function MissionPresetLauncher() {
                     {preset.description}
                   </span>
                   {loaded ? (
-                    <span className="orbix-status orbix-status--positive mt-3">
+                    <Tag className="mt-3" tone="accent">
                       Loaded
-                    </span>
+                    </Tag>
                   ) : null}
                 </span>
               </label>
@@ -203,7 +233,7 @@ export function MissionPresetLauncher() {
 
       <section
         aria-labelledby="selected-mission-preset-title"
-        className="rounded-md border border-border bg-surface p-4 sm:p-6"
+        className="border-t border-border-subtle pt-5"
       >
         <h3
           className="orbix-h3 text-foreground"
@@ -246,6 +276,7 @@ export function MissionPresetLauncher() {
               href="#mission-profile-analyzer"
             >
               Open the mission profile analyzer
+              <ButtonArrowIcon direction="down" />
             </a>
           ) : null}
         </div>

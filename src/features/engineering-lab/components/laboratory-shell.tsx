@@ -8,10 +8,12 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from "react";
 
 import {
+  LaboratoryToolDirectory,
   LaboratoryToolNavigation,
   type LaboratoryToolGroup,
 } from "@/features/engineering-lab/components/laboratory-tool-navigation";
@@ -33,8 +35,9 @@ export function useActiveLaboratoryTool(): string | null {
 }
 
 /**
- * The Engineering Lab workspace: the tool index on the left from 1024px and
- * exactly one active tool on the right.
+ * The Engineering Lab workspace: the numbered tool index, held below the
+ * header (a slim select bar under 1024px, a column on the left from
+ * 1024px), and exactly one active tool beside it.
  *
  * The URL hash is the single source of truth for navigation. Index links,
  * the compact select and deep links from Learn, Compare and the homepage all
@@ -52,6 +55,7 @@ export function LaboratoryShell({ children, workflows }: LaboratoryShellProps) {
   );
   const firstToolId = workflows[0]?.tools[0]?.id ?? "";
   const [activeToolId, setActiveToolId] = useState(firstToolId);
+  const indexRef = useRef<HTMLDivElement>(null);
 
   const resolveHash = useCallback(() => {
     const hashId = decodeURIComponent(window.location.hash.slice(1));
@@ -105,7 +109,26 @@ export function LaboratoryShell({ children, workflows }: LaboratoryShellProps) {
     }
 
     const frame = window.requestAnimationFrame(() => {
-      target.scrollIntoView({ block: "start" });
+      // Scroll by measurement, not scroll-margin: the tool card sets its own
+      // scroll-margin, and below 1024px the sticky tool bar sits under the
+      // header, so the clearance depends on the layout. The bar's resolved
+      // `top` is where it sticks; below 1024px it spans the column, so the
+      // target must also clear its height.
+      const index = indexRef.current;
+      const stacked = window.matchMedia("(max-width: 63.999rem)").matches;
+      let clearance = 0;
+
+      if (index !== null) {
+        const stickyTop = Number.parseFloat(getComputedStyle(index).top) || 0;
+        clearance = stacked ? stickyTop + index.offsetHeight : stickyTop;
+      }
+
+      window.scrollTo({
+        top: Math.max(
+          0,
+          target.getBoundingClientRect().top + window.scrollY - clearance - 16,
+        ),
+      });
     });
 
     return () => window.cancelAnimationFrame(frame);
@@ -128,19 +151,34 @@ export function LaboratoryShell({ children, workflows }: LaboratoryShellProps) {
 
   return (
     <ActiveToolContext.Provider value={activeToolId}>
-      <div className="grid gap-8 lg:grid-cols-[16rem_minmax(0,1fr)] lg:items-start">
-        <aside className="lg:sticky lg:top-[calc(57px+1.5rem)] lg:max-h-[calc(100vh-57px-3rem)] lg:overflow-y-auto lg:py-1 lg:pr-2 lg:pl-1">
+      <div className="grid gap-4 lg:grid-cols-[16.5rem_minmax(0,1fr)] lg:items-start lg:gap-10">
+        {/* Held under the 64px header: below 1024px as a slim bar holding
+         * only the select, from 1024px as the numbered index with the open
+         * discipline expanded. On a short window the index scrolls inside
+         * its own column with a thin, token-coloured bar, the last rows
+         * fade out, and the current row is kept in view. */}
+        <div
+          data-tool-rail=""
+          className="sticky top-[var(--header-height)] z-30 -mx-4 self-start border-b border-border bg-background px-4 py-2 sm:-mx-6 sm:px-6 lg:top-[calc(var(--header-height)+1.5rem)] lg:z-auto lg:mx-0 lg:max-h-[calc(100svh-var(--header-height)-3rem)] lg:[scrollbar-width:thin] lg:[scrollbar-color:var(--border-control)_transparent] lg:overflow-y-auto lg:border-b-0 lg:bg-transparent lg:[mask-image:linear-gradient(#000_calc(100%-2rem),transparent)] lg:px-0 lg:pt-0 lg:pb-8"
+          ref={indexRef}
+        >
           <LaboratoryToolNavigation
             activeToolId={activeToolId}
             groups={workflows}
             onSelect={selectTool}
           />
-        </aside>
+        </div>
 
-        <div className="min-w-0 [&_[id]]:scroll-mt-[calc(57px+1.5rem)]">
+        <div className="min-w-0 [&_[id]]:scroll-mt-[calc(var(--header-height)+5rem)]! lg:[&_[id]]:scroll-mt-[calc(var(--header-height)+1.5rem)]!">
           <p aria-atomic="true" aria-live="polite" className="sr-only">
             Current tool: {activeTool?.title ?? "None selected"}
           </p>
+          <div className="mb-4 lg:hidden">
+            <LaboratoryToolDirectory
+              activeToolId={activeToolId}
+              groups={workflows}
+            />
+          </div>
           {workflowChildren.map((workflow, index) => {
             const workflowId =
               workflows[index]?.id ?? `laboratory-workflow-${index + 1}`;

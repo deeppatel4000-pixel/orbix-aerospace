@@ -3,7 +3,10 @@ import type {
   MissionReport,
   VehicleReentryEvaluationAnalysis,
 } from "@/features/engineering-lab/types";
-import { formatLabValue } from "./format-lab-value";
+import { formatFigure } from "@/components/ui/readout";
+
+import { altitudeReadout, formatLabValue } from "./format-lab-value";
+import { LabHeading } from "./lab-heading";
 
 export interface MissionMetricsGridProps {
   readonly missionProfileAnalysis?: MissionProfileAnalysis | null;
@@ -58,7 +61,9 @@ function MissionMetricReadout({ label, unit, value }: MissionMetric) {
                 : "text-sm text-foreground")
           }
         >
-          {displayValue ?? "Not reported"}
+          {displayValue === undefined
+            ? "Not reported"
+            : formatFigure(displayValue)}
           {value !== undefined && unit ? (
             <span className="ml-1 text-muted">{unit}</span>
           ) : null}
@@ -85,18 +90,16 @@ export function MissionMetricsGrid({
       metrics: [
         {
           label: "Initial altitude",
-          unit: "m",
-          value: transfer?.initialOrbit.altitudeMetres,
+          ...altitudeReadout(transfer?.initialOrbit.altitudeMetres),
         },
         {
           label: "Final altitude",
-          unit: "m",
-          value: transfer?.finalOrbit.altitudeMetres,
+          ...altitudeReadout(transfer?.finalOrbit.altitudeMetres),
         },
         {
           label: "Transfer duration",
-          unit: "s",
-          value: transfer?.transfer.transferTimeSeconds,
+          unit: "h",
+          value: transfer?.transfer.transferTimeHours,
         },
         {
           label: "Total delta-v",
@@ -119,10 +122,11 @@ export function MissionMetricsGrid({
         },
         {
           label: "Peak deceleration",
-          unit: "m/s²",
+          // g, as in every other mission view and the reentry profile.
+          unit: "g",
           value:
             vehicleReentryEvaluation?.summary.dynamics.peakDeceleration
-              .decelerationMetersPerSecondSquared,
+              .decelerationGs,
         },
         {
           label: "Reentry duration",
@@ -167,9 +171,7 @@ export function MissionMetricsGrid({
   return (
     <section aria-labelledby="mission-metrics-title" className="min-w-0">
       <div className="flex flex-col gap-1 sm:flex-row sm:items-baseline sm:justify-between">
-        <h4 className="orbix-h4 text-foreground" id="mission-metrics-title">
-          Mission metrics
-        </h4>
+        <LabHeading id="mission-metrics-title">Mission metrics</LabHeading>
         <p className="text-sm text-muted">No feasibility assessment</p>
       </div>
 
@@ -180,12 +182,13 @@ export function MissionMetricsGrid({
             className="min-w-0"
             key={group.id}
           >
-            <h5
-              className="text-sm font-semibold text-foreground"
+            <LabHeading
               id={`mission-metrics-${group.id}`}
+              offset={1}
+              variant="sub"
             >
               {group.label}
-            </h5>
+            </LabHeading>
             <dl className="mt-1">
               {group.metrics.map((metric) => (
                 <MissionMetricReadout key={metric.label} {...metric} />

@@ -13,7 +13,7 @@ function isCurrentRoute(pathname: string, href: string) {
 
 /**
  * Links sit directly in the header. The current page gets primary text and
- * a 2px accent rule on the header's bottom edge (spec 10).
+ * a 2px accent rule on the header's bottom edge (spec 8).
  */
 export function DesktopNavigation() {
   const pathname = usePathname();

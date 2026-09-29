@@ -6,6 +6,7 @@ import {
   getShowcaseMissionById,
   SHOWCASE_MISSIONS,
 } from "@/features/showcase/data/mission-showcase";
+import { socialOpenGraph } from "@/lib/social-image";
 
 interface ShowcaseCapturePageProps {
   readonly params: Promise<{ id: string }>;
@@ -36,7 +37,11 @@ export async function generateMetadata({
 
   return {
     description,
-    openGraph: { description, title: `${title} | ORBIX` },
+    openGraph: {
+      ...socialOpenGraph,
+      description,
+      title: `${title} | ORBIX`,
+    },
     robots,
     title,
   };

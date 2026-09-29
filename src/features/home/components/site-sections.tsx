@@ -1,27 +1,13 @@
-import Link from "next/link";
-
 import { Container } from "@/components/layout/container";
+import { SectionIndex, type SectionIndexItem } from "@/components/ui";
 
 /**
- * "What is here" (spec 14, Home, step 3).
- *
- * A plain list of the site's sections: an `h3` link and one sentence each.
- * Two columns from 768px, no cards, no icons. Every sentence describes what
- * the route contains today, nothing it might contain later.
+ * The rest of the site as a numbered section index (design v2, spec 9,
+ * Home): a condensed H2 on the left and the 01 to 06 rows on the right from
+ * 1024px. One sentence each, describing what the route contains today and
+ * nothing it might contain later.
  */
-const SECTIONS = [
-  {
-    description:
-      "Records of military aircraft such as the F-22 Raptor and SR-71 Blackbird, with dimensions, performance, propulsion and variants.",
-    href: "/aircraft",
-    title: "Aircraft",
-  },
-  {
-    description:
-      "Records of launch vehicles from Saturn V to Starship, with stages, liftoff thrust, payload capacity and supported orbits.",
-    href: "/rockets",
-    title: "Launch vehicles",
-  },
+const SECTIONS: readonly SectionIndexItem[] = [
   {
     description:
       "Up to three aircraft, or up to three launch vehicles, side by side in one table with units and qualifiers kept.",
@@ -30,48 +16,49 @@ const SECTIONS = [
   },
   {
     description:
-      "Calculators for lift and drag, the standard atmosphere, the rocket equation, orbital transfers, shock waves and entry heating.",
+      "Calculators for lift and drag, the standard atmosphere, the rocket equation, orbital transfers, shock waves and entry heating, each with its equation and assumptions.",
     href: "/engineering-lab",
     title: "Engineering Lab",
   },
   {
     description:
-      "Reading pathways from flight fundamentals to orbital mechanics and atmospheric entry, each linked to the calculators that apply it.",
+      "Six reading pathways, from aerodynamics and propulsion to atmospheric entry, orbital mechanics and engineering communication, each linked to the Engineering Lab tools that apply it.",
     href: "/learn",
     title: "Learn",
   },
   {
     description:
-      "How ORBIX is put together: its architecture, the limits of its engineering models, and the checks it runs.",
-    href: "/showcase",
-    title: "How ORBIX is built",
+      "ORBIX calculations run with the inputs of published tables and worked examples, and their results compared with the published values.",
+    href: "/verification",
+    title: "Verification",
   },
-] as const;
+  {
+    description:
+      "My idea and research, my role, and how I used AI coding assistants to build the software.",
+    href: "/build-log",
+    title: "How I built ORBIX",
+  },
+  {
+    description:
+      "The data, calculator, analysis and report layers beneath the interface, the five mission presets shown from their inputs, and the checks that run in CI.",
+    href: "/showcase",
+    title: "Showcase",
+  },
+];
 
 export function SiteSections() {
   return (
-    <section aria-labelledby="home-sections-title">
-      <Container>
-        <h2 className="orbix-h2" id="home-sections-title">
-          What is here
-        </h2>
-        <ul className="mt-6 grid gap-x-6 border-t border-border-subtle md:grid-cols-2">
-          {SECTIONS.map((section) => (
-            <li
-              className="border-b border-border-subtle py-4"
-              key={section.href}
-            >
-              <h3 className="orbix-h3">
-                <Link className="orbix-link" href={section.href}>
-                  {section.title}
-                </Link>
-              </h3>
-              <p className="mt-1 max-w-[60ch] text-sm leading-6 text-text-secondary">
-                {section.description}
-              </p>
-            </li>
-          ))}
-        </ul>
+    <section
+      aria-labelledby="home-sections-title"
+      className="orbix-section pt-0!"
+    >
+      <Container className="grid gap-8 lg:grid-cols-12 lg:gap-6">
+        <div className="lg:col-span-4">
+          <h2 className="orbix-h2 lg:sticky lg:top-24" id="home-sections-title">
+            Beyond the registries.
+          </h2>
+        </div>
+        <SectionIndex className="lg:col-span-8" items={SECTIONS} />
       </Container>
     </section>
   );

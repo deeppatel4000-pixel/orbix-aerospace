@@ -2,8 +2,11 @@
   /* ==================================================================== *
    * BUTTONS (spec 8)
    *
-   * Flat fills and 1px edges. No sheen, no transform, no shadow at any
-   * state. `ButtonLink` and `Button` in `src/components/ui/` apply these.
+   * 4px radius, 44px minimum height, sans 500 at 15px. Primary is a solid
+   * division-accent fill; secondary a 1px control outline; tertiary a text
+   * link with a 1px underline; ghost a quiet toolbar control; link an
+   * inline text link with no minimum height. No gradient, no glow, no
+   * shadow. Hover changes the fill; press moves the button down 1px.
    * ==================================================================== */
 
   .orbix-button {
@@ -12,25 +15,35 @@
     border-radius: var(--radius-2);
     display: inline-flex;
     font-family: var(--font-interface);
-    font-size: var(--text-body-sm);
+    font-size: var(--text-button);
     font-weight: 500;
     gap: var(--space-2);
     justify-content: center;
     letter-spacing: 0;
     line-height: 1.25;
-    min-height: 2.5rem;
-    padding: 0.5rem 1rem;
+    min-height: 2.75rem;
+    padding: 0.625rem 1.125rem;
+    text-align: center;
     text-decoration: none;
     text-transform: none;
     transition:
       background-color var(--motion-fast) var(--motion-ease),
       border-color var(--motion-fast) var(--motion-ease),
-      color var(--motion-fast) var(--motion-ease);
+      color var(--motion-fast) var(--motion-ease),
+      transform var(--motion-fast) var(--motion-ease);
+  }
+
+  .orbix-button:not(:disabled):not([aria-disabled="true"]):active {
+    transform: translateY(1px);
   }
 
   .orbix-button:focus-visible {
     outline: 2px solid var(--orbix-focus);
     outline-offset: 2px;
+  }
+
+  .orbix-button__icon {
+    flex: none;
   }
 
   .orbix-button--primary {
@@ -44,23 +57,13 @@
     border-color: var(--orbix-accent-hover);
   }
 
-  .orbix-button--primary:not(:disabled):not([aria-disabled="true"]):active {
-    background: var(--orbix-accent-hover);
-    opacity: 0.9;
-  }
-
   .orbix-button--secondary {
-    background: var(--orbix-surface);
+    background: transparent;
     border-color: var(--orbix-border-control);
     color: var(--orbix-text-primary);
   }
 
-  .orbix-button--secondary:not(:disabled):not([aria-disabled="true"]):hover {
-    background: var(--orbix-surface-raised);
-    border-color: var(--orbix-text-muted);
-  }
-
-  .orbix-button--secondary:not(:disabled):not([aria-disabled="true"]):active,
+  .orbix-button--secondary:not(:disabled):not([aria-disabled="true"]):hover,
   .orbix-button--secondary[aria-pressed="true"] {
     background: var(--orbix-surface-raised);
   }
@@ -69,25 +72,61 @@
     border-color: var(--orbix-accent);
   }
 
-  /* `tertiary` is the deprecated name for `ghost`. */
-  .orbix-button--ghost,
-  .orbix-button--tertiary {
+  /* Quiet control for toolbars: no outline until hovered. */
+  .orbix-button--ghost {
     background: transparent;
     color: var(--orbix-text-secondary);
   }
 
-  .orbix-button--ghost:not(:disabled):not([aria-disabled="true"]):is(
-      :hover,
-      :active
-    ),
-  .orbix-button--tertiary:not(:disabled):not([aria-disabled="true"]):is(
-      :hover,
-      :active
-    ) {
+  .orbix-button--ghost:not(:disabled):not([aria-disabled="true"]):hover {
     background: var(--orbix-surface-raised);
     color: var(--orbix-text-primary);
   }
 
+  /* Spec 8 tertiary: a text link with a 1px underline at 4px offset and a
+   * trailing arrow. Keeps a 44px target. */
+  .orbix-button--tertiary {
+    background: transparent;
+    border: 0;
+    color: var(--orbix-text-primary);
+    padding-inline: 0;
+    text-decoration: underline;
+    text-decoration-color: var(--orbix-accent);
+    text-decoration-thickness: 1px;
+    text-underline-offset: 4px;
+    justify-content: flex-start;
+    text-align: left;
+  }
+
+  /* Text variants (tertiary, link) set the arrow inline in one label span
+   * (see buttonContent), with the nearest word held on the arrow's line, so
+   * a wrapped label keeps its arrow beside the text. */
+  .orbix-button__label {
+    min-width: 0;
+  }
+
+  .orbix-button__nowrap {
+    white-space: nowrap;
+  }
+
+  .orbix-button__label .orbix-button__icon {
+    display: inline-block;
+    vertical-align: -0.1875em;
+  }
+
+  .orbix-button__label .orbix-button__icon--trail {
+    margin-inline-start: var(--space-2);
+  }
+
+  .orbix-button__label .orbix-button__icon--lead {
+    margin-inline-end: var(--space-2);
+  }
+
+  .orbix-button--tertiary:not(:disabled):not([aria-disabled="true"]):hover {
+    color: var(--orbix-accent);
+  }
+
+  /* Inline link inside running text; no minimum height. */
   .orbix-button--link {
     background: transparent;
     border: 0;
@@ -96,13 +135,11 @@
     padding: 0;
     text-decoration: underline;
     text-decoration-thickness: 1px;
-    text-underline-offset: 0.2em;
+    text-underline-offset: 4px;
+    white-space: normal;
   }
 
-  .orbix-button--link:not(:disabled):not([aria-disabled="true"]):is(
-      :hover,
-      :active
-    ) {
+  .orbix-button--link:not(:disabled):not([aria-disabled="true"]):hover {
     color: var(--orbix-accent-hover);
     text-decoration-thickness: 2px;
   }
@@ -114,18 +151,19 @@
     cursor: not-allowed;
   }
 
-  .orbix-button--ghost:is(:disabled, [aria-disabled="true"]),
-  .orbix-button--tertiary:is(:disabled, [aria-disabled="true"]) {
+  .orbix-button:is(
+      .orbix-button--ghost,
+      .orbix-button--tertiary,
+      .orbix-button--link
+    ):is(:disabled, [aria-disabled="true"]) {
     border-color: transparent;
-  }
-
-  .orbix-button--link:is(:disabled, [aria-disabled="true"]) {
     text-decoration: none;
   }
 
-  /* The only action on a mobile row gets a taller target. */
+  /* size="lg": 48px, for a single hero action. */
   .orbix-button--lg {
-    min-height: 2.75rem;
+    min-height: 3rem;
+    padding-inline: 1.375rem;
   }
 
   /* Inline text link. */
@@ -133,7 +171,7 @@
     color: var(--orbix-accent);
     text-decoration: underline;
     text-decoration-thickness: 1px;
-    text-underline-offset: 0.2em;
+    text-underline-offset: 4px;
     transition: color var(--motion-fast) var(--motion-ease);
   }
 
@@ -143,7 +181,34 @@
   }
 
   /* ==================================================================== *
-   * FORM FIELDS (spec 9)
+   * EYEBROW (spec 8): 24px accent rule plus a sans 13px 500 label in
+   * secondary text, sentence case. Only above page H1s and major H2s.
+   * ==================================================================== */
+
+  .orbix-eyebrow {
+    align-items: center;
+    color: var(--orbix-text-secondary);
+    display: flex;
+    font-family: var(--font-interface);
+    font-size: var(--text-label);
+    font-weight: 500;
+    gap: 0.75rem;
+    letter-spacing: 0;
+    line-height: 1.3;
+    margin: 0;
+  }
+
+  .orbix-eyebrow::before {
+    background: var(--orbix-accent);
+    content: "";
+    flex: none;
+    height: 1px;
+    width: 1.5rem;
+  }
+
+  /* ==================================================================== *
+   * FORM FIELDS (spec 8): label above, 44px input on raised ground, 1px
+   * control outline, B612 Mono unit suffix, inline error below.
    * ==================================================================== */
 
   .orbix-field {
@@ -153,8 +218,8 @@
   }
 
   .orbix-field__label {
-    color: var(--orbix-text-secondary);
-    font-size: var(--text-label);
+    color: var(--orbix-text-primary);
+    font-size: var(--text-body-sm);
     font-weight: 500;
     line-height: 1.4;
   }
@@ -172,8 +237,8 @@
     border-radius: var(--radius-2);
     color: var(--orbix-text-primary);
     font-family: var(--font-interface);
-    font-size: var(--text-body-sm);
-    height: 2.5rem;
+    font-size: var(--text-body);
+    height: 2.75rem;
     min-width: 0;
     padding: 0.5rem 0.75rem;
     transition: border-color var(--motion-fast) var(--motion-ease);
@@ -183,7 +248,10 @@
   .orbix-input[inputmode="decimal"],
   .orbix-input[inputmode="numeric"],
   .orbix-input[type="number"] {
-    font-family: var(--font-telemetry);
+    /* Plex Sans, not B612 Mono: an input value cannot hold the
+       .orbix-num-sep correction, so mono would render "1. 225".
+       The unit suffix (.orbix-field__unit) stays in B612 Mono. */
+    font-family: var(--font-interface);
     font-variant-numeric: tabular-nums;
     text-align: right;
   }
@@ -197,8 +265,6 @@
     padding-right: 2.25rem;
   }
 
-  /* Absolute-positioned lucide icons inside a control (select chevron,
-   * search glass). */
   .orbix-field__icon {
     color: var(--orbix-text-muted);
     pointer-events: none;
@@ -244,7 +310,6 @@
     cursor: not-allowed;
   }
 
-  /* Joined unit suffix. */
   .orbix-field__control:has(.orbix-field__unit) .orbix-input {
     border-bottom-right-radius: 0;
     border-top-right-radius: 0;
@@ -252,7 +317,7 @@
 
   .orbix-field__unit {
     align-items: center;
-    background: var(--orbix-surface-raised);
+    background: var(--orbix-bg-page);
     border: 1px solid var(--orbix-border-control);
     border-bottom-right-radius: var(--radius-2);
     border-left: 0;
@@ -260,8 +325,8 @@
     color: var(--orbix-text-muted);
     display: inline-flex;
     font-family: var(--font-telemetry);
-    font-size: var(--text-body-sm);
-    height: 2.5rem;
+    font-size: var(--text-caps);
+    height: 2.75rem;
     padding-inline: 0.75rem;
     white-space: nowrap;
   }
@@ -310,7 +375,6 @@
     padding: 0;
   }
 
-  /* Empty calculator value (spec 13.4). */
   .orbix-not-calculated {
     color: var(--orbix-text-muted);
     font-family: var(--font-interface);
@@ -318,12 +382,11 @@
   }
 
   /* ==================================================================== *
-   * PANELS (spec 10)
-   *
-   * One flat panel.
+   * PANELS AND CARDS (spec 7): 8px radius, 1px outline, no shadow.
+   * Interactive cards shift border and ground on hover; the photo inside a
+   * `.orbix-vehicle-card` scales to 1.03 over 500ms.
    * ==================================================================== */
 
-  .orbix-panel,
   .orbix-surface {
     background: var(--orbix-surface);
     border: 1px solid var(--orbix-border);
@@ -334,7 +397,669 @@
   }
 
   /* ==================================================================== *
-   * TAGS AND STATUS (spec 10)
+   * FIGURES (spec 5). B612 Mono sets `.` and `,` at the left of the cell;
+   * `formatFigure` / `<Readout>` wrap separators between digits in
+   * `.orbix-num-sep`, which moves the mark to the centre of its cell
+   * without changing the advance, so tabular columns stay aligned.
+   * ==================================================================== */
+
+  .orbix-num-sep {
+    left: 0.17em;
+    position: relative;
+  }
+
+  .orbix-readout-inline {
+    font-family: var(--font-telemetry);
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* ==================================================================== *
+   * REGISTRATION MARKS (spec 6): 8px corner ticks, 1px, control colour.
+   * The parent must be positioned.
+   * ==================================================================== */
+
+  .orbix-reg-marks {
+    --reg-inset: 0px;
+    inset: var(--reg-inset);
+    pointer-events: none;
+    position: absolute;
+  }
+
+  .orbix-reg-marks > span {
+    border-color: var(--orbix-border-control);
+    border-style: solid;
+    border-width: 0;
+    height: 8px;
+    position: absolute;
+    width: 8px;
+  }
+
+  .orbix-reg-marks > span:nth-child(1) {
+    border-left-width: 1px;
+    border-top-width: 1px;
+    left: 0;
+    top: 0;
+  }
+
+  .orbix-reg-marks > span:nth-child(2) {
+    border-right-width: 1px;
+    border-top-width: 1px;
+    right: 0;
+    top: 0;
+  }
+
+  .orbix-reg-marks > span:nth-child(3) {
+    border-bottom-width: 1px;
+    border-left-width: 1px;
+    bottom: 0;
+    left: 0;
+  }
+
+  .orbix-reg-marks > span:nth-child(4) {
+    border-bottom-width: 1px;
+    border-right-width: 1px;
+    bottom: 0;
+    right: 0;
+  }
+
+  /* ==================================================================== *
+   * PHOTO HERO (spec 8)
+   *
+   * Below 48rem the photo sits above the text at 4:3 with its credit
+   * underneath. From 48rem the photo runs full-bleed behind the content
+   * with the left-to-right overlay, a bottom fade into the page, and the
+   * credit line at the bottom right.
+   * ==================================================================== */
+
+  .orbix-photo-hero {
+    isolation: isolate;
+    position: relative;
+  }
+
+  .orbix-photo-hero__figure {
+    margin: 0;
+  }
+
+  /* Below 48rem the photo is a framed plate inside the container gutter
+   * (6px radius, spec 7) so the registration marks can sit outside the
+   * trim, on the page ground. */
+  .orbix-photo-hero__plate {
+    /* Room above for the top ticks (7px above the photo plus their 8px
+       arms), clear of the header hairline. */
+    margin: 1.5rem 1rem 0;
+    position: relative;
+  }
+
+  @media (min-width: 40rem) {
+    .orbix-photo-hero__plate {
+      margin-inline: 1.5rem;
+    }
+  }
+
+  .orbix-photo-hero__frame {
+    aspect-ratio: 4 / 3;
+    border-radius: var(--radius-photo);
+    overflow: hidden;
+    position: relative;
+  }
+
+  .orbix-photo-hero__image {
+    filter: saturate(0.85) contrast(1.05);
+    object-fit: cover;
+  }
+
+  /* A launch vehicle is tall and thin: on a 4:3 plate it is cut through
+   * its body. Below 48rem a portrait plate shows the whole rocket, capped
+   * so the title still starts near the first screen. */
+  @media (max-width: 47.99rem) {
+    .orbix-photo-hero[data-plate="portrait"] .orbix-photo-hero__frame {
+      aspect-ratio: 4 / 5;
+      max-height: min(70svh, 34rem);
+    }
+  }
+
+  /* Crop marks outside the trim: the tick corners sit 6px outside the
+   * photo's corners, in the gutter, in the control colour on the page
+   * ground (spec 6 amendment). */
+  .orbix-photo-hero__marks {
+    --reg-inset: -7px;
+  }
+
+  /* Only used from 48rem, where text is set over the photo. On the framed
+   * mobile plate no text sits on the image, so it is shown as taken. */
+  .orbix-photo-hero__scrim {
+    display: none;
+    inset: 0;
+    pointer-events: none;
+    position: absolute;
+  }
+
+  /* One inline run that wraps like a sentence: "Photo: NASA / Public
+   * domain / Source file". The container matches the hero body, so the
+   * line starts (mobile) or ends (desktop) on the content edge. */
+  .orbix-photo-hero__credit {
+    color: var(--orbix-text-muted);
+    font-family: var(--font-telemetry);
+    font-size: var(--text-micro);
+    letter-spacing: 0.02em;
+    line-height: 1.6;
+    /* Clears the bottom registration marks, 7px below the photo. */
+    padding-top: 0.75rem;
+  }
+
+  .orbix-photo-hero__credit-inner {
+    display: block;
+  }
+
+  .orbix-photo-hero__credit-item + .orbix-photo-hero__credit-item::before {
+    color: var(--orbix-border-control);
+    content: "/ ";
+    content: "/ " / "";
+  }
+
+  .orbix-photo-hero__credit a {
+    color: var(--orbix-text-secondary);
+    text-decoration: underline;
+    text-decoration-color: var(--orbix-border-control);
+    text-underline-offset: 3px;
+  }
+
+  .orbix-photo-hero__credit a:hover {
+    color: var(--orbix-text-primary);
+    text-decoration-color: currentColor;
+  }
+
+  .orbix-photo-hero__body {
+    display: grid;
+    gap: var(--space-7);
+    padding-block: var(--space-6) var(--space-7);
+    position: relative;
+  }
+
+  .orbix-photo-hero__content {
+    max-width: 46rem;
+    min-width: 0;
+  }
+
+  .orbix-photo-hero__aside {
+    min-width: 0;
+  }
+
+  @media (min-width: 48rem) {
+    .orbix-photo-hero {
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      min-height: min(88svh, 60rem);
+    }
+
+    .orbix-photo-hero__marks {
+      display: none;
+    }
+
+    .orbix-photo-hero__plate {
+      inset: 0;
+      margin: 0;
+      position: absolute;
+      z-index: -1;
+    }
+
+    .orbix-photo-hero__frame {
+      aspect-ratio: auto;
+      border-radius: 0;
+      height: 100%;
+    }
+
+    .orbix-photo-hero__scrim {
+      background:
+        linear-gradient(
+          to bottom,
+          transparent 62%,
+          color-mix(in srgb, var(--bg-page) 80%, transparent) 90%,
+          var(--bg-page) 100%
+        ),
+        linear-gradient(
+          90deg,
+          color-mix(in srgb, var(--bg-page) 96%, transparent) 0%,
+          color-mix(in srgb, var(--bg-page) 86%, transparent) 38%,
+          color-mix(in srgb, var(--bg-page) 35%, transparent) 70%,
+          color-mix(in srgb, var(--bg-page) 60%, transparent) 100%
+        );
+      display: block;
+    }
+
+    .orbix-photo-hero__credit {
+      bottom: 1rem;
+      inset-inline: 0;
+      padding: 0;
+      pointer-events: none;
+      position: absolute;
+      z-index: 1;
+    }
+
+    .orbix-photo-hero__credit-inner {
+      text-align: right;
+    }
+
+    .orbix-photo-hero__credit a {
+      pointer-events: auto;
+    }
+
+    .orbix-photo-hero__body {
+      padding-block: var(--space-9) calc(var(--space-9) - var(--space-2));
+    }
+  }
+
+  @media (min-width: 64rem) {
+    .orbix-photo-hero__body[data-has-aside="true"] {
+      align-items: end;
+      grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+    }
+  }
+
+  /* 48rem to 80rem: the text block is capped at 58vw and the overlay eases
+   * from 0.96 down to about 0.78 at 60 percent (where the capped column
+   * ends at 768px), then to 0.55, with no single knee that would show as a
+   * vertical edge in the photo. The lead keeps 4.5:1 over the brightest
+   * part of any photo where the full-width gradient would thin out behind
+   * it. From 80rem the spec 8 gradient applies unchanged. */
+  @media (min-width: 48rem) and (max-width: 79.99rem) {
+    .orbix-photo-hero__content {
+      max-width: min(46rem, 58vw);
+    }
+
+    .orbix-photo-hero__scrim {
+      background:
+        linear-gradient(
+          to bottom,
+          transparent 62%,
+          color-mix(in srgb, var(--bg-page) 80%, transparent) 90%,
+          var(--bg-page) 100%
+        ),
+        linear-gradient(
+          90deg,
+          color-mix(in srgb, var(--bg-page) 96%, transparent) 0%,
+          color-mix(in srgb, var(--bg-page) 94%, transparent) 30%,
+          color-mix(in srgb, var(--bg-page) 88%, transparent) 46%,
+          color-mix(in srgb, var(--bg-page) 78%, transparent) 60%,
+          color-mix(in srgb, var(--bg-page) 64%, transparent) 72%,
+          color-mix(in srgb, var(--bg-page) 55%, transparent) 84%,
+          color-mix(in srgb, var(--bg-page) 60%, transparent) 100%
+        );
+    }
+  }
+
+  /* ==================================================================== *
+   * SPEC PANEL (spec 6, 8): hairline compartments. Cells are separated by
+   * 1px rules made from the gap over a border-coloured ground.
+   * ==================================================================== */
+
+  .orbix-spec-panel {
+    background: color-mix(in srgb, var(--bg-surface) 94%, transparent);
+    border: 1px solid var(--orbix-border);
+    border-radius: var(--radius-3);
+    overflow: hidden;
+    position: relative;
+  }
+
+  .orbix-spec-panel__head {
+    border-bottom: 1px solid var(--orbix-border);
+    padding: 1.25rem 1.25rem 1rem;
+  }
+
+  .orbix-spec-panel__kicker {
+    color: var(--orbix-accent);
+    font-family: var(--font-telemetry);
+    font-size: var(--text-micro);
+    letter-spacing: var(--tracking-caps);
+    line-height: 1.3;
+    text-transform: uppercase;
+  }
+
+  .orbix-spec-panel__title {
+    color: var(--orbix-text-primary);
+    font-family: var(--font-display);
+    font-size: 1.75rem;
+    font-stretch: var(--font-display-stretch);
+    font-weight: 620;
+    letter-spacing: -0.035em;
+    line-height: 1;
+    margin-top: 0.5rem;
+  }
+
+  .orbix-spec-panel__description {
+    color: var(--orbix-text-secondary);
+    font-size: var(--text-body-sm);
+    line-height: 1.5;
+    margin-top: 0.5rem;
+  }
+
+  .orbix-spec-grid {
+    background: var(--orbix-border);
+    display: grid;
+    gap: 1px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    margin: 0;
+  }
+
+  .orbix-spec-grid[data-columns="3"] {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  @media (min-width: 40rem) {
+    .orbix-spec-grid[data-columns="3"] {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+
+  .orbix-spec-cell {
+    background: var(--orbix-surface);
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    min-width: 0;
+    padding: 1rem 1.25rem 1.125rem;
+  }
+
+  .orbix-spec-cell dt {
+    color: var(--orbix-text-muted);
+    font-family: var(--font-telemetry);
+    font-size: var(--text-micro);
+    letter-spacing: var(--tracking-caps);
+    line-height: 1.3;
+    text-transform: uppercase;
+  }
+
+  .orbix-spec-cell dd {
+    margin: 0;
+  }
+
+  .orbix-spec-cell__value {
+    color: var(--orbix-text-primary);
+    font-family: var(--font-telemetry);
+    font-size: var(--text-readout-lg);
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.03em;
+    line-height: 1.05;
+    overflow-wrap: anywhere;
+  }
+
+  .orbix-spec-cell__unit {
+    color: var(--orbix-text-muted);
+    font-size: 0.5em;
+    letter-spacing: 0;
+    margin-left: 0.35em;
+  }
+
+  .orbix-spec-cell__secondary {
+    color: var(--orbix-text-muted);
+    font-family: var(--font-telemetry);
+    font-size: var(--text-caps);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .orbix-spec-panel__foot {
+    border-top: 1px solid var(--orbix-border);
+    color: var(--orbix-text-muted);
+    font-size: var(--text-label);
+    line-height: 1.5;
+    padding: 0.875rem 1.25rem;
+  }
+
+  /* ==================================================================== *
+   * RECORD ROW (spec 8): three or four key figures separated by vertical
+   * hairlines. The negative margin hides the first rule in every row, so
+   * wrapping at narrow widths never leaves a stray line.
+   * ==================================================================== */
+
+  /* One variable drives both the compartment inset and the list's pull,
+   * so a page that tightens the inset (the lab hero on phones) cannot
+   * push the first figure under the row's clip. */
+  .orbix-record-row {
+    --record-inset: 1.25rem;
+    border-top: 1px solid var(--orbix-border);
+    overflow: hidden;
+  }
+
+  /* The list is pulled left by one compartment's rule and inset, which
+   * the row clips, so the first figure of every line sits on the text
+   * edge above it while the others keep their inset after the rule. */
+  .orbix-record-row__list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
+    margin: 0 0 0 calc(-1 * var(--record-inset) - 1px);
+  }
+
+  .orbix-record-row__item {
+    border-left: 1px solid var(--orbix-border);
+    display: flex;
+    flex-direction: column;
+    gap: 0.375rem;
+    min-width: 0;
+    padding: 1rem var(--record-inset) 0.25rem;
+  }
+
+  .orbix-record-row__item dt {
+    color: var(--orbix-text-muted);
+    font-size: var(--text-label);
+    font-weight: 500;
+    line-height: 1.3;
+  }
+
+  .orbix-record-row__item dd {
+    color: var(--orbix-text-primary);
+    font-family: var(--font-telemetry);
+    font-size: 1.125rem;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.01em;
+    line-height: 1.2;
+    margin: 0;
+    overflow-wrap: anywhere;
+  }
+
+  .orbix-record-row__unit {
+    color: var(--orbix-text-muted);
+    font-size: 0.8em;
+    margin-left: 0.3em;
+  }
+
+  /* ==================================================================== *
+   * SECTION INDEX (spec 8): numbered rows with hairline rules. The title
+   * link stretches over its row, so each row is one tab stop.
+   * ==================================================================== */
+
+  .orbix-section-index {
+    border-top: 1px solid var(--orbix-border);
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .orbix-section-index__row {
+    border-bottom: 1px solid var(--orbix-border);
+    column-gap: 1rem;
+    display: grid;
+    grid-template-columns: 2.5rem minmax(0, 1fr) auto;
+    padding: 1.25rem 0.5rem 1.25rem 0;
+    position: relative;
+    transition: background-color var(--motion-base) var(--motion-ease);
+  }
+
+  @media (min-width: 48rem) {
+    .orbix-section-index__row {
+      column-gap: 1.5rem;
+      grid-template-columns: 4rem minmax(0, 1fr) auto;
+      padding-block: 1.5rem;
+    }
+  }
+
+  .orbix-section-index__row:has(a):hover {
+    background: color-mix(in srgb, var(--bg-raised) 70%, transparent);
+  }
+
+  .orbix-section-index__number {
+    color: var(--orbix-accent);
+    font-family: var(--font-telemetry);
+    font-size: var(--text-caps);
+    font-variant-numeric: tabular-nums;
+    letter-spacing: var(--tracking-caps);
+    line-height: 1;
+    padding-left: 0.25rem;
+    padding-top: 0.5rem;
+  }
+
+  .orbix-section-index__title {
+    color: var(--orbix-text-primary);
+    font-family: var(--font-display);
+    font-size: clamp(1.5rem, 2.6vw, 2.125rem);
+    font-stretch: var(--font-display-stretch);
+    font-weight: 620;
+    letter-spacing: -0.035em;
+    line-height: 1.02;
+    margin: 0;
+  }
+
+  .orbix-section-index__title a {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  .orbix-section-index__title a::after {
+    content: "";
+    inset: 0;
+    position: absolute;
+  }
+
+  .orbix-section-index__title a:focus-visible {
+    outline: none;
+  }
+
+  .orbix-section-index__title a:focus-visible::after {
+    outline: 2px solid var(--orbix-focus);
+    outline-offset: -2px;
+  }
+
+  .orbix-section-index__row:has(a):hover .orbix-section-index__title {
+    text-decoration: underline;
+    text-decoration-color: var(--orbix-accent);
+    text-decoration-thickness: 1px;
+    text-underline-offset: 6px;
+  }
+
+  .orbix-section-index__description {
+    color: var(--orbix-text-secondary);
+    font-size: var(--text-body-sm);
+    line-height: 1.55;
+    margin-top: 0.5rem;
+    max-width: 60ch;
+  }
+
+  @media (min-width: 48rem) {
+    .orbix-section-index__description {
+      font-size: var(--text-body);
+    }
+  }
+
+  .orbix-section-index__meta {
+    color: var(--orbix-text-muted);
+    font-family: var(--font-telemetry);
+    font-size: var(--text-micro);
+    letter-spacing: var(--tracking-caps);
+    margin-top: 0.75rem;
+    text-transform: uppercase;
+  }
+
+  .orbix-section-index__arrow {
+    align-self: center;
+    color: var(--orbix-text-muted);
+    transition: color var(--motion-base) var(--motion-ease);
+  }
+
+  .orbix-section-index__row:has(a):hover .orbix-section-index__arrow {
+    color: var(--orbix-accent);
+  }
+
+  /* ==================================================================== *
+   * EQUATION BLOCK (spec 8): the equation large in B612 Mono on a raised
+   * panel with a thin accent top rule, and a variables legend.
+   * ==================================================================== */
+
+  .orbix-equation {
+    background: var(--orbix-surface-raised);
+    border: 1px solid var(--orbix-border);
+    border-radius: var(--radius-3);
+    margin: 0;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .orbix-equation::before {
+    background: var(--orbix-accent);
+    content: "";
+    height: 1px;
+    inset-inline: 0;
+    position: absolute;
+    top: 0;
+  }
+
+  .orbix-equation__label {
+    color: var(--orbix-text-muted);
+    font-family: var(--font-telemetry);
+    font-size: var(--text-micro);
+    letter-spacing: var(--tracking-caps);
+    padding: 1rem 1.25rem 0;
+    text-transform: uppercase;
+  }
+
+  .orbix-equation__expr {
+    color: var(--orbix-text-primary);
+    font-family: var(--font-telemetry);
+    /* The size follows the viewport on phones so a one-line relation
+     * such as the rocket equation stays on one line down to 320px. A long
+     * expression breaks only between the terms its markup allows (the
+     * lab's nowrap term spans), and one that still cannot fit scrolls
+     * sideways instead of breaking mid-term. */
+    font-size: clamp(1.0625rem, 5.5vw, 2rem);
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.01em;
+    line-height: 1.3;
+    margin: 0;
+    overflow-x: auto;
+    padding: 0.75rem 1.25rem 1.25rem;
+  }
+
+  .orbix-equation__vars {
+    border-top: 1px solid var(--orbix-border);
+    display: grid;
+    gap: 0.5rem 1.25rem;
+    grid-template-columns: max-content minmax(0, 1fr);
+    margin: 0;
+    padding: 1rem 1.25rem 1.125rem;
+  }
+
+  .orbix-equation__vars dt {
+    color: var(--orbix-accent);
+    font-family: var(--font-telemetry);
+    font-size: var(--text-body-sm);
+  }
+
+  .orbix-equation__vars dd {
+    color: var(--orbix-text-secondary);
+    font-size: var(--text-body-sm);
+    line-height: 1.5;
+    margin: 0;
+  }
+
+  .orbix-equation__unit {
+    color: var(--orbix-text-muted);
+    font-family: var(--font-telemetry);
+    font-size: var(--text-caps);
+    margin-left: 0.5rem;
+    white-space: nowrap;
+  }
+
+  /* ==================================================================== *
+   * TAGS AND STATUS (spec 7): 2px radius, never a pill.
    * ==================================================================== */
 
   .orbix-tag {
@@ -344,86 +1069,63 @@
     border-radius: var(--radius-1);
     color: var(--orbix-text-secondary);
     display: inline-flex;
-    font-family: var(--font-interface);
-    font-size: var(--text-label);
-    letter-spacing: 0;
+    font-family: var(--font-telemetry);
+    font-size: var(--text-micro);
+    letter-spacing: var(--tracking-caps);
     line-height: 1.4;
-    padding: 0.125rem 0.5rem;
-    text-transform: none;
+    padding: 0.1875rem 0.4375rem;
+    text-transform: uppercase;
+    white-space: nowrap;
   }
 
-  .orbix-status {
-    align-items: center;
-    background: transparent;
-    border: 1px solid var(--orbix-border-strong);
-    border-radius: var(--radius-1);
-    color: var(--orbix-text-secondary);
-    display: inline-flex;
-    font-family: var(--font-interface);
-    font-size: var(--text-label);
-    font-weight: 500;
-    gap: var(--space-2);
-    letter-spacing: 0;
-    line-height: 1.4;
-    padding: 0.125rem 0.5rem;
-    text-transform: none;
-  }
-
-  .orbix-status::before {
-    background: var(--orbix-status-dot, var(--orbix-text-muted));
-    border-radius: var(--radius-circle);
-    content: "";
-    flex: none;
-    height: 0.5rem;
-    width: 0.5rem;
-  }
-
-  .orbix-status--info {
-    --orbix-status-dot: var(--orbix-status-info);
-  }
-
-  .orbix-status--positive {
-    --orbix-status-dot: var(--orbix-status-success);
-  }
-
-  .orbix-status--caution {
-    --orbix-status-dot: var(--orbix-status-warning);
-  }
-
-  .orbix-status--critical {
-    --orbix-status-dot: var(--orbix-status-danger);
+  .orbix-tag--accent {
+    border-color: var(--accent-rule);
+    color: var(--orbix-accent);
   }
 
   /* ==================================================================== *
-   * TABLES (spec 10)
+   * TABLES (spec 8): hairline rows, B612 Mono tabular figures right
+   * aligned, caption above in sans 500, sticky first column when the
+   * table scrolls sideways.
    * ==================================================================== */
 
-  .orbix-table-wrap {
-    border: 1px solid var(--orbix-border);
-    border-radius: var(--radius-3);
-    overflow-x: auto;
+  .orbix-table {
+    border-collapse: separate;
+    border-spacing: 0;
+    min-width: 100%;
   }
 
-  .orbix-table {
-    border-collapse: collapse;
-    min-width: 100%;
+  .orbix-table > caption {
+    caption-side: top;
+    color: var(--orbix-text-primary);
+    font-size: var(--text-body-sm);
+    font-weight: 500;
+    padding: 0 0 0.75rem;
+    text-align: left;
   }
 
   .orbix-table :where(th, td) {
     border-bottom: 1px solid var(--orbix-border-subtle);
     font-size: var(--text-body-sm);
-    padding: 0.625rem 0.75rem;
+    padding: 0.75rem 1rem;
     text-align: left;
     vertical-align: top;
   }
 
+  .orbix-table tbody tr:last-child :where(th, td) {
+    border-bottom: 0;
+  }
+
   .orbix-table thead th {
-    background: var(--orbix-surface-raised);
-    color: var(--orbix-text-secondary);
-    font-size: var(--text-caps);
-    font-weight: 600;
+    background: var(--orbix-surface);
+    border-bottom-color: var(--orbix-border);
+    color: var(--orbix-text-muted);
+    font-family: var(--font-telemetry);
+    font-size: var(--text-micro);
+    font-weight: 400;
     letter-spacing: var(--tracking-caps);
     text-transform: uppercase;
+    white-space: nowrap;
   }
 
   .orbix-table tbody th {
@@ -431,18 +1133,116 @@
     font-weight: 500;
   }
 
+  .orbix-table tbody td {
+    color: var(--orbix-text-secondary);
+  }
+
   .orbix-table :where(td.orbix-num, th.orbix-num) {
     font-family: var(--font-telemetry);
     font-variant-numeric: tabular-nums;
     text-align: right;
+    white-space: nowrap;
+  }
+
+  .orbix-table tbody td.orbix-num {
+    color: var(--orbix-text-primary);
   }
 
   .orbix-table-unit {
     color: var(--orbix-text-muted);
   }
 
+  /* DataTable primitive: caption outside the scroll box, sticky first
+   * column below 48rem. */
+  .orbix-data-table__caption {
+    color: var(--orbix-text-primary);
+    font-size: var(--text-body-sm);
+    font-weight: 500;
+    line-height: 1.4;
+    margin-bottom: 0.75rem;
+  }
+
+  .orbix-data-table__scroll {
+    border: 1px solid var(--orbix-border);
+    border-radius: var(--radius-3);
+    overflow-x: auto;
+    scroll-timeline: --orbix-table-scroll x;
+  }
+
+  /* Scroll cue: a fade on the right edge while the table can scroll
+   * further. A scroll-driven animation fades it out at the end of the
+   * scroll; a table that fits has no active timeline, so the base
+   * opacity 0 applies. Browsers without scroll timelines show no cue. */
+  .orbix-data-table__frame {
+    position: relative;
+    timeline-scope: --orbix-table-scroll;
+  }
+
+  .orbix-data-table__frame::after {
+    background: linear-gradient(
+      to right,
+      transparent,
+      var(--orbix-surface) 85%
+    );
+    border-radius: 0 var(--radius-3) var(--radius-3) 0;
+    bottom: 1px;
+    content: "";
+    opacity: 0;
+    pointer-events: none;
+    position: absolute;
+    right: 1px;
+    top: 1px;
+    width: 2.5rem;
+    z-index: 2;
+  }
+
+  @supports (animation-timeline: scroll()) {
+    .orbix-data-table__frame::after {
+      animation: orbix-table-scroll-cue linear both;
+      animation-timeline: --orbix-table-scroll;
+    }
+  }
+
+  @keyframes orbix-table-scroll-cue {
+    0%,
+    90% {
+      opacity: 1;
+    }
+
+    100% {
+      opacity: 0;
+    }
+  }
+
+  .orbix-data-table__scroll:focus-visible {
+    outline: 2px solid var(--orbix-focus);
+    outline-offset: 2px;
+  }
+
+  .orbix-data-table__scroll .orbix-table :where(thead th, tbody :is(th, td)) {
+    background: var(--orbix-surface);
+  }
+
+  @media (max-width: 47.99rem) {
+    .orbix-data-table[data-sticky-first="true"]
+      .orbix-table
+      :where(tr > :first-child) {
+      border-right: 1px solid var(--orbix-border);
+      left: 0;
+      position: sticky;
+      z-index: 1;
+    }
+  }
+
+  .orbix-data-table__note {
+    color: var(--orbix-text-muted);
+    font-size: var(--text-label);
+    line-height: 1.5;
+    margin-top: 0.75rem;
+  }
+
   /* ==================================================================== *
-   * TABS (spec 10): underline tabs.
+   * TABS: underline tabs, 2px accent rule on the active tab.
    * ==================================================================== */
 
   .orbix-tabs {
@@ -462,7 +1262,7 @@
     font-weight: 500;
     letter-spacing: 0;
     margin-bottom: -1px;
-    min-height: 2.5rem;
+    min-height: 2.75rem;
     padding: 0.5rem 0.75rem;
     text-transform: none;
     transition:
@@ -492,31 +1292,8 @@
   }
 
   /* ==================================================================== *
-   * PROGRESS, EMPTY STATE, LOADING (spec 10, 11)
+   * PROGRESS, EMPTY STATE, LOADING
    * ==================================================================== */
-
-  .orbix-progress {
-    accent-color: var(--orbix-accent);
-    appearance: none;
-    background: var(--orbix-border);
-    border: 0;
-    border-radius: var(--radius-1);
-    height: 0.5rem;
-    overflow: hidden;
-    width: 100%;
-  }
-
-  .orbix-progress::-webkit-progress-bar {
-    background: var(--orbix-border);
-  }
-
-  .orbix-progress::-webkit-progress-value {
-    background: var(--orbix-accent);
-  }
-
-  .orbix-progress::-moz-progress-bar {
-    background: var(--orbix-accent);
-  }
 
   .orbix-empty-state {
     align-items: flex-start;
@@ -528,9 +1305,11 @@
     padding: var(--space-5);
   }
 
+  /* The one permitted infinite animation (spec 7). Stops under reduced
+   * motion (orbix-motion.css). */
   .orbix-spinner {
-    animation: orbix-spin 800ms linear infinite;
-    border: 2px solid var(--orbix-border-strong);
+    animation: orbix-spin 900ms cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite;
+    border: 1px solid var(--orbix-border-strong);
     border-radius: var(--radius-circle);
     border-top-color: var(--orbix-accent);
     display: inline-block;
@@ -539,22 +1318,40 @@
     width: 1rem;
   }
 
+  /* Static skeleton block for route loading. No shimmer. */
+  .orbix-skeleton {
+    background: var(--orbix-surface-raised);
+    border-radius: var(--radius-1);
+    display: block;
+  }
+
   /* ==================================================================== *
-   * SITE CHROME (spec 10)
+   * SITE HEADER (spec 8)
    *
-   * Solid page ground, one hairline, no blur, no glow, no division tint.
+   * Fully opaque page ground, no blur, 64px (spec 8 amendment, approved
+   * by the owner: at 92 and even 97 percent, display type scrolled under
+   * the bar stayed legible). A 1px division
+   * hairline at 45 percent under the bar; the current link carries a 2px
+   * accent rule on the bar's bottom edge.
    * ==================================================================== */
 
   .orbix-site-header {
-    background: var(--orbix-bg-page);
-    border-bottom: 1px solid var(--orbix-border);
+    background: var(--bg-page);
+    border-bottom: 1px solid var(--accent-rule);
+  }
+
+  .orbix-site-header__bar {
+    height: var(--header-height);
   }
 
   .orbix-nav {
     align-items: stretch;
     display: flex;
-    gap: var(--space-1);
-    height: 3.5rem;
+    gap: 0.25rem;
+    height: var(--header-height);
+    /* Pull the last link's padding out so the label text, not its box,
+       ends on the container edge with the credit line and footer rule. */
+    margin-inline-end: -0.75rem;
   }
 
   .orbix-nav-link {
@@ -569,6 +1366,7 @@
     padding-inline: 0.75rem;
     position: relative;
     transition: color var(--motion-fast) var(--motion-ease);
+    white-space: nowrap;
   }
 
   .orbix-nav-link:hover {
@@ -580,8 +1378,6 @@
     outline-offset: -2px;
   }
 
-  /* Current route: primary text and a 2px accent rule on the header's
-   * bottom edge. */
   .orbix-nav-link[aria-current="page"] {
     color: var(--orbix-text-primary);
   }
@@ -598,6 +1394,9 @@
   .orbix-menu-toggle {
     align-items: center;
     background: transparent;
+    /* The control outline (3:1 on the page, WCAG 1.4.11), the same in
+       both states. A fixed minimum width fits "Menu" and "Close", so the
+       toggle keeps its size when the label changes. */
     border: 1px solid var(--orbix-border-control);
     border-radius: var(--radius-2);
     color: var(--orbix-text-primary);
@@ -606,16 +1405,15 @@
     font-size: var(--text-body-sm);
     font-weight: 500;
     gap: var(--space-2);
-    min-height: 2.5rem;
-    padding: 0.5rem 0.75rem;
-    transition:
-      background-color var(--motion-fast) var(--motion-ease),
-      border-color var(--motion-fast) var(--motion-ease);
+    justify-content: center;
+    min-height: 2.75rem;
+    min-width: 6.5rem;
+    padding: 0.5rem 0.875rem;
+    transition: background-color var(--motion-fast) var(--motion-ease);
   }
 
   .orbix-menu-toggle:hover {
     background: var(--orbix-surface-raised);
-    border-color: var(--orbix-text-muted);
   }
 
   .orbix-menu-toggle:focus-visible {
@@ -623,30 +1421,52 @@
     outline-offset: 2px;
   }
 
-  /* Full-width sheet directly below the header. */
+  /* Full-height sheet below the bar. Opaque, no stagger. */
+  /* Starts 1px below the bar so the header's accent hairline stays
+   * visible while the sheet is open. */
   .orbix-mobile-nav {
     background: var(--orbix-bg-page);
-    border-bottom: 1px solid var(--orbix-border);
-    box-shadow: var(--elevation-overlay);
+    bottom: 0;
+    display: flex;
+    flex-direction: column;
+    inset-inline: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding: 0.5rem 1rem calc(1.5rem + env(safe-area-inset-bottom, 0px));
+    position: fixed;
+    top: calc(var(--header-height) + 1px + env(safe-area-inset-top, 0px));
+  }
+
+  @media (min-width: 40rem) {
+    .orbix-mobile-nav {
+      padding-inline: 1.5rem;
+    }
+  }
+
+  .orbix-mobile-nav__list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
   }
 
   .orbix-mobile-nav-link {
     align-items: center;
-    border-left: 2px solid transparent;
+    border-bottom: 1px solid var(--orbix-border);
     color: var(--orbix-text-secondary);
     display: flex;
-    font-family: var(--font-interface);
-    font-size: var(--text-body);
-    font-weight: 500;
-    min-height: 3rem;
-    padding: 0.5rem 1rem;
-    transition:
-      background-color var(--motion-fast) var(--motion-ease),
-      color var(--motion-fast) var(--motion-ease);
+    font-family: var(--font-display);
+    font-size: 1.5rem;
+    font-stretch: var(--font-display-stretch);
+    font-weight: 600;
+    letter-spacing: -0.03em;
+    line-height: 1.1;
+    min-height: 3.75rem;
+    padding: 0.75rem 0;
+    position: relative;
+    transition: color var(--motion-fast) var(--motion-ease);
   }
 
   .orbix-mobile-nav-link:hover {
-    background: var(--orbix-surface);
     color: var(--orbix-text-primary);
   }
 
@@ -655,9 +1475,61 @@
     outline-offset: -2px;
   }
 
+  /* Current page: the desktop 2px accent rule, drawn as an underline. */
   .orbix-mobile-nav-link[aria-current="page"] {
-    border-left-color: var(--orbix-accent);
     color: var(--orbix-text-primary);
+    text-decoration-color: var(--orbix-accent);
+    text-decoration-line: underline;
+    text-decoration-thickness: 2px;
+    text-underline-offset: 8px;
+  }
+
+  .orbix-mobile-nav__secondary {
+    border-top: 1px solid var(--orbix-border-subtle);
+    margin-top: auto;
+    padding-top: 1.5rem;
+  }
+
+  .orbix-mobile-nav__secondary-list {
+    column-gap: 1.25rem;
+    display: flex;
+    flex-wrap: wrap;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .orbix-mobile-nav-secondary-link {
+    align-items: center;
+    color: var(--orbix-text-muted);
+    display: inline-flex;
+    font-size: 0.9375rem;
+    min-height: 2.75rem;
+    transition: color var(--motion-fast) var(--motion-ease);
+  }
+
+  .orbix-mobile-nav-secondary-link:hover,
+  .orbix-mobile-nav-secondary-link[aria-current="page"] {
+    color: var(--orbix-text-primary);
+  }
+
+  .orbix-mobile-nav-secondary-link:focus-visible {
+    outline: 2px solid var(--orbix-focus);
+    outline-offset: 2px;
+  }
+
+  .orbix-mobile-nav__note {
+    color: var(--orbix-text-muted);
+    font-size: 0.8125rem;
+    line-height: 1.5;
+    margin: 0.75rem 0 0;
+  }
+
+  .orbix-mobile-nav__note a {
+    color: var(--orbix-text-secondary);
+    text-decoration: underline;
+    text-decoration-color: var(--orbix-border-control);
+    text-underline-offset: 3px;
   }
 
   .orbix-breadcrumbs {
@@ -674,8 +1546,8 @@
   .orbix-breadcrumbs a {
     color: var(--orbix-text-secondary);
     text-decoration: underline;
-    text-decoration-color: var(--orbix-border-strong);
-    text-underline-offset: 0.2em;
+    text-decoration-color: var(--orbix-border-control);
+    text-underline-offset: 4px;
     transition:
       color var(--motion-fast) var(--motion-ease),
       text-decoration-color var(--motion-fast) var(--motion-ease);
@@ -700,13 +1572,13 @@
     display: inline-flex;
   }
 
-  /* In-page section links. */
+  /* In-page section links (spec 8): hairline strip, B612 Mono labels. */
   .orbix-anchor-nav {
     align-items: center;
-    background: var(--orbix-bg-page);
+    background: color-mix(in srgb, var(--bg-page) 92%, transparent);
     border-block: 1px solid var(--orbix-border);
     display: flex;
-    gap: var(--space-4);
+    gap: var(--space-5);
     overflow-x: auto;
     padding: 0 var(--space-4);
     scrollbar-width: thin;
@@ -717,11 +1589,11 @@
     border-bottom: 2px solid transparent;
     color: var(--orbix-text-secondary);
     display: inline-flex;
-    font-family: var(--font-interface);
-    font-size: var(--text-body-sm);
-    letter-spacing: 0;
+    font-family: var(--font-telemetry);
+    font-size: var(--text-micro);
+    letter-spacing: var(--tracking-caps);
     min-height: 2.75rem;
-    text-transform: none;
+    text-transform: uppercase;
     transition:
       color var(--motion-fast) var(--motion-ease),
       border-color var(--motion-fast) var(--motion-ease);
@@ -742,14 +1614,45 @@
     outline-offset: -2px;
   }
 
+  /* ==================================================================== *
+   * SITE FOOTER (spec 8): logo and one-line description, one row with the
+   * site sections and the about and legal pages, then the operator and
+   * contact line and the copyright. One DOM order at every width, and no
+   * CSS `order`, so the focus order always matches what is on screen.
+   * ==================================================================== */
+
   .orbix-site-footer {
-    background: var(--orbix-bg-page);
+    background: var(--orbix-surface);
     border-top: 1px solid var(--orbix-border);
   }
 
+  /* Below 40rem the two navs stack, 24px apart. From 40rem they share one
+   * wrapping row: site sections at the left, about and legal at the right.
+   * When the row is too narrow (below about 70rem) the about and legal
+   * links drop to their own line, left-aligned. */
+  .orbix-footer-navs {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  /* Below 40rem a two-column grid (44px rows, 36px for the secondary
+   * list); from 40rem one wrapping row. */
+  .orbix-footer-links {
+    display: grid;
+    gap: 0 1.5rem;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
   .orbix-footer-link {
+    align-items: center;
     color: var(--orbix-text-secondary);
+    display: inline-flex;
     font-size: var(--text-body-sm);
+    min-height: 2.75rem;
     text-decoration: none;
     transition: color var(--motion-fast) var(--motion-ease);
   }
@@ -757,7 +1660,7 @@
   .orbix-footer-link:hover {
     color: var(--orbix-text-primary);
     text-decoration: underline;
-    text-underline-offset: 0.2em;
+    text-underline-offset: 4px;
   }
 
   .orbix-footer-link:focus-visible {
@@ -765,18 +1668,81 @@
     outline-offset: 2px;
   }
 
-  .orbix-footer-heading {
+  /* About and legal pages: quieter, 36px rows (above the 24px minimum of
+   * WCAG 2.5.8). */
+  .orbix-footer-link--secondary {
     color: var(--orbix-text-muted);
-    font-family: var(--font-interface);
-    font-size: var(--text-caps);
-    font-weight: 600;
-    letter-spacing: var(--tracking-caps);
-    line-height: 1.3;
-    text-transform: uppercase;
+    font-size: 0.8125rem;
+    min-height: 2.25rem;
+  }
+
+  /* Prose, so it is set in the sans, never in the mono. The operator and
+   * contact line, then the copyright under it; from 80rem the copyright
+   * sits at the right of the same line when it fits. */
+  .orbix-footer-base {
+    color: var(--orbix-text-muted);
+    display: flex;
+    flex-direction: column;
+    font-size: 0.8125rem;
+    gap: 0.5rem;
+    line-height: 1.5;
+    margin-top: 1.5rem;
+  }
+
+  .orbix-footer-base p {
+    margin: 0;
+  }
+
+  .orbix-footer-base a {
+    color: var(--orbix-text-secondary);
+    text-decoration: underline;
+    text-decoration-color: var(--orbix-border-control);
+    text-underline-offset: 3px;
+  }
+
+  .orbix-footer-base a:hover {
+    color: var(--orbix-text-primary);
+    text-decoration-color: currentColor;
+  }
+
+  @media (min-width: 40rem) {
+    .orbix-footer-navs {
+      align-items: center;
+      column-gap: 2rem;
+      flex-direction: row;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      row-gap: 0;
+    }
+
+    .orbix-footer-links {
+      display: flex;
+      flex-wrap: wrap;
+      row-gap: 0;
+    }
+
+    .orbix-footer-links--secondary {
+      column-gap: 1.25rem;
+    }
+
+    .orbix-footer-base {
+      margin-top: 1rem;
+    }
+  }
+
+  @media (min-width: 80rem) {
+    .orbix-footer-base {
+      column-gap: 2rem;
+      flex-direction: row;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      row-gap: 0.25rem;
+    }
   }
 
   /* ==================================================================== *
-   * VEHICLE CARD LINK (spec 10)
+   * VEHICLE CARD LINK (spec 8). Page teams restyle the markup; these
+   * rules map the existing classes onto v2.
    * ==================================================================== */
 
   .orbix-vehicle-card {
@@ -787,17 +1753,23 @@
     flex-direction: column;
     height: 100%;
     overflow: hidden;
-    transition: border-color var(--motion-fast) var(--motion-ease);
+    transition:
+      background-color var(--motion-base) var(--motion-ease),
+      border-color var(--motion-base) var(--motion-ease);
   }
 
   .orbix-vehicle-card:hover {
-    border-color: var(--orbix-border-strong);
+    background: var(--orbix-surface-raised);
+    border-color: var(--orbix-border-control);
   }
 
-  .orbix-vehicle-card:hover .orbix-vehicle-card__name {
-    text-decoration: underline;
-    text-decoration-thickness: 1px;
-    text-underline-offset: 0.2em;
+  .orbix-vehicle-card img {
+    filter: saturate(0.85) contrast(1.05);
+    transition: transform var(--motion-photo) var(--motion-ease);
+  }
+
+  .orbix-vehicle-card:hover img {
+    transform: scale(1.03);
   }
 
   .orbix-vehicle-card:focus-visible {
@@ -806,61 +1778,71 @@
   }
 
   .orbix-vehicle-card__classification {
-    color: var(--orbix-text-muted);
-    font-family: var(--font-interface);
-    font-size: var(--text-label);
-    font-weight: 500;
-    letter-spacing: 0;
-    line-height: 1.4;
-    text-transform: none;
+    color: var(--orbix-accent);
+    font-family: var(--font-telemetry);
+    font-size: var(--text-micro);
+    letter-spacing: var(--tracking-caps);
+    line-height: 1.45;
+    text-transform: uppercase;
   }
 
   .orbix-vehicle-card__name {
     color: var(--orbix-text-primary);
-    font-family: var(--font-interface);
-    font-size: var(--text-h3);
-    font-weight: 600;
-    letter-spacing: 0;
-    line-height: 1.35;
-    margin-top: var(--space-1);
+    font-family: var(--font-display);
+    font-size: 1.75rem;
+    font-stretch: var(--font-display-stretch);
+    font-weight: 620;
+    letter-spacing: -0.035em;
+    line-height: 1;
+    margin-top: 0.5rem;
+  }
+
+  /* Two lines at most, with the height reserved so every card in a row
+   * keeps its spec row on the same line. The full text lives on the
+   * profile page. */
+  .orbix-vehicle-card__description {
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    color: var(--orbix-text-secondary);
+    display: -webkit-box;
+    font-size: 0.875rem;
+    line-height: 1.5;
+    margin-top: 0.75rem;
+    min-height: calc(2 * 1.5em);
+    overflow: hidden;
+    white-space: normal;
   }
 
   .orbix-vehicle-card__spec-label {
     color: var(--orbix-text-muted);
-    font-family: var(--font-interface);
-    font-size: var(--text-label);
-    font-weight: 500;
+    font-family: var(--font-telemetry);
+    font-size: var(--text-micro);
+    letter-spacing: var(--tracking-caps);
+    line-height: 1.3;
+    text-transform: uppercase;
   }
 
   .orbix-vehicle-card__spec-value {
     color: var(--orbix-text-primary);
     font-family: var(--font-telemetry);
-    font-size: var(--text-data);
+    font-size: 1rem;
     font-variant-numeric: tabular-nums;
-    margin-top: var(--space-1);
+    line-height: 1.3;
+    margin: var(--space-1) 0 0;
   }
 
   .orbix-vehicle-card[data-variant="compact"] .orbix-vehicle-card__name {
-    font-size: var(--text-h4);
-  }
-
-  .orbix-home-vehicles
-    .orbix-vehicle-card[data-variant="compact"]
-    .orbix-vehicle-card__classification {
-    -webkit-box-orient: vertical;
-    -webkit-line-clamp: 2;
-    display: -webkit-box;
-    overflow: hidden;
+    font-size: 1.375rem;
   }
 
   /* ==================================================================== *
    * ENGINEERING LAB
    * ==================================================================== */
 
-  /* Model notes: reference text, not warnings. */
+  /* Model notes: reference text with a top rule, never a side stripe. */
   .orbix-lab-note {
-    border-left: 2px solid var(--orbix-border-strong);
-    padding-left: var(--space-4);
+    border-top: 1px solid var(--orbix-border);
+    padding-top: var(--space-3);
   }
 
   .orbix-lab-note__title {
@@ -877,20 +1859,7 @@
     color: var(--orbix-text-muted);
   }
 
-  /* Equation block: an input-tone well, Plex Mono, scrolls if long. */
-  .orbix-lab-equation {
-    background: var(--orbix-surface-input);
-    border-radius: var(--radius-2);
-    color: var(--orbix-text-primary);
-    font-family: var(--font-telemetry);
-    font-size: var(--text-body);
-    letter-spacing: 0;
-    overflow-x: auto;
-    padding: var(--space-3) var(--space-4);
-  }
-
-  /* Magnitude bar: flat 4px track (spec 14, compare). Never the only way a
-   * difference is communicated. */
+  /* Magnitude bar (compare). Never the only way a difference is shown. */
   .orbix-magnitude {
     background-color: var(--orbix-border-subtle);
     border-radius: var(--radius-1);
@@ -912,33 +1881,4 @@
   /* ==================================================================== *
    * VEHICLE PROFILE
    * ==================================================================== */
-
-  .orbix-profile-nav-link {
-    align-items: center;
-    border-left: 2px solid transparent;
-    color: var(--orbix-text-secondary);
-    display: inline-flex;
-    font-family: var(--font-interface);
-    font-size: var(--text-body-sm);
-    min-height: 2.5rem;
-    padding-inline: var(--space-3);
-    transition:
-      color var(--motion-fast) var(--motion-ease),
-      border-color var(--motion-fast) var(--motion-ease);
-    white-space: nowrap;
-  }
-
-  .orbix-profile-nav-link:hover {
-    color: var(--orbix-text-primary);
-  }
-
-  .orbix-profile-nav-link[aria-current] {
-    border-left-color: var(--orbix-accent);
-    color: var(--orbix-text-primary);
-  }
-
-  .orbix-profile-nav-link:focus-visible {
-    outline: 2px solid var(--orbix-focus);
-    outline-offset: 2px;
-  }
 }

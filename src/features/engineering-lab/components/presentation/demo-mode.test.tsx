@@ -129,12 +129,12 @@ describe("DemoMode", () => {
       <DemoMode missionProfile={missionProfile} />,
     );
 
-    expect(markup).toContain('aria-label="Orbix demo tour navigation"');
+    expect(markup).toContain('aria-label="ORBIX demo tour navigation"');
     // WCAG 2.5.3: buttons are named by their visible text, so no
     // aria-label may diverge from it.
     expect(markup).not.toContain('aria-label="Previous demo step"');
     expect(markup).not.toContain('aria-label="Next demo step"');
-    expect(markup).not.toContain('aria-label="Skip Orbix demo tour"');
+    expect(markup).not.toContain('aria-label="Skip ORBIX demo tour"');
     expect(markup).toMatch(/<button[^>]*>(?:<svg[^]*?<\/svg>)?Back<\/button>/);
     expect(markup).toMatch(
       /<button[^>]*>Next step(?:<svg[^]*?<\/svg>)?<\/button>/,
@@ -157,7 +157,7 @@ describe("DemoMode", () => {
   it("handles a demo shell without completed optional mission objects", () => {
     const markup = renderToStaticMarkup(<DemoMode />);
 
-    expect(markup).toContain("Orbix Guided Mission");
+    expect(markup).toContain("ORBIX Guided Mission");
     expect(markup).toContain("Educational mission");
     expect(markup).toContain("has not been supplied");
   });

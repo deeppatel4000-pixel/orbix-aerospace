@@ -1,3 +1,6 @@
+import { DiagramPlate } from "@/components/ui/diagram-plate";
+import { formatCode } from "@/components/ui/readout";
+import { keepCompounds } from "@/features/showcase/components/keep-compounds";
 import { ShowcaseSection } from "@/features/showcase/components/showcase-section";
 
 interface ArchitectureLayer {
@@ -25,7 +28,7 @@ export const ARCHITECTURE_LAYERS: readonly ArchitectureLayer[] = [
   },
   {
     description:
-      "Pure functions for one equation each, such as a Hohmann transfer or stagnation-point heating. They validate inputs, return plain objects and import only shared types and helpers.",
+      "Pure functions for one equation each, such as a Hohmann transfer or stagnation-point heating. They validate inputs, return plain objects and import only shared types, helpers and other calculators.",
     name: "Calculators",
     paths: ["src/features/engineering-lab/calculators"],
   },
@@ -60,6 +63,15 @@ const LEFT_RAIL_X = 8;
 /** x of the rail that carries imports from every upper layer into React. */
 const RAIL_X = 304;
 const WIDTH = 320;
+/** Room left of the data rail and right of the React rail for their labels. */
+const LABEL_ROOM = 16;
+/**
+ * Rail labels, in user units. The drawing is 342 units wide: at 34rem it
+ * draws at about 1.6px a unit, so 7.5 units is about 12px. Below 40rem it
+ * can shrink to about 246px at a 320px viewport (0.72px a unit), so 15.5
+ * units keeps it at about 11px there.
+ */
+const RAIL_LABEL = "text-[7.5px] max-sm:text-[15.5px]";
 /** Extra room above the React box for the presentation boundary label. */
 const BOUNDARY_GAP = 32;
 const LAST = ARCHITECTURE_LAYERS.length - 1;
@@ -78,13 +90,15 @@ function layerMid(index: number): number {
 
 /**
  * The layer stack as an SVG. Box names only, so the text stays legible when
- * the drawing shrinks to a phone width; the list beside it carries the detail.
+ * the drawing shrinks to a phone width; the list below carries the detail.
  * Every arrow is a real import edge, pointing from the imported layer to the
  * importing one: Calculators into Analyses, Data into Analyses (left rail),
  * and every upper layer into React (right rail). Calculators import no other
  * layer, and Reports import only shared types.
  */
 function ArchitectureDiagram() {
+  const dataRailMid = (layerMid(DATA) + layerMid(ANALYSES)) / 2;
+  const reactRailMid = (layerMid(DATA) + layerMid(LAST - 1)) / 2;
   const reportsBottom = layerY(LAST - 1) + BOX_HEIGHT;
   const boundaryY = reportsBottom + (layerY(LAST) - reportsBottom) / 2 + 8;
   const reactMid = layerMid(LAST);
@@ -101,7 +115,7 @@ function ArchitectureDiagram() {
       aria-labelledby="architecture-diagram-title architecture-diagram-desc"
       className="h-auto w-full"
       role="img"
-      viewBox={`-1 -1 ${WIDTH + 2} ${height}`}
+      viewBox={`${-1 - LABEL_ROOM} -1 ${WIDTH + 6 + LABEL_ROOM} ${height}`}
     >
       <title id="architecture-diagram-title">ORBIX layer diagram</title>
       <desc id="architecture-diagram-desc">
@@ -113,10 +127,12 @@ function ArchitectureDiagram() {
         line between reports and React marks the presentation boundary.
       </desc>
       <defs>
+        {/* Sized in user units so the head stays about 10px when drawn. */}
         <marker
           id="architecture-arrow"
-          markerHeight="8"
-          markerWidth="8"
+          markerHeight="6"
+          markerUnits="userSpaceOnUse"
+          markerWidth="6"
           orient="auto"
           refX="7"
           refY="4"
@@ -142,14 +158,18 @@ function ArchitectureDiagram() {
                   : "var(--orbix-border-control)"
               }
               strokeWidth="1"
+              vectorEffect="non-scaling-stroke"
               width={BOX_WIDTH}
               x={BOX_X}
               y={y}
             />
+            {/* 12 units draw at about 19px at 34rem; below 40rem 16 units
+                keep about 11.5px at a 320px viewport. */}
             <text
+              className="text-[12px] max-sm:text-[16px]"
               dominantBaseline="central"
               fill="var(--orbix-text-primary)"
-              fontSize="16"
+              fontFamily="var(--font-interface)"
               fontWeight="600"
               textAnchor="middle"
               x={BOX_X + BOX_WIDTH / 2}
@@ -160,7 +180,8 @@ function ArchitectureDiagram() {
             {isPresentation ? null : (
               <line
                 stroke={STROKE}
-                strokeWidth="1.5"
+                strokeWidth="1.25"
+                vectorEffect="non-scaling-stroke"
                 x1={BOX_RIGHT}
                 x2={RAIL_X}
                 y1={y + BOX_HEIGHT / 2}
@@ -175,7 +196,8 @@ function ArchitectureDiagram() {
       <line
         markerEnd="url(#architecture-arrow)"
         stroke={STROKE}
-        strokeWidth="1.5"
+        strokeWidth="1.25"
+        vectorEffect="non-scaling-stroke"
         x1={BOX_X + BOX_WIDTH / 2}
         x2={BOX_X + BOX_WIDTH / 2}
         y1={layerY(CALCULATORS) + BOX_HEIGHT + 4}
@@ -188,13 +210,15 @@ function ArchitectureDiagram() {
         markerEnd="url(#architecture-arrow)"
         points={dataRail}
         stroke={STROKE}
-        strokeWidth="1.5"
+        strokeWidth="1.25"
+        vectorEffect="non-scaling-stroke"
       />
 
       {/* Every upper layer into React, down the right rail. */}
       <line
         stroke={STROKE}
-        strokeWidth="1.5"
+        strokeWidth="1.25"
+        vectorEffect="non-scaling-stroke"
         x1={RAIL_X}
         x2={RAIL_X}
         y1={layerMid(DATA)}
@@ -203,32 +227,49 @@ function ArchitectureDiagram() {
       <line
         markerEnd="url(#architecture-arrow)"
         stroke={STROKE}
-        strokeWidth="1.5"
+        strokeWidth="1.25"
+        vectorEffect="non-scaling-stroke"
         x1={RAIL_X}
         x2={BOX_RIGHT + 4}
         y1={reactMid}
         y2={reactMid}
       />
 
+      {/* Rail labels, set along each rail and read from the bottom up. */}
+      <text
+        className={RAIL_LABEL}
+        fill="var(--orbix-text-muted)"
+        fontFamily="var(--font-telemetry)"
+        textAnchor="middle"
+        transform={`translate(${LEFT_RAIL_X - 5} ${dataRailMid}) rotate(-90)`}
+      >
+        data into analyses
+      </text>
+      <text
+        className={RAIL_LABEL}
+        dominantBaseline="text-before-edge"
+        fill="var(--orbix-text-muted)"
+        fontFamily="var(--font-telemetry)"
+        textAnchor="middle"
+        transform={`translate(${RAIL_X + 5} ${reactRailMid}) rotate(-90)`}
+      >
+        imports into React
+      </text>
+
       <line
         stroke="var(--orbix-border-strong)"
         strokeWidth="1"
+        vectorEffect="non-scaling-stroke"
         x1={BOX_X}
         x2={RAIL_X - 8}
         y1={boundaryY}
         y2={boundaryY}
       />
-      <line
-        stroke="var(--orbix-border-strong)"
-        strokeWidth="1"
-        x1={RAIL_X + 8}
-        x2={WIDTH}
-        y1={boundaryY}
-        y2={boundaryY}
-      />
       <text
+        className="text-[9px] uppercase max-sm:text-[15.5px]"
         fill="var(--orbix-text-muted)"
-        fontSize="14"
+        fontFamily="var(--font-telemetry)"
+        letterSpacing="0.12em"
         textAnchor="start"
         x={BOX_X}
         y={boundaryY - 8}
@@ -242,44 +283,64 @@ function ArchitectureDiagram() {
 export function ArchitectureSection() {
   return (
     <ShowcaseSection
-      first
+      // The hero has no bottom padding from 1024px; this sets the gap.
+      className="lg:pt-16"
       id="architecture"
       lead="Each layer imports only from layers above it or from shared types and helpers, and no layer above React imports React. Components import data, calculators, analyses and reports directly."
+      number={1}
       title="Architecture"
     >
-      <div className="grid gap-8 lg:grid-cols-12 lg:gap-6">
-        <figure className="lg:col-span-4">
-          <div className="max-w-[22rem]">
-            <ArchitectureDiagram />
-          </div>
-          <figcaption className="orbix-label mt-3 max-w-[22rem]">
-            Layer order in the repository. Each arrow points from an imported
-            layer to the layer that imports it: analyses import calculators and
-            data, calculators and reports import no other layer, and the rail on
-            the right shows React importing from every layer above the boundary.
-          </figcaption>
-        </figure>
+      {/* The page's hero figure: the drawing up to 34rem, its caption
+          centred beside it from 1024px. */}
+      <DiagramPlate
+        aria-labelledby="architecture-figure-caption"
+        className="grid gap-10 lg:min-h-[28rem] lg:grid-cols-[minmax(0,34rem)_minmax(0,1fr)] lg:items-center lg:gap-16"
+      >
+        <div className="w-full max-w-[34rem] justify-self-center py-2 lg:justify-self-start">
+          <ArchitectureDiagram />
+        </div>
+        <figcaption
+          className="max-w-[40ch] lg:self-center"
+          id="architecture-figure-caption"
+        >
+          <span className="orbix-caps block text-text-muted">
+            Layer order in the repository
+          </span>
+          <span className="mt-3 block text-sm leading-relaxed text-text-secondary">
+            Each arrow points from an imported layer to the layer that imports
+            it: analyses import calculators and data, calculators and reports
+            import no other layer, and the rail on the right shows React
+            importing from every layer above the boundary.
+          </span>
+        </figcaption>
+      </DiagramPlate>
 
-        <ol className="divide-y divide-border-subtle border-y border-border-subtle lg:col-span-8">
-          {ARCHITECTURE_LAYERS.map((layer) => (
-            <li className="py-4" key={layer.name}>
-              <h3 className="orbix-h3 text-text-primary">{layer.name}</h3>
-              <p className="mt-1 max-w-[68ch] text-text-secondary">
-                {layer.description}
-              </p>
-              <ul className="mt-2 flex flex-wrap gap-x-4 gap-y-1">
+      {/* Each layer once: its name and source folders, then what it holds. */}
+      <dl className="mt-12 border-t border-border-subtle sm:ml-20">
+        {ARCHITECTURE_LAYERS.map((layer) => (
+          <div
+            className="grid gap-3 border-b border-border-subtle py-6 last:border-b-0 last:pb-0 md:grid-cols-[minmax(0,20rem)_minmax(0,40rem)] md:gap-10"
+            key={layer.name}
+          >
+            <dt>
+              <span className="orbix-h3 block text-text-primary">
+                {layer.name}
+              </span>
+              <span className="mt-2 grid gap-1">
                 {layer.paths.map((path) => (
-                  <li key={path}>
-                    <code className="orbix-data orbix-data--sm break-all text-text-secondary">
-                      {path}
-                    </code>
-                  </li>
+                  <code
+                    className="orbix-data orbix-data--sm block break-words text-text-secondary"
+                    key={path}
+                  >
+                    {formatCode(path)}
+                  </code>
                 ))}
-              </ul>
-            </li>
-          ))}
-        </ol>
-      </div>
+              </span>
+            </dt>
+            <dd className="orbix-prose">{keepCompounds(layer.description)}</dd>
+          </div>
+        ))}
+      </dl>
     </ShowcaseSection>
   );
 }

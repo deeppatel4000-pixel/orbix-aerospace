@@ -262,11 +262,18 @@ test.describe("Learn research layout", () => {
     );
     await expect(page.getByRole("heading", { level: 1 })).toHaveCount(1);
 
-    const structure = await page.evaluate(() => ({
-      h2: document.querySelectorAll("#main-content h2").length,
-      h3: document.querySelectorAll("#main-content h3").length,
-    }));
-    expect(structure.h2).toBe(6);
+    // Design v2: a "Contents" h2 (the numbered chapter index), then one h2
+    // per pathway chapter.
+    const structure = await page.evaluate(() => {
+      const h2 = [...document.querySelectorAll("#main-content h2")];
+      return {
+        contents: h2.filter((h) => h.id === "learn-contents-title").length,
+        h2: h2.length,
+        h3: document.querySelectorAll("#main-content h3").length,
+      };
+    });
+    expect(structure.contents).toBe(1);
+    expect(structure.h2).toBe(1 + 6);
     expect(structure.h3).toBeGreaterThanOrEqual(6);
   });
 

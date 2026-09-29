@@ -8,6 +8,8 @@ import type {
 
 import { DesignConstraintCard } from "./design-constraint-card";
 import { ReviewCategory } from "./review-category";
+import { LabHeading } from "../visualization/lab-heading";
+import { altitudeReadout } from "../visualization/format-lab-value";
 
 export interface MissionDesignReviewProps {
   readonly insights?: MissionInsightsAnalysis | null;
@@ -93,12 +95,9 @@ export function MissionDesignReview({
     >
       <header className="border-b border-border-subtle pb-4">
         <p className="orbix-label">Mission design review</p>
-        <h3
-          className="orbix-h3 mt-1 text-foreground"
-          id="mission-design-review-title"
-        >
+        <LabHeading className="mt-1" id="mission-design-review-title">
           {missionName}
-        </h3>
+        </LabHeading>
         <p className="mt-2 max-w-[68ch] text-sm leading-6 text-muted">
           Reported mission parameters, source assumptions and known model
           limits, grouped for review. No feasibility decision is produced.
@@ -147,12 +146,13 @@ export function MissionDesignReview({
             aria-labelledby="design-review-active-systems-title"
             className="mt-4"
           >
-            <h5
-              className="text-sm font-semibold text-foreground"
+            <LabHeading
+              offset={2}
+              variant="sub"
               id="design-review-active-systems-title"
             >
               Active systems
-            </h5>
+            </LabHeading>
             {systems.length ? (
               <p className="mt-1 text-sm text-text-secondary">
                 {systems.join(", ")}
@@ -176,13 +176,11 @@ export function MissionDesignReview({
             />
             <DesignConstraintCard
               label="Initial orbit altitude"
-              unit="m"
-              value={transfer?.initialOrbit.altitudeMetres}
+              {...altitudeReadout(transfer?.initialOrbit.altitudeMetres)}
             />
             <DesignConstraintCard
               label="Final orbit altitude"
-              unit="m"
-              value={transfer?.finalOrbit.altitudeMetres}
+              {...altitudeReadout(transfer?.finalOrbit.altitudeMetres)}
             />
             <DesignConstraintCard
               label="Maneuver count"

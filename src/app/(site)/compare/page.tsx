@@ -7,6 +7,7 @@ import {
   parseComparisonQuery,
   type ComparisonSearchParams,
 } from "@/features/compare";
+import { socialOpenGraph, socialTwitter } from "@/lib/social-image";
 
 interface CompareRouteProps {
   searchParams: Promise<ComparisonSearchParams>;
@@ -21,6 +22,7 @@ export const metadata: Metadata = {
   alternates: { canonical: "/compare" },
   description,
   openGraph: {
+    ...socialOpenGraph,
     description,
     locale: "en_US",
     siteName: "ORBIX",
@@ -30,7 +32,7 @@ export const metadata: Metadata = {
   },
   title: "Compare vehicles",
   twitter: {
-    card: "summary",
+    ...socialTwitter,
     description,
     title: socialTitle,
   },

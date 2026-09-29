@@ -10,45 +10,29 @@ import type {
 import { StartupCheckList, type StartupCheckItem } from "./startup-check-list";
 
 export interface MissionStartupSequenceProps {
-  readonly children: ReactNode;
+  readonly children?: ReactNode;
+  /** Accepted for existing callers; the mission header shows the category. */
   readonly missionCategory?: MissionPresetCategory;
   readonly missionProfileAnalysis?: MissionProfileAnalysis | null;
   readonly missionReport?: MissionReport | null;
   readonly vehicleReentryEvaluation?: VehicleReentryEvaluationAnalysis | null;
 }
 
-const categoryLabels: Readonly<Record<MissionPresetCategory, string>> = {
-  "deep-space-concept": "Deep-space concept",
-  "lunar-transfer": "Lunar transfer",
-  "orbital-deployment": "Orbital deployment",
-  "orbital-logistics": "Orbital logistics",
-  "reentry-demonstration": "Reentry demonstration",
-};
-
 /**
- * The data checks for a mission workspace, shown statically above it.
+ * The data checks for a mission workspace: which completed analyses were
+ * supplied. Mission control renders it at the foot of its header, under the
+ * mission's name and identity row, so name and category are not repeated.
  *
  * This used to be a timed "startup sequence" overlay that implied live
  * systems coming online. Per spec 15.4 the animation and framing are gone;
- * what remains is the real information it carried: which completed analyses
- * were supplied to the workspace below.
+ * what remains is the real information it carried.
  */
 export function MissionStartupSequence({
   children,
-  missionCategory,
   missionProfileAnalysis,
   missionReport,
   vehicleReentryEvaluation,
 }: MissionStartupSequenceProps) {
-  const missionName =
-    missionReport?.missionSummary.missionName ??
-    missionProfileAnalysis?.missionName;
-  const category = missionCategory
-    ? categoryLabels[missionCategory]
-    : undefined;
-  const analysesResolved =
-    missionProfileAnalysis?.missionSummaryState.analysesResolved;
-
   const checks: readonly StartupCheckItem[] = [
     {
       available: Boolean(missionProfileAnalysis),
@@ -91,48 +75,22 @@ export function MissionStartupSequence({
   ];
 
   return (
-    <div className="space-y-6">
-      <section
-        aria-labelledby="mission-checks-title"
-        className="border-b border-border-subtle pb-6"
-      >
-        <h3 className="orbix-h4 text-foreground" id="mission-checks-title">
+    <>
+      <section aria-labelledby="mission-checks-title" className="mt-6">
+        <h4
+          className="text-[0.9375rem] leading-6 font-semibold text-foreground"
+          id="mission-checks-title"
+        >
           Checks performed
-        </h3>
+        </h4>
         <p className="mt-1 text-sm leading-6 text-muted">
           Which completed analyses were supplied to this workspace. Nothing
           below is live data.
         </p>
-        <dl className="mt-3 grid gap-x-8 text-sm sm:grid-cols-3">
-          <div className="border-t border-border-subtle py-2">
-            <dt className="orbix-label">Mission</dt>
-            <dd className="mt-1 text-foreground">
-              {missionName ?? "Not reported"}
-            </dd>
-          </div>
-          <div className="border-t border-border-subtle py-2">
-            <dt className="orbix-label">Category</dt>
-            <dd className="mt-1 text-foreground">
-              {category ?? "Not reported"}
-            </dd>
-          </div>
-          <div className="border-t border-border-subtle py-2">
-            <dt className="orbix-label">Analyses resolved</dt>
-            <dd
-              className={
-                analysesResolved === undefined
-                  ? "mt-1 text-muted"
-                  : "orbix-data mt-1 text-foreground"
-              }
-            >
-              {analysesResolved ?? "Not reported"}
-            </dd>
-          </div>
-        </dl>
         <StartupCheckList items={checks} />
       </section>
 
       {children}
-    </div>
+    </>
   );
 }

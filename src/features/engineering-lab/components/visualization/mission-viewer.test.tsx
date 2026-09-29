@@ -66,7 +66,8 @@ describe("MissionViewer", () => {
     expect(markup).toContain("Unified Mission Viewer Test");
     expect(markup).toContain("Mission summary");
     expect(markup).toContain("Mission phases");
-    expect(markup).toContain("Diagrams");
+    expect(markup).toContain("Mission orbit diagram");
+    expect(markup).toContain("Reentry profile");
     expect(markup).toContain("Reported values");
   });
 
@@ -84,7 +85,8 @@ describe("MissionViewer", () => {
     expect(markup).toContain("Peak heating");
     expect(markup).toContain("TPS mass");
     expect(markup).toContain("Thermal margin");
-    expect(markup).toContain(
+    // Figures carry `.orbix-num-sep` spans around separators.
+    expect(markup.replace(/<[^>]+>/g, "")).toContain(
       formatLabValue(
         completeReport.orbitalAnalysis?.totalDeltaVMetresPerSecond ?? 0,
       ),

@@ -12,6 +12,12 @@ import { CircleAlert } from "lucide-react";
  * message. The invalid state marks the border and prints a message with an
  * icon, so colour is never the only signal.
  *
+ * In the lab every suffix is one fixed width (`.lab-field__unit`), and a
+ * dimensionless field keeps an empty slot of that width, so the right edges
+ * of neighbouring inputs, and the numbers set against them, line up.
+ * The input keeps an 8rem minimum so a value stays readable beside the
+ * suffix on a 320px screen.
+ *
  * Parsing and validation stay in each calculator; this component does neither.
  */
 
@@ -57,7 +63,7 @@ export function CalculatorNumberField<Field extends string>({
           aria-describedby={describedBy}
           aria-errormessage={error ? errorId : undefined}
           aria-invalid={error ? true : undefined}
-          className="orbix-input"
+          className="orbix-input min-w-32"
           id={inputId}
           inputMode="decimal"
           onChange={(event) => onChange(field, event.target.value)}
@@ -67,10 +73,15 @@ export function CalculatorNumberField<Field extends string>({
           value={value}
         />
         {unit ? (
-          <span className="orbix-field__unit" aria-hidden="true">
+          <span
+            className="orbix-field__unit lab-field__unit"
+            aria-hidden="true"
+          >
             {unit}
           </span>
-        ) : null}
+        ) : (
+          <span aria-hidden="true" className="lab-field__unit-slot" />
+        )}
       </div>
       {unit ? (
         <span className="sr-only" id={unitId}>

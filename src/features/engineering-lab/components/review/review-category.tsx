@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { LabHeading } from "../visualization/lab-heading";
 
 export interface ReviewCategoryProps {
   readonly children: ReactNode;
@@ -18,9 +19,9 @@ export function ReviewCategory({
       aria-labelledby={`design-review-${id}-title`}
       className="border-t border-border-subtle pt-6 first:border-t-0 first:pt-0"
     >
-      <h4 className="orbix-h4 text-foreground" id={`design-review-${id}-title`}>
+      <LabHeading offset={1} id={`design-review-${id}-title`}>
         {title}
-      </h4>
+      </LabHeading>
       <p className="mt-1 max-w-[68ch] text-sm leading-6 text-muted">
         {description}
       </p>

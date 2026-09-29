@@ -1,11 +1,12 @@
 "use client";
 
-import { useEffect, useId, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState, type FocusEvent } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Menu, X } from "lucide-react";
 
-import { navigationItems } from "@/config/navigation";
+import { legalNavigationItems, navigationItems } from "@/config/navigation";
+import { siteLegal } from "@/config/site-legal";
 
 function isCurrentRoute(pathname: string, href: string) {
   return href === "/"
@@ -13,10 +14,32 @@ function isCurrentRoute(pathname: string, href: string) {
     : pathname === href || pathname.startsWith(`${href}/`);
 }
 
+/** The quieter group anchored to the bottom of the sheet. */
+const secondaryItems = legalNavigationItems.filter((item) =>
+  ["/about", "/build-log", "/credits"].includes(item.href),
+);
+
+/** Matches the `lg` breakpoint at which the desktop links take over. */
+const DESKTOP_QUERY = "(min-width: 64rem)";
+
 /**
- * Disclosure menu below 1024px (spec 10). The toggle's visible text is its
- * accessible name ("Menu" / "Close menu"). Opening moves focus to the first
- * link; Escape closes the sheet and returns focus to the toggle.
+ * Disclosure menu below 1024px (spec 8): a full-height sheet under the
+ * header with the links in the condensed display cut at 24px, the current
+ * page underlined in the accent as on desktop, and About, How I built ORBIX,
+ * Image credits and the operator line anchored to the bottom. It opens and
+ * closes instantly, with no stagger.
+ *
+ * - The toggle reads "Menu" when closed and "Close" when open; open, its
+ *   accessible name is "Close menu", which starts with the visible word
+ *   (label-in-name). It keeps one width and one border in both states, so
+ *   the header does not shift when it toggles.
+ * - Opening moves focus to the first link and stops the page behind the
+ *   sheet from scrolling.
+ * - Escape closes the sheet and returns focus to the toggle.
+ * - Moving focus out of the menu (Tab past the last link, or Shift+Tab
+ *   past the toggle) closes it, so keyboard focus never lands on content
+ *   hidden behind the sheet.
+ * - Widening the window past the breakpoint closes it.
  */
 export function MobileNavigation() {
   const [isOpen, setIsOpen] = useState(false);
@@ -40,8 +63,22 @@ export function MobileNavigation() {
       setIsOpen(false);
     }
 
+    const desktop = window.matchMedia(DESKTOP_QUERY);
+    function handleBreakpoint(event: MediaQueryListEvent) {
+      if (event.matches) setIsOpen(false);
+    }
+
+    const root = document.documentElement;
+    const previousOverflow = root.style.overflow;
+    root.style.overflow = "hidden";
+
     document.addEventListener("keydown", handleEscape);
-    return () => document.removeEventListener("keydown", handleEscape);
+    desktop.addEventListener("change", handleBreakpoint);
+    return () => {
+      root.style.overflow = previousOverflow;
+      document.removeEventListener("keydown", handleEscape);
+      desktop.removeEventListener("change", handleBreakpoint);
+    };
   }, [isOpen]);
 
   // Runs after commit, once the sheet has unmounted, so restoring focus
@@ -54,31 +91,42 @@ export function MobileNavigation() {
     toggleRef.current?.focus();
   }, [isOpen]);
 
+  function handleBlur(event: FocusEvent<HTMLDivElement>) {
+    if (!isOpen) return;
+    const next = event.relatedTarget;
+    // `null` means focus went nowhere in particular (a click on the sheet's
+    // empty space); only a move to another element outside closes it.
+    if (next instanceof Node && !event.currentTarget.contains(next)) {
+      setIsOpen(false);
+    }
+  }
+
   return (
-    <div className="lg:hidden">
+    <div className="lg:hidden" onBlur={handleBlur}>
       <button
         aria-controls={menuId}
         aria-expanded={isOpen}
+        aria-label={isOpen ? "Close menu" : undefined}
         className="orbix-menu-toggle"
         onClick={() => setIsOpen((open) => !open)}
         ref={toggleRef}
         type="button"
       >
         {isOpen ? (
-          <X aria-hidden="true" size={16} />
+          <X aria-hidden="true" size={16} strokeWidth={1.5} />
         ) : (
-          <Menu aria-hidden="true" size={16} />
+          <Menu aria-hidden="true" size={16} strokeWidth={1.5} />
         )}
-        {isOpen ? "Close menu" : "Menu"}
+        {isOpen ? "Close" : "Menu"}
       </button>
 
       {isOpen ? (
         <nav
           aria-label="Mobile navigation"
-          className="orbix-mobile-nav absolute inset-x-0 top-full"
+          className="orbix-mobile-nav"
           id={menuId}
         >
-          <ul className="flex flex-col py-2">
+          <ul className="orbix-mobile-nav__list">
             {navigationItems.map((item, index) => {
               const isActive = isCurrentRoute(pathname, item.href);
 
@@ -97,6 +145,31 @@ export function MobileNavigation() {
               );
             })}
           </ul>
+
+          <div className="orbix-mobile-nav__secondary">
+            <ul className="orbix-mobile-nav__secondary-list">
+              {secondaryItems.map((item) => (
+                <li key={item.href}>
+                  <Link
+                    aria-current={
+                      isCurrentRoute(pathname, item.href) ? "page" : undefined
+                    }
+                    className="orbix-mobile-nav-secondary-link"
+                    href={item.href}
+                    onClick={() => setIsOpen(false)}
+                  >
+                    {item.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+            <p className="orbix-mobile-nav__note">
+              Operated by {siteLegal.operatorName}. Contact{" "}
+              <a href={`mailto:${siteLegal.contactEmail}`}>
+                {siteLegal.contactEmail}
+              </a>
+            </p>
+          </div>
         </nav>
       ) : null}
     </div>

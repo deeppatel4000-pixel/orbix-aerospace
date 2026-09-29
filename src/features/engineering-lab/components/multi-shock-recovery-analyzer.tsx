@@ -1,24 +1,28 @@
 "use client";
 
-import { Button, Tag } from "@/components/ui";
+import { Button, EquationBlock } from "@/components/ui";
 import { useMemo, useRef, useState, type FormEvent } from "react";
-import {
-  ChevronDown,
-  AlertTriangle,
-  Layers,
-  Plus,
-  RotateCcw,
-  Trash2,
-} from "lucide-react";
+import { ChevronDown, CircleAlert } from "lucide-react";
 
 import { analyzeMultiShockRecovery } from "@/features/engineering-lab/analysis";
 import {
+  EQ_CONT,
+  EQ_LINE,
+  EQ_SUP,
+  EQ_TERM,
   CalculatorNumberField,
   focusFirstInvalidField,
   focusFirstInvalidFieldOnEnter,
   CalculatorResultSection,
+  LAB_TOOL_SPLIT,
+  LabToolLayout,
   NotCalculated,
+  ReadoutGrid,
   ValidationErrorSummary,
+  LabFigure,
+  LabSymbol,
+  EqDot,
+  EqSubSup,
 } from "@/features/engineering-lab/components/shared";
 import type {
   MultiShockRecoveryAnalysis,
@@ -238,6 +242,77 @@ function collectValidationMessages(
   ];
 }
 
+const toolEquation = (
+  <EquationBlock
+    equation={
+      <>
+        <span className={EQ_LINE}>
+          <span className={EQ_TERM}>
+            π = Π<sub>i</sub>
+          </span>
+          <wbr />
+          <span className={EQ_TERM}>
+            (p<sub>t2</sub>/p<sub>t1</sub>)<sub>i</sub>
+          </span>
+        </span>
+        <span className={EQ_LINE}>
+          <span className={EQ_TERM}>
+            p<sub>t2</sub>/p<sub>t1</sub>
+          </span>
+        </span>
+        <span className={EQ_CONT}>
+          <span className={EQ_TERM}>
+            = [(γ+1)M
+            <EqSubSup sub="n" sup="2" />
+          </span>
+          <wbr />
+          <span className={EQ_TERM}>
+            /((γ−1)M
+            <EqSubSup sub="n" sup="2" />
+          </span>
+          <wbr />
+          <span className={EQ_TERM}>
+            +2)]<sup className={EQ_SUP}>γ/(γ−1)</sup>
+          </span>
+        </span>
+        <span className={EQ_CONT}>
+          <span className={EQ_TERM}>
+            <EqDot />
+            [(γ+1)
+          </span>
+          <wbr />
+          <span className={EQ_TERM}>
+            /(2γM
+            <EqSubSup sub="n" sup="2" />
+          </span>
+          <wbr />
+          <span className={EQ_TERM}>
+            −(γ−1))]<sup className={EQ_SUP}>1/(γ−1)</sup>
+          </span>
+        </span>
+      </>
+    }
+    label="Shock train total pressure recovery"
+    spokenAs="The overall recovery pi equals the product of every shock's total pressure ratio, where the total pressure ratio across a shock equals gamma plus 1 times M n squared over gamma minus 1 times M n squared plus 2, raised to gamma over gamma minus 1, times gamma plus 1 over 2 gamma M n squared minus gamma minus 1, raised to 1 over gamma minus 1."
+    variables={[
+      {
+        symbol: "π",
+        meaning: "Cumulative total pressure recovery of the shock train",
+      },
+      {
+        symbol: (
+          <>
+            M<sub>n</sub>
+          </>
+        ),
+        meaning:
+          "Normal Mach number of each shock; each shock's downstream Mach number is the next shock's upstream Mach number",
+      },
+      { symbol: "γ", meaning: "Ratio of specific heats for dry air, 1.4" },
+    ]}
+  />
+);
+
 export function MultiShockRecoveryAnalyzer() {
   const [values, setValues] = useState<MultiShockRecoveryFormValues>(() =>
     createInitialFormValues(),
@@ -311,264 +386,245 @@ export function MultiShockRecoveryAnalyzer() {
   }
 
   return (
-    <div className="grid gap-8 xl:grid-cols-[minmax(0,0.95fr)_minmax(25rem,1.05fr)] xl:gap-10">
-      <div>
-        <form
-          noValidate
-          onKeyDown={focusFirstInvalidFieldOnEnter}
-          onSubmit={preventSubmission}
-        >
-          <fieldset>
-            <legend className="text-base font-semibold text-foreground">
-              Upstream conditions
-            </legend>
-            <div className="mt-4 grid gap-5 sm:grid-cols-2">
-              <CalculatorNumberField
-                error={errors.upstreamMach}
-                field="upstreamMach"
-                hint="Initial Mach number supplied to the first shock stage."
-                idPrefix="multi-shock-recovery"
-                label="Initial Mach number"
-                onChange={updateCommonValue}
-                unit="Mach"
-                value={values.upstreamMach}
-              />
-              <CalculatorNumberField
-                error={errors.altitudeMeters}
-                field="altitudeMeters"
-                hint={
-                  "Optional compatibility check from 0 to " +
-                  STANDARD_ATMOSPHERE_MAX_ALTITUDE_METRES.toLocaleString(
-                    "en-US",
-                  ) +
-                  " metres. Leave blank to omit."
-                }
-                idPrefix="multi-shock-recovery"
-                label="Altitude (optional)"
-                optional
-                onChange={updateCommonValue}
-                unit="m"
-                value={values.altitudeMeters}
-              />
-            </div>
-          </fieldset>
-
-          <section
-            aria-labelledby="multi-shock-sequence-title"
-            className="mt-8 border-t border-border pt-7"
+    <LabToolLayout equation={toolEquation}>
+      <div className={LAB_TOOL_SPLIT}>
+        <div className="@container/col min-w-0">
+          <form
+            noValidate
+            onKeyDown={focusFirstInvalidFieldOnEnter}
+            onSubmit={preventSubmission}
           >
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-              <div>
-                <p className="orbix-label">Ordered workflow</p>
-                <h3
-                  className="mt-1 text-lg font-semibold"
-                  id="multi-shock-sequence-title"
-                >
-                  Shock sequence
-                </h3>
+            <fieldset>
+              <legend className="text-base font-semibold text-foreground">
+                Upstream conditions
+              </legend>
+              <div className="mt-4 grid gap-5 @min-[36rem]/col:grid-cols-2">
+                <CalculatorNumberField
+                  error={errors.upstreamMach}
+                  field="upstreamMach"
+                  hint="Initial Mach number supplied to the first shock stage."
+                  idPrefix="multi-shock-recovery"
+                  label="Initial Mach number"
+                  onChange={updateCommonValue}
+                  unit="Mach"
+                  value={values.upstreamMach}
+                />
+                <CalculatorNumberField
+                  error={errors.altitudeMeters}
+                  field="altitudeMeters"
+                  hint={
+                    "Optional compatibility check from 0 to " +
+                    STANDARD_ATMOSPHERE_MAX_ALTITUDE_METRES.toLocaleString(
+                      "en-US",
+                    ) +
+                    " metres. Leave blank to omit."
+                  }
+                  idPrefix="multi-shock-recovery"
+                  label="Altitude (optional)"
+                  optional
+                  onChange={updateCommonValue}
+                  unit="m"
+                  value={values.altitudeMeters}
+                />
               </div>
-              <Button
-                aria-describedby="multi-shock-stage-limit"
-                variant="secondary"
-                disabled={hasReachedStageLimit}
-                onClick={addShockStage}
-              >
-                <Plus aria-hidden="true" size={16} />
-                Add shock stage
-              </Button>
-            </div>
+            </fieldset>
 
-            <p
-              aria-live="polite"
-              className={
-                "mt-3 text-xs leading-5 " +
-                (hasReachedStageLimit ? "text-status-warning" : "text-muted")
-              }
-              id="multi-shock-stage-limit"
+            <section
+              aria-labelledby="multi-shock-sequence-title"
+              className="mt-8 border-t border-border pt-7"
             >
-              {hasReachedStageLimit
-                ? "Maximum sequence length reached: five shock stages."
-                : `${values.shocks.length} of ${MAXIMUM_SHOCK_STAGES} shock stages configured.`}
-            </p>
+              <div className="flex flex-wrap items-end justify-between gap-3">
+                <div>
+                  <h3
+                    className="text-lg font-semibold"
+                    id="multi-shock-sequence-title"
+                  >
+                    Shock sequence
+                  </h3>
+                </div>
+                <Button
+                  className="whitespace-nowrap"
+                  aria-describedby="multi-shock-stage-limit"
+                  variant="secondary"
+                  disabled={hasReachedStageLimit}
+                  onClick={addShockStage}
+                >
+                  Add shock stage
+                </Button>
+              </div>
 
-            {values.shocks.length > 0 ? (
-              <div className="mt-5 space-y-4">
-                {values.shocks.map((shock, index) => {
-                  const stageNumber = index + 1;
-                  const stageError = errors.shocks[shock.id];
-                  const stageErrorId = `multi-shock-stage-${shock.id}-error`;
-                  const typeHintId = `multi-shock-stage-${shock.id}-type-hint`;
-                  const typeInputId = `multi-shock-stage-${shock.id}-type`;
+              <p
+                aria-live="polite"
+                className={
+                  "mt-3 text-xs leading-5 " +
+                  (hasReachedStageLimit ? "text-status-warning" : "text-muted")
+                }
+                id="multi-shock-stage-limit"
+              >
+                {hasReachedStageLimit
+                  ? "Maximum sequence length reached: five shock stages."
+                  : `${values.shocks.length} of ${MAXIMUM_SHOCK_STAGES} shock stages configured.`}
+              </p>
 
-                  return (
-                    <fieldset
-                      aria-describedby={
-                        stageError?.stage
-                          ? `${typeHintId} ${stageErrorId}`
-                          : typeHintId
-                      }
-                      className="rounded-md border border-border-subtle bg-surface-raised p-4 sm:p-6"
-                      key={shock.id}
-                    >
-                      <legend className="sr-only">
-                        Shock stage {stageNumber}
-                      </legend>
-                      <div className="flex items-center justify-between gap-4">
-                        <div>
-                          <p className="orbix-label">Sequence element</p>
-                          <h4 className="mt-1 text-base font-semibold">
+              {values.shocks.length > 0 ? (
+                <div className="mt-5 space-y-4">
+                  {values.shocks.map((shock, index) => {
+                    const stageNumber = index + 1;
+                    const stageError = errors.shocks[shock.id];
+                    const stageErrorId = `multi-shock-stage-${shock.id}-error`;
+                    const typeHintId = `multi-shock-stage-${shock.id}-type-hint`;
+                    const typeInputId = `multi-shock-stage-${shock.id}-type`;
+
+                    return (
+                      <fieldset
+                        aria-describedby={
+                          stageError?.stage
+                            ? `${typeHintId} ${stageErrorId}`
+                            : typeHintId
+                        }
+                        className="border-t border-border pt-6"
+                        key={shock.id}
+                      >
+                        <legend className="sr-only">
+                          Shock stage {stageNumber}
+                        </legend>
+                        <div className="flex items-center justify-between gap-4">
+                          <h4 className="text-base font-semibold">
                             Stage {stageNumber}
                           </h4>
-                        </div>
-                        <Button
-                          aria-label={`Remove shock stage ${stageNumber}`}
-                          variant="secondary"
-                          onClick={() => removeShockStage(shock.id)}
-                        >
-                          <Trash2 aria-hidden="true" size={15} />
-                          Remove
-                        </Button>
-                      </div>
-
-                      <div className="mt-5 grid gap-5 sm:grid-cols-2">
-                        <div>
-                          <label
-                            className="orbix-field__label block"
-                            htmlFor={typeInputId}
+                          <Button
+                            className="whitespace-nowrap"
+                            aria-label={`Remove shock stage ${stageNumber}`}
+                            variant="secondary"
+                            onClick={() => removeShockStage(shock.id)}
                           >
-                            Shock type
-                          </label>
-                          <div className="orbix-field__control mt-2">
-                            <select
-                              aria-describedby={
-                                stageError?.stage
-                                  ? `${typeHintId} ${stageErrorId}`
-                                  : typeHintId
-                              }
-                              aria-errormessage={
-                                stageError?.stage ? stageErrorId : undefined
-                              }
-                              aria-invalid={Boolean(stageError?.stage)}
-                              className="orbix-select"
-                              id={typeInputId}
-                              onChange={(event) =>
-                                updateShockType(
-                                  shock.id,
-                                  event.target.value as ShockStageType,
-                                )
-                              }
-                              value={shock.type}
-                            >
-                              <option value="normal">Normal shock</option>
-                              <option value="oblique">Oblique shock</option>
-                            </select>
-                            <ChevronDown
-                              aria-hidden="true"
-                              className="orbix-field__icon orbix-field__icon--end"
-                              size={16}
-                            />
-                          </div>
-                          <p className="orbix-field__help mt-2" id={typeHintId}>
-                            The stage receives the downstream Mach from the
-                            preceding stage.
-                          </p>
+                            Remove
+                          </Button>
                         </div>
 
-                        {shock.type === "oblique" ? (
-                          <CalculatorNumberField
-                            error={stageError?.deflectionAngleDegrees}
-                            field="deflectionAngleDegrees"
-                            hint="Positive turning angle that must permit an attached weak shock."
-                            idPrefix={`multi-shock-stage-${shock.id}`}
-                            label="Deflection angle"
-                            onChange={(_field, value) =>
-                              updateDeflectionAngle(shock.id, value)
-                            }
-                            unit="deg"
-                            value={shock.deflectionAngleDegrees}
-                          />
+                        <div className="mt-5 grid gap-5 @min-[36rem]/col:grid-cols-2">
+                          <div>
+                            <label
+                              className="orbix-field__label block"
+                              htmlFor={typeInputId}
+                            >
+                              Shock type
+                            </label>
+                            <div className="orbix-field__control mt-2">
+                              <select
+                                aria-describedby={
+                                  stageError?.stage
+                                    ? `${typeHintId} ${stageErrorId}`
+                                    : typeHintId
+                                }
+                                aria-errormessage={
+                                  stageError?.stage ? stageErrorId : undefined
+                                }
+                                aria-invalid={Boolean(stageError?.stage)}
+                                className="orbix-select"
+                                id={typeInputId}
+                                onChange={(event) =>
+                                  updateShockType(
+                                    shock.id,
+                                    event.target.value as ShockStageType,
+                                  )
+                                }
+                                value={shock.type}
+                              >
+                                <option value="normal">Normal shock</option>
+                                <option value="oblique">Oblique shock</option>
+                              </select>
+                              <ChevronDown
+                                aria-hidden="true"
+                                className="orbix-field__icon orbix-field__icon--end"
+                                size={16}
+                              />
+                            </div>
+                            <p
+                              className="orbix-field__help mt-2"
+                              id={typeHintId}
+                            >
+                              The stage receives the downstream Mach from the
+                              preceding stage.
+                            </p>
+                          </div>
+
+                          {shock.type === "oblique" ? (
+                            <CalculatorNumberField
+                              error={stageError?.deflectionAngleDegrees}
+                              field="deflectionAngleDegrees"
+                              hint="Positive turning angle that must permit an attached weak shock."
+                              idPrefix={`multi-shock-stage-${shock.id}`}
+                              label="Deflection angle"
+                              onChange={(_field, value) =>
+                                updateDeflectionAngle(shock.id, value)
+                              }
+                              unit="deg"
+                              value={shock.deflectionAngleDegrees}
+                            />
+                          ) : null}
+                        </div>
+
+                        {stageError?.stage ? (
+                          <p
+                            className="orbix-field__error mt-4"
+                            id={stageErrorId}
+                            role="alert"
+                          >
+                            <CircleAlert
+                              aria-hidden="true"
+                              className="shrink-0"
+                              size={14}
+                            />
+                            {stageError.stage}
+                          </p>
                         ) : null}
-                      </div>
+                      </fieldset>
+                    );
+                  })}
+                </div>
+              ) : (
+                <div className="mt-5 rounded-lg border border-border p-4">
+                  <p className="text-sm font-semibold">No shock stages</p>
+                  <p className="mt-2 text-sm leading-6 text-muted">
+                    Add a normal or oblique shock stage to begin the sequence.
+                  </p>
+                </div>
+              )}
+            </section>
 
-                      {stageError?.stage ? (
-                        <p
-                          className="mt-4 border-l-2 border-status-warning pl-3 text-sm leading-6 text-status-warning"
-                          id={stageErrorId}
-                          role="alert"
-                        >
-                          {stageError.stage}
-                        </p>
-                      ) : null}
-                    </fieldset>
-                  );
-                })}
-              </div>
-            ) : (
-              <div className="mt-5 rounded-md border border-dashed border-border-strong p-4">
-                <p className="text-sm font-semibold">No shock stages</p>
-                <p className="mt-2 text-sm leading-6 text-muted">
-                  Add a normal or oblique shock stage to begin the sequence.
-                </p>
-              </div>
-            )}
-          </section>
+            <ValidationErrorSummary errors={validationMessages} />
 
-          <ValidationErrorSummary errors={validationMessages} />
+            <div className="mt-7 flex flex-wrap items-center gap-x-5 gap-y-3">
+              <p className="min-w-0 flex-[1_1_16rem] text-sm leading-6 text-muted">
+                Valid sequence changes update cumulative recovery immediately.
+              </p>
+              <Button
+                className="shrink-0 whitespace-nowrap"
+                variant="secondary"
+                onClick={resetAnalyzer}
+              >
+                Reset inputs
+              </Button>
+            </div>
+          </form>
+        </div>
 
-          <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:items-center">
-            <p className="text-sm leading-6 text-muted">
-              Valid sequence changes update cumulative recovery immediately.
-            </p>
-            <Button
-              className="shrink-0 whitespace-nowrap sm:ml-auto"
-              variant="secondary"
-              onClick={resetAnalyzer}
-            >
-              <RotateCcw aria-hidden="true" size={16} />
-              Reset inputs
-            </Button>
-          </div>
-        </form>
-      </div>
-
-      <div className="space-y-5">
-        <CalculatorResultSection
-          eyebrow="Sequential compression"
-          icon={Layers}
-          id="multi-shock-recovery-result"
-          title="Multi-shock recovery"
-        >
-          {result ? (
-            <div className="space-y-6">
-              <section aria-labelledby="multi-shock-overall-title">
-                <h4
-                  className="text-sm font-semibold text-foreground"
-                  id="multi-shock-overall-title"
-                >
-                  Overall performance
-                </h4>
-                <dl className="mt-3 grid gap-4 sm:grid-cols-2">
-                  <div>
-                    <dt className="orbix-label">Number of shocks</dt>
-                    <dd className="mt-1">
-                      <output className="orbix-data" htmlFor={outputIds}>
-                        {result.numberOfShocks}
-                      </output>
-                    </dd>
-                  </div>
-                  <div>
-                    <dt className="orbix-label">Initial Mach</dt>
-                    <dd className="mt-1">
-                      <output className="orbix-data" htmlFor={outputIds}>
-                        {precisionFormatter.format(result.upstreamMach)}
-                      </output>
-                    </dd>
-                  </div>
+        <div className="@container/col min-w-0 space-y-5">
+          <CalculatorResultSection
+            id="multi-shock-recovery-result"
+            title="Multi-shock recovery"
+          >
+            {result ? (
+              <>
+                <ReadoutGrid columns={2} title="Overall performance">
                   <div>
                     <dt className="orbix-label">Final Mach</dt>
                     <dd className="mt-1">
-                      <output className="orbix-data-lg" htmlFor={outputIds}>
-                        {precisionFormatter.format(result.finalMach)}
+                      <output className="orbix-readout-lg" htmlFor={outputIds}>
+                        <LabFigure>
+                          {precisionFormatter.format(result.finalMach)}
+                        </LabFigure>
                       </output>
                     </dd>
                   </div>
@@ -577,168 +633,174 @@ export function MultiShockRecoveryAnalyzer() {
                       Total pressure recovery ratio
                     </dt>
                     <dd className="mt-1">
-                      <output className="orbix-data-lg" htmlFor={outputIds}>
-                        {precisionFormatter.format(
-                          result.totalPressureRecoveryRatio,
-                        )}
+                      <output className="orbix-readout-lg" htmlFor={outputIds}>
+                        <LabFigure>
+                          {precisionFormatter.format(
+                            result.totalPressureRecoveryRatio,
+                          )}
+                        </LabFigure>
                       </output>
                     </dd>
                   </div>
                   <div>
                     <dt className="orbix-label">Total pressure loss</dt>
                     <dd className="mt-1">
-                      <output className="orbix-data-lg" htmlFor={outputIds}>
-                        {percentageFormatter.format(
-                          result.totalPressureLossPercentage,
-                        )}
-                        %
+                      <output className="orbix-data" htmlFor={outputIds}>
+                        <LabFigure unit="%">
+                          {percentageFormatter.format(
+                            result.totalPressureLossPercentage,
+                          )}
+                        </LabFigure>
                       </output>
                     </dd>
                   </div>
-                </dl>
-              </section>
+                  <div>
+                    <dt className="orbix-label">Number of shocks</dt>
+                    <dd className="mt-1">
+                      <output className="orbix-data" htmlFor={outputIds}>
+                        <LabFigure>{result.numberOfShocks}</LabFigure>
+                      </output>
+                    </dd>
+                  </div>
+                  <div>
+                    <dt className="orbix-label">Initial Mach</dt>
+                    <dd className="mt-1">
+                      <output className="orbix-data" htmlFor={outputIds}>
+                        <LabFigure>
+                          {precisionFormatter.format(result.upstreamMach)}
+                        </LabFigure>
+                      </output>
+                    </dd>
+                  </div>
+                </ReadoutGrid>
 
-              <section
-                aria-labelledby="multi-shock-breakdown-title"
-                className="border-t border-border pt-5"
-              >
-                <h4
-                  className="text-sm font-semibold text-foreground"
-                  id="multi-shock-breakdown-title"
-                >
-                  Stage breakdown
-                </h4>
-                <ol className="mt-4 space-y-4">
-                  {result.shockResults.map((shock, index) => (
-                    <li
-                      className="rounded-md border border-border-subtle bg-surface-raised p-4"
-                      key={values.shocks[index]?.id ?? index}
-                    >
-                      <div className="flex items-center justify-between gap-4">
-                        <p className="text-sm font-semibold">
-                          Stage {index + 1}
-                        </p>
-                        <Tag>
-                          {shock.shockType === "normal" ? "Normal" : "Oblique"}
-                        </Tag>
-                      </div>
-                      <dl className="mt-4 grid gap-4 sm:grid-cols-2">
-                        <div>
-                          <dt className="orbix-label">Upstream Mach</dt>
-                          <dd className="mt-1">
-                            <output className="orbix-data" htmlFor={outputIds}>
-                              {precisionFormatter.format(shock.upstreamMach)}
-                            </output>
-                          </dd>
-                        </div>
-                        <div>
-                          <dt className="orbix-label">Downstream Mach</dt>
-                          <dd className="mt-1">
-                            <output className="orbix-data" htmlFor={outputIds}>
-                              {precisionFormatter.format(shock.downstreamMach)}
-                            </output>
-                          </dd>
-                        </div>
+                {result.shockResults.map((shock, index) => (
+                  <ReadoutGrid
+                    columns={2}
+                    key={values.shocks[index]?.id ?? index}
+                    title={`Stage ${index + 1}, ${shock.shockType} shock`}
+                  >
+                    <div>
+                      <dt className="orbix-label">Upstream Mach</dt>
+                      <dd className="mt-1">
+                        <output className="orbix-data" htmlFor={outputIds}>
+                          <LabFigure>
+                            {precisionFormatter.format(shock.upstreamMach)}
+                          </LabFigure>
+                        </output>
+                      </dd>
+                    </div>
+                    <div>
+                      <dt className="orbix-label">Downstream Mach</dt>
+                      <dd className="mt-1">
+                        <output className="orbix-data" htmlFor={outputIds}>
+                          <LabFigure>
+                            {precisionFormatter.format(shock.downstreamMach)}
+                          </LabFigure>
+                        </output>
+                      </dd>
+                    </div>
+                    <div>
+                      <dt className="orbix-label">Individual recovery ratio</dt>
+                      <dd className="mt-1">
+                        <output className="orbix-data" htmlFor={outputIds}>
+                          <LabFigure>
+                            {precisionFormatter.format(
+                              shock.pressureRecoveryRatio,
+                            )}
+                          </LabFigure>
+                        </output>
+                      </dd>
+                    </div>
+                    <div>
+                      <dt className="orbix-label">Cumulative recovery</dt>
+                      <dd className="mt-1">
+                        <output className="orbix-data" htmlFor={outputIds}>
+                          <LabFigure>
+                            {precisionFormatter.format(
+                              shock.cumulativeRecoveryRatio,
+                            )}
+                          </LabFigure>
+                        </output>
+                      </dd>
+                    </div>
+                    {shock.shockType === "oblique" ? (
+                      <>
                         <div>
                           <dt className="orbix-label">
-                            Individual recovery ratio
+                            Shock angle <LabSymbol>β</LabSymbol>
                           </dt>
                           <dd className="mt-1">
                             <output className="orbix-data" htmlFor={outputIds}>
-                              {precisionFormatter.format(
-                                shock.pressureRecoveryRatio,
-                              )}
+                              <LabFigure unit="°">
+                                {precisionFormatter.format(
+                                  shock.shockAngleDegrees,
+                                )}
+                              </LabFigure>
                             </output>
                           </dd>
                         </div>
                         <div>
-                          <dt className="orbix-label">Cumulative recovery</dt>
+                          <dt className="orbix-label">Normal Mach component</dt>
                           <dd className="mt-1">
                             <output className="orbix-data" htmlFor={outputIds}>
-                              {precisionFormatter.format(
-                                shock.cumulativeRecoveryRatio,
-                              )}
+                              <LabFigure>
+                                {precisionFormatter.format(
+                                  shock.normalMachComponent,
+                                )}
+                              </LabFigure>
                             </output>
                           </dd>
                         </div>
-                        {shock.shockType === "oblique" ? (
-                          <>
-                            <div>
-                              <dt className="orbix-label">Shock angle β</dt>
-                              <dd className="mt-1">
-                                <output
-                                  className="orbix-data"
-                                  htmlFor={outputIds}
-                                >
-                                  {precisionFormatter.format(
-                                    shock.shockAngleDegrees,
-                                  )}
-                                  °
-                                </output>
-                              </dd>
-                            </div>
-                            <div>
-                              <dt className="orbix-label">
-                                Normal Mach component
-                              </dt>
-                              <dd className="mt-1">
-                                <output
-                                  className="orbix-data"
-                                  htmlFor={outputIds}
-                                >
-                                  {precisionFormatter.format(
-                                    shock.normalMachComponent,
-                                  )}
-                                </output>
-                              </dd>
-                            </div>
-                          </>
-                        ) : null}
-                      </dl>
-                    </li>
-                  ))}
-                </ol>
-              </section>
+                      </>
+                    ) : null}
+                  </ReadoutGrid>
+                ))}
+              </>
+            ) : (
+              <NotCalculated invalid={validationMessages.some(Boolean)}>
+                Configure a physically valid ordered shock sequence to restore
+                the live recovery analysis.
+              </NotCalculated>
+            )}
+          </CalculatorResultSection>
+        </div>
+
+        <div className="@container/col min-w-0 space-y-5">
+          <section className="border-t border-border pt-3">
+            <h3 className="text-sm font-semibold">
+              Staged compression context
+            </h3>
+            <div className="mt-3 space-y-2 text-sm leading-6 text-muted">
+              <p>
+                Multiple weak shocks can reduce total-pressure loss compared
+                with one strong normal shock. Supersonic inlets use staged
+                compression to distribute the flow turning across successive
+                shocks.
+              </p>
+              <p>
+                Every shock increases entropy and therefore reduces total
+                pressure, so cumulative recovery decreases through the sequence.
+              </p>
             </div>
-          ) : (
-            <NotCalculated invalid={validationMessages.some(Boolean)}>
-              Configure a physically valid ordered shock sequence to restore the
-              live recovery analysis.
-            </NotCalculated>
-          )}
-        </CalculatorResultSection>
+          </section>
 
-        <section className="rounded-md border border-border bg-surface p-4 sm:p-6">
-          <h3 className="text-sm font-semibold">Staged compression context</h3>
-          <div className="mt-3 space-y-2 text-sm leading-6 text-muted">
-            <p>
-              Multiple weak shocks can reduce total-pressure loss compared with
-              one strong normal shock. Supersonic inlets use staged compression
-              to distribute the flow turning across successive shocks.
+          <aside className="orbix-lab-note">
+            <p className="orbix-lab-note__title font-medium">
+              Engineering assumptions
             </p>
-            <p>
-              Every shock increases entropy and therefore reduces total
-              pressure, so cumulative recovery decreases through the sequence.
-            </p>
-          </div>
-        </section>
-
-        <aside className="orbix-lab-note">
-          <p className="orbix-lab-note__title">
-            <AlertTriangle aria-hidden="true" size={17} />
-            Engineering assumptions
-          </p>
-          <ul className="mt-4 grid list-disc gap-2 pl-5 text-sm leading-6 text-muted sm:grid-cols-2">
-            <li>Perfect gas approximation</li>
-            <li>Constant gamma = 1.4</li>
-            <li>Inviscid flow</li>
-            <li>Adiabatic flow</li>
-            <li>No boundary layer losses</li>
-            <li>No heat transfer</li>
-            <li>Weak attached oblique shocks only</li>
-          </ul>
-        </aside>
+            <ul className="mt-4 grid list-disc gap-2 pl-5 text-sm leading-6 text-muted @min-[36rem]/col:grid-cols-2">
+              <li>Perfect gas approximation</li>
+              <li>Constant gamma = 1.4</li>
+              <li>Inviscid flow</li>
+              <li>Adiabatic flow</li>
+              <li>No boundary layer losses</li>
+              <li>No heat transfer</li>
+              <li>Weak attached oblique shocks only</li>
+            </ul>
+          </aside>
+        </div>
       </div>
-    </div>
+    </LabToolLayout>
   );
 }

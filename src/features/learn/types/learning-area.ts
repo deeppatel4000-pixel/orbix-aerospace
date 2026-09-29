@@ -21,12 +21,34 @@ export interface LearnExplorationLink {
 }
 
 /**
+ * One symbol in an equation's variables legend. `symbol` may use `_x` for a
+ * subscript ("C_L", "I_sp"). `unit` is omitted only for dimensionless
+ * quantities, because the legend reads a missing unit that way.
+ */
+export interface LearnEquationVariable {
+  readonly meaning: string;
+  readonly symbol: string;
+  readonly unit?: string;
+}
+
+/**
  * One key idea: a plain-language statement, optionally with the governing
- * relation written as a short equation (rendered in the mono face).
+ * relation written as a short equation. An idea with an equation is shown
+ * as an `EquationBlock`, so it also names the relation (`equationLabel`),
+ * says how a screen reader should read it (`spokenAs`), and defines every
+ * symbol it uses (`variables`).
  */
 export interface LearnKeyIdea {
+  /**
+   * The relation, with `_x` for subscripts and ` · ` between multiplied
+   * terms, as on /engineering-lab. A `\n` separates relations set on
+   * their own lines.
+   */
   readonly equation?: string;
+  readonly equationLabel?: string;
+  readonly spokenAs?: string;
   readonly text: string;
+  readonly variables?: readonly LearnEquationVariable[];
 }
 
 /**

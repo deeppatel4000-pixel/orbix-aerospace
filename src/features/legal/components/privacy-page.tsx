@@ -7,6 +7,8 @@ import {
   type LegalTocItem,
 } from "@/features/legal/components/legal-page";
 import { LegalSection } from "@/features/legal/components/legal-section";
+import { StorageKey } from "@/features/legal/components/storage-key";
+import { withoutFinalStop } from "@/features/legal/lib/without-final-stop";
 import { SCENARIO_LIBRARY_STORAGE_KEY } from "@/features/engineering-lab/missions/scenario-library";
 
 const toc: readonly LegalTocItem[] = [
@@ -30,9 +32,10 @@ const usesGmail = siteLegal.contactEmail.toLowerCase().endsWith("@gmail.com");
 export function PrivacyPage() {
   return (
     <LegalPage
-      crumb="Privacy"
+      eyebrow="Policies"
       lead="What information ORBIX handles, where it goes, and how to remove it. The short version: ORBIX itself collects nothing about you."
-      title="Privacy policy"
+      title="Privacy"
+      titleAccent="policy"
       toc={toc}
     >
       <LegalSection id="summary" title="Summary">
@@ -80,8 +83,8 @@ export function PrivacyPage() {
             The numbers you type are not sent to any server.
           </li>
           <li>
-            Fonts (IBM Plex Sans and IBM Plex Mono) and images are served from
-            the ORBIX site itself, so loading a page does not contact a font or
+            Fonts (IBM Plex Sans and B612 Mono) and images are served from the
+            ORBIX site itself, so loading a page does not contact a font or
             image service run by someone else.
           </li>
         </ul>
@@ -89,12 +92,12 @@ export function PrivacyPage() {
 
       <LegalSection id="hosting" title="What the host processes">
         <p>
-          ORBIX is hosted by {siteLegal.hostName}. Like any web server, Vercel
-          automatically receives technical information with each request your
-          browser makes, including your IP address, browser and operating system
-          (the user agent), the page requested, the referring page, and the date
-          and time. Vercel uses this to deliver pages, cache them, and protect
-          the site against abuse and attacks.
+          ORBIX is hosted by {withoutFinalStop(siteLegal.hostName)}. Like any
+          web server, Vercel automatically receives technical information with
+          each request your browser makes, including your IP address, browser
+          and operating system (the user agent), the page requested, the
+          referring page, and the date and time. Vercel uses this to deliver
+          pages, cache them, and protect the site against abuse and attacks.
         </p>
         <p>
           ORBIX does not add anything to these logs and does not use them to
@@ -110,8 +113,8 @@ export function PrivacyPage() {
           <Link href="/engineering-lab#scenario-library">Engineering Lab</Link>{" "}
           lets you save mission scenarios for later. When you press save, the
           scenario is written to your browser&apos;s local storage under the key{" "}
-          <code>{SCENARIO_LIBRARY_STORAGE_KEY}</code>. Each saved scenario
-          holds:
+          <StorageKey value={SCENARIO_LIBRARY_STORAGE_KEY} />. Each saved
+          scenario holds:
         </p>
         <ul>
           <li>the scenario name and description you entered;</li>

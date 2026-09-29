@@ -2,6 +2,8 @@
 
 import { useRef, type KeyboardEvent } from "react";
 
+import { cn } from "@/lib/cn";
+
 export type MissionControlWorkspaceView =
   | "briefing"
   | "design-review"
@@ -22,6 +24,10 @@ export interface MissionControlWorkspaceDefinition {
   readonly label: string;
 }
 
+/**
+ * Listed in the order the tabs are drawn (group by group), so arrow-key
+ * focus order matches the visual order.
+ */
 export const MISSION_CONTROL_WORKSPACES: readonly MissionControlWorkspaceDefinition[] =
   [
     {
@@ -55,24 +61,24 @@ export const MISSION_CONTROL_WORKSPACES: readonly MissionControlWorkspaceDefinit
       label: "Design review",
     },
     {
-      accessibleLabel: "Replay",
-      id: "replay",
-      label: "Replay",
-    },
-    {
       accessibleLabel: "Insights",
       id: "insights",
       label: "Insights",
     },
     {
-      accessibleLabel: "Briefing",
-      id: "briefing",
-      label: "Briefing",
-    },
-    {
       accessibleLabel: "Trade study",
       id: "trade-study",
       label: "Trade study",
+    },
+    {
+      accessibleLabel: "Replay",
+      id: "replay",
+      label: "Replay",
+    },
+    {
+      accessibleLabel: "Briefing",
+      id: "briefing",
+      label: "Briefing",
     },
     {
       accessibleLabel: "Showcase",
@@ -181,31 +187,45 @@ export function MissionControlSidebar({
   }
 
   return (
-    <aside
-      aria-labelledby="mission-control-navigation-title"
-      className="min-w-0 border-b border-border-subtle py-4 xl:border-b-0 xl:pr-4"
-    >
-      <h4
-        className="text-sm font-semibold text-foreground"
-        id="mission-control-navigation-title"
-      >
-        Mission workspaces
-      </h4>
+    <div className="min-w-0 border-b border-border-subtle py-4">
+      <div className="flex flex-col gap-1 sm:flex-row sm:items-baseline sm:justify-between">
+        <h4
+          className="text-[0.9375rem] leading-6 font-semibold text-foreground"
+          id="mission-control-navigation-title"
+        >
+          Mission workspaces
+        </h4>
+        <p className="text-sm text-muted">
+          Arrow keys move between workspaces; Home and End jump to the ends.
+        </p>
+      </div>
 
       <nav aria-label="Mission control sections" className="mt-3">
+        {/* Square segmented controls, one per group, above the workspace
+         * so the content keeps the full tool column. From 48rem the four
+         * groups sit on a fixed two-column grid, so both rows line up; a
+         * group too wide for its cell wraps its own segments, and each
+         * segment grows so a wrapped row leaves no gap. */}
         <div
           aria-label="Mission systems workspaces"
-          aria-orientation="vertical"
-          className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-1"
+          aria-orientation="horizontal"
+          className="grid gap-x-5 gap-y-4 md:grid-cols-2"
           role="tablist"
         >
           {MISSION_CONTROL_WORKSPACE_GROUPS.map((group) => (
-            <div className="min-w-0" key={group.id} role="presentation">
-              <p aria-hidden="true" className="orbix-caps mb-1 text-muted">
+            <div
+              className="flex max-w-full min-w-0 flex-col gap-1.5"
+              key={group.id}
+              role="presentation"
+            >
+              <p aria-hidden="true" className="orbix-caps text-muted">
                 {group.label}
               </p>
 
-              <div className="grid gap-0.5" role="presentation">
+              <div
+                className="flex w-full flex-wrap gap-px overflow-hidden rounded border border-border-control bg-border-control"
+                role="presentation"
+              >
                 {group.workspaceIds.map((workspaceId) => {
                   const index = workspaceIndexById.get(workspaceId);
                   const workspace =
@@ -222,11 +242,12 @@ export function MissionControlSidebar({
                       aria-controls={workspacePanelId}
                       aria-label={workspace.accessibleLabel}
                       aria-selected={isActive}
-                      className={
+                      className={cn(
+                        "inline-flex min-h-11 grow items-center justify-center px-3.5 text-sm whitespace-nowrap transition-colors focus-visible:outline-offset-[-3px]",
                         isActive
-                          ? "flex min-h-10 items-center border-l-2 border-accent bg-accent/12 px-3 py-2 text-left text-sm font-medium text-foreground"
-                          : "flex min-h-10 items-center border-l-2 border-transparent px-3 py-2 text-left text-sm text-text-secondary transition-colors duration-150 hover:border-border-strong hover:text-foreground"
-                      }
+                          ? "bg-accent font-medium text-on-accent"
+                          : "bg-background text-text-secondary hover:bg-surface-raised hover:text-foreground",
+                      )}
                       id={`mission-workspace-${workspace.id}-tab`}
                       key={workspace.id}
                       onClick={() => onWorkspaceChange(workspace.id)}
@@ -247,11 +268,6 @@ export function MissionControlSidebar({
           ))}
         </div>
       </nav>
-
-      <p className="mt-4 border-t border-border-subtle pt-3 text-sm leading-5 text-muted">
-        Arrow keys move between workspaces. Home and End jump to the first or
-        last.
-      </p>
-    </aside>
+    </div>
   );
 }

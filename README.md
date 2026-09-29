@@ -1,110 +1,100 @@
 # ORBIX
 
-ORBIX is an educational web application about aerospace engineering. It lets you browse U.S.
-aircraft and launch vehicles, compare vehicles in the same category, and work through simplified
-calculations for orbital transfers, delta-v budgets, plane changes, atmospheric reentry, and
-thermal protection. Results can be reviewed side by side and exported as reports.
+An educational website about aircraft, launch vehicles and the engineering behind them.
 
-## Educational use
+**Live site:** [orbix-aerospace.vercel.app](https://orbix-aerospace.vercel.app)
 
-ORBIX uses simplified, textbook-level models for learning. It is not intended for operational
-mission planning, flight certification, or any safety-critical engineering decision, and its
-results should not be relied on for those purposes. Vehicle figures come from published, public
-sources and may be approximate or out of date.
+**Created by Deep Patel.** Read [how I built ORBIX](https://orbix-aerospace.vercel.app/build-log).
 
-## What the app does
+ORBIX has sourced records of 10 U.S. vehicles (5 military aircraft and 5 launch vehicles), each
+with a credited photograph. You can compare up to three aircraft, or up to three launch vehicles,
+side by side. The Engineering Lab has 33 modules, from the rocket equation and the lift equation to
+shock waves, atmospheric entry heating and orbital transfers. The calculators show their equation,
+inputs and units, and the analyzers state their assumptions. A verification page runs the same calculations against published textbook
+and reference values and shows every difference.
 
-The codebase keeps equations independent of React. Pure TypeScript calculators hold the physics,
-analysis modules combine those calculators into workflows, and the presentation layer only
-collects inputs or renders completed results.
+![ORBIX home page on a desktop browser, with the ORBIX logo, the heading "Aerospace engineering, explained with real vehicles." and a NASA photograph of the SR-71 Blackbird over mountains](docs/assets/screenshots/home.png)
 
-The aim is to show how the pieces of a mission analysis connect: a scenario can be configured,
-analysed, visualised, and reviewed, with the assumptions and limitations stated beside each result.
+## Features
 
-### Main areas
-
-- **Aircraft and rocket explorers:** typed profiles of U.S. aircraft and launch vehicles, with
-  same-category comparison.
-- **Orbital transfer analysis:** circular-orbit properties, vis-viva, escape velocity, and Hohmann
-  transfers.
-- **Delta-v budgeting:** ordered maneuver budgets with per-maneuver contributions and the source
-  analyses kept alongside.
-- **Plane change analysis:** inclination changes and combined transfer and plane-change sequences.
-- **Reentry analysis:** atmosphere, aerodynamics, Mach, shock, deceleration, trajectory, and
-  thermal history.
-- **Thermal protection:** simplified TPS sizing, material selection, and material comparison.
-- **Mission reports:** structured reports with JSON and Markdown export.
-- **Mission control, replay, and showcase views:** presentation of completed analysis results,
-  including an illustrative ground-track view that is labelled as such.
-- **Design review and trade studies:** side-by-side review of completed scenarios, without
-  artificial feasibility scores.
-- **Scenario library and demo mode:** preset educational scenarios and a guided walkthrough.
+- **Aircraft and launch vehicle records:** F-22 Raptor, F-35 Lightning II, SR-71 Blackbird, B-2
+  Spirit and F-15 Eagle; Falcon 9, Falcon Heavy, Saturn V, Space Launch System and Starship.
+  Values are kept in their published units, with qualifiers such as "approximate" beside them.
+- **Compare:** two or three vehicles of the same kind in one table. It does not score vehicles or
+  pick a winner, and a value missing from the dataset reads "Not published" instead of zero.
+- **Engineering Lab:** 33 modules in six groups: foundations, compressible flow, atmospheric entry,
+  orbits and missions, mission visualization, and scenarios and review.
+- **Verification:** Engineering Lab results next to values from published sources such as the U.S.
+  Standard Atmosphere, 1976 and the compressible flow tables of NACA Report 1135, with a rounding check on each row.
+- **Learn:** six reading pathways on the engineering behind the calculators, each linked to the tools
+  that apply it and to published references.
+- **Scenario library:** preset mission scenarios, plus custom scenarios saved in your own browser.
 
 ## Screenshots
 
-Screenshots have not been captured yet. When they are, they will be stored under
-[`docs/assets/screenshots`](docs/assets/screenshots/README.md) and linked here.
+| SR-71 Blackbird profile                                                                                                                                                                                                                                        | Three aircraft compared                                                                                                                                                     |
+| -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| ![SR-71 Blackbird profile page scrolled to its record: title and description over a NASA photograph, maximum speed, service ceiling, range and first flight, the section navigation and the start of the overview](docs/assets/screenshots/aircraft-sr-71.png) | ![Spec sheet comparing the SR-71 Blackbird, F-22 Raptor and F-15 Eagle: manufacturers, first flights, dimensions and weights](docs/assets/screenshots/compare-aircraft.png) |
 
-## Architecture
+| How I built ORBIX                                                                                                | Home on a phone                                                                               | SR-71 profile on a phone                                                                                                                                                       |
+| ---------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| ![The How I built ORBIX page, starting with why I made ORBIX and my role](docs/assets/screenshots/build-log.png) | ![ORBIX home page at phone width with a menu button](docs/assets/screenshots/home-mobile.png) | ![SR-71 Blackbird profile at phone width, scrolled past the photograph to the title, record figures and section navigation](docs/assets/screenshots/aircraft-sr-71-mobile.png) |
 
-```text
-Mission inputs
-      ↓
-Engineering analysis
-      ↓
-Mission reports
-      ↓
-Visualisation
-      ↓
-Presentation
-```
+| Rocket equation calculator                                                                                                                                                                                | Verification against published values                                                                                                                                                            |
+| --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| ![Tsiolkovsky rocket equation calculator with 100,000 kg initial mass, 40,000 kg final mass and 300 s specific impulse, giving 2,695.72 m/s](docs/assets/screenshots/engineering-lab-rocket-equation.png) | ![Verification table for orbital speed from the vis-viva equation, comparing three ORBIX results with published worked examples, each within rounding](docs/assets/screenshots/verification.png) |
 
-- `src/features/engineering-lab/calculators` contains pure, reusable engineering equations.
-- `src/features/engineering-lab/analysis` combines calculators into higher-level workflows.
-- `src/features/engineering-lab/materials`, `missions`, and `reports` contain typed domain data and
-  transformations.
-- `src/features/engineering-lab/components` handles interaction and presentation.
-- `src/features/vehicles` holds shared vehicle contracts and repository data.
-- `src/app` contains thin App Router composition and metadata.
+Capture details are in [`docs/assets/screenshots/README.md`](docs/assets/screenshots/README.md).
 
-React Server Components are the default. Client components are limited to interactive forms and
-presentation state. See the [architecture guide](docs/architecture.md) for conventions.
+## How the engineering is checked
 
-## Technology
+The [verification page](https://orbix-aerospace.vercel.app/verification) calls the same functions
+the Engineering Lab uses, with the inputs of a published table or worked example, and prints the
+ORBIX result beside the published value. It shows the percentage difference and whether ORBIX is
+within the rounding of the printed figure. Rows that fall outside are left as they are, with a note
+explaining the reason where it is known. Every calculator module also has its own unit tests.
 
-- Next.js 16 with the App Router
-- React 19
-- TypeScript 5
-- Tailwind CSS 4
-- Lucide icons
-- Vitest and Playwright
+## My role and use of AI
+
+ORBIX was my idea. I chose what it should contain, researched the vehicle specifications and the
+engineering behind every tool, and made the design and content decisions. I am an aspiring
+aerospace engineer, not a software engineer, so I used AI coding assistants to write the software
+under my direction: Codex by OpenAI for the first version, then Claude Code by Anthropic. Commits
+made with Claude Code are marked as co-authored by it in the git history. The full account is on
+the [build log](https://orbix-aerospace.vercel.app/build-log).
+
+## Tech stack
+
+- Next.js 16 (App Router), React 19, TypeScript 5
+- Tailwind CSS 4, Lucide icons
+- Vitest for unit tests, Playwright for browser tests
 - ESLint and Prettier
-- GitHub Actions
+- GitHub Actions, hosted on Vercel
 
-Visualisations use native SVG, CSS, and React state; there is no external 3D or charting library.
+Diagrams and visualisations use SVG, CSS and React state. There is no 3D or charting library.
 
-## Engineering principles
+### Architecture
 
-- **Feature boundaries:** each domain lives in its own feature folder.
-- **Physics separate from presentation:** React components do not contain or duplicate equations.
-- **Typed contracts:** explicit TypeScript inputs and outputs with SI units.
-- **Tests:** calculators, analyses, domain modules, and components have unit tests.
-- **Stated limits:** assumptions and limitations are shown wherever a simplified model is used.
+The equations are kept separate from the interface:
 
-## Live site
+- `src/features/engineering-lab/calculators`: pure TypeScript functions, one equation each, with
+  SI units and input validation.
+- `src/features/engineering-lab/analysis`: studies that combine calculators, such as a delta-v
+  budget or a vehicle reentry evaluation.
+- `src/features/engineering-lab/materials`, `missions` and `reports`: typed data and
+  transformations. The report module can serialise a mission report to JSON or Markdown.
+- `src/features/engineering-lab/components`: React components that collect inputs and display
+  results. They do not contain equations.
+- `src/features/vehicles`: vehicle types and data.
+- `src/app`: App Router pages and metadata.
 
-[https://orbix-aerospace.vercel.app](https://orbix-aerospace.vercel.app)
-
-The site needs no account, API keys, or server-side data services. It has no sign-up and no
-analytics code. Custom scenarios saved in the scenario library stay in your browser's local
-storage and are not sent to a server. The hosting provider may keep standard request logs.
+React Server Components are the default; client components are used only for interactive forms and
+presentation state. See the [architecture guide](docs/architecture.md) and the site's
+[project notes](https://orbix-aerospace.vercel.app/showcase).
 
 ## Running locally
 
-Requirements:
-
-- Node.js 20.9 or newer (Node.js 22 LTS recommended)
-- npm 10 or newer
+Requirements: Node.js 20.9 or newer (CI uses Node.js 22) and npm (bundled with Node.js).
 
 ```bash
 git clone https://github.com/deeppatel4000-pixel/orbix-aerospace.git
@@ -113,7 +103,8 @@ npm install
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000).
+Open [http://localhost:3000](http://localhost:3000). ORBIX needs no environment variables, accounts
+or API keys.
 
 Production build:
 
@@ -122,45 +113,32 @@ npm run build
 npm start
 ```
 
-ORBIX needs no environment variables. If configuration is added later, list public variable names
-in `.env.example` and keep secrets out of source control.
-
-## Testing
+## Tests
 
 ```bash
-npm test
-npm run format:check
+npm test               # unit and component tests (Vitest)
 npm run lint
 npm run typecheck
-npm run build
+npm run format:check
+npm run validate       # all of the above, the design check and a production build
 ```
 
-Run the full CI-equivalent pipeline with:
+GitHub Actions runs `npm run validate` on pull requests and on pushes to `main`. A separate
+Playwright suite (`npm run test:e2e`) covers behaviour that needs a real browser; see
+[`docs/testing/browser-testing.md`](docs/testing/browser-testing.md).
 
-```bash
-npm run validate
-```
+## Educational use
 
-GitHub Actions runs the same command on pushes and pull requests.
+ORBIX uses simplified, textbook-level models for learning. It is not intended for operational
+mission planning, flight certification or any safety-critical engineering decision, and its results
+should not be relied on for those purposes. Vehicle figures come from published public sources and
+may be approximate or out of date.
 
-A separate Playwright suite (`npm run test:e2e`) covers behaviour that only a real browser can
-check. See [`docs/testing/browser-testing.md`](docs/testing/browser-testing.md) for what it covers
-and how to run it.
+## Privacy
 
-## Project status
-
-ORBIX is an active personal educational project. It prioritises clear architecture, stated
-assumptions, and learning value over operational fidelity. It makes no claim about certified
-vehicle performance or mission feasibility.
-
-## Roadmap
-
-- Capture real screenshots and add short walkthroughs.
-- Add reusable time-history plots for trajectory and thermal data.
-- Improve orbital and ground-track rendering using validated public source data.
-- Extend sourced aircraft, launch-vehicle, and TPS educational data.
-- Add propulsion, power, and communications learning modules.
-- Extend atmosphere and trajectory models behind new tested calculator modules.
+The site has no sign-up and no analytics code. Custom scenarios saved in the scenario library stay
+in your browser's local storage and are not sent to a server. The hosting provider may keep
+standard request logs.
 
 ## Contributing
 

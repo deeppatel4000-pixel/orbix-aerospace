@@ -1,9 +1,15 @@
+import type { ReactNode } from "react";
+
 import type { MissionScenario } from "@/features/engineering-lab/missions";
 import type {
   MissionProfileAnalysis,
   MissionReport,
 } from "@/features/engineering-lab/types";
+import { DataTable, type DataTableColumn } from "@/components/ui/data-table";
+import { formatFigure } from "@/components/ui/readout";
+
 import { formatLabValue } from "../visualization/format-lab-value";
+import { LabHeading } from "../visualization/lab-heading";
 
 export interface MissionTradeStudyEntry {
   readonly analysis?: MissionProfileAnalysis;
@@ -69,11 +75,6 @@ function getScenarioMetrics({
   };
 }
 
-function displayMetric(value: number | string | undefined) {
-  const displayed = typeof value === "number" ? formatLabValue(value) : value;
-  return displayed === undefined ? "Not reported" : displayed;
-}
-
 const NUMERIC_COLUMNS = [
   { key: "deltaVMetresPerSecond", label: "Delta-v", unit: "m/s" },
   { key: "transferDurationHours", label: "Transfer duration", unit: "h" },
@@ -135,98 +136,161 @@ export function buildTradeStudyExplanations(
   return explanations;
 }
 
-function NumberCell({ value }: { readonly value?: number }) {
-  return (
-    <td
-      className={
-        value === undefined ? "text-right text-muted" : "orbix-data text-right"
-      }
-    >
-      {displayMetric(value)}
-    </td>
-  );
+/** One metric of the transposed table: a row, with one cell per mission. */
+interface TradeStudyMetricRow {
+  readonly key: string;
+  readonly label: string;
+  readonly numeric: boolean;
+  readonly unit?: string;
+  readonly value: (metrics: ScenarioMetrics) => number | string | undefined;
 }
 
-function TextCell({ value }: { readonly value?: string }) {
-  return (
-    <td className={value === undefined ? "text-muted" : undefined}>
-      {displayMetric(value)}
-    </td>
-  );
+const METRIC_ROWS: readonly TradeStudyMetricRow[] = [
+  ...NUMERIC_COLUMNS.map((column): TradeStudyMetricRow => ({
+    key: column.key,
+    label: column.label,
+    numeric: true,
+    unit: "unit" in column ? column.unit : undefined,
+    value: (metrics) => metrics[column.key],
+  })),
+  {
+    key: "vehicle",
+    label: "Vehicle",
+    numeric: false,
+    value: (metrics) => metrics.vehicleName,
+  },
+  {
+    key: "peak-deceleration",
+    label: "Peak deceleration",
+    numeric: true,
+    unit: "g",
+    value: (metrics) => metrics.peakDecelerationGs,
+  },
+  {
+    key: "reentry-duration",
+    label: "Reentry duration",
+    numeric: true,
+    unit: "s",
+    value: (metrics) => metrics.reentryDurationSeconds,
+  },
+  {
+    key: "tps-material",
+    label: "TPS material",
+    numeric: false,
+    value: (metrics) => metrics.tpsMaterial,
+  },
+  {
+    key: "tps-mass",
+    label: "TPS mass",
+    numeric: true,
+    unit: "kg",
+    value: (metrics) => metrics.tpsMassKilograms,
+  },
+  {
+    key: "tps-thickness",
+    label: "Thickness",
+    numeric: true,
+    unit: "mm",
+    value: (metrics) => metrics.tpsThicknessMillimetres,
+  },
+  {
+    key: "thermal-margin",
+    label: "Thermal margin",
+    numeric: false,
+    value: (metrics) => metrics.thermalMargin,
+  },
+];
+
+/**
+ * A plain function, not a component: `DataTable` only formats figures in
+ * strings and plain elements, and leaves components alone. Every cell in a
+ * mission column shares one right edge (spec 8: figures right-aligned);
+ * figures are set in B612 Mono with tabular numbers, and a missing value
+ * reads "Not reported" in muted text. The columns are not marked `numeric`
+ * because some rows (vehicle, material, margin) hold words that should wrap
+ * in the interface face.
+ */
+function metricCell(
+  row: TradeStudyMetricRow,
+  metrics: ScenarioMetrics,
+): ReactNode {
+  const value = row.value(metrics);
+  if (value === undefined) {
+    return (
+      <span className="block text-right leading-5 text-muted">
+        Not reported
+      </span>
+    );
+  }
+  if (typeof value === "number") {
+    return (
+      <span className="orbix-data block text-right leading-5 whitespace-nowrap tabular-nums">
+        {formatFigure(formatLabValue(value))}
+      </span>
+    );
+  }
+  return <span className="block text-right leading-5">{value}</span>;
 }
 
 export function TradeStudyMetrics({ entries }: TradeStudyMetricsProps) {
-  const rows = entries.map((entry) => ({
+  // Transposed: metrics down the side, one column per mission, so three
+  // missions fit the tool column without clipping or wrapping.
+  const missions = entries.map((entry) => ({
     entry,
     metrics: getScenarioMetrics(entry),
   }));
+  const columns: readonly DataTableColumn<TradeStudyMetricRow>[] = [
+    {
+      cell: (row) => (
+        <span className="block min-w-[8rem] leading-5">
+          {row.label}
+          {row.unit ? (
+            <span className="orbix-table-unit">{` (${row.unit})`}</span>
+          ) : null}
+        </span>
+      ),
+      header: (
+        <span className="[font-family:var(--font-interface)] text-[0.8125rem] font-medium tracking-normal text-text-secondary normal-case">
+          Metric
+        </span>
+      ),
+      key: "metric",
+    },
+    ...missions.map(
+      ({ entry, metrics }): DataTableColumn<TradeStudyMetricRow> => ({
+        cell: (row) => metricCell(row, metrics),
+        // Mission names are long; let them wrap in the header instead of
+        // widening the column past the tool width.
+        header: (
+          // Sentence-case sans 500 heads (spec 8); B612 is kept for
+          // the figures in the cells.
+          <span className="block min-w-[7rem] text-right [font-family:var(--font-interface)] text-[0.8125rem] font-medium tracking-normal whitespace-normal text-text-secondary normal-case">
+            {entry.scenario.name}
+          </span>
+        ),
+        key: entry.scenario.id,
+      }),
+    ),
+  ];
 
   return (
     <section aria-labelledby="trade-study-metrics-title">
-      <h4 className="orbix-h4 text-foreground" id="trade-study-metrics-title">
+      <LabHeading offset={1} id="trade-study-metrics-title">
         Mission comparison metrics
-      </h4>
-      <p className="mt-1 text-sm leading-6 text-muted">
-        Values as supplied by each completed analysis. The table scrolls
-        sideways on narrow screens.
+      </LabHeading>
+      <p className="mt-1 max-w-[60ch] text-sm leading-6 text-pretty text-muted">
+        Values as supplied by each completed analysis, one column per mission in
+        scenario order, not ranked.
       </p>
-
-      <div
-        aria-label="Scrollable mission comparison table"
-        className="orbix-table-wrap mt-3"
-        role="region"
-        tabIndex={0}
-      >
-        <table className="orbix-table">
-          <caption className="sr-only">
-            Existing orbital, vehicle, and thermal outputs for each mission
-            scenario; no ranking or feasibility result is provided.
-          </caption>
-          <thead>
-            <tr>
-              <th scope="col">Mission</th>
-              {NUMERIC_COLUMNS.map((column) => (
-                <th className="text-right" key={column.key} scope="col">
-                  {column.label}
-                  {"unit" in column ? ` (${column.unit})` : ""}
-                </th>
-              ))}
-              <th scope="col">Vehicle</th>
-              <th className="text-right" scope="col">
-                Peak deceleration (g)
-              </th>
-              <th className="text-right" scope="col">
-                Reentry duration (s)
-              </th>
-              <th scope="col">TPS material</th>
-              <th className="text-right" scope="col">
-                TPS mass (kg)
-              </th>
-              <th className="text-right" scope="col">
-                Thickness (mm)
-              </th>
-              <th scope="col">Thermal margin</th>
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map(({ entry, metrics }) => (
-              <tr key={entry.scenario.id}>
-                <th scope="row">{entry.scenario.name}</th>
-                {NUMERIC_COLUMNS.map((column) => (
-                  <NumberCell key={column.key} value={metrics[column.key]} />
-                ))}
-                <TextCell value={metrics.vehicleName} />
-                <NumberCell value={metrics.peakDecelerationGs} />
-                <NumberCell value={metrics.reentryDurationSeconds} />
-                <TextCell value={metrics.tpsMaterial} />
-                <NumberCell value={metrics.tpsMassKilograms} />
-                <NumberCell value={metrics.tpsThicknessMillimetres} />
-                <TextCell value={metrics.thermalMargin} />
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+      <DataTable
+        caption="Metrics by mission"
+        // Mono figures and sans words share one 20px line and a baseline,
+        // so a figure never sits above the label in its row.
+        className="mt-3 [&_tbody_:is(th,td)]:align-baseline"
+        columns={columns}
+        getRowKey={(row) => row.key}
+        rows={METRIC_ROWS}
+      />
     </section>
   );
 }

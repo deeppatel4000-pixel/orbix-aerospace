@@ -14,6 +14,7 @@ export const navigationItems = [
  */
 export const legalNavigationItems = [
   { href: "/about", label: "About" },
+  { href: "/build-log", label: "How I built ORBIX" },
   { href: "/credits", label: "Image credits" },
   { href: "/privacy", label: "Privacy" },
   { href: "/terms", label: "Terms" },

@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest";
 
-import { formatLabValue } from "./format-lab-value";
+import {
+  altitudeReadout,
+  formatLabAltitude,
+  formatLabValue,
+} from "./format-lab-value";
 
 describe("formatLabValue", () => {
   it("keeps small non-zero values visible", () => {
@@ -13,5 +17,21 @@ describe("formatLabValue", () => {
     expect(formatLabValue(0)).toBe("0");
     expect(formatLabValue(1234.567)).toBe("1,234.57");
     expect(formatLabValue(3)).toBe("3");
+  });
+});
+
+describe("altitude readouts", () => {
+  it("reports altitudes of 1 km or more in kilometres", () => {
+    expect(altitudeReadout(408_000)).toEqual({ unit: "km", value: 408 });
+    expect(formatLabAltitude(200_000)).toBe("200 km");
+    expect(formatLabAltitude(35_786_000)).toBe("35,786 km");
+  });
+
+  it("keeps metres below 1 km and passes undefined through", () => {
+    expect(formatLabAltitude(850)).toBe("850 m");
+    expect(altitudeReadout(undefined)).toEqual({
+      unit: "m",
+      value: undefined,
+    });
   });
 });

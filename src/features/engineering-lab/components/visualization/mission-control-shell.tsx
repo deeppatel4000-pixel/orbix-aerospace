@@ -14,11 +14,12 @@ import {
   MissionControlSidebar,
   type MissionControlWorkspaceView,
 } from "./mission-control-sidebar";
-import { MissionControlStatusBar } from "./mission-control-status-bar";
 
 export interface MissionControlShellProps {
   readonly activeWorkspace: MissionControlWorkspaceView;
   readonly children: ReactNode;
+  /** Rendered at the foot of the mission header: the supplied checks. */
+  readonly checks?: ReactNode;
   readonly missionCategory?: MissionPresetCategory;
   readonly missionPreset?: MissionPreset;
   readonly missionProfileAnalysis?: MissionProfileAnalysis | null;
@@ -29,13 +30,13 @@ export interface MissionControlShellProps {
 
 export function MissionControlShell({
   activeWorkspace,
+  checks,
   children,
   missionCategory,
   missionPreset,
   missionProfileAnalysis,
   missionReport,
   onWorkspaceChange,
-  vehicleReentryEvaluation,
 }: MissionControlShellProps) {
   const currentWorkspace =
     MISSION_CONTROL_WORKSPACES.find(
@@ -54,26 +55,20 @@ export function MissionControlShell({
         missionPreset={missionPreset}
         missionProfileAnalysis={missionProfileAnalysis}
         missionReport={missionReport}
-      />
+      >
+        {checks}
+      </MissionControlHeader>
 
-      <div className="grid min-w-0 xl:grid-cols-[14rem_minmax(0,1fr)]">
-        <MissionControlSidebar
-          activeWorkspace={activeWorkspace}
-          onWorkspaceChange={onWorkspaceChange}
-        />
-        <section
-          aria-label="Mission control workspace content"
-          className="min-w-0 border-border-subtle py-4 sm:py-6 xl:border-l xl:pl-6"
-        >
-          {children}
-        </section>
-      </div>
-
-      <MissionControlStatusBar
-        missionProfileAnalysis={missionProfileAnalysis}
-        missionReport={missionReport}
-        vehicleReentryEvaluation={vehicleReentryEvaluation}
+      <MissionControlSidebar
+        activeWorkspace={activeWorkspace}
+        onWorkspaceChange={onWorkspaceChange}
       />
+      <section
+        aria-label="Mission control workspace content"
+        className="min-w-0 py-4 sm:py-6"
+      >
+        {children}
+      </section>
 
       <p
         aria-atomic="true"

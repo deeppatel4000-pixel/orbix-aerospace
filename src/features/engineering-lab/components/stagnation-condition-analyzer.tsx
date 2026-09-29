@@ -1,23 +1,31 @@
 "use client";
 
-import { Button } from "@/components/ui";
+import { Button, EquationBlock } from "@/components/ui";
 import { useMemo, useState, type FormEvent } from "react";
-import { AlertTriangle, Gauge, RotateCcw } from "lucide-react";
 
 import { analyzeStagnationCondition } from "@/features/engineering-lab/analysis";
 import {
+  EQ_LINE,
+  EQ_SUP,
+  EQ_TERM,
   CalculatorNumberField,
   focusFirstInvalidField,
+  GEOPOTENTIAL_ALTITUDE_HINT,
+  GEOPOTENTIAL_ALTITUDE_LABEL,
   focusFirstInvalidFieldOnEnter,
   CalculatorResultSection,
+  LAB_TOOL_SPLIT_STICKY,
+  LabToolLayout,
   NotCalculated,
+  ReadoutGrid,
   ValidationErrorSummary,
+  LabFigure,
+  EqDot,
 } from "@/features/engineering-lab/components/shared";
 import type {
   StagnationConditionAnalysis,
   StagnationConditionInputs,
 } from "@/features/engineering-lab/types";
-import { STANDARD_ATMOSPHERE_MAX_ALTITUDE_METRES } from "@/features/engineering-lab/types";
 import {
   validateAtmosphereInputs,
   validateIsentropicFlowInputs,
@@ -87,6 +95,62 @@ function deriveViewState(
   };
 }
 
+const toolEquation = (
+  <EquationBlock
+    equation={
+      <>
+        <span className={EQ_LINE}>
+          <span className={EQ_TERM}>
+            T<sub>t</sub>/T = 1
+          </span>{" "}
+          <span className={EQ_TERM}>+ ((γ−1)/2)</span>
+          <wbr />
+          <span className={EQ_TERM}>
+            <EqDot />M<sup className={EQ_SUP}>2</sup>
+          </span>
+        </span>
+        <span className={EQ_LINE}>
+          <span className={EQ_TERM}>
+            p<sub>t</sub>/p
+          </span>{" "}
+          <span className={EQ_TERM}>
+            = (T<sub>t</sub>/T)
+            <sup className={EQ_SUP}>γ/(γ−1)</sup>
+          </span>
+        </span>
+        <span className={EQ_LINE}>
+          <span className={EQ_TERM}>
+            ρ<sub>t</sub>/ρ
+          </span>{" "}
+          <span className={EQ_TERM}>
+            = (T<sub>t</sub>/T)
+            <sup className={EQ_SUP}>1/(γ−1)</sup>
+          </span>
+        </span>
+      </>
+    }
+    label="Isentropic stagnation relations"
+    spokenAs="T t over T equals 1 plus gamma minus 1 over 2 times M squared. p t over p equals that ratio raised to gamma over gamma minus 1. rho t over rho equals it raised to 1 over gamma minus 1."
+    variables={[
+      {
+        symbol: "T, p, ρ",
+        meaning:
+          "Static conditions from the standard troposphere at geopotential altitude",
+      },
+      {
+        symbol: (
+          <>
+            T<sub>t</sub>, p<sub>t</sub>, ρ<sub>t</sub>
+          </>
+        ),
+        meaning: "Stagnation (total) conditions",
+      },
+      { symbol: "M", meaning: "Flight Mach number" },
+      { symbol: "γ", meaning: "Ratio of specific heats for dry air, 1.4" },
+    ]}
+  />
+);
+
 export function StagnationConditionAnalyzer() {
   const [values, setValues] =
     useState<StagnationConditionFormValues>(initialFormValues);
@@ -109,88 +173,74 @@ export function StagnationConditionAnalyzer() {
     "stagnation-condition-altitudeMeters stagnation-condition-machNumber";
 
   return (
-    <div className="grid gap-8 xl:grid-cols-[minmax(0,0.9fr)_minmax(24rem,1.1fr)] xl:gap-10">
-      <div>
-        <form
-          noValidate
-          onKeyDown={focusFirstInvalidFieldOnEnter}
-          onSubmit={preventSubmission}
-        >
-          <div className="grid gap-5 sm:grid-cols-2">
-            <CalculatorNumberField
-              error={errors.altitudeMeters}
-              field="altitudeMeters"
-              hint={
-                "Geometric altitude within the 0 to " +
-                STANDARD_ATMOSPHERE_MAX_ALTITUDE_METRES.toLocaleString(
-                  "en-US",
-                ) +
-                " metre atmosphere model."
-              }
+    <LabToolLayout equation={toolEquation}>
+      <div className={LAB_TOOL_SPLIT_STICKY}>
+        <div className="@container/col min-w-0">
+          <form
+            noValidate
+            onKeyDown={focusFirstInvalidFieldOnEnter}
+            onSubmit={preventSubmission}
+          >
+            <div className="grid gap-5 @min-[36rem]/col:grid-cols-2">
+              <CalculatorNumberField
+                error={errors.altitudeMeters}
+                field="altitudeMeters"
+                hint={GEOPOTENTIAL_ALTITUDE_HINT}
+                idPrefix="stagnation-condition"
+                label={GEOPOTENTIAL_ALTITUDE_LABEL}
+                onChange={updateValue}
+                unit="m"
+                value={values.altitudeMeters}
+              />
+              <CalculatorNumberField
+                error={errors.machNumber}
+                field="machNumber"
+                hint="Dimensionless flight speed relative to the local speed of sound."
+                idPrefix="stagnation-condition"
+                label="Mach number"
+                onChange={updateValue}
+                unit="Mach"
+                value={values.machNumber}
+              />
+            </div>
+
+            <ValidationErrorSummary
+              errors={errors}
               idPrefix="stagnation-condition"
-              label="Altitude"
-              onChange={updateValue}
-              unit="m"
-              value={values.altitudeMeters}
             />
-            <CalculatorNumberField
-              error={errors.machNumber}
-              field="machNumber"
-              hint="Dimensionless flight speed relative to the local speed of sound."
-              idPrefix="stagnation-condition"
-              label="Mach number"
-              onChange={updateValue}
-              unit="Mach"
-              value={values.machNumber}
-            />
-          </div>
 
-          <ValidationErrorSummary
-            errors={errors}
-            idPrefix="stagnation-condition"
-          />
+            <div className="mt-7 flex flex-wrap items-center gap-x-5 gap-y-3">
+              <p className="min-w-0 flex-[1_1_16rem] text-sm leading-6 text-muted">
+                Valid changes update the thermodynamic state immediately.
+              </p>
+              <Button
+                className="shrink-0 whitespace-nowrap"
+                variant="secondary"
+                onClick={resetAnalyzer}
+              >
+                Reset inputs
+              </Button>
+            </div>
+          </form>
+        </div>
 
-          <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:items-center">
-            <p className="text-sm leading-6 text-muted">
-              Valid changes update the thermodynamic state immediately.
-            </p>
-            <Button
-              className="shrink-0 whitespace-nowrap sm:ml-auto"
-              variant="secondary"
-              onClick={resetAnalyzer}
-            >
-              <RotateCcw aria-hidden="true" size={16} />
-              Reset inputs
-            </Button>
-          </div>
-        </form>
-      </div>
-
-      <div className="space-y-5">
-        <CalculatorResultSection
-          eyebrow="Static-to-stagnation state"
-          icon={Gauge}
-          id="stagnation-condition-result"
-          title="Thermodynamic conditions"
-        >
-          {result ? (
-            <div className="space-y-6">
-              <section aria-labelledby="static-conditions-title">
-                <h4
-                  className="text-sm font-semibold text-foreground"
-                  id="static-conditions-title"
-                >
-                  Static atmospheric conditions
-                </h4>
-                <dl className="mt-3 grid gap-4 sm:grid-cols-3">
+        <div className="@container/col min-w-0 space-y-5">
+          <CalculatorResultSection
+            id="stagnation-condition-result"
+            title="Thermodynamic conditions"
+          >
+            {result ? (
+              <>
+                <ReadoutGrid columns={3} title="Static atmospheric conditions">
                   <div>
                     <dt className="orbix-label">Temperature</dt>
                     <dd className="mt-1">
                       <output className="orbix-data" htmlFor={outputIds}>
-                        {conditionFormatter.format(
-                          result.staticConditions.temperatureKelvin,
-                        )}{" "}
-                        K
+                        <LabFigure unit="K">
+                          {conditionFormatter.format(
+                            result.staticConditions.temperatureKelvin,
+                          )}
+                        </LabFigure>
                       </output>
                     </dd>
                   </div>
@@ -198,10 +248,11 @@ export function StagnationConditionAnalyzer() {
                     <dt className="orbix-label">Pressure</dt>
                     <dd className="mt-1">
                       <output className="orbix-data" htmlFor={outputIds}>
-                        {conditionFormatter.format(
-                          result.staticConditions.pressurePascals,
-                        )}{" "}
-                        Pa
+                        <LabFigure unit="Pa">
+                          {conditionFormatter.format(
+                            result.staticConditions.pressurePascals,
+                          )}
+                        </LabFigure>
                       </output>
                     </dd>
                   </div>
@@ -209,121 +260,111 @@ export function StagnationConditionAnalyzer() {
                     <dt className="orbix-label">Density</dt>
                     <dd className="mt-1">
                       <output className="orbix-data" htmlFor={outputIds}>
-                        {densityFormatter.format(
-                          result.staticConditions.densityKilogramsPerCubicMetre,
-                        )}{" "}
-                        kg/m³
+                        <LabFigure unit="kg/m³">
+                          {densityFormatter.format(
+                            result.staticConditions
+                              .densityKilogramsPerCubicMetre,
+                          )}
+                        </LabFigure>
                       </output>
                     </dd>
                   </div>
-                </dl>
-              </section>
+                </ReadoutGrid>
 
-              <section
-                aria-labelledby="stagnation-conditions-title"
-                className="border-t border-border pt-5"
-              >
-                <h4
-                  className="text-sm font-semibold text-foreground"
-                  id="stagnation-conditions-title"
-                >
-                  Stagnation conditions
-                </h4>
-                <dl className="mt-3 grid gap-4 sm:grid-cols-3">
+                <ReadoutGrid columns={3} title="Stagnation conditions">
                   <div>
                     <dt className="orbix-label">Stagnation temperature</dt>
                     <dd className="mt-1">
-                      <output className="orbix-data-lg" htmlFor={outputIds}>
-                        {conditionFormatter.format(
-                          result.stagnationConditions.temperatureKelvin,
-                        )}{" "}
-                        K
+                      <output className="orbix-readout-lg" htmlFor={outputIds}>
+                        <LabFigure unit="K">
+                          {conditionFormatter.format(
+                            result.stagnationConditions.temperatureKelvin,
+                          )}
+                        </LabFigure>
                       </output>
                     </dd>
                   </div>
                   <div>
                     <dt className="orbix-label">Stagnation pressure</dt>
                     <dd className="mt-1">
-                      <output className="orbix-data-lg" htmlFor={outputIds}>
-                        {conditionFormatter.format(
-                          result.stagnationConditions.pressurePascals,
-                        )}{" "}
-                        Pa
+                      <output className="orbix-readout-lg" htmlFor={outputIds}>
+                        <LabFigure unit="Pa">
+                          {conditionFormatter.format(
+                            result.stagnationConditions.pressurePascals,
+                          )}
+                        </LabFigure>
                       </output>
                     </dd>
                   </div>
                   <div>
                     <dt className="orbix-label">Stagnation density</dt>
                     <dd className="mt-1">
-                      <output className="orbix-data-lg" htmlFor={outputIds}>
-                        {densityFormatter.format(
-                          result.stagnationConditions
-                            .densityKilogramsPerCubicMetre,
-                        )}{" "}
-                        kg/m³
+                      <output className="orbix-data" htmlFor={outputIds}>
+                        <LabFigure unit="kg/m³">
+                          {densityFormatter.format(
+                            result.stagnationConditions
+                              .densityKilogramsPerCubicMetre,
+                          )}
+                        </LabFigure>
                       </output>
                     </dd>
                   </div>
-                </dl>
-              </section>
+                </ReadoutGrid>
 
-              <section
-                aria-labelledby="isentropic-ratios-title"
-                className="border-t border-border pt-5"
-              >
-                <h4
-                  className="text-sm font-semibold text-foreground"
-                  id="isentropic-ratios-title"
-                >
-                  Isentropic ratios
-                </h4>
-                <dl className="mt-3 grid gap-4 sm:grid-cols-3">
+                <ReadoutGrid columns={3} title="Isentropic ratios">
                   <div>
                     <dt className="orbix-label">Temperature ratio</dt>
                     <dd className="orbix-data mt-1">
-                      {ratioFormatter.format(result.ratios.temperatureRatio)}
+                      <LabFigure>
+                        {ratioFormatter.format(result.ratios.temperatureRatio)}
+                      </LabFigure>
                     </dd>
                   </div>
                   <div>
                     <dt className="orbix-label">Pressure ratio</dt>
                     <dd className="orbix-data mt-1">
-                      {ratioFormatter.format(result.ratios.pressureRatio)}
+                      <LabFigure>
+                        {ratioFormatter.format(result.ratios.pressureRatio)}
+                      </LabFigure>
                     </dd>
                   </div>
                   <div>
                     <dt className="orbix-label">Density ratio</dt>
                     <dd className="orbix-data mt-1">
-                      {ratioFormatter.format(result.ratios.densityRatio)}
+                      <LabFigure>
+                        {ratioFormatter.format(result.ratios.densityRatio)}
+                      </LabFigure>
                     </dd>
                   </div>
-                </dl>
-              </section>
-            </div>
-          ) : (
-            <NotCalculated invalid={Object.values(errors).some(Boolean)}>
-              Enter a valid altitude and Mach number to restore the live
-              thermodynamic state.
-            </NotCalculated>
-          )}
-        </CalculatorResultSection>
+                </ReadoutGrid>
+              </>
+            ) : (
+              <NotCalculated invalid={Object.values(errors).some(Boolean)}>
+                Enter a valid altitude and Mach number to restore the live
+                thermodynamic state.
+              </NotCalculated>
+            )}
+          </CalculatorResultSection>
+        </div>
 
-        <aside className="orbix-lab-note">
-          <p className="orbix-lab-note__title">
-            <AlertTriangle aria-hidden="true" size={17} />
-            Model assumptions
-          </p>
-          <p className="mt-3 text-sm leading-6 text-muted">
-            Static-to-stagnation conversion assumes:
-          </p>
-          <ul className="mt-3 grid list-disc gap-2 pl-5 text-sm leading-6 text-muted sm:grid-cols-2">
-            <li>Steady flow</li>
-            <li>Ideal gas behavior</li>
-            <li>No viscous losses</li>
-            <li>No shocks</li>
-            <li>No heat transfer</li>
-          </ul>
-        </aside>
+        <div className="@container/col min-w-0 space-y-5">
+          <aside className="orbix-lab-note">
+            <p className="orbix-lab-note__title font-medium">
+              Model assumptions
+            </p>
+            <p className="mt-3 text-sm leading-6 text-muted">
+              Static-to-stagnation conversion assumes:
+            </p>
+            <ul className="mt-3 grid list-disc gap-2 pl-5 text-sm leading-6 text-muted @min-[36rem]/col:grid-cols-2">
+              <li>Steady flow</li>
+              <li>Ideal gas behavior</li>
+              <li>No viscous losses</li>
+              <li>No shocks</li>
+              <li>No heat transfer</li>
+            </ul>
+          </aside>
+        </div>
       </div>
-    </div>
+    </LabToolLayout>
   );
 }

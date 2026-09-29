@@ -1,19 +1,26 @@
 "use client";
 
-import { useId, type ReactNode } from "react";
+import { useId } from "react";
 
 import { EmptyState } from "@/components/ui/empty-state";
 import type {
   ReentryTrajectoryPoint,
   VehicleReentryEvaluationAnalysis,
 } from "@/features/engineering-lab/types";
-import { formatLabValue } from "./format-lab-value";
+import { figureTspans } from "./figure-tspans";
+import { formatLabAltitude, formatLabValue } from "./format-lab-value";
+import { useAnnotationFontSize } from "./use-annotation-font-size";
+import { RecordRow } from "@/components/ui/record-row";
+import { LabHeading } from "./lab-heading";
 
 export interface ReentryProfileVisualizationProps {
   readonly analysis?: VehicleReentryEvaluationAnalysis | null;
 }
 
 const MAXIMUM_RENDERED_POINTS = 96;
+
+/** The chart's viewBox width, user units. */
+const CHART_WIDTH = 660;
 
 function sampleTrajectoryPoints(
   points: readonly ReentryTrajectoryPoint[],
@@ -45,15 +52,14 @@ export function ReentryProfileChart({
   const titleId = `reentry-title-${reactId}`;
   const descriptionId = `reentry-description-${reactId}`;
   const trajectoryPoints = analysis.trajectory.trajectoryPoints;
-
-  const plotLeft = 64;
-  const plotRight = 596;
-  const plotTop = 40;
-  const plotBottom = 300;
-  const plotWidth = plotRight - plotLeft;
-  const plotHeight = plotBottom - plotTop;
-  const sampledPoints = sampleTrajectoryPoints(trajectoryPoints);
-  const maximumTime = Math.max(analysis.trajectory.durationSeconds, 1);
+  // Axis text renders at exactly 11 CSS px at every column width: on a
+  // phone the 660-unit drawing is about 360px wide, so the size in user
+  // units grows and the rows under the plot move down to make room.
+  const { fontSize, svgRef } = useAnnotationFontSize(
+    true,
+    CHART_WIDTH,
+    "exact",
+  );
   const maximumAltitude = Math.max(
     analysis.trajectory.initialState.altitudeMeters,
     ...trajectoryPoints.map((point) => point.altitudeMeters),
@@ -64,6 +70,27 @@ export function ReentryProfileChart({
     ...trajectoryPoints.map((point) => point.velocityMetersPerSecond),
     1,
   );
+  const altitudeTick = formatLabValue(maximumAltitude / 1000);
+  const velocityTick = formatLabValue(maximumVelocity / 1000);
+  // B612 Mono advances about 0.62em per character; the axes give way so
+  // the widest tick label always fits inside the drawing.
+  const labelWidth = (text: string) => text.length * fontSize * 0.62;
+  const plotLeft = Math.max(64, Math.ceil(labelWidth(altitudeTick) + 16));
+  const plotRight = Math.min(
+    596,
+    Math.floor(CHART_WIDTH - labelWidth(velocityTick) - 12),
+  );
+  // Axis titles sit on their own line above the top tick labels.
+  const axisTitleTopY = Math.ceil(fontSize + 6);
+  const plotTop = Math.max(40, Math.ceil(axisTitleTopY + fontSize + 10));
+  const plotBottom = 300;
+  const timeLabelY = plotBottom + fontSize + 6;
+  const axisTitleY = timeLabelY + fontSize + 8;
+  const chartHeight = Math.ceil(axisTitleY + fontSize * 0.4);
+  const plotWidth = plotRight - plotLeft;
+  const plotHeight = plotBottom - plotTop;
+  const sampledPoints = sampleTrajectoryPoints(trajectoryPoints);
+  const maximumTime = Math.max(analysis.trajectory.durationSeconds, 1);
   const plotX = (timeSeconds: number) =>
     plotLeft + (timeSeconds / maximumTime) * plotWidth;
   const plotAltitudeY = (altitudeMeters: number) =>
@@ -88,16 +115,44 @@ export function ReentryProfileChart({
     analysis.thermalHistory.thermalPoints.length > 0
       ? analysis.thermalHistory.peakHeatFlux
       : undefined;
-  const visualSummary = `${analysis.vehicle.vehicleName} descends from ${formatLabValue(analysis.trajectory.initialState.altitudeMeters)} m to ${formatLabValue(analysis.trajectory.finalState.altitudeMeters)} m while velocity changes from ${formatLabValue(analysis.trajectory.initialState.velocityMetersPerSecond)} m/s to ${formatLabValue(analysis.trajectory.finalState.velocityMetersPerSecond)} m/s over ${formatLabValue(analysis.trajectory.durationSeconds)} s.`;
+  const peakHeatingX = peakHeating ? plotX(peakHeating.timeSeconds) : 0;
+  const peakHeatingY = peakHeating
+    ? plotAltitudeY(peakHeating.altitudeMeters)
+    : 0;
+  // When the two peaks land on (nearly) the same spot, the triangle would
+  // cover the square. The square then moves a marker's width to the side,
+  // tied to the true point by a short leader, and the caption says why.
+  const markersCoincide =
+    peakHeating !== undefined &&
+    Math.hypot(
+      peakDecelerationX - peakHeatingX,
+      peakDecelerationY - peakHeatingY,
+    ) < 10;
+  // The square is placed 14 units from the triangle's centre (not from its
+  // own point, which can sit up to 10 units away), on the side the true
+  // point lies, flipped when it would leave the plot.
+  const markerSide = Math.sign(peakDecelerationX - peakHeatingX) || 1;
+  const markerSideInPlot =
+    peakHeatingX + markerSide * 14 > plotRight - 4 ||
+    peakHeatingX + markerSide * 14 < plotLeft + 4
+      ? -markerSide
+      : markerSide;
+  const decelerationMarkerX = markersCoincide
+    ? peakHeatingX + markerSideInPlot * 14
+    : peakDecelerationX;
+  // Direction from the true point to the moved square, for the leader.
+  const leaderDirection = Math.sign(decelerationMarkerX - peakDecelerationX);
+  const visualSummary = `${analysis.vehicle.vehicleName} descends from ${formatLabAltitude(analysis.trajectory.initialState.altitudeMeters)} to ${formatLabAltitude(analysis.trajectory.finalState.altitudeMeters)} while velocity changes from ${formatLabValue(analysis.trajectory.initialState.velocityMetersPerSecond)} m/s to ${formatLabValue(analysis.trajectory.finalState.velocityMetersPerSecond)} m/s over ${formatLabValue(analysis.trajectory.durationSeconds)} s.`;
   const gridFractions = [0.25, 0.5, 0.75];
 
   return (
     <figure className="m-0">
       <svg
+        ref={svgRef}
         aria-labelledby={`${titleId} ${descriptionId}`}
         className="block h-auto w-full"
         role="img"
-        viewBox="0 0 660 350"
+        viewBox={`0 0 ${CHART_WIDTH} ${chartHeight}`}
       >
         <title id={titleId}>Vehicle reentry time history</title>
         <desc id={descriptionId}>{visualSummary}</desc>
@@ -149,54 +204,70 @@ export function ReentryProfileChart({
           strokeWidth="2"
         />
 
+        {peakHeating ? (
+          <path
+            d={`M ${peakHeatingX} ${peakHeatingY - 6} L ${peakHeatingX + 6} ${peakHeatingY + 5} L ${peakHeatingX - 6} ${peakHeatingY + 5} Z`}
+            fill="var(--orbix-data-2)"
+            stroke="var(--orbix-surface)"
+            strokeWidth="1.5"
+          />
+        ) : null}
+        {markersCoincide ? (
+          <line
+            stroke="var(--orbix-data-3)"
+            strokeWidth="1"
+            x1={peakDecelerationX}
+            x2={decelerationMarkerX - leaderDirection * 4}
+            y1={peakDecelerationY}
+            y2={peakDecelerationY}
+          />
+        ) : null}
+        {/* Drawn after the triangle so it is never hidden under it. */}
         <rect
           fill="var(--orbix-data-3)"
           height="8"
           stroke="var(--orbix-surface)"
           strokeWidth="1.5"
           width="8"
-          x={peakDecelerationX - 4}
+          x={decelerationMarkerX - 4}
           y={peakDecelerationY - 4}
         />
-        {peakHeating ? (
-          <path
-            d={`M ${plotX(peakHeating.timeSeconds)} ${plotAltitudeY(peakHeating.altitudeMeters) - 6} L ${plotX(peakHeating.timeSeconds) + 6} ${plotAltitudeY(peakHeating.altitudeMeters) + 5} L ${plotX(peakHeating.timeSeconds) - 6} ${plotAltitudeY(peakHeating.altitudeMeters) + 5} Z`}
-            fill="var(--orbix-data-2)"
-            stroke="var(--orbix-surface)"
-            strokeWidth="1.5"
-          />
-        ) : null}
 
         <g
           fill="var(--orbix-data-axis)"
           fontFamily="var(--font-telemetry), monospace"
-          fontSize="11"
+          fontSize={fontSize}
         >
           <text textAnchor="end" x={plotLeft - 8} y={plotTop + 4}>
-            {formatLabValue(maximumAltitude / 1000)}
+            {figureTspans(altitudeTick)}
           </text>
           <text textAnchor="end" x={plotLeft - 8} y={plotBottom + 4}>
             0
           </text>
           <text textAnchor="start" x={plotRight + 8} y={plotTop + 4}>
-            {formatLabValue(maximumVelocity / 1000)}
+            {figureTspans(velocityTick)}
           </text>
           <text textAnchor="start" x={plotRight + 8} y={plotBottom + 4}>
             0
           </text>
-          <text textAnchor="middle" x={plotLeft} y={plotBottom + 20}>
+          <text textAnchor="start" x={plotLeft} y={timeLabelY}>
             0 s
           </text>
-          <text textAnchor="end" x={plotRight} y={plotBottom + 20}>
-            {formatLabValue(analysis.trajectory.durationSeconds)} s
+          <text textAnchor="end" x={plotRight} y={timeLabelY}>
+            {figureTspans(formatLabValue(analysis.trajectory.durationSeconds))}{" "}
+            s
           </text>
-          <text textAnchor="start" x={plotLeft - 56} y={plotTop - 16}>
+          <text textAnchor="start" x={8} y={axisTitleTopY}>
             Altitude (km)
           </text>
-          <text textAnchor="end" x={plotRight + 60} y={plotTop - 16}>
+          <text textAnchor="end" x={CHART_WIDTH - 4} y={axisTitleTopY}>
             Velocity (km/s)
           </text>
-          <text textAnchor="middle" x={(plotLeft + plotRight) / 2} y="340">
+          <text
+            textAnchor="middle"
+            x={(plotLeft + plotRight) / 2}
+            y={axisTitleY}
+          >
             Elapsed time
           </text>
         </g>
@@ -252,24 +323,16 @@ export function ReentryProfileChart({
             </li>
           ) : null}
         </ul>
+        {markersCoincide ? (
+          <p className="mt-2 max-w-[68ch] text-pretty">
+            Peak deceleration and peak heating fall so close together on this
+            chart that the deceleration square is drawn beside the heating
+            triangle, joined to its true point by a short leader.
+          </p>
+        ) : null}
       </figcaption>
     </figure>
   );
-}
-
-/** Mono is for machine values only (spec 5): callers wrap the number and
- * unit in `orbix-data` and leave connecting words in the sans face. */
-function Value({ label, value }: { label: string; value: ReactNode }) {
-  return (
-    <div className="flex items-baseline justify-between gap-4 border-t border-border-subtle py-2 text-sm">
-      <dt className="text-muted">{label}</dt>
-      <dd className="text-right text-foreground">{value}</dd>
-    </div>
-  );
-}
-
-function Num({ children }: { children: string }) {
-  return <span className="orbix-data">{children}</span>;
 }
 
 export function ReentryProfileVisualization({
@@ -294,9 +357,7 @@ export function ReentryProfileVisualization({
   return (
     <section aria-labelledby={titleId} className="min-w-0">
       <header className="flex flex-wrap items-baseline justify-between gap-2 border-b border-border-subtle pb-4">
-        <h3 className="orbix-h3 text-foreground" id={titleId}>
-          Reentry profile
-        </h3>
+        <LabHeading id={titleId}>Reentry profile</LabHeading>
         <p className="text-sm text-text-secondary">
           {analysis.vehicle.vehicleName}
         </p>
@@ -306,48 +367,53 @@ export function ReentryProfileVisualization({
         <ReentryProfileChart analysis={analysis} />
       </div>
 
-      <dl className="grid gap-x-8 border-t border-border-subtle pb-2 sm:grid-cols-2 lg:grid-cols-4">
-        <Value
-          label="Velocity change"
-          value={
-            <>
-              <Num>
-                {formatLabValue(
-                  analysis.trajectory.initialState.velocityMetersPerSecond,
-                )}
-              </Num>{" "}
-              to{" "}
-              <Num>{`${formatLabValue(analysis.trajectory.finalState.velocityMetersPerSecond)} m/s`}</Num>
-            </>
-          }
-        />
-        <div className="flex items-baseline justify-between gap-4 border-t border-border-subtle py-2 text-sm">
-          <dt className="text-muted">Peak heating</dt>
-          <dd
-            className={
-              peakHeating
-                ? "orbix-data text-right text-foreground"
-                : "text-right text-muted"
-            }
-          >
-            {peakHeating
-              ? `${formatLabValue(peakHeating.heatFluxKilowattsPerSquareMetre)} kW/m²`
-              : "Thermal profile unavailable"}
-          </dd>
-        </div>
-        <Value
-          label="Peak deceleration"
-          value={
-            <Num>{`${formatLabValue(analysis.trajectory.peakDeceleration.decelerationGs)} g`}</Num>
-          }
-        />
-        <Value
-          label="Duration"
-          value={
-            <Num>{`${formatLabValue(analysis.trajectory.durationSeconds)} s`}</Num>
-          }
-        />
-      </dl>
+      <RecordRow
+        className="mt-2"
+        items={[
+          {
+            label: "Entry velocity",
+            unit: "m/s",
+            value: formatLabValue(
+              analysis.trajectory.initialState.velocityMetersPerSecond,
+            ),
+          },
+          {
+            label: "Final velocity",
+            unit: "m/s",
+            value: formatLabValue(
+              analysis.trajectory.finalState.velocityMetersPerSecond,
+            ),
+          },
+          peakHeating
+            ? {
+                label: "Peak heating",
+                unit: "kW/m²",
+                value: formatLabValue(
+                  peakHeating.heatFluxKilowattsPerSquareMetre,
+                ),
+              }
+            : {
+                label: "Peak heating",
+                value: (
+                  <span className="font-sans text-sm text-muted">
+                    Thermal profile unavailable
+                  </span>
+                ),
+              },
+          {
+            label: "Peak deceleration",
+            unit: "g",
+            value: formatLabValue(
+              analysis.trajectory.peakDeceleration.decelerationGs,
+            ),
+          },
+          {
+            label: "Duration",
+            unit: "s",
+            value: formatLabValue(analysis.trajectory.durationSeconds),
+          },
+        ]}
+      />
     </section>
   );
 }

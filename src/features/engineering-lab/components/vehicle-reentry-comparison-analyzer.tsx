@@ -1,32 +1,32 @@
 "use client";
 
-import { Button, Tag } from "@/components/ui";
+import { Button, DataTable, EquationBlock } from "@/components/ui";
 import { useMemo, useRef, useState, type FormEvent } from "react";
-import {
-  CircleAlert,
-  AlertTriangle,
-  Award,
-  Flame,
-  Plus,
-  RotateCcw,
-  Scale,
-  Trash2,
-} from "lucide-react";
+import { CircleAlert } from "lucide-react";
 
 import { analyzeVehicleReentryComparison } from "@/features/engineering-lab/analysis";
 import {
+  EQ_LINE,
+  EQ_TERM,
   CalculatorNumberField,
   focusFirstInvalidField,
   focusFirstInvalidFieldOnEnter,
   CalculatorResultSection,
+  LAB_TOOL_STACK,
+  GEOPOTENTIAL_ALTITUDE_HINT,
+  INITIAL_GEOPOTENTIAL_ALTITUDE_LABEL,
+  LabToolLayout,
   NotCalculated,
+  ReadoutGrid,
   ValidationErrorSummary,
+  LabFigure,
+  EqDot,
+  EQ_SUP,
 } from "@/features/engineering-lab/components/shared";
 import type {
   VehicleReentryComparisonAnalysis,
   VehicleReentryComparisonInputs,
 } from "@/features/engineering-lab/types";
-import { STANDARD_ATMOSPHERE_MAX_ALTITUDE_METRES } from "@/features/engineering-lab/types";
 
 const MAXIMUM_VEHICLES = 5;
 
@@ -386,6 +386,78 @@ function OptionalNumberField({
   );
 }
 
+const toolEquation = (
+  <EquationBlock
+    equation={
+      <>
+        <span className={EQ_LINE}>
+          <span className={EQ_TERM}>β = m</span>
+          <wbr />
+          <span className={EQ_TERM}>
+            /(C<sub>D</sub>
+            <EqDot />
+            A)
+          </span>
+        </span>
+        <span className={EQ_LINE}>
+          <span className={EQ_TERM}>
+            a = ½ρV<sup className={EQ_SUP}>2</sup>/β
+          </span>
+        </span>
+        <span className={EQ_LINE}>
+          <span className={EQ_TERM}>q̇ = k</span>
+          <wbr />
+          <span className={EQ_TERM}>
+            <EqDot />
+            √(ρ/r<sub>n</sub>)
+          </span>
+          <wbr />
+          <span className={EQ_TERM}>
+            <EqDot />V<sup className={EQ_SUP}>3</sup>
+          </span>
+        </span>
+        <span className={EQ_LINE}>
+          <span className={EQ_TERM}>
+            Q = Σ q̇<sub>i</sub>
+            <EqDot />
+            Δt<sub>i</sub>
+          </span>
+        </span>
+      </>
+    }
+    label="Entry deceleration and heating, per vehicle"
+    spokenAs="Ballistic coefficient beta equals m over C D times A, and deceleration a equals one half rho V squared over beta. heat flux equals k times the square root of density over nose radius, times velocity cubed. Heat load Q equals the sum of heat flux times time step."
+    variables={[
+      { symbol: "β", meaning: "Ballistic coefficient", unit: "kg/m²" },
+      { symbol: "a", meaning: "Drag deceleration", unit: "m/s²" },
+      {
+        symbol: "ρ, V",
+        meaning:
+          "Air density and velocity at each step of the entry trajectory",
+      },
+      {
+        symbol: "k",
+        meaning:
+          "Heating coefficient; by default 1.83 × 10⁻⁴ in SI units, for Earth air",
+      },
+      {
+        symbol: (
+          <>
+            r<sub>n</sub>
+          </>
+        ),
+        meaning: "Nose radius",
+        unit: "m",
+      },
+      {
+        symbol: "Q",
+        meaning: "Stagnation-point heat load, summed over the trajectory",
+        unit: "MJ/m²",
+      },
+    ]}
+  />
+);
+
 export function VehicleReentryComparisonAnalyzer() {
   const [values, setValues] = useState<ComparisonFormValues>(
     createInitialFormValues,
@@ -460,749 +532,714 @@ export function VehicleReentryComparisonAnalyzer() {
   }
 
   return (
-    <div className="grid gap-8 xl:grid-cols-[minmax(0,0.92fr)_minmax(34rem,1.08fr)] xl:gap-10">
-      <div>
-        <form
-          noValidate
-          onKeyDown={focusFirstInvalidFieldOnEnter}
-          onSubmit={preventSubmission}
-        >
-          <fieldset>
-            <legend className="text-base font-semibold text-foreground">
-              Shared reentry conditions
-            </legend>
-            <div className="mt-5 grid gap-5 sm:grid-cols-2">
-              <CalculatorNumberField
-                error={errors.shared.initialAltitudeMeters}
-                field="initialAltitudeMeters"
-                hint={
-                  "Common starting altitude from 0 through " +
-                  STANDARD_ATMOSPHERE_MAX_ALTITUDE_METRES.toLocaleString(
-                    "en-US",
-                  ) +
-                  " metres."
-                }
-                idPrefix="vehicle-reentry-comparison"
-                label="Initial altitude"
-                onChange={updateSharedValue}
-                unit="m"
-                value={values.initialAltitudeMeters}
-              />
-              <CalculatorNumberField
-                error={errors.shared.initialVelocityMetersPerSecond}
-                field="initialVelocityMetersPerSecond"
-                hint="Common positive initial velocity applied to every vehicle."
-                idPrefix="vehicle-reentry-comparison"
-                label="Initial velocity"
-                onChange={updateSharedValue}
-                unit="m/s"
-                value={values.initialVelocityMetersPerSecond}
-              />
-              <CalculatorNumberField
-                error={errors.shared.safetyFactor}
-                field="safetyFactor"
-                hint="Common positive TPS heat-load multiplier for every evaluation."
-                idPrefix="vehicle-reentry-comparison"
-                label="Safety factor"
-                onChange={updateSharedValue}
-                unit="×"
-                value={values.safetyFactor}
-              />
-              <OptionalNumberField
-                error={errors.shared.timestepSeconds}
-                field="timestepSeconds"
-                hint="Leave blank to preserve the trajectory analysis default."
-                label="Time step (optional)"
-                min={0}
-                onChange={updateSharedValue}
-                unit="s"
-                value={values.timestepSeconds}
-              />
-              <OptionalNumberField
-                error={errors.shared.initialFlightPathAngleDegrees}
-                field="initialFlightPathAngleDegrees"
-                hint="Leave blank to preserve the default vertical descent."
-                label="Flight-path angle (optional)"
-                max={0}
-                min={-90}
-                onChange={updateSharedValue}
-                unit="deg"
-                value={values.initialFlightPathAngleDegrees}
-              />
-              <OptionalNumberField
-                error={errors.shared.heatingCoefficient}
-                field="heatingCoefficient"
-                hint="Leave blank to use the heating calculator's educational default."
-                label="Heating coefficient k (optional)"
-                min={0}
-                onChange={updateSharedValue}
-                unit="kg½/m"
-                value={values.heatingCoefficient}
-              />
-            </div>
-          </fieldset>
-
-          <section
-            aria-labelledby="vehicle-reentry-comparison-vehicles-title"
-            className="mt-8 border-t border-border pt-7"
+    <LabToolLayout equation={toolEquation}>
+      <div className={LAB_TOOL_STACK}>
+        <div className="@container/col min-w-0">
+          <form
+            noValidate
+            onKeyDown={focusFirstInvalidFieldOnEnter}
+            onSubmit={preventSubmission}
           >
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-              <div>
-                <p className="orbix-label">Comparison fleet</p>
-                <h3
-                  className="mt-1 text-lg font-semibold"
-                  id="vehicle-reentry-comparison-vehicles-title"
-                >
-                  Vehicle configurations
-                </h3>
+            <fieldset>
+              <legend className="text-base font-semibold text-foreground">
+                Shared reentry conditions
+              </legend>
+              <div className="mt-4 grid gap-5 @min-[36rem]/col:grid-cols-2">
+                <CalculatorNumberField
+                  error={errors.shared.initialAltitudeMeters}
+                  field="initialAltitudeMeters"
+                  hint={GEOPOTENTIAL_ALTITUDE_HINT}
+                  idPrefix="vehicle-reentry-comparison"
+                  label={INITIAL_GEOPOTENTIAL_ALTITUDE_LABEL}
+                  onChange={updateSharedValue}
+                  unit="m"
+                  value={values.initialAltitudeMeters}
+                />
+                <CalculatorNumberField
+                  error={errors.shared.initialVelocityMetersPerSecond}
+                  field="initialVelocityMetersPerSecond"
+                  hint="Common positive initial velocity applied to every vehicle."
+                  idPrefix="vehicle-reentry-comparison"
+                  label="Initial velocity"
+                  onChange={updateSharedValue}
+                  unit="m/s"
+                  value={values.initialVelocityMetersPerSecond}
+                />
+                <CalculatorNumberField
+                  error={errors.shared.safetyFactor}
+                  field="safetyFactor"
+                  hint="Common positive TPS heat-load multiplier for every evaluation."
+                  idPrefix="vehicle-reentry-comparison"
+                  label="Safety factor"
+                  onChange={updateSharedValue}
+                  unit="×"
+                  value={values.safetyFactor}
+                />
+                <OptionalNumberField
+                  error={errors.shared.timestepSeconds}
+                  field="timestepSeconds"
+                  hint="Leave blank to preserve the trajectory analysis default."
+                  label="Time step (optional)"
+                  min={0}
+                  onChange={updateSharedValue}
+                  unit="s"
+                  value={values.timestepSeconds}
+                />
+                <OptionalNumberField
+                  error={errors.shared.initialFlightPathAngleDegrees}
+                  field="initialFlightPathAngleDegrees"
+                  hint="Leave blank to preserve the default vertical descent."
+                  label="Flight-path angle (optional)"
+                  max={0}
+                  min={-90}
+                  onChange={updateSharedValue}
+                  unit="deg"
+                  value={values.initialFlightPathAngleDegrees}
+                />
+                <OptionalNumberField
+                  error={errors.shared.heatingCoefficient}
+                  field="heatingCoefficient"
+                  hint="Leave blank to use the heating calculator's educational default."
+                  label="Heating coefficient k (optional)"
+                  min={0}
+                  onChange={updateSharedValue}
+                  unit="kg½/m"
+                  value={values.heatingCoefficient}
+                />
               </div>
-              <Button
-                aria-describedby="vehicle-reentry-comparison-limit"
-                className="shrink-0 whitespace-nowrap"
-                variant="secondary"
-                disabled={hasReachedVehicleLimit}
-                onClick={addVehicle}
-              >
-                <Plus aria-hidden="true" size={16} />
-                Add vehicle
-              </Button>
-            </div>
+            </fieldset>
 
-            <p
-              aria-live="polite"
-              className={
-                "mt-3 text-xs leading-5 " +
-                (hasReachedVehicleLimit ? "text-status-warning" : "text-muted")
-              }
-              id="vehicle-reentry-comparison-limit"
+            <section
+              aria-labelledby="vehicle-reentry-comparison-vehicles-title"
+              className="mt-8 border-t border-border pt-7"
             >
-              {hasReachedVehicleLimit
-                ? "Maximum comparison size reached: five vehicles."
-                : values.vehicles.length +
-                  " of " +
-                  MAXIMUM_VEHICLES +
-                  " vehicles configured."}
-            </p>
-
-            {values.vehicles.length > 0 ? (
-              <div className="mt-5 space-y-4">
-                {values.vehicles.map((vehicle, index) => {
-                  const vehicleNumber = index + 1;
-                  const vehicleErrors = errors.vehicles[vehicle.id];
-                  const prefix =
-                    "vehicle-reentry-comparison-vehicle-" + vehicle.id;
-                  const nameHintId = prefix + "-vehicleName-hint";
-                  const nameErrorId = prefix + "-vehicleName-error";
-                  const entryErrorId = prefix + "-entry-error";
-
-                  return (
-                    <fieldset
-                      aria-describedby={
-                        vehicleErrors?.entry ? entryErrorId : undefined
-                      }
-                      className="rounded-md border border-border-subtle bg-surface-raised p-4 sm:p-6"
-                      key={vehicle.id}
-                    >
-                      <legend className="sr-only">
-                        Vehicle {vehicleNumber} configuration
-                      </legend>
-                      <div className="flex items-center justify-between gap-4">
-                        <div>
-                          <p className="orbix-label">
-                            Stable entry {vehicle.id}
-                          </p>
-                          <h4 className="mt-1 text-base font-semibold">
-                            Vehicle {vehicleNumber}
-                          </h4>
-                        </div>
-                        <Button
-                          aria-label={
-                            "Remove vehicle " +
-                            vehicleNumber +
-                            ": " +
-                            (vehicle.vehicleName || "unnamed vehicle")
-                          }
-                          variant="secondary"
-                          onClick={() => removeVehicle(vehicle.id)}
-                        >
-                          <Trash2 aria-hidden="true" size={15} />
-                          Remove
-                        </Button>
-                      </div>
-
-                      <div className="mt-5 grid gap-5 sm:grid-cols-2">
-                        <div className="sm:col-span-2">
-                          <label
-                            className="orbix-field__label block"
-                            htmlFor={prefix + "-vehicleName"}
-                          >
-                            Vehicle name
-                          </label>
-                          <input
-                            aria-describedby={
-                              vehicleErrors?.vehicleName
-                                ? nameHintId + " " + nameErrorId
-                                : nameHintId
-                            }
-                            aria-errormessage={
-                              vehicleErrors?.vehicleName
-                                ? nameErrorId
-                                : undefined
-                            }
-                            aria-invalid={Boolean(vehicleErrors?.vehicleName)}
-                            className="orbix-input mt-2"
-                            id={prefix + "-vehicleName"}
-                            onChange={(event) =>
-                              updateVehicleValue(
-                                vehicle.id,
-                                "vehicleName",
-                                event.target.value,
-                              )
-                            }
-                            required
-                            type="text"
-                            value={vehicle.vehicleName}
-                          />
-                          <p className="orbix-field__help mt-2" id={nameHintId}>
-                            Identifies this configuration in result cards and
-                            ranking output.
-                          </p>
-                          {vehicleErrors?.vehicleName ? (
-                            <p
-                              className="orbix-field__error mt-1"
-                              id={nameErrorId}
-                            >
-                              <CircleAlert
-                                aria-hidden="true"
-                                className="shrink-0"
-                                size={14}
-                              />
-                              {vehicleErrors.vehicleName}
-                            </p>
-                          ) : null}
-                        </div>
-
-                        <CalculatorNumberField
-                          error={vehicleErrors?.massKilograms}
-                          field="massKilograms"
-                          hint="Positive vehicle mass held constant during evaluation."
-                          idPrefix={prefix}
-                          label="Mass"
-                          onChange={(_field, value) =>
-                            updateVehicleValue(
-                              vehicle.id,
-                              "massKilograms",
-                              value,
-                            )
-                          }
-                          unit="kg"
-                          value={vehicle.massKilograms}
-                        />
-                        <CalculatorNumberField
-                          error={vehicleErrors?.dragCoefficient}
-                          field="dragCoefficient"
-                          hint="Positive dimensionless drag coefficient for this vehicle."
-                          idPrefix={prefix}
-                          label="Drag coefficient"
-                          onChange={(_field, value) =>
-                            updateVehicleValue(
-                              vehicle.id,
-                              "dragCoefficient",
-                              value,
-                            )
-                          }
-                          unit=""
-                          value={vehicle.dragCoefficient}
-                        />
-                        <CalculatorNumberField
-                          error={vehicleErrors?.referenceAreaSquareMetres}
-                          field="referenceAreaSquareMetres"
-                          hint="Aerodynamic reference area and TPS coverage area."
-                          idPrefix={prefix}
-                          label="Reference area"
-                          onChange={(_field, value) =>
-                            updateVehicleValue(
-                              vehicle.id,
-                              "referenceAreaSquareMetres",
-                              value,
-                            )
-                          }
-                          unit="m²"
-                          value={vehicle.referenceAreaSquareMetres}
-                        />
-                        <CalculatorNumberField
-                          error={vehicleErrors?.noseRadiusMetres}
-                          field="noseRadiusMetres"
-                          hint="Effective stagnation-point radius used by heating analysis."
-                          idPrefix={prefix}
-                          label="Nose radius"
-                          onChange={(_field, value) =>
-                            updateVehicleValue(
-                              vehicle.id,
-                              "noseRadiusMetres",
-                              value,
-                            )
-                          }
-                          unit="m"
-                          value={vehicle.noseRadiusMetres}
-                        />
-                      </div>
-
-                      {vehicleErrors?.entry ? (
-                        <p
-                          className="mt-4 border-l-2 border-status-warning pl-3 text-sm leading-6 text-status-warning"
-                          id={entryErrorId}
-                          role="alert"
-                        >
-                          {vehicleErrors.entry}
-                        </p>
-                      ) : null}
-                    </fieldset>
-                  );
-                })}
+              <div className="flex flex-wrap items-end justify-between gap-3">
+                <div>
+                  <h3
+                    className="text-lg font-semibold"
+                    id="vehicle-reentry-comparison-vehicles-title"
+                  >
+                    Vehicle configurations
+                  </h3>
+                </div>
+                <Button
+                  aria-describedby="vehicle-reentry-comparison-limit"
+                  className="shrink-0 whitespace-nowrap"
+                  variant="secondary"
+                  disabled={hasReachedVehicleLimit}
+                  onClick={addVehicle}
+                >
+                  Add vehicle
+                </Button>
               </div>
-            ) : (
-              <div className="mt-5 rounded-md border border-dashed border-border-strong p-4">
-                <p className="text-sm font-semibold">No vehicles configured</p>
-                <p className="mt-2 text-sm leading-6 text-muted">
-                  Add at least one vehicle to run the shared reentry comparison.
-                </p>
-              </div>
-            )}
 
-            {errors.vehicleList ? (
               <p
-                className="orbix-field__error mt-3"
-                id="vehicle-reentry-comparison-list-error"
-                role="alert"
+                aria-live="polite"
+                className={
+                  "mt-3 text-xs leading-5 " +
+                  (hasReachedVehicleLimit
+                    ? "text-status-warning"
+                    : "text-muted")
+                }
+                id="vehicle-reentry-comparison-limit"
               >
-                {errors.vehicleList}
+                {hasReachedVehicleLimit
+                  ? "Maximum comparison size reached: five vehicles."
+                  : values.vehicles.length +
+                    " of " +
+                    MAXIMUM_VEHICLES +
+                    " vehicles configured."}
               </p>
-            ) : null}
-          </section>
 
-          <ValidationErrorSummary errors={validationMessages} />
-
-          <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:items-center">
-            <p className="text-sm leading-6 text-muted">
-              Valid changes rerun every vehicle under the same scenario and
-              refresh the ranking immediately.
-            </p>
-            <Button
-              className="shrink-0 whitespace-nowrap sm:ml-auto"
-              variant="secondary"
-              onClick={resetAnalyzer}
-            >
-              <RotateCcw aria-hidden="true" size={16} />
-              Reset inputs
-            </Button>
-          </div>
-        </form>
-
-        <section
-          aria-labelledby="vehicle-reentry-comparison-education-title"
-          className="mt-8 border-t border-border pt-7"
-        >
-          <p className="orbix-label">Educational comparison</p>
-          <h3
-            className="mt-1 text-lg font-semibold"
-            id="vehicle-reentry-comparison-education-title"
-          >
-            Reading the vehicle trade space
-          </h3>
-          <div className="mt-5 grid gap-4 sm:grid-cols-3 xl:grid-cols-1">
-            <article className="rounded-md border border-border-subtle bg-surface-raised p-4">
-              <Scale aria-hidden="true" className="text-muted" size={18} />
-              <h4 className="mt-3 text-sm font-semibold">Vehicle trade-offs</h4>
-              <p className="mt-2 text-sm leading-6 text-muted">
-                Mass, drag, area, and nose geometry change deceleration,
-                heating, and the resulting TPS estimates together.
-              </p>
-            </article>
-            <article className="rounded-md border border-border-subtle bg-surface-raised p-4">
-              <Award aria-hidden="true" className="text-muted" size={18} />
-              <h4 className="mt-3 text-sm font-semibold">Ranking order</h4>
-              <p className="mt-2 text-sm leading-6 text-muted">
-                The existing comparison ranks lowest TPS mass first, then lower
-                thickness, and finally lower peak deceleration.
-              </p>
-            </article>
-            <article className="rounded-md border border-border-subtle bg-surface-raised p-4">
-              <Flame aria-hidden="true" className="text-muted" size={18} />
-              <h4 className="mt-3 text-sm font-semibold">Shared scenario</h4>
-              <p className="mt-2 text-sm leading-6 text-muted">
-                Every vehicle receives identical reentry conditions so the
-                displayed differences originate from its configuration.
-              </p>
-            </article>
-          </div>
-          <p className="mt-4 text-sm leading-6 text-muted">
-            This is an educational comparison, not a flight-design selection or
-            certification recommendation.
-          </p>
-        </section>
-      </div>
-
-      <div className="min-w-0 space-y-5">
-        <CalculatorResultSection
-          eyebrow="Shared scenario: ranked vehicles"
-          icon={Award}
-          id="vehicle-reentry-comparison-result"
-          title="Vehicle reentry comparison"
-        >
-          {result ? (
-            <div className="space-y-6">
-              <section aria-labelledby="vehicle-reentry-comparison-recommended-title">
-                <h4
-                  className="text-sm font-semibold text-foreground"
-                  id="vehicle-reentry-comparison-recommended-title"
-                >
-                  Recommended vehicle
-                </h4>
-                <output
-                  className="mt-3 block text-2xl font-semibold"
-                  htmlFor={allOutputIds}
-                >
-                  {result.recommendedVehicle.vehicleName}
-                </output>
-                <p className="mt-3 rounded-md border border-border-subtle bg-surface-raised p-4 text-sm leading-6 text-muted">
-                  Selected from the configured vehicles using the analysis
-                  ranking order: lowest TPS mass, lowest required thickness,
-                  then lowest peak deceleration.
-                </p>
-              </section>
-
-              <section
-                aria-labelledby="vehicle-reentry-comparison-details-title"
-                className="border-t border-border pt-5"
-              >
-                <h4
-                  className="text-sm font-semibold text-foreground"
-                  id="vehicle-reentry-comparison-details-title"
-                >
-                  Vehicle results
-                </h4>
-                <div className="mt-4 space-y-4">
-                  {result.evaluatedVehicles.map((entry, index) => {
-                    const formVehicle = values.vehicles[index];
-                    const outputIds = formVehicle
-                      ? sharedOutputIds +
-                        " " +
-                        getVehicleInputIds(formVehicle.id)
-                      : sharedOutputIds;
+              {values.vehicles.length > 0 ? (
+                <div className="mt-5 space-y-4">
+                  {values.vehicles.map((vehicle, index) => {
+                    const vehicleNumber = index + 1;
+                    const vehicleErrors = errors.vehicles[vehicle.id];
+                    const prefix =
+                      "vehicle-reentry-comparison-vehicle-" + vehicle.id;
+                    const nameHintId = prefix + "-vehicleName-hint";
+                    const nameErrorId = prefix + "-vehicleName-error";
+                    const entryErrorId = prefix + "-entry-error";
 
                     return (
-                      <article
-                        className="rounded-md border border-border-subtle bg-surface-raised p-4 sm:p-6"
-                        key={formVehicle?.id ?? entry.vehicleName}
+                      <fieldset
+                        aria-describedby={
+                          vehicleErrors?.entry ? entryErrorId : undefined
+                        }
+                        className="border-t border-border pt-6"
+                        key={vehicle.id}
                       >
-                        <div className="flex flex-wrap items-center justify-between gap-3">
-                          <h5 className="text-lg font-semibold">
-                            {entry.vehicleName}
-                          </h5>
-                          {entry === result.recommendedVehicle ? (
-                            <Tag>Recommended</Tag>
-                          ) : null}
+                        <legend className="sr-only">
+                          Vehicle {vehicleNumber} configuration
+                        </legend>
+                        <div className="flex items-center justify-between gap-4">
+                          <h4 className="text-base font-semibold">
+                            Vehicle {vehicleNumber}
+                          </h4>
+                          <Button
+                            className="whitespace-nowrap"
+                            aria-label={
+                              "Remove vehicle " +
+                              vehicleNumber +
+                              ": " +
+                              (vehicle.vehicleName || "unnamed vehicle")
+                            }
+                            variant="secondary"
+                            onClick={() => removeVehicle(vehicle.id)}
+                          >
+                            Remove
+                          </Button>
                         </div>
-                        <dl className="mt-4 grid gap-4 sm:grid-cols-2">
-                          <div>
-                            <dt className="orbix-label">Final velocity</dt>
-                            <dd className="mt-1">
-                              <output
-                                className="orbix-data"
-                                htmlFor={outputIds}
+
+                        <div className="mt-5 grid gap-5 @min-[36rem]/col:grid-cols-2">
+                          <div className="@min-[36rem]/col:col-span-2">
+                            <label
+                              className="orbix-field__label block"
+                              htmlFor={prefix + "-vehicleName"}
+                            >
+                              Vehicle name
+                            </label>
+                            <input
+                              aria-describedby={
+                                vehicleErrors?.vehicleName
+                                  ? nameHintId + " " + nameErrorId
+                                  : nameHintId
+                              }
+                              aria-errormessage={
+                                vehicleErrors?.vehicleName
+                                  ? nameErrorId
+                                  : undefined
+                              }
+                              aria-invalid={Boolean(vehicleErrors?.vehicleName)}
+                              className="orbix-input mt-2"
+                              id={prefix + "-vehicleName"}
+                              onChange={(event) =>
+                                updateVehicleValue(
+                                  vehicle.id,
+                                  "vehicleName",
+                                  event.target.value,
+                                )
+                              }
+                              required
+                              type="text"
+                              value={vehicle.vehicleName}
+                            />
+                            <p
+                              className="orbix-field__help mt-2"
+                              id={nameHintId}
+                            >
+                              Identifies this configuration in result cards and
+                              ranking output.
+                            </p>
+                            {vehicleErrors?.vehicleName ? (
+                              <p
+                                className="orbix-field__error mt-1"
+                                id={nameErrorId}
                               >
-                                {standardFormatter.format(
-                                  entry.trajectorySummary.finalState
-                                    .velocityMetersPerSecond,
-                                )}{" "}
-                                m/s
-                              </output>
-                            </dd>
+                                <CircleAlert
+                                  aria-hidden="true"
+                                  className="shrink-0"
+                                  size={14}
+                                />
+                                {vehicleErrors.vehicleName}
+                              </p>
+                            ) : null}
                           </div>
-                          <div>
-                            <dt className="orbix-label">Reentry duration</dt>
-                            <dd className="mt-1">
-                              <output
-                                className="orbix-data"
-                                htmlFor={outputIds}
-                              >
-                                {standardFormatter.format(
-                                  entry.trajectorySummary
-                                    .reentryDurationSeconds,
-                                )}{" "}
-                                s
-                              </output>
-                            </dd>
-                          </div>
-                          <div>
-                            <dt className="orbix-label">Peak deceleration</dt>
-                            <dd className="mt-1">
-                              <output
-                                className="orbix-data"
-                                htmlFor={outputIds}
-                              >
-                                {standardFormatter.format(
-                                  entry.peakDeceleration
-                                    .decelerationMetersPerSecondSquared,
-                                )}{" "}
-                                m/s²,{" "}
-                                {standardFormatter.format(
-                                  entry.peakDeceleration.decelerationGs,
-                                )}{" "}
-                                g
-                              </output>
-                            </dd>
-                          </div>
-                          <div>
-                            <dt className="orbix-label">Peak heat flux</dt>
-                            <dd className="mt-1">
-                              <output
-                                className="orbix-data"
-                                htmlFor={outputIds}
-                              >
-                                {heatFluxFormatter.format(
-                                  entry.peakHeating.heatFluxWattsPerSquareMetre,
-                                )}{" "}
-                                W/m²
-                              </output>
-                            </dd>
-                          </div>
-                          <div>
-                            <dt className="orbix-label">Total heat load</dt>
-                            <dd className="mt-1">
-                              <output
-                                className="orbix-data"
-                                htmlFor={outputIds}
-                              >
-                                {preciseFormatter.format(
-                                  entry.totalHeatLoad
-                                    .heatLoadMegajoulesPerSquareMetre,
-                                )}{" "}
-                                MJ/m²
-                              </output>
-                            </dd>
-                          </div>
-                          <div>
-                            <dt className="orbix-label">
-                              Recommended TPS material
-                            </dt>
-                            <dd className="mt-1">
-                              <output
-                                className="text-sm font-semibold"
-                                htmlFor={outputIds}
-                              >
-                                {entry.recommendedTPSMaterial.name}
-                              </output>
-                            </dd>
-                          </div>
-                          <div>
-                            <dt className="orbix-label">TPS thickness</dt>
-                            <dd className="mt-1">
-                              <output
-                                className="orbix-data"
-                                htmlFor={outputIds}
-                              >
-                                {preciseFormatter.format(
-                                  entry.tpsThickness.millimetres,
-                                )}{" "}
-                                mm
-                              </output>
-                            </dd>
-                          </div>
-                          <div>
-                            <dt className="orbix-label">TPS mass</dt>
-                            <dd className="mt-1">
-                              <output
-                                className="orbix-data"
-                                htmlFor={outputIds}
-                              >
-                                {preciseFormatter.format(
-                                  entry.tpsMassKilograms,
-                                )}{" "}
-                                kg
-                              </output>
-                            </dd>
-                          </div>
-                          <div>
-                            <dt className="orbix-label">Thermal margin</dt>
-                            <dd className="mt-1">
-                              <output
-                                className="orbix-data"
-                                htmlFor={outputIds}
-                              >
-                                {standardFormatter.format(
-                                  entry.thermalMargin.marginPercentage,
-                                )}
-                                %,{" "}
-                                {preciseFormatter.format(
-                                  entry.thermalMargin
-                                    .heatLoadMarginMegajoulesPerSquareMetre,
-                                )}{" "}
-                                MJ/m²
-                              </output>
-                            </dd>
-                          </div>
-                          <div>
-                            <dt className="orbix-label">
-                              Margin classification
-                            </dt>
-                            <dd className="mt-1">
-                              <output
-                                className="text-sm font-semibold"
-                                htmlFor={outputIds}
-                              >
-                                {entry.thermalClassification}
-                              </output>
-                            </dd>
-                          </div>
-                        </dl>
-                      </article>
+
+                          <CalculatorNumberField
+                            error={vehicleErrors?.massKilograms}
+                            field="massKilograms"
+                            hint="Positive vehicle mass held constant during evaluation."
+                            idPrefix={prefix}
+                            label="Mass"
+                            onChange={(_field, value) =>
+                              updateVehicleValue(
+                                vehicle.id,
+                                "massKilograms",
+                                value,
+                              )
+                            }
+                            unit="kg"
+                            value={vehicle.massKilograms}
+                          />
+                          <CalculatorNumberField
+                            error={vehicleErrors?.dragCoefficient}
+                            field="dragCoefficient"
+                            hint="Positive dimensionless drag coefficient for this vehicle."
+                            idPrefix={prefix}
+                            label="Drag coefficient"
+                            onChange={(_field, value) =>
+                              updateVehicleValue(
+                                vehicle.id,
+                                "dragCoefficient",
+                                value,
+                              )
+                            }
+                            unit=""
+                            value={vehicle.dragCoefficient}
+                          />
+                          <CalculatorNumberField
+                            error={vehicleErrors?.referenceAreaSquareMetres}
+                            field="referenceAreaSquareMetres"
+                            hint="Aerodynamic reference area and TPS coverage area."
+                            idPrefix={prefix}
+                            label="Reference area"
+                            onChange={(_field, value) =>
+                              updateVehicleValue(
+                                vehicle.id,
+                                "referenceAreaSquareMetres",
+                                value,
+                              )
+                            }
+                            unit="m²"
+                            value={vehicle.referenceAreaSquareMetres}
+                          />
+                          <CalculatorNumberField
+                            error={vehicleErrors?.noseRadiusMetres}
+                            field="noseRadiusMetres"
+                            hint="Effective stagnation-point radius used by heating analysis."
+                            idPrefix={prefix}
+                            label="Nose radius"
+                            onChange={(_field, value) =>
+                              updateVehicleValue(
+                                vehicle.id,
+                                "noseRadiusMetres",
+                                value,
+                              )
+                            }
+                            unit="m"
+                            value={vehicle.noseRadiusMetres}
+                          />
+                        </div>
+
+                        {vehicleErrors?.entry ? (
+                          <p
+                            className="orbix-field__error mt-4"
+                            id={entryErrorId}
+                            role="alert"
+                          >
+                            <CircleAlert
+                              aria-hidden="true"
+                              className="shrink-0"
+                              size={14}
+                            />
+                            {vehicleErrors.entry}
+                          </p>
+                        ) : null}
+                      </fieldset>
                     );
                   })}
                 </div>
-              </section>
-
-              <section
-                aria-labelledby="vehicle-reentry-comparison-table-title"
-                className="border-t border-border pt-5"
-              >
-                <h4
-                  className="text-sm font-semibold text-foreground"
-                  id="vehicle-reentry-comparison-table-title"
-                >
-                  Comparison table
-                </h4>
-                <div
-                  aria-label="Scrollable ranked vehicle reentry comparison table"
-                  className="orbix-table-wrap mt-3 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
-                  role="region"
-                  tabIndex={0}
-                >
-                  <table className="orbix-table w-full min-w-[76rem]">
-                    <caption className="sr-only">
-                      Vehicles ranked under the shared reentry scenario
-                    </caption>
-                    <thead className="bg-surface-raised">
-                      <tr>
-                        <th scope="col">Rank</th>
-                        <th scope="col">Vehicle</th>
-                        <th scope="col">TPS mass</th>
-                        <th scope="col">TPS thickness</th>
-                        <th scope="col">Peak deceleration</th>
-                        <th scope="col">Peak heat flux</th>
-                        <th scope="col">Recommended TPS material</th>
-                        <th scope="col">Margin classification</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {result.ranking.map((entry, rankIndex) => {
-                        const inputIndex =
-                          result.evaluatedVehicles.indexOf(entry);
-                        const formVehicle = values.vehicles[inputIndex];
-                        const outputIds = formVehicle
-                          ? sharedOutputIds +
-                            " " +
-                            getVehicleInputIds(formVehicle.id)
-                          : sharedOutputIds;
-                        const recommended = entry === result.recommendedVehicle;
-
-                        return (
-                          <tr
-                            className={
-                              recommended ? "bg-surface-raised" : undefined
-                            }
-                            key={formVehicle?.id ?? entry.vehicleName}
-                          >
-                            <th className="orbix-num font-semibold" scope="row">
-                              {rankIndex + 1}
-                            </th>
-                            <td className="font-medium">
-                              <output htmlFor={outputIds}>
-                                {entry.vehicleName}
-                              </output>
-                              {recommended ? (
-                                <span className="orbix-label ml-2">
-                                  Recommended
-                                </span>
-                              ) : null}
-                            </td>
-                            <td className="orbix-num">
-                              <output htmlFor={outputIds}>
-                                {preciseFormatter.format(
-                                  entry.tpsMassKilograms,
-                                )}{" "}
-                                kg
-                              </output>
-                            </td>
-                            <td className="orbix-num">
-                              <output htmlFor={outputIds}>
-                                {preciseFormatter.format(
-                                  entry.tpsThickness.millimetres,
-                                )}{" "}
-                                mm
-                              </output>
-                            </td>
-                            <td className="orbix-num">
-                              <output htmlFor={outputIds}>
-                                {standardFormatter.format(
-                                  entry.peakDeceleration
-                                    .decelerationMetersPerSecondSquared,
-                                )}{" "}
-                                m/s²
-                              </output>
-                            </td>
-                            <td className="orbix-num">
-                              <output htmlFor={outputIds}>
-                                {heatFluxFormatter.format(
-                                  entry.peakHeating.heatFluxWattsPerSquareMetre,
-                                )}{" "}
-                                W/m²
-                              </output>
-                            </td>
-                            <td>
-                              <output htmlFor={outputIds}>
-                                {entry.recommendedTPSMaterial.name}
-                              </output>
-                            </td>
-                            <td>
-                              <output htmlFor={outputIds}>
-                                {entry.thermalClassification}
-                              </output>
-                            </td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
+              ) : (
+                <div className="mt-5 rounded-lg border border-border p-4">
+                  <p className="text-sm font-semibold">
+                    No vehicles configured
+                  </p>
+                  <p className="mt-2 text-sm leading-6 text-muted">
+                    Add at least one vehicle to run the shared reentry
+                    comparison.
+                  </p>
                 </div>
-              </section>
-            </div>
-          ) : (
-            <NotCalculated invalid={validationMessages.some(Boolean)}>
-              Configure at least one valid vehicle to generate the shared
-              reentry comparison.
-            </NotCalculated>
-          )}
-        </CalculatorResultSection>
+              )}
 
-        <aside className="orbix-lab-note">
-          <p className="orbix-lab-note__title">
-            <AlertTriangle aria-hidden="true" size={17} />
-            Modeling assumptions
-          </p>
-          <ul className="mt-4 grid list-disc gap-2 pl-5 text-sm leading-6 text-muted sm:grid-cols-2">
-            <li>Educational engineering comparison only</li>
-            <li>Identical reentry conditions for every vehicle</li>
-            <li>Constant mass, drag coefficient, area, and nose radius</li>
-            <li>Simplified point-mass trajectory and atmosphere</li>
-            <li>Simplified stagnation-heating and TPS models</li>
-            <li>No lift guidance or flight-control behavior</li>
-            <li>No ablation, structural failure, or vehicle integration</li>
-            <li>Not suitable for flight design or certification</li>
-          </ul>
-        </aside>
+              {errors.vehicleList ? (
+                <p
+                  className="orbix-field__error mt-3"
+                  id="vehicle-reentry-comparison-list-error"
+                  role="alert"
+                >
+                  {errors.vehicleList}
+                </p>
+              ) : null}
+            </section>
+
+            <ValidationErrorSummary errors={validationMessages} />
+
+            <div className="mt-7 flex flex-wrap items-center gap-x-5 gap-y-3">
+              <p className="min-w-0 flex-[1_1_16rem] text-sm leading-6 text-muted">
+                Valid changes rerun every vehicle under the same scenario and
+                refresh the ranking immediately.
+              </p>
+              <Button
+                className="shrink-0 whitespace-nowrap"
+                variant="secondary"
+                onClick={resetAnalyzer}
+              >
+                Reset inputs
+              </Button>
+            </div>
+          </form>
+        </div>
+
+        <div className="@container/col min-w-0 space-y-5">
+          <CalculatorResultSection
+            id="vehicle-reentry-comparison-result"
+            title="Vehicle reentry comparison"
+          >
+            {result ? (
+              <>
+                <ReadoutGrid columns={1}>
+                  <div>
+                    <dt className="orbix-label">Recommended vehicle</dt>
+                    <dd>
+                      <output className="lab-value-text" htmlFor={allOutputIds}>
+                        {result.recommendedVehicle.vehicleName}
+                      </output>
+                      <p className="mt-2 text-sm leading-6 text-muted">
+                        Selected from the configured vehicles using the analysis
+                        ranking order: lowest TPS mass, lowest required
+                        thickness, then lowest peak deceleration.
+                      </p>
+                    </dd>
+                  </div>
+                </ReadoutGrid>
+
+                {result.evaluatedVehicles.map((entry, index) => {
+                  const formVehicle = values.vehicles[index];
+                  const outputIds = formVehicle
+                    ? sharedOutputIds + " " + getVehicleInputIds(formVehicle.id)
+                    : sharedOutputIds;
+
+                  return (
+                    <ReadoutGrid
+                      columns={2}
+                      key={formVehicle?.id ?? entry.vehicleName}
+                      title={
+                        entry === result.recommendedVehicle
+                          ? entry.vehicleName + ", recommended"
+                          : entry.vehicleName
+                      }
+                    >
+                      <div>
+                        <dt className="orbix-label">TPS mass</dt>
+                        <dd className="mt-1">
+                          <output
+                            className="orbix-readout-lg"
+                            htmlFor={outputIds}
+                          >
+                            <LabFigure unit="kg">
+                              {preciseFormatter.format(entry.tpsMassKilograms)}
+                            </LabFigure>
+                          </output>
+                        </dd>
+                      </div>
+                      <div>
+                        <dt className="orbix-label">Final velocity</dt>
+                        <dd className="mt-1">
+                          <output className="orbix-data" htmlFor={outputIds}>
+                            <LabFigure unit="m/s">
+                              {standardFormatter.format(
+                                entry.trajectorySummary.finalState
+                                  .velocityMetersPerSecond,
+                              )}
+                            </LabFigure>
+                          </output>
+                        </dd>
+                      </div>
+                      <div>
+                        <dt className="orbix-label">Reentry duration</dt>
+                        <dd className="mt-1">
+                          <output className="orbix-data" htmlFor={outputIds}>
+                            <LabFigure unit="s">
+                              {standardFormatter.format(
+                                entry.trajectorySummary.reentryDurationSeconds,
+                              )}
+                            </LabFigure>
+                          </output>
+                        </dd>
+                      </div>
+                      <div>
+                        <dt className="orbix-label">Peak deceleration</dt>
+                        <dd className="mt-1">
+                          <output className="orbix-data" htmlFor={outputIds}>
+                            <LabFigure unit="m/s²">
+                              {standardFormatter.format(
+                                entry.peakDeceleration
+                                  .decelerationMetersPerSecondSquared,
+                              )}
+                            </LabFigure>
+                          </output>
+                          <output
+                            className="lab-figure-note"
+                            htmlFor={outputIds}
+                          >
+                            <LabFigure unit="g">
+                              {standardFormatter.format(
+                                entry.peakDeceleration.decelerationGs,
+                              )}
+                            </LabFigure>
+                          </output>
+                        </dd>
+                      </div>
+                      <div>
+                        <dt className="orbix-label">Peak heat flux</dt>
+                        <dd className="mt-1">
+                          <output className="orbix-data" htmlFor={outputIds}>
+                            <LabFigure unit="W/m²">
+                              {heatFluxFormatter.format(
+                                entry.peakHeating.heatFluxWattsPerSquareMetre,
+                              )}
+                            </LabFigure>
+                          </output>
+                        </dd>
+                      </div>
+                      <div>
+                        <dt className="orbix-label">Total heat load</dt>
+                        <dd className="mt-1">
+                          <output className="orbix-data" htmlFor={outputIds}>
+                            <LabFigure unit="MJ/m²">
+                              {preciseFormatter.format(
+                                entry.totalHeatLoad
+                                  .heatLoadMegajoulesPerSquareMetre,
+                              )}
+                            </LabFigure>
+                          </output>
+                        </dd>
+                      </div>
+                      <div>
+                        <dt className="orbix-label">
+                          Recommended TPS material
+                        </dt>
+                        <dd className="mt-1">
+                          <output
+                            className="lab-value-text"
+                            htmlFor={outputIds}
+                          >
+                            {entry.recommendedTPSMaterial.name}
+                          </output>
+                        </dd>
+                      </div>
+                      <div>
+                        <dt className="orbix-label">TPS thickness</dt>
+                        <dd className="mt-1">
+                          <output className="orbix-data" htmlFor={outputIds}>
+                            <LabFigure unit="mm">
+                              {preciseFormatter.format(
+                                entry.tpsThickness.millimetres,
+                              )}
+                            </LabFigure>
+                          </output>
+                        </dd>
+                      </div>
+                      <div>
+                        <dt className="orbix-label">Thermal margin</dt>
+                        <dd className="mt-1">
+                          <output className="orbix-data" htmlFor={outputIds}>
+                            <LabFigure unit="%">
+                              {standardFormatter.format(
+                                entry.thermalMargin.marginPercentage,
+                              )}
+                            </LabFigure>
+                          </output>
+                          <output
+                            className="lab-figure-note"
+                            htmlFor={outputIds}
+                          >
+                            <LabFigure unit="MJ/m²">
+                              {preciseFormatter.format(
+                                entry.thermalMargin
+                                  .heatLoadMarginMegajoulesPerSquareMetre,
+                              )}
+                            </LabFigure>
+                          </output>
+                        </dd>
+                      </div>
+                      <div>
+                        <dt className="orbix-label">Margin classification</dt>
+                        <dd className="mt-1">
+                          <output
+                            className="lab-value-text"
+                            htmlFor={outputIds}
+                          >
+                            {entry.thermalClassification}
+                          </output>
+                        </dd>
+                      </div>
+                    </ReadoutGrid>
+                  );
+                })}
+              </>
+            ) : (
+              <NotCalculated invalid={validationMessages.some(Boolean)}>
+                Configure at least one valid vehicle to generate the shared
+                reentry comparison.
+              </NotCalculated>
+            )}
+          </CalculatorResultSection>
+
+          {result ? (
+            <DataTable
+              caption="Vehicles ranked under the shared reentry scenario"
+              columns={[
+                {
+                  key: "rank",
+                  header: "Rank",
+                  numeric: true,
+                  cell: ({ rank }) => String(rank),
+                },
+                {
+                  key: "vehicle",
+                  header: "Vehicle",
+                  cell: ({ entry, outputIds, recommended }) => (
+                    <span className="block min-w-[16ch]">
+                      <output htmlFor={outputIds}>{entry.vehicleName}</output>
+                      {recommended ? (
+                        <span className="block text-sm text-muted">
+                          <span className="sr-only">, </span>Recommended
+                        </span>
+                      ) : null}
+                    </span>
+                  ),
+                },
+                {
+                  key: "tps-mass",
+                  header: "TPS mass",
+                  unit: "kg",
+                  numeric: true,
+                  cell: ({ entry, outputIds }) => (
+                    <output htmlFor={outputIds}>
+                      {preciseFormatter.format(entry.tpsMassKilograms)}
+                    </output>
+                  ),
+                },
+                {
+                  key: "tps-thickness",
+                  header: "TPS thickness",
+                  unit: "mm",
+                  numeric: true,
+                  cell: ({ entry, outputIds }) => (
+                    <output htmlFor={outputIds}>
+                      {preciseFormatter.format(entry.tpsThickness.millimetres)}
+                    </output>
+                  ),
+                },
+                {
+                  key: "peak-deceleration",
+                  header: "Peak deceleration",
+                  unit: "m/s²",
+                  numeric: true,
+                  cell: ({ entry, outputIds }) => (
+                    <output htmlFor={outputIds}>
+                      {standardFormatter.format(
+                        entry.peakDeceleration
+                          .decelerationMetersPerSecondSquared,
+                      )}
+                    </output>
+                  ),
+                },
+                {
+                  key: "peak-heat-flux",
+                  header: "Peak heat flux",
+                  unit: "W/m²",
+                  numeric: true,
+                  cell: ({ entry, outputIds }) => (
+                    <output htmlFor={outputIds}>
+                      {heatFluxFormatter.format(
+                        entry.peakHeating.heatFluxWattsPerSquareMetre,
+                      )}
+                    </output>
+                  ),
+                },
+                {
+                  key: "material",
+                  header: "Recommended TPS material",
+                  cell: ({ entry, outputIds }) => (
+                    <output htmlFor={outputIds}>
+                      {entry.recommendedTPSMaterial.name}
+                    </output>
+                  ),
+                },
+                {
+                  key: "margin",
+                  header: "Margin classification",
+                  cell: ({ entry, outputIds }) => (
+                    <output htmlFor={outputIds}>
+                      {entry.thermalClassification}
+                    </output>
+                  ),
+                },
+              ]}
+              getRowKey={({ key }) => key}
+              rows={result.ranking.map((entry, rankIndex) => {
+                const inputIndex = result.evaluatedVehicles.indexOf(entry);
+                const formVehicle = values.vehicles[inputIndex];
+                return {
+                  entry,
+                  key: formVehicle ? String(formVehicle.id) : entry.vehicleName,
+                  outputIds: formVehicle
+                    ? sharedOutputIds + " " + getVehicleInputIds(formVehicle.id)
+                    : sharedOutputIds,
+                  rank: rankIndex + 1,
+                  recommended: entry === result.recommendedVehicle,
+                };
+              })}
+            />
+          ) : null}
+        </div>
+
+        <div className="@container/col min-w-0 space-y-5">
+          <section
+            aria-labelledby="vehicle-reentry-comparison-education-title"
+            className="border-t border-border pt-7"
+          >
+            <h3
+              className="text-lg font-semibold"
+              id="vehicle-reentry-comparison-education-title"
+            >
+              Reading the vehicle trade space
+            </h3>
+            <div className="mt-4 border-t border-border">
+              <article className="border-b border-border py-4">
+                <h4 className="text-sm font-semibold text-foreground">
+                  Vehicle trade-offs
+                </h4>
+                <p className="mt-2 text-sm leading-6 text-muted">
+                  Mass, drag, area, and nose geometry change deceleration,
+                  heating, and the resulting TPS estimates together.
+                </p>
+              </article>
+              <article className="border-b border-border py-4">
+                <h4 className="text-sm font-semibold text-foreground">
+                  Ranking order
+                </h4>
+                <p className="mt-2 text-sm leading-6 text-muted">
+                  The existing comparison ranks lowest TPS mass first, then
+                  lower thickness, and finally lower peak deceleration.
+                </p>
+              </article>
+              <article className="border-b border-border py-4">
+                <h4 className="text-sm font-semibold text-foreground">
+                  Shared scenario
+                </h4>
+                <p className="mt-2 text-sm leading-6 text-muted">
+                  Every vehicle receives identical reentry conditions so the
+                  displayed differences originate from its configuration.
+                </p>
+              </article>
+            </div>
+            <p className="mt-4 text-sm leading-6 text-muted">
+              This is an educational comparison, not a flight-design selection
+              or certification recommendation.
+            </p>
+          </section>
+          <aside className="orbix-lab-note">
+            <p className="orbix-lab-note__title font-medium">
+              Modeling assumptions
+            </p>
+            <ul className="mt-4 grid list-disc gap-2 pl-5 text-sm leading-6 text-muted @min-[36rem]/col:grid-cols-2">
+              <li>Educational engineering comparison only</li>
+              <li>Identical reentry conditions for every vehicle</li>
+              <li>Constant mass, drag coefficient, area, and nose radius</li>
+              <li>Simplified point-mass trajectory and atmosphere</li>
+              <li>Simplified stagnation-heating and TPS models</li>
+              <li>No lift guidance or flight-control behavior</li>
+              <li>No ablation, structural failure, or vehicle integration</li>
+              <li>Not suitable for flight design or certification</li>
+            </ul>
+          </aside>
+        </div>
       </div>
-    </div>
+    </LabToolLayout>
   );
 }

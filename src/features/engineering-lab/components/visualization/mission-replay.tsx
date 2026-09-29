@@ -10,6 +10,7 @@ import type {
   VehicleReentryEvaluationAnalysis,
 } from "@/features/engineering-lab/types";
 
+import { HeadingLevel, LabHeading, useHeadingLevel } from "./lab-heading";
 import { Mission3DScene } from "./mission-3d-scene";
 import { ReplayControls, type ReplaySpeed } from "./replay-controls";
 import {
@@ -17,6 +18,7 @@ import {
   type ReplayPresentationPhase,
 } from "./replay-phase-indicator";
 import { formatLabValue } from "./format-lab-value";
+import { formatFigure } from "@/components/ui/readout";
 
 export interface MissionReplayProps {
   readonly missionProfileAnalysis?: MissionProfileAnalysis | null;
@@ -230,7 +232,7 @@ function ReplayTelemetry({
           }
         >
           {typeof value === "number"
-            ? formatLabValue(value)
+            ? formatFigure(formatLabValue(value))
             : (value ?? "Not reported")}
           {value !== undefined && unit ? ` ${unit}` : ""}
         </output>
@@ -259,6 +261,7 @@ export function MissionReplay({
     INITIAL_REPLAY_STATE,
   );
   const reducedMotion = useReducedMotion(reducedMotionOverride);
+  const headingLevel = useHeadingLevel();
   const activePhase = phases[state.currentPhaseIndex] ?? phases[0];
   const transfer =
     missionProfileAnalysis?.sourceAnalyses.deltaVBudget?.sourceAnalyses
@@ -299,14 +302,8 @@ export function MissionReplay({
       className="min-w-0"
       data-reduced-motion={reducedMotion ? "true" : "false"}
     >
-      <header className="flex flex-col gap-2 border-b border-border-subtle pb-4 sm:flex-row sm:items-baseline sm:justify-between">
-        <h3 className="orbix-h3 text-foreground" id="mission-replay-title">
-          Mission replay
-        </h3>
-        <p className="text-sm text-text-secondary">
-          <span className="text-muted">Now: </span>
-          <output>{activePhase.statusLabel}</output>
-        </p>
+      <header className="border-b border-border-subtle pb-4">
+        <LabHeading id="mission-replay-title">Mission replay</LabHeading>
       </header>
 
       <div className="space-y-6 pt-6">
@@ -322,7 +319,8 @@ export function MissionReplay({
           totalPhases={phases.length}
         />
 
-        <div className="overflow-x-auto pb-2">
+        {/* The step row reflows to its column (2, 4 or 8 across). */}
+        <div className="@container border-t border-border-subtle pt-6">
           <ReplayPhaseIndicator
             currentPhaseIndex={state.currentPhaseIndex}
             onSelectPhase={(phaseIndex) =>
@@ -332,39 +330,38 @@ export function MissionReplay({
           />
         </div>
 
-        <section aria-labelledby="replay-active-phase-title">
-          <p className="orbix-label">
-            {activePhase.sceneMode === "orbital" ? "Orbital" : "Reentry"} phase
-          </p>
-          <h4
-            className="orbix-h4 mt-1 text-foreground"
-            id="replay-active-phase-title"
-          >
-            {activePhase.label}
-          </h4>
-          <p className="mt-1 max-w-[68ch] text-sm leading-6 text-text-secondary">
-            {activePhase.description}
-          </p>
-        </section>
+        {/* The selected step's note. Its name is already on the step row and
+         * in the status line, so it is not repeated as a heading here. */}
+        <p className="max-w-[68ch] text-sm leading-6 text-text-secondary">
+          <span className="text-muted">
+            {activePhase.sceneMode === "orbital" ? "Orbital" : "Reentry"}{" "}
+            phase.{" "}
+          </span>
+          {activePhase.description}
+        </p>
 
-        <Mission3DScene
-          initialMode={activePhase.sceneMode}
-          key={activePhase.id}
-          missionProfileAnalysis={
-            activePhase.sceneMode === "orbital" ? missionProfileAnalysis : null
-          }
-          missionReport={missionReport}
-          vehicleReentryEvaluation={
-            activePhase.sceneMode === "reentry"
-              ? vehicleReentryEvaluation
-              : null
-          }
-        />
+        <HeadingLevel level={headingLevel + 1}>
+          <Mission3DScene
+            initialMode={activePhase.sceneMode}
+            key={activePhase.id}
+            missionProfileAnalysis={
+              activePhase.sceneMode === "orbital"
+                ? missionProfileAnalysis
+                : null
+            }
+            missionReport={missionReport}
+            vehicleReentryEvaluation={
+              activePhase.sceneMode === "reentry"
+                ? vehicleReentryEvaluation
+                : null
+            }
+          />
+        </HeadingLevel>
 
         <section aria-labelledby="replay-telemetry-title">
-          <h4 className="orbix-h4 text-foreground" id="replay-telemetry-title">
+          <LabHeading id="replay-telemetry-title" offset={1} variant="sub">
             Values for this mission
-          </h4>
+          </LabHeading>
           <dl className="mt-2 grid gap-x-8 sm:grid-cols-2">
             <ReplayTelemetry label="Active phase" value={activePhase.label} />
             <ReplayTelemetry
@@ -374,8 +371,8 @@ export function MissionReplay({
             />
             <ReplayTelemetry
               label="Transfer duration"
-              unit="s"
-              value={transfer?.transfer.transferTimeSeconds}
+              unit="h"
+              value={transfer?.transfer.transferTimeHours}
             />
             <ReplayTelemetry
               label="Vehicle"

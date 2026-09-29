@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 
 import { AircraftExplorer, listAircraft } from "@/features/aircraft";
+import { socialOpenGraph } from "@/lib/social-image";
 
 const title = "Aircraft registry";
 const description =
@@ -10,6 +11,7 @@ export const metadata: Metadata = {
   alternates: { canonical: "/aircraft" },
   description,
   openGraph: {
+    ...socialOpenGraph,
     description,
     locale: "en_US",
     siteName: "ORBIX",

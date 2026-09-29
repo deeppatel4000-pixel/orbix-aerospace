@@ -8,6 +8,12 @@ interface CalculatorCardProps {
   description: string;
   headingLevel?: 2 | 3;
   id: string;
+  /**
+   * The tool's number in the Engineering Lab index ("01"), set in B612 Mono
+   * in the accent above the title so the index and the panel read as one
+   * system. Decorative: the index already announces it.
+   */
+  number?: string;
   title: string;
 }
 
@@ -21,6 +27,7 @@ export function CalculatorCard({
   description,
   headingLevel = 2,
   id,
+  number,
   title,
 }: CalculatorCardProps) {
   const titleId = id + "-title";
@@ -29,6 +36,14 @@ export function CalculatorCard({
   return (
     <article aria-labelledby={titleId} className={styles.card} id={id}>
       <header className={styles.header}>
+        {number ? (
+          <p
+            aria-hidden="true"
+            className="orbix-data mb-2 text-xs leading-none text-accent"
+          >
+            {number}
+          </p>
+        ) : null}
         <Heading className="orbix-h2 text-foreground" id={titleId}>
           {title}
         </Heading>

@@ -23,7 +23,8 @@ import {
  *     replay", so the toggle's own name is the component's observable
  *     playback state; no internal state is touched.
  *   - Progress is reported as text,
- *     `Phase {index + 1} of {totalPhases}, playing` (or `, paused`).
+ *     `Phase {index + 1} of {totalPhases}, playing: {phase title}` (or
+ *     `, paused: ...`).
  *   - The advance timer fires every `reducedMotionDelayMilliseconds` (3600 ms)
  *     whenever reduced motion is active — which it always is in this suite,
  *     because `playwright.config.ts` sets `contextOptions.reducedMotion:
@@ -37,8 +38,9 @@ import {
  * Requirement "scrub" is covered against what the component actually
  * implements. There is no `<input type="range">` or `role="slider"` anywhere
  * in Mission Replay — verified by grep across `mission-replay.tsx`,
- * `replay-controls.tsx` and `replay-phase-indicator.tsx`. The progress
- * readout is a non-interactive `<progress>` element.
+ * `replay-controls.tsx` and `replay-phase-indicator.tsx`. Position is
+ * reported by the status line and the phase step row (design v2 removed the
+ * separate `<progress>` bar).
  *
  * The real timeline control is `ReplayPhaseIndicator`: one
  * `<button aria-label="Show replay phase: …">` per phase, marked
@@ -70,7 +72,7 @@ async function expectPaused(page: Page): Promise<void> {
   await expect(playButton(page)).toBeEnabled();
   await expect(pauseButton(page)).toHaveCount(0);
   await expect(
-    replaySection(page).getByText(/^Phase \d+ of \d+, paused$/),
+    replaySection(page).getByText(/^Phase \d+ of \d+, paused: \S.*$/),
   ).toBeVisible();
 }
 
@@ -79,7 +81,7 @@ async function expectPlaying(page: Page): Promise<void> {
   await expect(pauseButton(page)).toBeEnabled();
   await expect(playButton(page)).toHaveCount(0);
   await expect(
-    replaySection(page).getByText(/^Phase \d+ of \d+, playing$/),
+    replaySection(page).getByText(/^Phase \d+ of \d+, playing: \S.*$/),
   ).toBeVisible();
 }
 
@@ -99,7 +101,7 @@ async function readPhase(
 ): Promise<{ current: number; total: number }> {
   const text =
     (await replaySection(page)
-      .getByText(/^Phase \d+ of \d+, (paused|playing)$/)
+      .getByText(/^Phase \d+ of \d+, (paused|playing): \S.*$/)
       .textContent()) ?? "";
   const match = /^Phase (\d+) of (\d+),/.exec(text.trim());
   if (match === null) throw new Error(`Unrecognised phase readout: "${text}"`);
@@ -164,7 +166,7 @@ test.describe("Mission Replay controls", () => {
 
       // The phase label and live region follow the advance.
       await expect(
-        replaySection(page).getByText(/^Phase 2 of \d+, playing$/),
+        replaySection(page).getByText(/^Phase 2 of \d+, playing: \S.*$/),
       ).toBeVisible();
     });
 

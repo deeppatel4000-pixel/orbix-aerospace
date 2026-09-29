@@ -108,6 +108,15 @@ describe("MissionShowcase", () => {
     expect(restarted).toEqual(INITIAL_SHOWCASE_STATE);
   });
 
+  it("plays again from phase 1 when Play is pressed at the last phase", () => {
+    const replayed = missionShowcaseReducer(
+      { currentPhaseIndex: SHOWCASE_PHASES.length - 1, isPlaying: false },
+      { type: "play" },
+    );
+
+    expect(replayed).toEqual({ currentPhaseIndex: 0, isPlaying: true });
+  });
+
   it("renders supplied orbital, vehicle, and thermal telemetry", () => {
     const markup = renderToStaticMarkup(
       <MissionShowcase missionProfile={missionProfile} report={report} />,

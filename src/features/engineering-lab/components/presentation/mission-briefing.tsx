@@ -9,6 +9,7 @@ import { BriefingHeader } from "./briefing-header";
 import { BriefingObjectives } from "./briefing-objectives";
 import { BriefingOverview } from "./briefing-overview";
 import { BriefingSystemSummary } from "./briefing-system-summary";
+import { LabHeading } from "../visualization/lab-heading";
 
 export interface MissionBriefingProps {
   readonly insights?: MissionInsightsAnalysis;
@@ -91,21 +92,27 @@ export function MissionBriefing({
           aria-labelledby="mission-architecture-timeline-title"
           className="border-t border-border-subtle pt-8"
         >
-          <h4
-            className="orbix-h4 text-foreground"
-            id="mission-architecture-timeline-title"
-          >
+          <LabHeading offset={1} id="mission-architecture-timeline-title">
             Typical mission phases
-          </h4>
+          </LabHeading>
           <p className="mt-1 text-sm leading-6 text-muted">
             The usual order of phases for a mission like this. Not simulated;
             shown for context only.
           </p>
-          <ol className="mt-3 list-decimal space-y-1 pl-6 text-sm leading-6 text-text-secondary sm:columns-2 sm:gap-8">
-            {architecturePhases.map((phase) => (
-              <li key={phase}>{phase}</li>
-            ))}
-          </ol>
+          {/* The lab's step row in its non-interactive state: B612 Mono
+           * number, label and a 2px rule, flush with the content edge. */}
+          <div className="@container mt-3">
+            <ol className="grid grid-cols-2 gap-x-4 gap-y-1 text-sm leading-5 text-text-secondary @md:grid-cols-3 @3xl:grid-cols-6">
+              {architecturePhases.map((phase, index) => (
+                <li className="border-b-2 border-border py-2" key={phase}>
+                  <span className="orbix-data mr-2 text-muted">
+                    {index + 1}
+                  </span>
+                  {phase}
+                </li>
+              ))}
+            </ol>
+          </div>
         </section>
 
         {insights?.insights.length ? (
@@ -113,12 +120,9 @@ export function MissionBriefing({
             aria-labelledby="mission-briefing-insights-title"
             className="border-t border-border-subtle pt-8"
           >
-            <h4
-              className="orbix-h4 text-foreground"
-              id="mission-briefing-insights-title"
-            >
+            <LabHeading offset={1} id="mission-briefing-insights-title">
               Engineering notes
-            </h4>
+            </LabHeading>
             <ul className="mt-3 list-disc space-y-2 pl-5 text-sm leading-6 text-text-secondary">
               {insights.insights.map((insight) => (
                 <li key={insight.id}>{insight.summary}</li>

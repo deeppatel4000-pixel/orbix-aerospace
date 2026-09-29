@@ -14,9 +14,9 @@ interface LaboratoryWorkflowSectionProps {
 /**
  * One discipline of the Engineering Lab and its active module.
  *
- * The discipline name is a short label above the module, not a heading: the
- * module's own `<h2>` is the heading a reader navigates by, and the index on
- * the left already groups tools by discipline.
+ * The discipline name labels the section for assistive technology only:
+ * the module's own `<h2>` is the heading a reader navigates by, the index
+ * already shows the discipline, and the card carries the tool's number.
  */
 export function LaboratoryWorkflowSection({
   children,
@@ -28,7 +28,7 @@ export function LaboratoryWorkflowSection({
 
   return (
     <section aria-labelledby={titleId} id={id}>
-      <p className="orbix-label mb-3" id={titleId}>
+      <p className="sr-only" id={titleId}>
         {title}
       </p>
       <LaboratoryModuleWorkspace tools={tools} workflowId={id}>

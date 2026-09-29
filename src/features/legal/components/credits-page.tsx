@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 
+import { DataTable, type DataTableColumn } from "@/components/ui/data-table";
 import { ContactEmailLink } from "@/features/legal/components/contact-email-link";
 import {
   LegalPage,
@@ -13,6 +14,7 @@ import {
   type ImageCredit,
   type ImageCreditGroup,
 } from "@/features/legal/data/image-credits";
+import { cn } from "@/lib/cn";
 
 const toc: readonly LegalTocItem[] = [
   { id: "photographs", title: "Vehicle photographs" },
@@ -51,46 +53,88 @@ const software = [
   },
 ] as const;
 
+/** Table caption for each photograph group. */
+const groupCaptions: Record<ImageCredit["group"], string> = {
+  Aircraft: "Aircraft photographs",
+  "Launch vehicles": "Launch vehicle photographs",
+};
+
 const NOT_RECORDED = "Not yet recorded";
 
 function Missing() {
   return <span className="text-muted">{NOT_RECORDED}</span>;
 }
 
-function CreditRow({ item }: { readonly item: ImageCredit }) {
-  return (
-    <tr>
-      <th scope="row">
-        <div className="flex min-w-40 flex-col gap-2">
-          <Image
-            alt={item.alt}
-            className="aspect-video h-auto w-24 rounded-sm border border-border object-cover"
-            height={54}
-            sizes="96px"
-            src={item.src}
-            width={96}
-          />
-          <span>{item.vehicleName}</span>
-        </div>
-      </th>
-      <td className="min-w-40">{item.credit ?? <Missing />}</td>
-      <td className="min-w-32">
+const creditColumns: readonly DataTableColumn<ImageCredit>[] = [
+  {
+    cell: (item) => {
+      const portrait = item.group === "Launch vehicles";
+
+      return (
+        <span className="flex min-w-32 flex-col gap-2 md:min-w-0 lg:flex-row lg:items-start lg:gap-3">
+          <span className="lg:order-last">{item.vehicleName}</span>
+          {/* One 112px slot for every thumbnail from 64rem, so aircraft and
+              launch vehicle names share one left edge across both tables. */}
+          <span className="flex shrink-0 lg:w-[112px] lg:justify-center">
+            <Image
+              alt={item.alt}
+              className={cn(
+                "shrink-0 rounded-sm border border-border",
+                portrait
+                  ? "h-[72px] w-[54px] bg-page object-contain object-bottom"
+                  : "h-[70px] w-[112px] object-cover",
+              )}
+              height={portrait ? 72 : 70}
+              sizes={portrait ? "54px" : "112px"}
+              src={item.src}
+              style={
+                portrait
+                  ? undefined
+                  : { objectPosition: item.cardObjectPosition }
+              }
+              width={portrait ? 54 : 112}
+            />
+          </span>
+        </span>
+      );
+    },
+    header: "Vehicle",
+    key: "vehicle",
+  },
+  {
+    cell: (item) => (
+      <span className="block min-w-36 md:min-w-0">
+        {item.credit ?? <Missing />}
+      </span>
+    ),
+    header: "Credit",
+    key: "credit",
+  },
+  {
+    cell: (item) => (
+      <span className="relative block min-w-32 md:min-w-0">
         {item.license === null ? (
           <Missing />
         ) : item.licenseUrl === null ? (
           item.license
         ) : (
-          <a href={item.licenseUrl}>
+          <a className="orbix-link" href={item.licenseUrl}>
             {item.license}
             <span className="sr-only"> (licence text)</span>
           </a>
         )}
-      </td>
-      <td className="min-w-40">
+      </span>
+    ),
+    header: "Licence",
+    key: "licence",
+  },
+  {
+    cell: (item) => (
+      <span className="relative block min-w-36 md:min-w-0">
         {item.sourceUrl === null ? (
           <Missing />
         ) : (
-          <a href={item.sourceUrl}>
+          <a className="orbix-link" href={item.sourceUrl}>
             {describeSourceSite(item.sourceUrl)}
             <span className="sr-only">
               {" "}
@@ -98,49 +142,46 @@ function CreditRow({ item }: { readonly item: ImageCredit }) {
             </span>
           </a>
         )}
-        <p className="mt-1 text-muted">
+        <span className="mt-1 block text-muted">
           Changes: {item.modifications ?? NOT_RECORDED}
-        </p>
-      </td>
-    </tr>
-  );
-}
+        </span>
+      </span>
+    ),
+    header: "Source",
+    key: "source",
+  },
+];
 
-function CreditTable({
-  group,
-  items,
-}: {
-  readonly group: ImageCreditGroup;
-  readonly items: readonly ImageCredit[];
-}) {
-  const label = `${group} photograph credits`;
+/**
+ * Shared column widths from 48rem (Vehicle 30%, Credit 26%, Licence 21%,
+ * Source 23%), so the aircraft and launch vehicle tables line up when
+ * stacked, like the pages of one catalogue.
+ */
+const creditTableClass = [
+  "mt-4",
+  "md:[&_table]:table-fixed md:[&_table]:w-full",
+  "md:[&_thead_th:nth-child(1)]:w-[30%]",
+  "md:[&_thead_th:nth-child(2)]:w-[26%]",
+  "md:[&_thead_th:nth-child(3)]:w-[21%]",
+  "md:[&_thead_th:nth-child(4)]:w-[23%]",
+].join(" ");
 
-  return (
-    <div
-      aria-label={label}
-      className="orbix-table-wrap relative"
-      role="region"
-      tabIndex={0}
-    >
-      <table className="orbix-table">
-        <caption className="sr-only">{label}</caption>
-        <thead>
-          <tr>
-            <th scope="col">Vehicle</th>
-            <th scope="col">Credit</th>
-            <th scope="col">Licence</th>
-            <th scope="col">Source</th>
-          </tr>
-        </thead>
-        <tbody>
-          {items.map((item) => (
-            <CreditRow item={item} key={item.vehicleId} />
-          ))}
-        </tbody>
-      </table>
-    </div>
-  );
-}
+type SoftwareItem = (typeof software)[number];
+
+const softwareColumns: readonly DataTableColumn<SoftwareItem>[] = [
+  { cell: (item) => item.name, header: "Project", key: "project" },
+  { cell: (item) => item.use, header: "Used for", key: "use" },
+  {
+    cell: (item) => (
+      <a className="orbix-link relative" href={item.href}>
+        {item.license}
+        <span className="sr-only"> for {item.name}</span>
+      </a>
+    ),
+    header: "Licence",
+    key: "licence",
+  },
+];
 
 export function CreditsPage() {
   const credits = listImageCredits();
@@ -155,9 +196,10 @@ export function CreditsPage() {
 
   return (
     <LegalPage
-      crumb="Image credits"
+      eyebrow="The project"
       lead="Who made the photographs, fonts, icons and software that ORBIX uses, and the licence each one is used under."
-      title="Image credits and licences"
+      title="Image credits"
+      titleAccent="and licences"
       toc={toc}
     >
       <LegalSection id="photographs" title="Vehicle photographs">
@@ -185,10 +227,14 @@ export function CreditsPage() {
           if (items.length === 0) return null;
 
           return (
-            <div className="space-y-3" key={group}>
-              <h3>{group}</h3>
-              <CreditTable group={group} items={items} />
-            </div>
+            <DataTable
+              caption={groupCaptions[group]}
+              className={creditTableClass}
+              columns={creditColumns}
+              getRowKey={(item) => item.vehicleId}
+              key={group}
+              rows={items}
+            />
           );
         })}
         {credits.length === 0 ? (
@@ -207,8 +253,9 @@ export function CreditsPage() {
 
       <LegalSection id="fonts" title="Fonts">
         <p>
-          Text is set in IBM Plex Sans and IBM Plex Mono, designed for IBM and
-          licensed under the{" "}
+          Text is set in IBM Plex Sans, designed for IBM. Figures and labels are
+          set in B612 Mono, designed by Intactile Design with Airbus for cockpit
+          displays. Both are licensed under the{" "}
           <a href="https://openfontlicense.org/open-font-license-official-text/">
             SIL Open Font License 1.1
           </a>
@@ -229,39 +276,12 @@ export function CreditsPage() {
           ORBIX is built with the following open-source software. The ORBIX code
           itself is released under the MIT License.
         </p>
-        <div
-          aria-label="Open-source software used by ORBIX"
-          className="orbix-table-wrap relative"
-          role="region"
-          tabIndex={0}
-        >
-          <table className="orbix-table">
-            <caption className="sr-only">
-              Open-source software used by ORBIX
-            </caption>
-            <thead>
-              <tr>
-                <th scope="col">Project</th>
-                <th scope="col">Used for</th>
-                <th scope="col">Licence</th>
-              </tr>
-            </thead>
-            <tbody>
-              {software.map((item) => (
-                <tr key={item.name}>
-                  <th scope="row">{item.name}</th>
-                  <td>{item.use}</td>
-                  <td>
-                    <a href={item.href}>
-                      {item.license}
-                      <span className="sr-only"> for {item.name}</span>
-                    </a>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        <DataTable
+          caption="Open-source software used by ORBIX"
+          columns={softwareColumns}
+          getRowKey={(item) => item.name}
+          rows={software}
+        />
       </LegalSection>
 
       <LegalSection id="vehicle-data" title="Vehicle data">

@@ -1,10 +1,11 @@
 import type { ReactNode } from "react";
 
 /**
- * The empty value of a calculator result (spec 13.4). Never a dash: the text
- * "Not calculated" in muted body-small type, optionally followed by one
- * sentence saying what to enter. When the current inputs are invalid the
- * status line becomes "Not calculated. Check the inputs above."
+ * The empty value of a calculator result (spec 13.4). Never a dash, and
+ * never a box inside the result panel: one muted line, "Not calculated.",
+ * optionally followed by one sentence saying what to enter. When the
+ * current inputs are invalid it reads "Not calculated. Check the inputs
+ * above."
  */
 
 interface NotCalculatedProps {
@@ -17,13 +18,13 @@ export function NotCalculated({
   invalid = false,
 }: NotCalculatedProps) {
   return (
-    <div className="rounded border border-dashed border-border-strong px-4 py-4">
-      <p className="orbix-not-calculated font-medium">
-        {invalid ? "Not calculated. Check the inputs above." : "Not calculated"}
-      </p>
-      {children ? (
-        <p className="mt-2 text-sm leading-6 text-muted">{children}</p>
-      ) : null}
-    </div>
+    <p className="orbix-not-calculated leading-6">
+      <span className="font-medium text-text-secondary">
+        {invalid
+          ? "Not calculated. Check the inputs above."
+          : "Not calculated."}
+      </span>
+      {children ? <> {children}</> : null}
+    </p>
   );
 }

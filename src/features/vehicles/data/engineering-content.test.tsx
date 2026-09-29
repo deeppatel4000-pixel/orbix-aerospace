@@ -110,19 +110,15 @@ describe.each(PANELS)("engineering notes presentation ($name)", ({ Panel }) => {
   });
 });
 
-describe("aircraft notes disclosure", () => {
-  it("keeps the first note open", () => {
-    // Only the aircraft panel uses `details`/`summary`; the rockets panel
-    // renders plain articles. Matched on the rendered `open=""` attribute
-    // specifically — a looser `\sopen` matches all three cards, because the
-    // card's class list carries `open:border-tactical-amber/35`, the Tailwind
-    // variant rather than the attribute.
-    const markup = renderToStaticMarkup(
-      <AircraftNotesPanel notes={ALL_NOTES.slice(0, 3)} />,
-    );
+describe("aircraft notes list", () => {
+  it("shows every note open as its own article", () => {
+    // Design v2 (spec 9) sets engineering notes as an open spec sheet: one
+    // article per note and no disclosure widgets hiding any of them.
+    const notes = ALL_NOTES.slice(0, 3);
+    const markup = renderToStaticMarkup(<AircraftNotesPanel notes={notes} />);
 
-    expect((markup.match(/<details/g) ?? []).length).toBe(3);
-    expect((markup.match(/<details[^>]*\sopen=""/g) ?? []).length).toBe(1);
+    expect(markup).not.toContain("<details");
+    expect((markup.match(/<article/g) ?? []).length).toBe(notes.length);
   });
 });
 

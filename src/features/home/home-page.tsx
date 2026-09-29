@@ -1,25 +1,26 @@
-import { FeaturedRecords } from "@/features/home/components/featured-records";
 import { Hero } from "@/features/home/components/hero";
+import { RegistrySplit } from "@/features/home/components/registry-split";
 import { SiteSections } from "@/features/home/components/site-sections";
 import { SourcingNote } from "@/features/home/components/sourcing-note";
 
 /**
- * Homepage (spec 14, Home):
+ * Homepage (design v2, spec 9, Home):
  *
- *   intro              what ORBIX is, two destinations, one credited photo
- *   what is here       plain list of every section of the site
- *   featured records   three record cards from the registries
- *   sourcing           how vehicle values are sourced, and their limits
+ *   hero             full-bleed SR-71B photograph, wordmark, tagline H1,
+ *                    lead, primary and tertiary actions, credit line
+ *   registries       asymmetric split: large aircraft card, tall launch
+ *                    vehicle card
+ *   section index    01 to 06: Compare, Engineering Lab, Learn,
+ *                    Verification, How I built ORBIX, Showcase
+ *   sourcing         how vehicle values are sourced, and their limits
  */
 export function HomePage() {
   return (
     <>
       <Hero />
-      <div className="flex flex-col gap-12 py-12 sm:gap-16 sm:py-16">
-        <SiteSections />
-        <FeaturedRecords />
-        <SourcingNote />
-      </div>
+      <RegistrySplit />
+      <SiteSections />
+      <SourcingNote />
     </>
   );
 }

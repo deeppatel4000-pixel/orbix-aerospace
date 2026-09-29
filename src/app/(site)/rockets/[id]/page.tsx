@@ -7,6 +7,7 @@ import {
   getRocketById,
   listRocketIds,
 } from "@/features/rockets";
+import { socialOpenGraph } from "@/lib/social-image";
 
 interface RocketDetailPageProps {
   params: Promise<{
@@ -41,6 +42,7 @@ export async function generateMetadata({
     alternates: { canonical: url },
     description,
     openGraph: {
+      ...socialOpenGraph,
       description,
       locale: "en_US",
       siteName: "ORBIX",

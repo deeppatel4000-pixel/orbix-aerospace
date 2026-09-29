@@ -22,7 +22,8 @@ import {
 
 import { Button } from "@/components/ui/button";
 import { buttonClass } from "@/components/ui/button-class";
-import { EmptyState } from "@/components/ui/empty-state";
+import { Tag } from "@/components/ui/tag";
+import { cn } from "@/lib/cn";
 import { MissionProfileAnalyzer } from "@/features/engineering-lab/components/mission-profile-analyzer";
 import {
   MissionScenarioBuilder,
@@ -369,18 +370,21 @@ export function ScenarioLibrary() {
         </Button>
       </header>
 
-      <p
-        className="text-sm leading-6 text-muted"
-        id="save-current-mission-hint"
-      >
-        {currentScenario === null
-          ? "To enable saving, open the mission scenario builder and select Analyze mission."
-          : `Ready to save "${currentScenario.profile.missionName}" from the mission scenario builder.`}
-      </p>
+      {/* With an empty library the empty state below carries this hint. */}
+      {scenarios.length > 0 || currentScenario !== null ? (
+        <p
+          className="text-sm leading-6 text-muted"
+          id="save-current-mission-hint"
+        >
+          {currentScenario === null
+            ? "To enable saving, open the mission scenario builder and select Analyze mission."
+            : `Ready to save "${currentScenario.profile.missionName}" from the mission scenario builder.`}
+        </p>
+      ) : null}
 
       {storageError ? (
         <p
-          className="flex items-start gap-2 border-l-2 border-status-danger pl-3 text-sm leading-6 text-status-danger"
+          className="flex items-start gap-2 text-sm leading-6 text-status-danger"
           role="alert"
         >
           <CircleAlert aria-hidden="true" className="mt-1 shrink-0" size={16} />
@@ -394,8 +398,8 @@ export function ScenarioLibrary() {
           <p
             className={
               message.tone === "success"
-                ? "flex items-start gap-2 border-l-2 border-status-success pl-3 text-sm leading-6 text-status-success"
-                : "flex items-start gap-2 border-l-2 border-status-danger pl-3 text-sm leading-6 text-status-danger"
+                ? "flex items-start gap-2 text-sm leading-6 text-status-success"
+                : "flex items-start gap-2 text-sm leading-6 text-status-danger"
             }
           >
             {message.tone === "success" ? (
@@ -417,16 +421,29 @@ export function ScenarioLibrary() {
       </div>
 
       {scenarios.length === 0 ? (
-        <EmptyState
-          aria-labelledby="scenario-library-empty-title"
-          description="Configure and analyze a mission in the mission scenario builder, then select Save current mission to keep its inputs here."
+        // EmptyState always renders an H3 at 22px; the library title is the
+        // H3 here, so the empty state is its H4 part behind a hairline.
+        <div
+          className="border-t border-border-subtle pt-5"
           id="scenario-library-empty"
-          title="No saved mission scenarios"
-        />
+        >
+          <h4 className="orbix-h4 text-foreground">
+            No saved mission scenarios
+          </h4>
+          <p
+            className="mt-2 max-w-prose text-sm leading-6 text-muted"
+            id={
+              currentScenario === null ? "save-current-mission-hint" : undefined
+            }
+          >
+            Analyze a mission in the mission scenario builder, then select Save
+            current mission to keep its inputs here.
+          </p>
+        </div>
       ) : (
         <ul
           aria-label="Saved mission scenarios"
-          className="grid gap-4 lg:grid-cols-2"
+          className="grid gap-x-8 gap-y-4 lg:grid-cols-2"
           role="list"
         >
           {scenarios.map((scenario) => {
@@ -439,9 +456,16 @@ export function ScenarioLibrary() {
               <li
                 aria-labelledby={titleId}
                 className={
-                  loaded
-                    ? "rounded-md border border-border-strong bg-surface-raised p-4 sm:p-6"
-                    : "rounded-md border border-border bg-surface p-4 sm:p-6"
+                  // Only the loaded scenario is boxed; the rest sit on a
+                  // hairline so no card sits inside the tool frame. Every
+                  // item has the same 1px border and radius, so loading one
+                  // changes only colour and moves nothing.
+                  cn(
+                    "rounded-lg border p-4 sm:p-6",
+                    loaded
+                      ? "border-accent bg-surface-raised"
+                      : "border-transparent border-t-border-subtle",
+                  )
                 }
                 key={scenario.id}
                 role="listitem"
@@ -458,11 +482,7 @@ export function ScenarioLibrary() {
                       {scenario.name}
                     </h4>
                   </div>
-                  {loaded ? (
-                    <span className="orbix-status orbix-status--positive">
-                      Loaded
-                    </span>
-                  ) : null}
+                  {loaded ? <Tag tone="accent">Loaded</Tag> : null}
                 </div>
 
                 <p className="mt-3 text-sm leading-6 text-muted">

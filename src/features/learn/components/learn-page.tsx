@@ -1,31 +1,32 @@
 import { Container } from "@/components/layout/container";
-import { LearnContents } from "@/features/learn/components/learn-contents";
 import { LearnIntro } from "@/features/learn/components/learn-intro";
 import { LearningPathwaySection } from "@/features/learn/components/learning-pathway-section";
 import { listLearningAreas } from "@/features/learn/data";
 
 /**
- * Reading layout (spec 14, `/learn`): intro, then from 1024px a sticky
- * 3-column "Contents" list beside 9 columns of pathway text.
+ * Learn (spec 9): a typographic hero whose figure is the numbered index of
+ * the six pathways, then each pathway as a numbered chapter.
  */
 export function LearnPage() {
   const learningAreas = listLearningAreas();
 
   return (
     <>
-      <LearnIntro />
-      <div className="orbix-section">
+      <LearnIntro areas={learningAreas} />
+      {/* The .orbix-section rhythm, except that from 1024px the hero's own
+          bottom padding is the gap, so chapter 01's rule and heading show on
+          a 1440x1000 screen. The `!` is needed: .orbix-section is declared in
+          the utilities layer after Tailwind's own utilities, so a plain
+          lg:pt-0 would lose to it. */}
+      <div className="orbix-section lg:pt-0!">
         <Container>
-          <div className="lg:grid lg:grid-cols-12 lg:gap-x-6">
-            <div className="border-b border-border-subtle pb-8 lg:col-span-3 lg:border-b-0 lg:pb-0">
-              <LearnContents areas={learningAreas} />
-            </div>
-            <div className="mt-8 min-w-0 lg:col-span-9 lg:mt-0">
-              {learningAreas.map((area) => (
-                <LearningPathwaySection area={area} key={area.id} />
-              ))}
-            </div>
-          </div>
+          {learningAreas.map((area, index) => (
+            <LearningPathwaySection
+              area={area}
+              key={area.id}
+              number={index + 1}
+            />
+          ))}
         </Container>
       </div>
     </>

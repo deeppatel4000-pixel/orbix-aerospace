@@ -1,4 +1,5 @@
 export type {
+  LearnEquationVariable,
   LearnExplorationLink,
   LearnKeyIdea,
   LearnLabAnchor,

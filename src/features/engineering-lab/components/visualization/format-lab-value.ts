@@ -21,3 +21,24 @@ export function formatLabValue(value: number): string {
 
   return standardFormatter.format(value);
 }
+
+/**
+ * An orbital or flight altitude as a value and unit: kilometres from 1 km
+ * up, metres below. The orbit diagrams label altitudes in km, so every
+ * readout beside them uses the same unit.
+ */
+export function altitudeReadout<T extends number | undefined>(
+  metres: T,
+): { readonly unit: "km" | "m"; readonly value: T } {
+  if (metres === undefined || Math.abs(metres) < 1_000) {
+    return { unit: "m", value: metres };
+  }
+
+  return { unit: "km", value: (metres / 1_000) as T };
+}
+
+/** An altitude as display text, for example "408 km". */
+export function formatLabAltitude(metres: number): string {
+  const { unit, value } = altitudeReadout(metres);
+  return `${formatLabValue(value)} ${unit}`;
+}

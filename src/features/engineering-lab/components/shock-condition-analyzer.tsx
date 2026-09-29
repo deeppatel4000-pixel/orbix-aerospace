@@ -1,23 +1,32 @@
 "use client";
 
-import { Button } from "@/components/ui";
+import { Button, EquationBlock } from "@/components/ui";
 import { useMemo, useState, type FormEvent } from "react";
-import { AlertTriangle, MoveRight, RotateCcw } from "lucide-react";
 
 import { analyzeShockCondition } from "@/features/engineering-lab/analysis";
 import {
+  EQ_LINE,
+  EQ_TERM,
   CalculatorNumberField,
   focusFirstInvalidField,
+  GEOPOTENTIAL_ALTITUDE_HINT,
+  GEOPOTENTIAL_ALTITUDE_LABEL,
   focusFirstInvalidFieldOnEnter,
   CalculatorResultSection,
+  LAB_TOOL_SPLIT,
+  LabToolLayout,
   NotCalculated,
+  ReadoutGrid,
   ValidationErrorSummary,
+  LabFigure,
+  LabSymbol,
+  EqDot,
+  EqSubSup,
 } from "@/features/engineering-lab/components/shared";
 import type {
   ShockConditionAnalysis,
   ShockConditionInputs,
 } from "@/features/engineering-lab/types";
-import { STANDARD_ATMOSPHERE_MAX_ALTITUDE_METRES } from "@/features/engineering-lab/types";
 import {
   validateAtmosphereInputs,
   validateNormalShockInputs,
@@ -92,6 +101,91 @@ function deriveViewState(
   };
 }
 
+const toolEquation = (
+  <EquationBlock
+    equation={
+      <>
+        <span className={EQ_LINE}>
+          <span className={EQ_TERM}>
+            M<EqSubSup sub="2" sup="2" /> = [1
+          </span>{" "}
+          <span className={EQ_TERM}>+ ((γ−1)/2)</span>
+          <wbr />
+          <span className={EQ_TERM}>
+            <EqDot />M<EqSubSup sub="1" sup="2" />]
+          </span>
+          <wbr />
+          <span className={EQ_TERM}>
+            /[γM
+            <EqSubSup sub="1" sup="2" />
+          </span>{" "}
+          <span className={EQ_TERM}>− (γ−1)/2]</span>
+        </span>
+        <span className={EQ_LINE}>
+          <span className={EQ_TERM}>
+            p<sub>2</sub>/p<sub>1</sub> = 1
+          </span>{" "}
+          <span className={EQ_TERM}>+ (2γ/(γ+1))</span>
+          <wbr />
+          <span className={EQ_TERM}>
+            <EqDot />
+            (M
+            <EqSubSup sub="1" sup="2" />
+            −1)
+          </span>
+        </span>
+        <span className={EQ_LINE}>
+          <span className={EQ_TERM}>
+            ρ<sub>2</sub>/ρ<sub>1</sub> = (γ+1)M
+            <EqSubSup sub="1" sup="2" />
+          </span>
+          <wbr />
+          <span className={EQ_TERM}>
+            /((γ−1)M
+            <EqSubSup sub="1" sup="2" />
+            +2)
+          </span>
+        </span>
+        <span className={EQ_LINE}>
+          <span className={EQ_TERM}>
+            T<sub>2</sub>/T<sub>1</sub> = (p<sub>2</sub>/p<sub>1</sub>)
+          </span>
+          <wbr />
+          <span className={EQ_TERM}>
+            /(ρ<sub>2</sub>/ρ<sub>1</sub>)
+          </span>
+        </span>
+      </>
+    }
+    label="Normal shock relations"
+    spokenAs="M 2 squared equals 1 plus gamma minus 1 over 2 times M 1 squared, over gamma M 1 squared minus gamma minus 1 over 2. The pressure ratio equals 1 plus 2 gamma over gamma plus 1, times M 1 squared minus 1. The density ratio equals gamma plus 1 times M 1 squared over gamma minus 1 times M 1 squared plus 2. The temperature ratio equals the pressure ratio over the density ratio."
+    variables={[
+      {
+        symbol: (
+          <>
+            M<sub>1</sub>
+          </>
+        ),
+        meaning: "Upstream Mach number",
+      },
+      {
+        symbol: (
+          <>
+            M<sub>2</sub>
+          </>
+        ),
+        meaning: "Downstream Mach number",
+      },
+      {
+        symbol: "1, 2",
+        meaning:
+          "Upstream state from the standard troposphere at geopotential altitude, and the state behind the shock",
+      },
+      { symbol: "γ", meaning: "Ratio of specific heats for dry air, 1.4" },
+    ]}
+  />
+);
+
 export function ShockConditionAnalyzer() {
   const [values, setValues] =
     useState<ShockConditionFormValues>(initialFormValues);
@@ -113,232 +207,221 @@ export function ShockConditionAnalyzer() {
   const outputIds = "shock-condition-altitudeMeters shock-condition-machNumber";
 
   return (
-    <div className="grid gap-8 xl:grid-cols-[minmax(0,0.9fr)_minmax(24rem,1.1fr)] xl:gap-10">
-      <div>
-        <form
-          noValidate
-          onKeyDown={focusFirstInvalidFieldOnEnter}
-          onSubmit={preventSubmission}
-        >
-          <div className="grid gap-5 sm:grid-cols-2">
-            <CalculatorNumberField
-              error={errors.altitudeMeters}
-              field="altitudeMeters"
-              hint={
-                "Geometric altitude within the 0 to " +
-                STANDARD_ATMOSPHERE_MAX_ALTITUDE_METRES.toLocaleString(
-                  "en-US",
-                ) +
-                " metre atmosphere model."
-              }
-              idPrefix="shock-condition"
-              label="Altitude"
-              onChange={updateValue}
-              unit="m"
-              value={values.altitudeMeters}
-            />
-            <CalculatorNumberField
-              error={errors.machNumber}
-              field="machNumber"
-              hint="Upstream Mach number; a normal shock requires Mach 1 or greater."
-              idPrefix="shock-condition"
-              label="Mach number"
-              onChange={updateValue}
-              unit="Mach"
-              value={values.machNumber}
-            />
-          </div>
-
-          <ValidationErrorSummary errors={errors} idPrefix="shock-condition" />
-
-          <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:items-center">
-            <p className="text-sm leading-6 text-muted">
-              Valid changes update the upstream and downstream states
-              immediately.
-            </p>
-            <Button
-              className="shrink-0 whitespace-nowrap sm:ml-auto"
-              variant="secondary"
-              onClick={resetAnalyzer}
-            >
-              <RotateCcw aria-hidden="true" size={16} />
-              Reset inputs
-            </Button>
-          </div>
-        </form>
-      </div>
-
-      <div className="space-y-5">
-        <CalculatorResultSection
-          eyebrow="Normal-shock state change"
-          icon={MoveRight}
-          id="shock-condition-result"
-          title="Shock conditions"
-        >
-          {result ? (
-            <div className="space-y-6">
-              <section aria-labelledby="shock-upstream-title">
-                <h4
-                  className="text-sm font-semibold text-foreground"
-                  id="shock-upstream-title"
-                >
-                  Upstream conditions
-                </h4>
-                <dl className="mt-3 grid gap-4 sm:grid-cols-2">
-                  <div>
-                    <dt className="orbix-label">Temperature</dt>
-                    <dd className="mt-1">
-                      <output className="orbix-data" htmlFor={outputIds}>
-                        {conditionFormatter.format(
-                          result.upstream.temperatureKelvin,
-                        )}{" "}
-                        K
-                      </output>
-                    </dd>
-                  </div>
-                  <div>
-                    <dt className="orbix-label">Pressure</dt>
-                    <dd className="mt-1">
-                      <output className="orbix-data" htmlFor={outputIds}>
-                        {conditionFormatter.format(
-                          result.upstream.pressurePascals,
-                        )}{" "}
-                        Pa
-                      </output>
-                    </dd>
-                  </div>
-                  <div>
-                    <dt className="orbix-label">Density</dt>
-                    <dd className="mt-1">
-                      <output className="orbix-data" htmlFor={outputIds}>
-                        {densityFormatter.format(
-                          result.upstream.densityKilogramsPerCubicMetre,
-                        )}{" "}
-                        kg/m³
-                      </output>
-                    </dd>
-                  </div>
-                  <div>
-                    <dt className="orbix-label">Mach</dt>
-                    <dd className="mt-1">
-                      <output className="orbix-data" htmlFor={outputIds}>
-                        {machFormatter.format(result.upstream.machNumber)}
-                      </output>
-                    </dd>
-                  </div>
-                </dl>
-              </section>
-
-              <section
-                aria-labelledby="shock-downstream-title"
-                className="border-t border-border pt-5"
-              >
-                <h4
-                  className="text-sm font-semibold text-foreground"
-                  id="shock-downstream-title"
-                >
-                  Downstream conditions
-                </h4>
-                <dl className="mt-3 grid gap-4 sm:grid-cols-2">
-                  <div>
-                    <dt className="orbix-label">Temperature</dt>
-                    <dd className="mt-1">
-                      <output className="orbix-data-lg" htmlFor={outputIds}>
-                        {conditionFormatter.format(
-                          result.downstream.temperatureKelvin,
-                        )}{" "}
-                        K
-                      </output>
-                    </dd>
-                  </div>
-                  <div>
-                    <dt className="orbix-label">Pressure</dt>
-                    <dd className="mt-1">
-                      <output className="orbix-data-lg" htmlFor={outputIds}>
-                        {conditionFormatter.format(
-                          result.downstream.pressurePascals,
-                        )}{" "}
-                        Pa
-                      </output>
-                    </dd>
-                  </div>
-                  <div>
-                    <dt className="orbix-label">Density</dt>
-                    <dd className="mt-1">
-                      <output className="orbix-data-lg" htmlFor={outputIds}>
-                        {densityFormatter.format(
-                          result.downstream.densityKilogramsPerCubicMetre,
-                        )}{" "}
-                        kg/m³
-                      </output>
-                    </dd>
-                  </div>
-                  <div>
-                    <dt className="orbix-label">Mach</dt>
-                    <dd className="mt-1">
-                      <output className="orbix-data-lg" htmlFor={outputIds}>
-                        {machFormatter.format(result.downstream.machNumber)}
-                      </output>
-                    </dd>
-                  </div>
-                </dl>
-              </section>
-
-              <section
-                aria-labelledby="shock-ratios-title"
-                className="border-t border-border pt-5"
-              >
-                <h4
-                  className="text-sm font-semibold text-foreground"
-                  id="shock-ratios-title"
-                >
-                  Shock ratios
-                </h4>
-                <dl className="mt-3 grid gap-4 sm:grid-cols-3">
-                  <div>
-                    <dt className="orbix-label">Temperature ratio (T₂/T₁)</dt>
-                    <dd className="orbix-data mt-1">
-                      {ratioFormatter.format(result.ratios.temperatureRatio)}
-                    </dd>
-                  </div>
-                  <div>
-                    <dt className="orbix-label">Pressure ratio (P₂/P₁)</dt>
-                    <dd className="orbix-data mt-1">
-                      {ratioFormatter.format(result.ratios.pressureRatio)}
-                    </dd>
-                  </div>
-                  <div>
-                    <dt className="orbix-label">Density ratio (ρ₂/ρ₁)</dt>
-                    <dd className="orbix-data mt-1">
-                      {ratioFormatter.format(result.ratios.densityRatio)}
-                    </dd>
-                  </div>
-                </dl>
-              </section>
+    <LabToolLayout equation={toolEquation}>
+      <div className={LAB_TOOL_SPLIT}>
+        <div className="@container/col min-w-0">
+          <form
+            noValidate
+            onKeyDown={focusFirstInvalidFieldOnEnter}
+            onSubmit={preventSubmission}
+          >
+            <div className="grid gap-5 @min-[36rem]/col:grid-cols-2">
+              <CalculatorNumberField
+                error={errors.altitudeMeters}
+                field="altitudeMeters"
+                hint={GEOPOTENTIAL_ALTITUDE_HINT}
+                idPrefix="shock-condition"
+                label={GEOPOTENTIAL_ALTITUDE_LABEL}
+                onChange={updateValue}
+                unit="m"
+                value={values.altitudeMeters}
+              />
+              <CalculatorNumberField
+                error={errors.machNumber}
+                field="machNumber"
+                hint="Upstream Mach number; a normal shock requires Mach 1 or greater."
+                idPrefix="shock-condition"
+                label="Mach number"
+                onChange={updateValue}
+                unit="Mach"
+                value={values.machNumber}
+              />
             </div>
-          ) : (
-            <NotCalculated invalid={Object.values(errors).some(Boolean)}>
-              Enter a valid altitude and Mach number at or above one to restore
-              the live shock state.
-            </NotCalculated>
-          )}
-        </CalculatorResultSection>
 
-        <aside className="orbix-lab-note">
-          <p className="orbix-lab-note__title">
-            <AlertTriangle aria-hidden="true" size={17} />
-            Model assumptions
-          </p>
-          <ul className="mt-4 grid list-disc gap-2 pl-5 text-sm leading-6 text-muted sm:grid-cols-2">
-            <li>Perfect gas approximation</li>
-            <li>Dry air gamma = 1.4</li>
-            <li>One-dimensional normal shock</li>
-            <li>No boundary-layer effects</li>
-            <li>No heat transfer</li>
-            <li>No chemical reactions</li>
-          </ul>
-        </aside>
+            <ValidationErrorSummary
+              errors={errors}
+              idPrefix="shock-condition"
+            />
+
+            <div className="mt-7 flex flex-wrap items-center gap-x-5 gap-y-3">
+              <p className="min-w-0 flex-[1_1_16rem] text-sm leading-6 text-muted">
+                Valid changes update the upstream and downstream states
+                immediately.
+              </p>
+              <Button
+                className="shrink-0 whitespace-nowrap"
+                variant="secondary"
+                onClick={resetAnalyzer}
+              >
+                Reset inputs
+              </Button>
+            </div>
+          </form>
+        </div>
+
+        <div className="@container/col min-w-0 space-y-5">
+          <CalculatorResultSection
+            id="shock-condition-result"
+            title="Shock conditions"
+          >
+            {result ? (
+              <>
+                <ReadoutGrid columns={2} title="Upstream conditions">
+                  <div>
+                    <dt className="orbix-label">Temperature</dt>
+                    <dd className="mt-1">
+                      <output className="orbix-data" htmlFor={outputIds}>
+                        <LabFigure unit="K">
+                          {conditionFormatter.format(
+                            result.upstream.temperatureKelvin,
+                          )}
+                        </LabFigure>
+                      </output>
+                    </dd>
+                  </div>
+                  <div>
+                    <dt className="orbix-label">Pressure</dt>
+                    <dd className="mt-1">
+                      <output className="orbix-data" htmlFor={outputIds}>
+                        <LabFigure unit="Pa">
+                          {conditionFormatter.format(
+                            result.upstream.pressurePascals,
+                          )}
+                        </LabFigure>
+                      </output>
+                    </dd>
+                  </div>
+                  <div>
+                    <dt className="orbix-label">Density</dt>
+                    <dd className="mt-1">
+                      <output className="orbix-data" htmlFor={outputIds}>
+                        <LabFigure unit="kg/m³">
+                          {densityFormatter.format(
+                            result.upstream.densityKilogramsPerCubicMetre,
+                          )}
+                        </LabFigure>
+                      </output>
+                    </dd>
+                  </div>
+                  <div>
+                    <dt className="orbix-label">Mach</dt>
+                    <dd className="mt-1">
+                      <output className="orbix-data" htmlFor={outputIds}>
+                        <LabFigure>
+                          {machFormatter.format(result.upstream.machNumber)}
+                        </LabFigure>
+                      </output>
+                    </dd>
+                  </div>
+                </ReadoutGrid>
+
+                <ReadoutGrid columns={2} title="Downstream conditions">
+                  <div>
+                    <dt className="orbix-label">Mach</dt>
+                    <dd className="mt-1">
+                      <output className="orbix-readout-lg" htmlFor={outputIds}>
+                        <LabFigure>
+                          {machFormatter.format(result.downstream.machNumber)}
+                        </LabFigure>
+                      </output>
+                    </dd>
+                  </div>
+                  <div>
+                    <dt className="orbix-label">Temperature</dt>
+                    <dd className="mt-1">
+                      <output className="orbix-data" htmlFor={outputIds}>
+                        <LabFigure unit="K">
+                          {conditionFormatter.format(
+                            result.downstream.temperatureKelvin,
+                          )}
+                        </LabFigure>
+                      </output>
+                    </dd>
+                  </div>
+                  <div>
+                    <dt className="orbix-label">Pressure</dt>
+                    <dd className="mt-1">
+                      <output className="orbix-data" htmlFor={outputIds}>
+                        <LabFigure unit="Pa">
+                          {conditionFormatter.format(
+                            result.downstream.pressurePascals,
+                          )}
+                        </LabFigure>
+                      </output>
+                    </dd>
+                  </div>
+                  <div>
+                    <dt className="orbix-label">Density</dt>
+                    <dd className="mt-1">
+                      <output className="orbix-data" htmlFor={outputIds}>
+                        <LabFigure unit="kg/m³">
+                          {densityFormatter.format(
+                            result.downstream.densityKilogramsPerCubicMetre,
+                          )}
+                        </LabFigure>
+                      </output>
+                    </dd>
+                  </div>
+                </ReadoutGrid>
+
+                <ReadoutGrid columns={3} title="Shock ratios">
+                  <div>
+                    <dt className="orbix-label">
+                      Temperature ratio <LabSymbol>(T₂/T₁)</LabSymbol>
+                    </dt>
+                    <dd className="orbix-data mt-1">
+                      <LabFigure>
+                        {ratioFormatter.format(result.ratios.temperatureRatio)}
+                      </LabFigure>
+                    </dd>
+                  </div>
+                  <div>
+                    <dt className="orbix-label">
+                      Pressure ratio <LabSymbol>(p₂/p₁)</LabSymbol>
+                    </dt>
+                    <dd className="orbix-data mt-1">
+                      <LabFigure>
+                        {ratioFormatter.format(result.ratios.pressureRatio)}
+                      </LabFigure>
+                    </dd>
+                  </div>
+                  <div>
+                    <dt className="orbix-label">
+                      Density ratio <LabSymbol>(ρ₂/ρ₁)</LabSymbol>
+                    </dt>
+                    <dd className="orbix-data mt-1">
+                      <LabFigure>
+                        {ratioFormatter.format(result.ratios.densityRatio)}
+                      </LabFigure>
+                    </dd>
+                  </div>
+                </ReadoutGrid>
+              </>
+            ) : (
+              <NotCalculated invalid={Object.values(errors).some(Boolean)}>
+                Enter a valid altitude and Mach number at or above one to
+                restore the live shock state.
+              </NotCalculated>
+            )}
+          </CalculatorResultSection>
+        </div>
+
+        <div className="@container/col min-w-0 space-y-5">
+          <aside className="orbix-lab-note">
+            <p className="orbix-lab-note__title font-medium">
+              Model assumptions
+            </p>
+            <ul className="mt-4 grid list-disc gap-2 pl-5 text-sm leading-6 text-muted @min-[36rem]/col:grid-cols-2">
+              <li>Perfect gas approximation</li>
+              <li>Dry air gamma = 1.4</li>
+              <li>One-dimensional normal shock</li>
+              <li>No boundary-layer effects</li>
+              <li>No heat transfer</li>
+              <li>No chemical reactions</li>
+            </ul>
+          </aside>
+        </div>
       </div>
-    </div>
+    </LabToolLayout>
   );
 }

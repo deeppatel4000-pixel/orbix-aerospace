@@ -1,100 +1,90 @@
+import { DataTable } from "@/components/ui/data-table";
 import { formatRocketEngineCycle } from "@/features/rockets/utils";
-import { DataTable } from "@/features/vehicles/components/data-table";
-import { MeasurementValue } from "@/features/vehicles/components/measurement-value";
+import { renderDualMeasurement } from "@/features/vehicles/components/measurement-display";
 import { VehicleProfileSection } from "@/features/vehicles/components/vehicle-profile-section";
 import type {
   ForceMeasurement,
   RocketEngine,
   RocketStage,
 } from "@/features/vehicles/types";
-import { formatQualifierLabel } from "@/features/vehicles/utils/format-measurement";
 
 interface PropulsionPanelProps {
+  index?: number;
   name: string;
   stages: readonly RocketStage[];
 }
 
-function ThrustCell({ measurement }: { measurement?: ForceMeasurement }) {
+interface EngineRow {
+  readonly engine: RocketEngine;
+  readonly stage: RocketStage;
+}
+
+/** A plain function, not a component, so the table formats the digits. */
+function thrustCell(measurement: ForceMeasurement | undefined) {
   return measurement ? (
-    <MeasurementValue measurement={measurement} />
+    renderDualMeasurement(measurement, { qualifier: true })
   ) : (
-    <span className="text-muted">Not published</span>
+    <span className="font-sans text-muted">Not published</span>
   );
 }
 
 /**
- * How the thrust figures were published, kept in its own column (as
- * MeasurementTable does) so the thrust cells stay narrow.
+ * Propulsion (spec 9): one row per engine type on each stage element. The
+ * engine count and manufacturer sit under the engine name. Each thrust cell
+ * gives the published figure, its conversion and the source's qualifier.
  */
-function formatThrustBasis({ seaLevel, vacuum }: RocketEngine["thrust"]) {
-  if (seaLevel && vacuum && seaLevel.qualifier !== vacuum.qualifier) {
-    return `Sea level: ${formatQualifierLabel(seaLevel.qualifier)}. Vacuum: ${formatQualifierLabel(vacuum.qualifier)}`;
-  }
-  const measurement = seaLevel ?? vacuum;
-
-  return measurement ? formatQualifierLabel(measurement.qualifier) : undefined;
-}
-
-/**
- * Propulsion (spec 14): one row per engine type on each stage element. The
- * engine count and manufacturer sit under the engine name rather than in
- * their own columns so the table fits the profile's main column without
- * scrolling.
- */
-export function PropulsionPanel({ name, stages }: PropulsionPanelProps) {
+export function PropulsionPanel({ index, name, stages }: PropulsionPanelProps) {
   const ordered = [...stages].sort((a, b) => a.stageNumber - b.stageNumber);
-  const engineRows = ordered.flatMap((stage) =>
+  const engineRows: EngineRow[] = ordered.flatMap((stage) =>
     stage.engines.map((engine) => ({ engine, stage })),
   );
 
   return (
-    <VehicleProfileSection id="propulsion" title="Propulsion">
-      <p className="max-w-prose text-text-secondary">
-        Each row names an engine, how many that stage element carries, and who
-        builds it. The sea level and vacuum columns give thrust per engine where
-        a figure is published, and the basis column says how each figure was
-        published. A rocket engine produces more thrust in vacuum because no
-        outside air pressure acts against its exhaust.
-      </p>
-      <div className="mt-6">
-        <DataTable
-          caption={`${name} engines by stage`}
-          columns={[
-            { label: "Engine" },
-            { label: "Stage" },
-            { label: "Cycle" },
-            { label: "Sea level", numeric: true },
-            { label: "Vacuum", numeric: true },
-            { label: "Basis" },
-          ]}
-          rows={engineRows.map(({ engine, stage }) => {
-            const basis = formatThrustBasis(engine.thrust);
-
-            return {
-              cells: [
-                stage.name,
-                formatRocketEngineCycle(engine.cycle),
-                <ThrustCell key="sea" measurement={engine.thrust.seaLevel} />,
-                <ThrustCell key="vacuum" measurement={engine.thrust.vacuum} />,
-                <span className="text-muted" key="basis">
-                  {basis ?? "Not published"}
-                </span>,
-              ],
-              header: (
-                <>
-                  {engine.name}
-                  <span className="block text-sm font-normal text-muted">
-                    {engine.quantity}{" "}
-                    {engine.quantity === 1 ? "engine" : "engines"},{" "}
-                    {engine.manufacturer}
-                  </span>
-                </>
-              ),
-              key: `${stage.id}-${engine.id}`,
-            };
-          })}
-        />
-      </div>
+    <VehicleProfileSection
+      description="Thrust is per engine, where a figure is published. A rocket engine produces more thrust in vacuum because no outside air pressure acts against its exhaust."
+      id="propulsion"
+      index={index}
+      title="Propulsion"
+    >
+      <DataTable
+        caption={`${name} engines by stage`}
+        columns={[
+          {
+            cell: ({ engine }) => (
+              <>
+                {engine.name}
+                <span className="block text-sm font-normal text-muted">
+                  {engine.quantity}{" "}
+                  {engine.quantity === 1 ? "engine" : "engines"},{" "}
+                  {engine.manufacturer}
+                </span>
+              </>
+            ),
+            header: "Engine",
+            key: "engine",
+          },
+          { cell: ({ stage }) => stage.name, header: "Stage", key: "stage" },
+          {
+            cell: ({ engine }) => formatRocketEngineCycle(engine.cycle),
+            header: "Cycle",
+            key: "cycle",
+          },
+          {
+            cell: ({ engine }) => thrustCell(engine.thrust.seaLevel),
+            header: "Sea level",
+            key: "sea-level",
+            numeric: true,
+          },
+          {
+            cell: ({ engine }) => thrustCell(engine.thrust.vacuum),
+            header: "Vacuum",
+            key: "vacuum",
+            numeric: true,
+          },
+        ]}
+        getRowKey={({ engine, stage }) => `${stage.id}-${engine.id}`}
+        rows={engineRows}
+      />
     </VehicleProfileSection>
   );
 }

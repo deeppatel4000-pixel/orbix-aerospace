@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 
 import { HomePage } from "@/features/home/home-page";
+import { socialOpenGraph, socialTwitter } from "@/lib/social-image";
 
 const title = "ORBIX: aircraft, launch vehicles and aerospace engineering";
 const description =
@@ -10,6 +11,7 @@ export const metadata: Metadata = {
   alternates: { canonical: "/" },
   description,
   openGraph: {
+    ...socialOpenGraph,
     description,
     locale: "en_US",
     siteName: "ORBIX",
@@ -19,7 +21,7 @@ export const metadata: Metadata = {
   },
   title: { absolute: title },
   twitter: {
-    card: "summary",
+    ...socialTwitter,
     description,
     title,
   },

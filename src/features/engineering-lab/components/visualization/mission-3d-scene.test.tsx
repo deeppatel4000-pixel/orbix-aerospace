@@ -78,7 +78,7 @@ describe("Mission3DScene", () => {
     expect(markup).toContain("Initial orbit");
     expect(markup).toContain("Target orbit");
     expect(markup).toContain("Transfer path");
-    expect(markup).toContain("Orbit transfer");
+    expect(markup).toContain("Hohmann transfer");
     expect(markup).not.toContain("animate-");
   });
 
@@ -108,7 +108,8 @@ describe("Mission3DScene", () => {
       <Mission3DScene missionProfileAnalysis={orbitalAnalysis} />,
     );
 
-    expect(markup).toContain("Orbital-only scene");
+    // The scene no longer repeats the mission name its container shows.
+    expect(markup).not.toContain("Orbital-only scene");
     expect(markup).toContain("Orbital mission scene");
     expect(markup).toContain("Reentry mission");
     expect(markup).toContain("disabled");

@@ -58,6 +58,10 @@ const allowlist = new Map([
     "src/styles/orbix-tokens.css",
     "the canonical token source; literal colours are its whole purpose",
   ],
+  [
+    "src/app/opengraph-image.tsx",
+    "ImageResponse cannot read CSS custom properties, so the social image mirrors six token values",
+  ],
 ]);
 
 /**

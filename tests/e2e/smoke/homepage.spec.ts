@@ -13,11 +13,12 @@ import { expect, ROUTES, test } from "../fixtures/orbix";
  * honesty of claims are the contracts.
  */
 
-const FEATURED = [
-  "/aircraft/f-22-raptor",
-  "/aircraft/b-2-spirit",
-  "/rockets/space-launch-system",
-] as const;
+/**
+ * Design v2 (spec 9, Home): after the hero, the two registries as an
+ * asymmetric split of two cards, one per registry, each picturing a vehicle
+ * (F-22 Raptor, Saturn V) and opening its registry.
+ */
+const REGISTRY_CARDS = ["/aircraft", "/rockets"] as const;
 
 /** Every primary destination the homepage must expose. */
 const REQUIRED_DESTINATIONS = [
@@ -27,6 +28,8 @@ const REQUIRED_DESTINATIONS = [
   "/engineering-lab",
   "/learn",
   "/showcase",
+  "/verification",
+  "/build-log",
 ] as const;
 
 test.describe("Homepage", () => {
@@ -62,20 +65,19 @@ test.describe("Homepage", () => {
     // section happens to link there. Each section owns its outbound routes.
     const sections = [
       { expected: ["/aircraft", "/engineering-lab"], id: "home-title" },
+      { expected: [...REGISTRY_CARDS], id: "home-registries-title" },
       {
+        // The numbered section index (spec 9): Compare, Engineering Lab,
+        // Learn, Verification, How I built ORBIX, Showcase.
         expected: [
-          "/aircraft",
-          "/rockets",
           "/compare",
           "/engineering-lab",
           "/learn",
+          "/verification",
+          "/build-log",
           "/showcase",
         ],
         id: "home-sections-title",
-      },
-      {
-        expected: ["/aircraft", "/rockets", ...FEATURED],
-        id: "home-featured-title",
       },
       { expected: ["/about"], id: "home-sourcing-title" },
     ] as const;
@@ -98,29 +100,50 @@ test.describe("Homepage", () => {
     }
   });
 
-  test("features a cross-section of both registries", async ({ page }) => {
+  test("presents both registries as one card each", async ({ page }) => {
     await page.goto(ROUTES.home, { waitUntil: "domcontentloaded" });
 
-    const cards = page.locator(".orbix-vehicle-card");
-    await expect(cards).toHaveCount(FEATURED.length);
+    const cards = page.locator(
+      "section:has(#home-registries-title) .orbix-vehicle-card",
+    );
+    await expect(cards).toHaveCount(REGISTRY_CARDS.length);
 
     const hrefs = await cards.evaluateAll((nodes) =>
       nodes.map((n) => n.getAttribute("href") ?? ""),
     );
+    expect(hrefs).toEqual([...REGISTRY_CARDS]);
 
-    expect(hrefs.sort()).toEqual([...FEATURED].sort());
-    // Both registries are represented: two aircraft and one launch vehicle.
-    expect(hrefs.filter((h) => h.startsWith("/aircraft/"))).toHaveLength(2);
-    expect(hrefs.filter((h) => h.startsWith("/rockets/"))).toHaveLength(1);
+    // Each card names the vehicle it pictures.
+    await expect(cards.nth(0)).toContainText("F-22 Raptor");
+    await expect(cards.nth(1)).toContainText("Saturn V");
   });
 
-  test("featured vehicles use the compact discovery card", async ({ page }) => {
-    // The homepage must not grow its own vehicle card; it reuses the finished
-    // primitive so a visitor meets the same object here and on the registries.
+  test("the registry split is asymmetric, not two equal cards", async ({
+    page,
+  }) => {
+    // Spec 9 and 3: a large aircraft card beside a tall launch-vehicle card,
+    // at different sizes. Uses the shared discovery card, not a local one.
     await page.goto(ROUTES.home, { waitUntil: "domcontentloaded" });
-    await expect(
-      page.locator('.orbix-vehicle-card[data-variant="compact"]'),
-    ).toHaveCount(FEATURED.length);
+
+    const cards = page.locator(
+      "section:has(#home-registries-title) .orbix-vehicle-card",
+    );
+    await expect(cards).toHaveCount(2);
+    // Polled: the boxes are only meaningful once the stylesheet and the
+    // photographs have laid the section out.
+    const shape = () =>
+      cards.evaluateAll((nodes) => {
+        const [aircraft, rocket] = nodes.map((n) => n.getBoundingClientRect());
+        if (!aircraft || !rocket) return "missing";
+        return [
+          aircraft.width > rocket.width
+            ? "aircraft wider"
+            : "aircraft narrower",
+          rocket.height > aircraft.height ? "rocket taller" : "rocket shorter",
+        ].join(", ");
+      });
+
+    await expect.poll(shape).toBe("aircraft wider, rocket taller");
   });
 
   test("every homepage link resolves", async ({ page, request }) => {
@@ -167,9 +190,24 @@ test.describe("Homepage", () => {
   test("the hero figure credits its photograph", async ({ page }) => {
     await page.goto(ROUTES.home, { waitUntil: "domcontentloaded" });
 
-    const caption = page.locator("section:has(#home-title) figcaption");
-    await expect(caption).toHaveText(
-      "Apollo 11 Saturn V lifting off from Launch Complex 39A, 16 July 1969. Credit: NASA. Public domain (U.S. government work) (licence terms, opens in a new tab). Source: Wikimedia Commons (opens in a new tab)",
+    // The SR-71 photograph (spec 9) with its credit line: who took it, the
+    // licence (linked to its terms) and the source file.
+    const hero = page.locator("section:has(#home-title)");
+    await expect(hero.locator("img").first()).toHaveAttribute("alt", /SR-71/);
+
+    const caption = hero.locator("figcaption");
+    await expect(caption).toContainText("Photo: NASA");
+    await expect(
+      caption.getByRole("link", { name: /^Public domain/ }),
+    ).toHaveAttribute(
+      "href",
+      "https://commons.wikimedia.org/wiki/Template:PD-USGov-NASA",
+    );
+    await expect(
+      caption.getByRole("link", { name: "Source file" }),
+    ).toHaveAttribute(
+      "href",
+      /^https:\/\/commons\.wikimedia\.org\/wiki\/File:SR-71_/,
     );
   });
 

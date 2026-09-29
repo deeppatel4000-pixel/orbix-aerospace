@@ -8,6 +8,15 @@ import { SHOWCASE_MISSIONS } from "@/features/showcase/data/mission-showcase";
 
 const EM_DASH = String.fromCharCode(0x2014);
 
+/**
+ * The text of the markup without tags. Figures are set through
+ * `formatFigure`, which wraps each separator in a span, so "5,400" only
+ * reads as one string once the tags are gone.
+ */
+function textOf(markup: string): string {
+  return markup.replace(/<[^>]+>/g, "");
+}
+
 describe("showcase mission presets", () => {
   it("renders every preset with its category and capture link", () => {
     const markup = renderToStaticMarkup(
@@ -38,24 +47,54 @@ describe("showcase mission presets", () => {
       "Scale drawing: transfer from a 200 km circular orbit to a 550 km circular orbit around Earth.",
     );
     expect(markup).toContain("Trans-Mars injection concept");
-    expect(markup).toContain("5,400");
+    expect(textOf(markup)).toContain("5,400");
   });
 
-  it("shows preset inputs in tables with units", () => {
+  it("frames every preset's figure as a plate with registration marks", () => {
+    const markup = renderToStaticMarkup(<ShowcasePage />);
+    const drawn = SHOWCASE_MISSIONS.filter(
+      (mission) => mission.diagram.kind !== "none",
+    );
+
+    // One plate for the architecture diagram plus one per preset with a
+    // drawing. A reentry-only preset has no figure, so no empty frame: its
+    // entry conditions and vehicle table are plain tables.
+    expect(drawn.length).toBeLessThan(SHOWCASE_MISSIONS.length);
+    expect(markup.match(/orbix-reg-marks/g)).toHaveLength(drawn.length + 1);
+    expect(markup).not.toContain("no transfer drawing");
+    expect(markup).toContain("Entry conditions");
+  });
+
+  it("enlarges the second burn of each full-scale transfer only", () => {
     const markup = renderToStaticMarkup(
       <MissionPresets missions={SHOWCASE_MISSIONS} />,
     );
+    const details = markup.match(/Enlarged scale drawing of the second burn/g);
 
-    expect(markup).toContain("Target circular orbit altitude");
-    expect(markup).toContain("384,400");
-    expect(markup).toContain("Compact Demonstrator");
+    // LEO and ISS; the lunar transfer is at point scale and has none.
+    expect(details).toHaveLength(2);
+    expect(textOf(markup)).toContain(
+      "smaller than the first burn marker beside the center, so they are not drawn",
+    );
+  });
+
+  it("shows preset inputs in captioned tables with units", () => {
+    const markup = renderToStaticMarkup(
+      <MissionPresets missions={SHOWCASE_MISSIONS} />,
+    );
+    const text = textOf(markup);
+
+    expect(text).toContain("Target circular orbit altitude");
+    expect(text).toContain("384,400");
+    expect(text).toContain("Compact Demonstrator");
+    expect(text).toContain("Two-impulse transfer, LEO Satellite Deployment");
   });
 
   it("keeps one h1 and banned copy out of the page", () => {
     const markup = renderToStaticMarkup(<ShowcasePage />);
 
     expect(markup.match(/<h1/g)).toHaveLength(1);
-    expect(markup).toContain("How ORBIX is built");
+    expect(textOf(markup)).toContain("Inside ORBIX");
     expect(markup).not.toContain(EM_DASH);
     expect(markup).not.toMatch(/premium|advanced|seamless|cutting-edge/i);
   });

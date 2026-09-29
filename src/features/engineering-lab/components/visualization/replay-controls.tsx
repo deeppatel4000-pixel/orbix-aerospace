@@ -1,4 +1,4 @@
-import { ChevronDown, Pause, Play, RotateCcw } from "lucide-react";
+import { ChevronDown, Pause, Play } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 
@@ -18,9 +18,10 @@ export interface ReplayControlsProps {
 
 /**
  * The replay transport. Replay starts paused (spec 11); a single Play/Pause
- * toggle keeps focus in place when the state changes. The
- * `<progress>` reports position only: phases can be selected, time cannot be
- * sought, so nothing here is draggable.
+ * toggle keeps focus in place when the state changes. One status line
+ * reports the position; the step row below it is the only other marker.
+ * Phases can be selected, time cannot be sought, so nothing here is
+ * draggable.
  */
 export function ReplayControls({
   currentPhaseIndex,
@@ -34,10 +35,7 @@ export function ReplayControls({
   totalPhases,
 }: ReplayControlsProps) {
   return (
-    <section
-      aria-label="Mission replay controls"
-      className="rounded-md border border-border p-4"
-    >
+    <section aria-label="Mission replay controls" className="min-w-0">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
         <div className="flex flex-wrap items-center gap-2">
           {/* One toggle rather than a Play/Pause pair: disabling the button
@@ -58,9 +56,8 @@ export function ReplayControls({
           <Button
             aria-label="Restart mission replay"
             onClick={onRestart}
-            variant="ghost"
+            variant="secondary"
           >
-            <RotateCcw aria-hidden="true" size={16} />
             Restart
           </Button>
         </div>
@@ -91,23 +88,14 @@ export function ReplayControls({
         </div>
       </div>
 
-      <div className="mt-4 border-t border-border-subtle pt-4">
-        <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
-          <p className="orbix-label">
-            Phase {currentPhaseIndex + 1} of {totalPhases}
-            {isPlaying ? ", playing" : ", paused"}
-          </p>
-          <output className="text-sm font-semibold text-foreground">
-            {currentPhaseLabel}
-          </output>
-        </div>
-        <progress
-          aria-label="Mission replay progress"
-          className="orbix-progress mt-3"
-          max={totalPhases}
-          value={currentPhaseIndex + 1}
-        />
-      </div>
+      <p className="mt-4 text-sm text-muted">
+        Phase <span className="orbix-data">{currentPhaseIndex + 1}</span> of{" "}
+        <span className="orbix-data">{totalPhases}</span>
+        {isPlaying ? ", playing: " : ", paused: "}
+        <output className="font-medium text-foreground">
+          {currentPhaseLabel}
+        </output>
+      </p>
     </section>
   );
 }

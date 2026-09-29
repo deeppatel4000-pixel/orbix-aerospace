@@ -1,8 +1,12 @@
 import Image from "next/image";
+import type { CSSProperties } from "react";
 
 import { getRocketVisual } from "@/features/rockets/data/rocket-visuals";
 import type { Rocket } from "@/features/vehicles/types";
 import { cn } from "@/lib/cn";
+
+/** Which recorded crop an image uses. */
+export type ImageFraming = "card" | "default" | "feature";
 
 interface RocketImageProps {
   /**
@@ -11,7 +15,18 @@ interface RocketImageProps {
    */
   animateOnHover?: boolean;
   className?: string;
+  /**
+   * Render with `alt=""` when the surrounding link or caption already
+   * names the vehicle, as on registry cards.
+   */
+  decorative?: boolean;
   fillContainer?: boolean;
+  /**
+   * Which recorded crop to use: `default` (`objectPosition`), `card` (the
+   * registry card frame) or `feature` (the card crop, then the wide first
+   * card's crop from 64rem).
+   */
+  framing?: ImageFraming;
   imageClassName?: string;
   priority?: boolean;
   rocket: Pick<Rocket, "id" | "name">;
@@ -19,12 +34,16 @@ interface RocketImageProps {
 }
 
 /**
- * The launch vehicle's photograph from `rocket-visuals.ts`, shown as taken.
+ * The launch vehicle's photograph from `rocket-visuals.ts`, with the hero's
+ * tonal treatment (spec 8: saturate 0.85, contrast 1.05) so cards and
+ * heroes read as one set of photographs.
  * When no photograph is recorded, a plain text panel says so.
  */
 export function RocketImage({
   className,
+  decorative = false,
   fillContainer = false,
+  framing = "default",
   imageClassName,
   priority = false,
   rocket,
@@ -57,15 +76,32 @@ export function RocketImage({
       )}
     >
       <Image
-        alt={visual.alt}
-        className={cn("object-cover", imageClassName)}
+        alt={decorative ? "" : visual.alt}
+        className={cn(
+          "object-cover [filter:saturate(0.85)_contrast(1.05)]",
+          framing === "feature" &&
+            "object-(--crop-card) lg:object-(--crop-feature)",
+          imageClassName,
+        )}
         fill
         fetchPriority={priority ? "high" : undefined}
         priority={priority}
         quality={priority ? 90 : 75}
         sizes={sizes}
         src={visual.src}
-        style={{ objectPosition: visual.objectPosition }}
+        style={
+          framing === "feature"
+            ? ({
+                "--crop-card": visual.cardObjectPosition,
+                "--crop-feature": visual.featureObjectPosition,
+              } as CSSProperties)
+            : {
+                objectPosition:
+                  framing === "card"
+                    ? visual.cardObjectPosition
+                    : visual.objectPosition,
+              }
+        }
       />
     </div>
   );

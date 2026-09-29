@@ -1,32 +1,34 @@
 "use client";
 
-import { Button, Tag } from "@/components/ui";
+import { Button, DataTable, EquationBlock } from "@/components/ui";
 import { useMemo, useState, type FormEvent } from "react";
-import {
-  CircleAlert,
-  AlertTriangle,
-  Award,
-  RotateCcw,
-  Scale,
-  Shield,
-  X,
-} from "lucide-react";
+import { CircleAlert } from "lucide-react";
 
 import { analyzeTPSMaterialComparison } from "@/features/engineering-lab/analysis";
 import {
+  EQ_LINE,
+  EQ_TERM,
   CalculatorNumberField,
   focusFirstInvalidField,
   focusFirstInvalidFieldOnEnter,
   CalculatorResultSection,
+  LAB_TOOL_STACK,
+  GEOPOTENTIAL_ALTITUDE_HINT,
+  INITIAL_GEOPOTENTIAL_ALTITUDE_LABEL,
+  LabToolLayout,
   NotCalculated,
+  ReadoutGrid,
   ValidationErrorSummary,
+  LabFigure,
+  LabValueText,
+  EqDot,
+  EQ_SUP,
 } from "@/features/engineering-lab/components/shared";
 import { listTPSMaterials } from "@/features/engineering-lab/materials";
 import type {
   TPSMaterialComparisonAnalysis,
   TPSMaterialComparisonInputs,
 } from "@/features/engineering-lab/types";
-import { STANDARD_ATMOSPHERE_MAX_ALTITUDE_METRES } from "@/features/engineering-lab/types";
 
 type TPSMaterialComparisonField =
   | "dragCoefficient"
@@ -176,6 +178,114 @@ function deriveViewState(
   }
 }
 
+const toolEquation = (
+  <EquationBlock
+    equation={
+      <>
+        <span className={EQ_LINE}>
+          <span className={EQ_TERM}>q̇ = k</span>
+          <wbr />
+          <span className={EQ_TERM}>
+            <EqDot />
+            √(ρ/r<sub>n</sub>)
+          </span>
+          <wbr />
+          <span className={EQ_TERM}>
+            <EqDot />V<sup className={EQ_SUP}>3</sup>
+          </span>
+        </span>
+        <span className={EQ_LINE}>
+          <span className={EQ_TERM}>
+            Q = Σ q̇<sub>i</sub>
+            <EqDot />
+            Δt<sub>i</sub>
+          </span>
+        </span>
+        <span className={EQ_LINE}>
+          <span className={EQ_TERM}>
+            m<sub>A</sub> = n<EqDot />Q
+          </span>
+          <wbr />
+          <span className={EQ_TERM}>
+            /(η
+            <EqDot />Q<sub>a</sub>)
+          </span>
+        </span>
+        <span className={EQ_LINE}>
+          <span className={EQ_TERM}>
+            t = m<sub>A</sub>/ρ<sub>m</sub>
+          </span>
+        </span>
+        <span className={EQ_LINE}>
+          <span className={EQ_TERM}>
+            M<sub>TPS</sub> = m<sub>A</sub>
+            <EqDot />A
+          </span>
+        </span>
+      </>
+    }
+    label="Heat-load TPS sizing, per material"
+    spokenAs="Heat flux equals k times the square root of density over nose radius, times velocity cubed. heat load Q equals the sum of heat flux times time step. Areal mass m A equals safety factor n times Q over efficiency eta times allowable heat load Q a. Thickness t equals m A over material density. TPS mass equals m A times the reference area."
+    variables={[
+      {
+        symbol: "ρ, V",
+        meaning:
+          "Air density and velocity at each step of the entry trajectory",
+      },
+      {
+        symbol: "k",
+        meaning:
+          "Heating coefficient; by default 1.83 × 10⁻⁴ in SI units, for Earth air",
+      },
+      {
+        symbol: (
+          <>
+            r<sub>n</sub>
+          </>
+        ),
+        meaning: "Nose radius",
+        unit: "m",
+      },
+      {
+        symbol: "Q",
+        meaning: "Stagnation-point heat load, summed over the trajectory",
+        unit: "MJ/m²",
+      },
+      { symbol: "n", meaning: "Safety factor" },
+      { symbol: "η", meaning: "Material efficiency factor" },
+      {
+        symbol: (
+          <>
+            Q<sub>a</sub>
+          </>
+        ),
+        meaning: "Allowable heat load of the material, per kg/m² of TPS",
+        unit: "MJ/m²",
+      },
+      {
+        symbol: (
+          <>
+            m<sub>A</sub>
+          </>
+        ),
+        meaning: "Required TPS areal mass",
+        unit: "kg/m²",
+      },
+      {
+        symbol: (
+          <>
+            ρ<sub>m</sub>
+          </>
+        ),
+        meaning: "Material density",
+        unit: "kg/m³",
+      },
+      { symbol: "t", meaning: "Estimated TPS thickness", unit: "m" },
+      { symbol: "A", meaning: "Reference area", unit: "m²" },
+    ]}
+  />
+);
+
 export function TPSMaterialComparisonAnalyzer() {
   const [values, setValues] =
     useState<TPSMaterialComparisonFormValues>(initialFormValues);
@@ -232,569 +342,544 @@ export function TPSMaterialComparisonAnalyzer() {
   }
 
   return (
-    <div className="grid gap-8 xl:grid-cols-[minmax(0,0.82fr)_minmax(32rem,1.18fr)] xl:gap-10">
-      <div>
-        <form
-          noValidate
-          onKeyDown={focusFirstInvalidFieldOnEnter}
-          onSubmit={preventSubmission}
-        >
-          <fieldset>
-            <legend className="text-base font-semibold text-foreground">
-              Shared reentry conditions
-            </legend>
-            <div className="mt-5 grid gap-5 sm:grid-cols-2">
-              <CalculatorNumberField
-                error={errors.initialAltitudeMeters}
-                field="initialAltitudeMeters"
-                hint={
-                  "Starting altitude from sea level through " +
-                  STANDARD_ATMOSPHERE_MAX_ALTITUDE_METRES.toLocaleString(
-                    "en-US",
-                  ) +
-                  " metres."
-                }
-                idPrefix="tps-material-comparison"
-                label="Initial altitude"
-                onChange={updateValue}
-                unit="m"
-                value={values.initialAltitudeMeters}
-              />
-              <CalculatorNumberField
-                error={errors.initialVelocityMetersPerSecond}
-                field="initialVelocityMetersPerSecond"
-                hint="Positive initial velocity used for every material case."
-                idPrefix="tps-material-comparison"
-                label="Initial velocity"
-                onChange={updateValue}
-                unit="m/s"
-                value={values.initialVelocityMetersPerSecond}
-              />
-              <CalculatorNumberField
-                error={errors.vehicleMassKilograms}
-                field="vehicleMassKilograms"
-                hint="Constant vehicle mass shared by all comparison candidates."
-                idPrefix="tps-material-comparison"
-                label="Vehicle mass"
-                onChange={updateValue}
-                unit="kg"
-                value={values.vehicleMassKilograms}
-              />
-              <CalculatorNumberField
-                error={errors.dragCoefficient}
-                field="dragCoefficient"
-                hint="Dimensionless drag coefficient shared by the reentry analyses."
-                idPrefix="tps-material-comparison"
-                label="Drag coefficient"
-                onChange={updateValue}
-                unit=""
-                value={values.dragCoefficient}
-              />
-              <CalculatorNumberField
-                error={errors.referenceAreaSquareMetres}
-                field="referenceAreaSquareMetres"
-                hint="Aerodynamic reference area and protected area used by the existing analysis."
-                idPrefix="tps-material-comparison"
-                label="Reference area"
-                onChange={updateValue}
-                unit="m²"
-                value={values.referenceAreaSquareMetres}
-              />
-              <CalculatorNumberField
-                error={errors.noseRadiusMetres}
-                field="noseRadiusMetres"
-                hint="Effective stagnation-point nose radius used by every case."
-                idPrefix="tps-material-comparison"
-                label="Nose radius"
-                onChange={updateValue}
-                unit="m"
-                value={values.noseRadiusMetres}
-              />
-            </div>
-          </fieldset>
-
-          <fieldset className="mt-8 border-t border-border pt-7">
-            <legend className="text-base font-semibold text-foreground">
-              TPS design
-            </legend>
-            <div className="mt-5">
-              <CalculatorNumberField
-                error={errors.safetyFactor}
-                field="safetyFactor"
-                hint="Positive heat-load multiplier applied equally to every material."
-                idPrefix="tps-material-comparison"
-                label="Safety factor"
-                onChange={updateValue}
-                unit="×"
-                value={values.safetyFactor}
-              />
-            </div>
-          </fieldset>
-
-          <fieldset
-            aria-describedby={
-              errors.materialSelection
-                ? "tps-material-comparison-selection-hint tps-material-comparison-selection-error"
-                : "tps-material-comparison-selection-hint"
-            }
-            aria-errormessage={
-              errors.materialSelection
-                ? "tps-material-comparison-selection-error"
-                : undefined
-            }
-            aria-invalid={Boolean(errors.materialSelection)}
-            className="mt-8 border-t border-border pt-7"
+    <LabToolLayout equation={toolEquation}>
+      <div className={LAB_TOOL_STACK}>
+        <div className="@container/col min-w-0">
+          <form
+            noValidate
+            onKeyDown={focusFirstInvalidFieldOnEnter}
+            onSubmit={preventSubmission}
           >
-            <legend className="text-base font-semibold text-foreground">
-              Material selection
-            </legend>
-            <p
-              className="mt-4 text-sm leading-6 text-muted"
-              id="tps-material-comparison-selection-hint"
+            <fieldset>
+              <legend className="text-base font-semibold text-foreground">
+                Shared reentry conditions
+              </legend>
+              <div className="mt-4 grid gap-5 @min-[36rem]/col:grid-cols-2">
+                <CalculatorNumberField
+                  error={errors.initialAltitudeMeters}
+                  field="initialAltitudeMeters"
+                  hint={GEOPOTENTIAL_ALTITUDE_HINT}
+                  idPrefix="tps-material-comparison"
+                  label={INITIAL_GEOPOTENTIAL_ALTITUDE_LABEL}
+                  onChange={updateValue}
+                  unit="m"
+                  value={values.initialAltitudeMeters}
+                />
+                <CalculatorNumberField
+                  error={errors.initialVelocityMetersPerSecond}
+                  field="initialVelocityMetersPerSecond"
+                  hint="Positive initial velocity used for every material case."
+                  idPrefix="tps-material-comparison"
+                  label="Initial velocity"
+                  onChange={updateValue}
+                  unit="m/s"
+                  value={values.initialVelocityMetersPerSecond}
+                />
+                <CalculatorNumberField
+                  error={errors.vehicleMassKilograms}
+                  field="vehicleMassKilograms"
+                  hint="Constant vehicle mass shared by all comparison candidates."
+                  idPrefix="tps-material-comparison"
+                  label="Vehicle mass"
+                  onChange={updateValue}
+                  unit="kg"
+                  value={values.vehicleMassKilograms}
+                />
+                <CalculatorNumberField
+                  error={errors.dragCoefficient}
+                  field="dragCoefficient"
+                  hint="Dimensionless drag coefficient shared by the reentry analyses."
+                  idPrefix="tps-material-comparison"
+                  label="Drag coefficient"
+                  onChange={updateValue}
+                  unit=""
+                  value={values.dragCoefficient}
+                />
+                <CalculatorNumberField
+                  error={errors.referenceAreaSquareMetres}
+                  field="referenceAreaSquareMetres"
+                  hint="Aerodynamic reference area and protected area used by the existing analysis."
+                  idPrefix="tps-material-comparison"
+                  label="Reference area"
+                  onChange={updateValue}
+                  unit="m²"
+                  value={values.referenceAreaSquareMetres}
+                />
+                <CalculatorNumberField
+                  error={errors.noseRadiusMetres}
+                  field="noseRadiusMetres"
+                  hint="Effective stagnation-point nose radius used by every case."
+                  idPrefix="tps-material-comparison"
+                  label="Nose radius"
+                  onChange={updateValue}
+                  unit="m"
+                  value={values.noseRadiusMetres}
+                />
+              </div>
+            </fieldset>
+
+            <fieldset className="mt-10">
+              <legend className="text-base font-semibold text-foreground">
+                TPS design
+              </legend>
+              <div className="mt-4">
+                <CalculatorNumberField
+                  error={errors.safetyFactor}
+                  field="safetyFactor"
+                  hint="Positive heat-load multiplier applied equally to every material."
+                  idPrefix="tps-material-comparison"
+                  label="Safety factor"
+                  onChange={updateValue}
+                  unit="×"
+                  value={values.safetyFactor}
+                />
+              </div>
+            </fieldset>
+
+            <fieldset
+              aria-describedby={
+                errors.materialSelection
+                  ? "tps-material-comparison-selection-hint tps-material-comparison-selection-error"
+                  : "tps-material-comparison-selection-hint"
+              }
+              aria-errormessage={
+                errors.materialSelection
+                  ? "tps-material-comparison-selection-error"
+                  : undefined
+              }
+              aria-invalid={Boolean(errors.materialSelection)}
+              className="mt-8 border-t border-border pt-7"
             >
-              Compare the complete catalog or pass a selected catalog subset to
-              the existing comparison analysis.
-            </p>
-
-            <div className="mt-4 grid gap-3 sm:grid-cols-2">
-              <label className="flex min-h-12 cursor-pointer items-center gap-3 rounded border border-border-control bg-surface-input px-4 py-3 text-sm font-medium transition-colors hover:border-muted has-checked:border-accent has-checked:bg-surface-raised">
-                <input
-                  checked={selectionMode === "all"}
-                  className="h-4 w-4 accent-current"
-                  id="tps-material-comparison-mode-all"
-                  name="tps-material-comparison-mode"
-                  onChange={compareAllMaterials}
-                  type="radio"
-                  value="all"
-                />
-                Compare all materials
-              </label>
-              <label className="flex min-h-12 cursor-pointer items-center gap-3 rounded border border-border-control bg-surface-input px-4 py-3 text-sm font-medium transition-colors hover:border-muted has-checked:border-accent has-checked:bg-surface-raised">
-                <input
-                  checked={selectionMode === "subset"}
-                  className="h-4 w-4 accent-current"
-                  id="tps-material-comparison-mode-subset"
-                  name="tps-material-comparison-mode"
-                  onChange={compareSubset}
-                  type="radio"
-                  value="subset"
-                />
-                Compare selected subset
-              </label>
-            </div>
-
-            <div className="mt-4 space-y-3">
-              {tpsMaterials.map((material) => {
-                const checked =
-                  selectionMode === "all" ||
-                  selectedMaterialIds.includes(material.id);
-                const inputId =
-                  "tps-material-comparison-material-" + material.id;
-
-                return (
-                  <label
-                    className="flex cursor-pointer items-start gap-3 rounded-md border border-border-control bg-surface-input p-4 transition-colors hover:border-muted has-checked:border-accent has-checked:bg-surface-raised"
-                    htmlFor={inputId}
-                    key={material.id}
-                  >
-                    <input
-                      checked={checked}
-                      className="mt-0.5 h-4 w-4 shrink-0 accent-current"
-                      id={inputId}
-                      onChange={(event) =>
-                        toggleMaterial(material.id, event.target.checked)
-                      }
-                      type="checkbox"
-                    />
-                    <span>
-                      <span className="block text-sm font-semibold">
-                        {material.name}
-                      </span>
-                      <span className="mt-1 block text-sm leading-6 text-muted">
-                        {integerFormatter.format(
-                          material.densityKilogramsPerCubicMetre,
-                        )}{" "}
-                        kg/m³,{" "}
-                        {material.maximumTemperatureKelvin === undefined
-                          ? "temperature unavailable"
-                          : integerFormatter.format(
-                              material.maximumTemperatureKelvin,
-                            ) + " K"}
-                        , {material.reusable ? "reusable" : "single-use"}
-                      </span>
-                    </span>
-                  </label>
-                );
-              })}
-            </div>
-
-            <div className="mt-4 flex flex-wrap items-center gap-2">
-              {displayedSelection.map((materialId) => {
-                const material = tpsMaterials.find(
-                  (candidate) => candidate.id === materialId,
-                );
-
-                if (!material) return null;
-
-                return (
-                  <Button
-                    key={material.id}
-                    onClick={() => removeMaterial(material.id)}
-                    variant="secondary"
-                  >
-                    <X aria-hidden="true" size={16} />
-                    Remove {material.name}
-                  </Button>
-                );
-              })}
-              {displayedSelection.length === 0 ? (
-                <span className="orbix-field__error">
-                  No materials selected
-                </span>
-              ) : null}
-            </div>
-
-            {errors.materialSelection ? (
+              <legend className="text-base font-semibold text-foreground">
+                Material selection
+              </legend>
               <p
-                className="orbix-field__error mt-3"
-                id="tps-material-comparison-selection-error"
+                className="mt-4 text-sm leading-6 text-muted"
+                id="tps-material-comparison-selection-hint"
               >
-                <CircleAlert
-                  aria-hidden="true"
-                  className="shrink-0"
-                  size={14}
-                />
-                {errors.materialSelection}
+                Compare the complete catalog or pass a selected catalog subset
+                to the existing comparison analysis.
               </p>
-            ) : null}
 
-            <Button
-              className="mt-4"
-              variant="secondary"
-              onClick={compareAllMaterials}
-            >
-              <RotateCcw aria-hidden="true" size={16} />
-              Reset to all materials
-            </Button>
-          </fieldset>
+              <div className="mt-4 grid gap-3 @min-[36rem]/col:grid-cols-2">
+                <label className="flex min-h-12 cursor-pointer items-center gap-3 rounded border border-border-control bg-surface-input px-4 py-3 text-sm font-medium transition-colors hover:border-muted has-checked:border-accent has-checked:bg-surface-raised">
+                  <input
+                    checked={selectionMode === "all"}
+                    className="h-4 w-4 accent-current"
+                    id="tps-material-comparison-mode-all"
+                    name="tps-material-comparison-mode"
+                    onChange={compareAllMaterials}
+                    type="radio"
+                    value="all"
+                  />
+                  Compare all materials
+                </label>
+                <label className="flex min-h-12 cursor-pointer items-center gap-3 rounded border border-border-control bg-surface-input px-4 py-3 text-sm font-medium transition-colors hover:border-muted has-checked:border-accent has-checked:bg-surface-raised">
+                  <input
+                    checked={selectionMode === "subset"}
+                    className="h-4 w-4 accent-current"
+                    id="tps-material-comparison-mode-subset"
+                    name="tps-material-comparison-mode"
+                    onChange={compareSubset}
+                    type="radio"
+                    value="subset"
+                  />
+                  Compare selected subset
+                </label>
+              </div>
 
-          <ValidationErrorSummary
-            errors={[
-              errors.initialAltitudeMeters,
-              errors.initialVelocityMetersPerSecond,
-              errors.vehicleMassKilograms,
-              errors.dragCoefficient,
-              errors.referenceAreaSquareMetres,
-              errors.noseRadiusMetres,
-              errors.safetyFactor,
-              errors.materialSelection,
-              errors.form,
-            ]}
-          />
+              <div className="mt-4 space-y-3">
+                {tpsMaterials.map((material) => {
+                  const checked =
+                    selectionMode === "all" ||
+                    selectedMaterialIds.includes(material.id);
+                  const inputId =
+                    "tps-material-comparison-material-" + material.id;
 
-          <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:items-center">
-            <p className="text-sm leading-6 text-muted">
-              Valid changes rerun the complete catalog comparison immediately.
-            </p>
-            <Button
-              className="shrink-0 whitespace-nowrap sm:ml-auto"
-              variant="secondary"
-              onClick={resetAnalyzer}
-            >
-              <RotateCcw aria-hidden="true" size={16} />
-              Reset inputs
-            </Button>
-          </div>
-        </form>
+                  return (
+                    <label
+                      className="flex cursor-pointer items-start gap-3 rounded border border-border-control bg-surface-input p-4 transition-colors hover:border-muted has-checked:border-accent has-checked:bg-surface-raised"
+                      htmlFor={inputId}
+                      key={material.id}
+                    >
+                      <input
+                        checked={checked}
+                        className="mt-0.5 h-4 w-4 shrink-0 accent-current"
+                        id={inputId}
+                        onChange={(event) =>
+                          toggleMaterial(material.id, event.target.checked)
+                        }
+                        type="checkbox"
+                      />
+                      <span>
+                        <span className="block text-sm font-semibold">
+                          {material.name}
+                        </span>
+                        <span className="mt-1 block text-sm leading-6 text-muted">
+                          {integerFormatter.format(
+                            material.densityKilogramsPerCubicMetre,
+                          )}{" "}
+                          kg/m³,{" "}
+                          {material.maximumTemperatureKelvin === undefined
+                            ? "temperature unavailable"
+                            : integerFormatter.format(
+                                material.maximumTemperatureKelvin,
+                              ) + " K"}
+                          , {material.reusable ? "reusable" : "single-use"}
+                        </span>
+                      </span>
+                    </label>
+                  );
+                })}
+              </div>
 
-        <section
-          aria-labelledby="tps-material-comparison-education-title"
-          className="mt-8 border-t border-border pt-7"
-        >
-          <p className="orbix-label">Educational comparison</p>
-          <h3
-            className="mt-1 text-lg font-semibold"
-            id="tps-material-comparison-education-title"
+              <div className="mt-4 flex flex-wrap items-center gap-2">
+                {displayedSelection.map((materialId) => {
+                  const material = tpsMaterials.find(
+                    (candidate) => candidate.id === materialId,
+                  );
+
+                  if (!material) return null;
+
+                  return (
+                    <Button
+                      className="max-w-full"
+                      key={material.id}
+                      onClick={() => removeMaterial(material.id)}
+                      variant="secondary"
+                    >
+                      Remove {material.name}
+                    </Button>
+                  );
+                })}
+                {displayedSelection.length === 0 ? (
+                  <span className="orbix-field__error">
+                    No materials selected
+                  </span>
+                ) : null}
+              </div>
+
+              {errors.materialSelection ? (
+                <p
+                  className="orbix-field__error mt-3"
+                  id="tps-material-comparison-selection-error"
+                >
+                  <CircleAlert
+                    aria-hidden="true"
+                    className="shrink-0"
+                    size={14}
+                  />
+                  {errors.materialSelection}
+                </p>
+              ) : null}
+
+              <Button
+                className="mt-4"
+                variant="secondary"
+                onClick={compareAllMaterials}
+              >
+                Reset to all materials
+              </Button>
+            </fieldset>
+
+            <ValidationErrorSummary
+              errors={[
+                errors.initialAltitudeMeters,
+                errors.initialVelocityMetersPerSecond,
+                errors.vehicleMassKilograms,
+                errors.dragCoefficient,
+                errors.referenceAreaSquareMetres,
+                errors.noseRadiusMetres,
+                errors.safetyFactor,
+                errors.materialSelection,
+                errors.form,
+              ]}
+            />
+
+            <div className="mt-7 flex flex-wrap items-center gap-x-5 gap-y-3">
+              <p className="min-w-0 flex-[1_1_16rem] text-sm leading-6 text-muted">
+                Valid changes rerun the complete catalog comparison immediately.
+              </p>
+              <Button
+                className="shrink-0 whitespace-nowrap"
+                variant="secondary"
+                onClick={resetAnalyzer}
+              >
+                Reset inputs
+              </Button>
+            </div>
+          </form>
+        </div>
+
+        <div className="@container/col min-w-0 space-y-5">
+          <CalculatorResultSection
+            id="tps-material-comparison-result"
+            title="TPS material comparison"
           >
-            Reading the trade space
-          </h3>
-          <div className="mt-5 grid gap-4 sm:grid-cols-3 xl:grid-cols-1">
-            <article className="rounded-md border border-border-subtle bg-surface-raised p-4">
-              <Scale aria-hidden="true" className="text-muted" size={18} />
-              <h4 className="mt-3 text-sm font-semibold">Vehicle mass</h4>
-              <p className="mt-2 text-sm leading-6 text-muted">
-                A lighter TPS estimate reduces the protected system mass carried
-                by the vehicle.
-              </p>
-            </article>
-            <article className="rounded-md border border-border-subtle bg-surface-raised p-4">
-              <Shield aria-hidden="true" className="text-muted" size={18} />
-              <h4 className="mt-3 text-sm font-semibold">Layer thickness</h4>
-              <p className="mt-2 text-sm leading-6 text-muted">
-                A thicker layer can add protective material and volume, but may
-                also add mass and integration complexity.
-              </p>
-            </article>
-            <article className="rounded-md border border-border-subtle bg-surface-raised p-4">
-              <Award aria-hidden="true" className="text-muted" size={18} />
-              <h4 className="mt-3 text-sm font-semibold">Ranking priority</h4>
-              <p className="mt-2 text-sm leading-6 text-muted">
-                Thermal margin is primary in this educational ranking, followed
-                by lower mass and then lower thickness.
-              </p>
-            </article>
-          </div>
-          <p className="mt-4 text-sm leading-6 text-muted">
-            Real spacecraft TPS selection requires many additional constraints,
-            detailed thermal analysis, and qualification testing.
-          </p>
-        </section>
-      </div>
-
-      <div className="min-w-0 space-y-5">
-        <CalculatorResultSection
-          eyebrow="Catalog-wide ranked comparison"
-          icon={Award}
-          id="tps-material-comparison-result"
-          title="TPS material comparison"
-        >
-          {result ? (
-            <div className="space-y-6">
-              <section aria-labelledby="tps-material-comparison-recommended-title">
-                <h4
-                  className="text-sm font-semibold text-foreground"
-                  id="tps-material-comparison-recommended-title"
-                >
-                  Recommended material
-                </h4>
-                <output
-                  className="mt-3 block text-2xl font-semibold"
-                  htmlFor={allOutputIds}
-                >
-                  {result.recommendedMaterial.material.name}
-                </output>
-                <dl className="mt-4 grid gap-4 sm:grid-cols-2">
+            {result ? (
+              <>
+                <ReadoutGrid columns={2} title="Recommended material">
                   <div>
                     <dt className="orbix-label">Ranking score</dt>
-                    <dd className="mt-1">
-                      <output className="orbix-data-lg" htmlFor={allOutputIds}>
-                        {standardFormatter.format(
-                          result.recommendedMaterial.rankingScore,
-                        )}
+                    <dd>
+                      <output
+                        className="orbix-readout-lg"
+                        htmlFor={allOutputIds}
+                      >
+                        <LabFigure>
+                          {standardFormatter.format(
+                            result.recommendedMaterial.rankingScore,
+                          )}
+                        </LabFigure>
+                      </output>
+                    </dd>
+                  </div>
+                  <div>
+                    <dt className="orbix-label">Material</dt>
+                    <dd>
+                      <output className="lab-value-text" htmlFor={allOutputIds}>
+                        {result.recommendedMaterial.material.name}
                       </output>
                     </dd>
                   </div>
                   <div>
                     <dt className="orbix-label">Thermal margin</dt>
-                    <dd className="mt-1">
+                    <dd>
                       <output className="orbix-data" htmlFor={allOutputIds}>
-                        {standardFormatter.format(
-                          result.recommendedMaterial.heatLoadMargin
-                            .marginPercentage,
-                        )}
-                        %,{" "}
-                        {result.recommendedMaterial.marginClassification.toLowerCase()}
+                        <LabFigure unit="%">
+                          {standardFormatter.format(
+                            result.recommendedMaterial.heatLoadMargin
+                              .marginPercentage,
+                          )}
+                        </LabFigure>
+                      </output>
+                      <output
+                        className="lab-figure-note"
+                        htmlFor={allOutputIds}
+                      >
+                        {result.recommendedMaterial.marginClassification}
                       </output>
                     </dd>
                   </div>
                   <div>
                     <dt className="orbix-label">Estimated TPS mass</dt>
-                    <dd className="mt-1">
+                    <dd>
                       <output className="orbix-data" htmlFor={allOutputIds}>
-                        {preciseFormatter.format(
-                          result.recommendedMaterial.estimatedTPSMass
-                            .totalTPSMassKilograms,
-                        )}{" "}
-                        kg
+                        <LabFigure unit="kg">
+                          {preciseFormatter.format(
+                            result.recommendedMaterial.estimatedTPSMass
+                              .totalTPSMassKilograms,
+                          )}
+                        </LabFigure>
                       </output>
                     </dd>
                   </div>
                   <div>
                     <dt className="orbix-label">Estimated thickness</dt>
-                    <dd className="mt-1">
+                    <dd>
                       <output className="orbix-data" htmlFor={allOutputIds}>
-                        {preciseFormatter.format(
-                          result.recommendedMaterial.thickness.millimetres,
-                        )}{" "}
-                        mm
+                        <LabFigure unit="mm">
+                          {preciseFormatter.format(
+                            result.recommendedMaterial.thickness.millimetres,
+                          )}
+                        </LabFigure>
                       </output>
                     </dd>
                   </div>
-                </dl>
-                <p className="mt-4 rounded-md border border-border-subtle bg-surface-raised p-4 text-sm leading-6 text-muted">
+                </ReadoutGrid>
+                <p className="text-sm leading-6 text-muted">
                   {result.recommendedMaterial.rankingLogic.description}
                 </p>
-              </section>
 
-              <section
-                aria-labelledby="tps-material-comparison-table-title"
-                className="border-t border-border pt-5"
-              >
-                <h4
-                  className="text-sm font-semibold text-foreground"
-                  id="tps-material-comparison-table-title"
-                >
-                  Comparison table
-                </h4>
-                <div
-                  aria-label="Scrollable TPS material comparison table"
-                  className="orbix-table-wrap mt-3 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
-                  role="region"
-                  tabIndex={0}
-                >
-                  <table className="orbix-table w-full min-w-[44rem]">
-                    <caption className="sr-only">
-                      TPS materials ranked for the shared reentry scenario
-                    </caption>
-                    <thead className="bg-surface-raised">
-                      <tr>
-                        <th scope="col">Material</th>
-                        <th scope="col">TPS Mass</th>
-                        <th scope="col">Thickness</th>
-                        <th scope="col">Heat Margin</th>
-                        <th scope="col">Score</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {result.results.map((entry) => {
-                        const recommended =
-                          entry.material.id ===
-                          result.recommendedMaterial.material.id;
-
-                        return (
-                          <tr
-                            className={
-                              recommended ? "bg-surface-raised" : undefined
-                            }
-                            key={entry.material.id}
-                          >
-                            <th scope="row">
-                              {entry.material.name}
-                              {recommended ? (
-                                <Tag className="ml-2">Recommended</Tag>
-                              ) : null}
-                            </th>
-                            <td className="orbix-num">
-                              <output htmlFor={allOutputIds}>
-                                {preciseFormatter.format(
-                                  entry.estimatedTPSMass.totalTPSMassKilograms,
-                                )}{" "}
-                                kg
-                              </output>
-                            </td>
-                            <td className="orbix-num">
-                              <output htmlFor={allOutputIds}>
-                                {preciseFormatter.format(
-                                  entry.thickness.millimetres,
-                                )}{" "}
-                                mm
-                              </output>
-                            </td>
-                            <td className="orbix-num">
-                              <output htmlFor={allOutputIds}>
-                                {standardFormatter.format(
-                                  entry.heatLoadMargin.marginPercentage,
-                                )}
-                                %
-                              </output>
-                            </td>
-                            <td className="orbix-num font-semibold">
-                              <output htmlFor={allOutputIds}>
-                                {standardFormatter.format(entry.rankingScore)}
-                              </output>
-                            </td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
-                </div>
-              </section>
-
-              <section
-                aria-labelledby="tps-material-comparison-details-title"
-                className="border-t border-border pt-5"
-              >
-                <h4
-                  className="text-sm font-semibold text-foreground"
-                  id="tps-material-comparison-details-title"
-                >
-                  Material details
-                </h4>
-                <div className="mt-3 grid gap-4">
-                  {result.results.map((entry) => (
-                    <article
-                      className="rounded-md border border-border-subtle bg-surface-raised p-4"
-                      key={entry.material.id}
-                    >
-                      <div className="flex flex-wrap items-center justify-between gap-2">
-                        <h5 className="font-semibold">{entry.material.name}</h5>
-                        {entry.material.id ===
-                        result.recommendedMaterial.material.id ? (
-                          <Tag>Recommended</Tag>
-                        ) : null}
-                      </div>
-                      <p className="mt-2 text-sm leading-6 text-muted">
+                {result.results.map((entry) => (
+                  <ReadoutGrid
+                    columns={3}
+                    key={entry.material.id}
+                    title={
+                      entry.material.id ===
+                      result.recommendedMaterial.material.id
+                        ? entry.material.name + ", recommended"
+                        : entry.material.name
+                    }
+                  >
+                    <div>
+                      <dt className="orbix-label">Density</dt>
+                      <dd className="orbix-data">
+                        <LabFigure unit="kg/m³">
+                          {integerFormatter.format(
+                            entry.material.densityKilogramsPerCubicMetre,
+                          )}
+                        </LabFigure>
+                      </dd>
+                    </div>
+                    <div>
+                      <dt className="orbix-label">Maximum temperature</dt>
+                      <dd>
+                        {entry.material.maximumTemperatureKelvin ===
+                        undefined ? (
+                          <LabValueText>Unavailable</LabValueText>
+                        ) : (
+                          <span className="orbix-data">
+                            <LabFigure unit="K">
+                              {integerFormatter.format(
+                                entry.material.maximumTemperatureKelvin,
+                              )}
+                            </LabFigure>
+                          </span>
+                        )}
+                      </dd>
+                    </div>
+                    <div>
+                      <dt className="orbix-label">Reusability</dt>
+                      <dd>
+                        <LabValueText>
+                          {entry.material.reusable ? "Reusable" : "Single-use"}
+                        </LabValueText>
+                      </dd>
+                    </div>
+                    <div>
+                      <dt className="orbix-label">About</dt>
+                      <dd className="text-sm leading-6 text-muted">
                         {entry.material.description}
-                      </p>
-                      <dl className="mt-3 grid gap-3 sm:grid-cols-3">
-                        <div>
-                          <dt className="orbix-label">Density</dt>
-                          <dd className="mt-1 font-mono text-xs">
-                            {integerFormatter.format(
-                              entry.material.densityKilogramsPerCubicMetre,
-                            )}{" "}
-                            kg/m³
-                          </dd>
-                        </div>
-                        <div>
-                          <dt className="orbix-label">Maximum temperature</dt>
-                          <dd className="mt-1 font-mono text-xs">
-                            {entry.material.maximumTemperatureKelvin ===
-                            undefined
-                              ? "Unavailable"
-                              : integerFormatter.format(
-                                  entry.material.maximumTemperatureKelvin,
-                                ) + " K"}
-                          </dd>
-                        </div>
-                        <div>
-                          <dt className="orbix-label">Reusability</dt>
-                          <dd className="mt-1 font-mono text-xs">
-                            {entry.material.reusable
-                              ? "Reusable"
-                              : "Single-use"}
-                          </dd>
-                        </div>
-                      </dl>
-                    </article>
-                  ))}
-                </div>
-              </section>
-            </div>
-          ) : (
-            <NotCalculated invalid={Object.values(errors).some(Boolean)}>
-              Enter valid shared conditions and select at least one material to
-              generate the ranked comparison.
-            </NotCalculated>
-          )}
-        </CalculatorResultSection>
+                      </dd>
+                    </div>
+                  </ReadoutGrid>
+                ))}
+              </>
+            ) : (
+              <NotCalculated invalid={Object.values(errors).some(Boolean)}>
+                Enter valid shared conditions and select at least one material
+                to generate the ranked comparison.
+              </NotCalculated>
+            )}
+          </CalculatorResultSection>
 
-        <aside className="orbix-lab-note">
-          <p className="orbix-lab-note__title">
-            <AlertTriangle aria-hidden="true" size={17} />
-            Engineering assumptions
-          </p>
-          <ul className="mt-4 grid list-disc gap-2 pl-5 text-sm leading-6 text-muted sm:grid-cols-2">
-            <li>Material properties are simplified educational estimates</li>
-            <li>Ranking is not spacecraft certification</li>
-            <li>Manufacturing and cost are excluded</li>
-            <li>Attachment methods and degradation are excluded</li>
-            <li>Real selection requires testing</li>
-            <li>Detailed thermal analysis remains necessary</li>
-          </ul>
-        </aside>
+          {result ? (
+            <DataTable
+              caption="TPS materials ranked for the shared reentry scenario"
+              columns={[
+                {
+                  key: "material",
+                  header: "Material",
+                  cell: (entry) =>
+                    entry.material.id === result.recommendedMaterial.material.id
+                      ? entry.material.name + ", recommended"
+                      : entry.material.name,
+                },
+                {
+                  key: "mass",
+                  header: "TPS mass",
+                  unit: "kg",
+                  numeric: true,
+                  cell: (entry) => (
+                    <output htmlFor={allOutputIds}>
+                      {preciseFormatter.format(
+                        entry.estimatedTPSMass.totalTPSMassKilograms,
+                      )}
+                    </output>
+                  ),
+                },
+                {
+                  key: "thickness",
+                  header: "Thickness",
+                  unit: "mm",
+                  numeric: true,
+                  cell: (entry) => (
+                    <output htmlFor={allOutputIds}>
+                      {preciseFormatter.format(entry.thickness.millimetres)}
+                    </output>
+                  ),
+                },
+                {
+                  key: "margin",
+                  header: "Heat margin",
+                  unit: "%",
+                  numeric: true,
+                  cell: (entry) => (
+                    <output htmlFor={allOutputIds}>
+                      {standardFormatter.format(
+                        entry.heatLoadMargin.marginPercentage,
+                      )}
+                    </output>
+                  ),
+                },
+                {
+                  key: "score",
+                  header: "Score",
+                  numeric: true,
+                  cell: (entry) => (
+                    <output htmlFor={allOutputIds}>
+                      {standardFormatter.format(entry.rankingScore)}
+                    </output>
+                  ),
+                },
+              ]}
+              getRowKey={(entry) => entry.material.id}
+              rows={result.results}
+            />
+          ) : null}
+        </div>
+
+        <div className="@container/col min-w-0 space-y-5">
+          <section
+            aria-labelledby="tps-material-comparison-education-title"
+            className="border-t border-border pt-7"
+          >
+            <h3
+              className="text-lg font-semibold"
+              id="tps-material-comparison-education-title"
+            >
+              Reading the trade space
+            </h3>
+            <div className="mt-4 border-t border-border">
+              <article className="border-b border-border py-4">
+                <h4 className="text-sm font-semibold text-foreground">
+                  Vehicle mass
+                </h4>
+                <p className="mt-2 text-sm leading-6 text-muted">
+                  A lighter TPS estimate reduces the protected system mass
+                  carried by the vehicle.
+                </p>
+              </article>
+              <article className="border-b border-border py-4">
+                <h4 className="text-sm font-semibold text-foreground">
+                  Layer thickness
+                </h4>
+                <p className="mt-2 text-sm leading-6 text-muted">
+                  A thicker layer can add protective material and volume, but
+                  may also add mass and integration complexity.
+                </p>
+              </article>
+              <article className="border-b border-border py-4">
+                <h4 className="text-sm font-semibold text-foreground">
+                  Ranking priority
+                </h4>
+                <p className="mt-2 text-sm leading-6 text-muted">
+                  Thermal margin is primary in this educational ranking,
+                  followed by lower mass and then lower thickness.
+                </p>
+              </article>
+            </div>
+            <p className="mt-4 text-sm leading-6 text-muted">
+              Real spacecraft TPS selection requires many additional
+              constraints, detailed thermal analysis, and qualification testing.
+            </p>
+          </section>
+          <aside className="orbix-lab-note">
+            <p className="orbix-lab-note__title font-medium">
+              Engineering assumptions
+            </p>
+            <ul className="mt-4 grid list-disc gap-2 pl-5 text-sm leading-6 text-muted @min-[36rem]/col:grid-cols-2">
+              <li>Material properties are simplified educational estimates</li>
+              <li>Ranking is not spacecraft certification</li>
+              <li>Manufacturing and cost are excluded</li>
+              <li>Attachment methods and degradation are excluded</li>
+              <li>Real selection requires testing</li>
+              <li>Detailed thermal analysis remains necessary</li>
+            </ul>
+          </aside>
+        </div>
       </div>
-    </div>
+    </LabToolLayout>
   );
 }

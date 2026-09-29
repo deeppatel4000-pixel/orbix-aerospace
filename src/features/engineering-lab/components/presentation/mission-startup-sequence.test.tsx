@@ -38,8 +38,8 @@ describe("MissionStartupSequence", () => {
     );
 
     expect(markup).toContain("Checks performed");
-    expect(markup).toContain("ORBIX Startup Test Mission");
-    expect(markup).toContain("Orbital deployment");
+    // Name and category belong to the Mission control header above it.
+    expect(markup).not.toContain("ORBIX Startup Test Mission");
     expect(markup).toContain('data-check-availability="available"');
     expect(markup).toContain("Existing Mission Control workspace");
     expect(markup.indexOf("Checks performed")).toBeLessThan(
@@ -66,7 +66,7 @@ describe("MissionStartupSequence", () => {
       </MissionStartupSequence>,
     );
 
-    expect(markup).toContain("Not reported");
+    expect(markup).toContain("Not supplied");
     expect(markup).toContain('data-check-availability="not-supplied"');
     expect(markup).toContain("Empty workspace");
   });

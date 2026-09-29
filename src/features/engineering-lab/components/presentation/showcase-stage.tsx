@@ -1,4 +1,5 @@
 import type { ShowcasePresentationPhase } from "./showcase-phase";
+import { LabHeading } from "../visualization/lab-heading";
 
 export interface ShowcaseStageProps {
   readonly insight?: string;
@@ -17,18 +18,15 @@ export function ShowcaseStage({
   return (
     <section
       aria-labelledby="showcase-current-phase-title"
-      className="min-w-0 border-t border-border-subtle pt-4 lg:border-t-0 lg:border-l lg:pt-0 lg:pl-6"
+      className="min-w-0"
       data-showcase-phase={phase.id}
     >
       <p className="orbix-label">
         Phase {phaseNumber} of {phaseTotal}
       </p>
-      <h4
-        className="orbix-h3 mt-1 text-foreground"
-        id="showcase-current-phase-title"
-      >
+      <LabHeading offset={1} className="mt-1" id="showcase-current-phase-title">
         {phase.label}
-      </h4>
+      </LabHeading>
       <p className="mt-2 max-w-[68ch] text-sm leading-6 text-text-secondary">
         {phase.description}
       </p>

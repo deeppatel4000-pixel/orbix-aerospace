@@ -38,15 +38,17 @@ export function EngineeringBoundaries() {
     <ShowcaseSection
       id="engineering-boundaries"
       lead="Rules the code follows so that a displayed number can be traced back to the function that produced it."
+      number={3}
       title="Engineering boundaries"
     >
-      <dl className="grid gap-x-6 gap-y-6 md:grid-cols-2">
+      <dl className="border-t border-border-subtle sm:ml-20">
         {boundaries.map((boundary) => (
-          <div key={boundary.title}>
-            <dt className="orbix-h4 text-text-primary">{boundary.title}</dt>
-            <dd className="mt-1 max-w-[60ch] text-text-secondary">
-              {boundary.detail}
-            </dd>
+          <div
+            className="grid gap-2 border-b border-border-subtle py-6 last:border-b-0 last:pb-0 md:grid-cols-[minmax(0,20rem)_minmax(0,40rem)] md:gap-10"
+            key={boundary.title}
+          >
+            <dt className="orbix-h3 text-text-primary">{boundary.title}</dt>
+            <dd className="orbix-prose">{boundary.detail}</dd>
           </div>
         ))}
       </dl>

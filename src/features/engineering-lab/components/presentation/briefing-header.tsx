@@ -1,4 +1,5 @@
 import type { MissionPresetCategory } from "@/features/engineering-lab/types";
+import { LabHeading } from "../visualization/lab-heading";
 
 export interface BriefingHeaderProps {
   readonly category?: MissionPresetCategory;
@@ -19,7 +20,7 @@ export function BriefingHeader({ category, missionName }: BriefingHeaderProps) {
       <p className="orbix-label">
         {category ? categoryLabels[category] : "Custom educational mission"}
       </p>
-      <h3 className="orbix-h3 mt-1 text-foreground">{missionName}</h3>
+      <LabHeading className="mt-1">{missionName}</LabHeading>
       <p className="mt-2 text-sm leading-6 text-muted">
         Educational mission. Values come from the completed mission-profile
         calculation.

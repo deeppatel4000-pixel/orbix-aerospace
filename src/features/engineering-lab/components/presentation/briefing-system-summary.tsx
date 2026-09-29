@@ -3,6 +3,8 @@ import type {
   MissionReport,
 } from "@/features/engineering-lab/types";
 import { formatLabValue } from "../visualization/format-lab-value";
+import { formatFigure } from "@/components/ui/readout";
+import { LabHeading } from "../visualization/lab-heading";
 
 export interface BriefingSystemSummaryProps {
   readonly missionProfile: MissionProfileAnalysis;
@@ -26,42 +28,52 @@ function SummaryCard({ description, id, metrics, title }: SummaryCardProps) {
   return (
     <section
       aria-labelledby={`briefing-summary-${id}`}
-      className="rounded-md border border-border p-4"
+      className="min-w-0 py-4 xl:px-6 xl:first:pl-0 xl:last:pr-0"
     >
-      <h5
-        className="text-sm font-semibold text-foreground"
-        id={`briefing-summary-${id}`}
-      >
+      <LabHeading offset={2} variant="sub" id={`briefing-summary-${id}`}>
         {title}
-      </h5>
+      </LabHeading>
       <p className="mt-1 text-sm leading-6 text-muted">{description}</p>
+      {/* Figures sit on the label's line, right-aligned in B612 Mono;
+       * words (vehicle, material, margin) stack under their label so a
+       * narrow column never wraps them against the right edge. */}
       <dl className="mt-3">
-        {metrics.map((metric) => (
-          <div
-            className="flex items-baseline justify-between gap-4 border-t border-border-subtle py-2 text-sm"
-            key={metric.label}
-          >
-            <dt className="text-muted">{metric.label}</dt>
-            <dd className="text-right">
-              <output
-                className={
-                  metric.value === undefined
-                    ? "text-muted"
-                    : typeof metric.value === "number"
-                      ? "orbix-data text-foreground"
+        {metrics.map((metric) =>
+          typeof metric.value === "number" ? (
+            <div
+              className="flex items-baseline justify-between gap-4 border-t border-border-subtle py-2 text-sm"
+              key={metric.label}
+            >
+              <dt className="text-muted">{metric.label}</dt>
+              <dd className="text-right whitespace-nowrap">
+                <output className="orbix-data text-foreground">
+                  {formatFigure(formatLabValue(metric.value))}
+                  {metric.unit ? (
+                    <span className="ml-1 text-muted">{metric.unit}</span>
+                  ) : null}
+                </output>
+              </dd>
+            </div>
+          ) : (
+            <div
+              className="border-t border-border-subtle py-2 text-sm"
+              key={metric.label}
+            >
+              <dt className="text-muted">{metric.label}</dt>
+              <dd className="mt-1">
+                <output
+                  className={
+                    metric.value === undefined
+                      ? "text-muted"
                       : "text-foreground"
-                }
-              >
-                {typeof metric.value === "number"
-                  ? formatLabValue(metric.value)
-                  : (metric.value ?? "Not reported")}
-                {metric.value !== undefined && metric.unit ? (
-                  <span className="ml-1 text-muted">{metric.unit}</span>
-                ) : null}
-              </output>
-            </dd>
-          </div>
-        ))}
+                  }
+                >
+                  {metric.value ?? "Not reported"}
+                </output>
+              </dd>
+            </div>
+          ),
+        )}
       </dl>
     </section>
   );
@@ -90,14 +102,13 @@ export function BriefingSystemSummary({
 
   return (
     <section aria-labelledby="mission-briefing-system-summary-title">
-      <h4
-        className="orbix-h4 text-foreground"
-        id="mission-briefing-system-summary-title"
-      >
+      <LabHeading offset={1} id="mission-briefing-system-summary-title">
         Engineering summary
-      </h4>
+      </LabHeading>
 
-      <div className="mt-3 grid gap-4 xl:grid-cols-3">
+      {/* An open hairline grid: rules between the three summaries, no
+       * outer box, so nothing nests inside the tool frame. */}
+      <div className="mt-3 grid divide-y divide-border-subtle border-y border-border-subtle xl:grid-cols-3 xl:divide-x xl:divide-y-0">
         <SummaryCard
           description="Reported orbital maneuver and transfer information from the completed mission profile."
           id="orbital"

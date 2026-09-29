@@ -82,6 +82,25 @@ describe("learning areas", () => {
     }
   });
 
+  it("writes equation subscripts as _x, never as Unicode subscript digits", () => {
+    // B612 Mono has no glyphs for U+2080 to U+2089, so "m₀" falls back to a
+    // different face. "_0" renders as a real <sub>, as on /engineering-lab.
+    const unicodeSubscript = /[₀-₉]/;
+    for (const idea of areas.flatMap((area) => area.keyIdeas)) {
+      const fields = [
+        idea.text,
+        idea.equation ?? "",
+        ...(idea.variables ?? []).flatMap((variable) => [
+          variable.symbol,
+          variable.unit ?? "",
+        ]),
+      ];
+      for (const value of fields) {
+        expect(unicodeSubscript.test(value), value).toBe(false);
+      }
+    }
+  });
+
   it("keeps every exploration link", () => {
     const links = areas.flatMap((area) => area.explorationLinks);
 
@@ -132,6 +151,23 @@ describe("learning areas", () => {
     }
   });
 
+  it("names, voices and explains every equation it shows", () => {
+    // Each equation renders as an EquationBlock: a label, a spoken form for
+    // screen readers, and a legend that defines every symbol.
+    for (const idea of areas.flatMap((area) => area.keyIdeas)) {
+      if (idea.equation === undefined) continue;
+      expect(idea.equationLabel?.trim(), idea.equation).toBeTruthy();
+      expect(idea.spokenAs?.trim(), idea.equation).toBeTruthy();
+      expect(idea.variables?.length ?? 0, idea.equation).toBeGreaterThan(0);
+      for (const variable of idea.variables ?? []) {
+        expect(
+          idea.equation.includes(variable.symbol),
+          `${variable.symbol} should appear in ${idea.equation}`,
+        ).toBe(true);
+      }
+    }
+  });
+
   it("links further reading only to https pages and cites a source for each", () => {
     for (const reference of areas.flatMap((area) => area.furtherReading)) {
       expect(reference.title.trim()).not.toBe("");
@@ -149,7 +185,17 @@ describe("learning areas", () => {
       area.title,
       area.summary,
       area.whyItMatters,
-      ...area.keyIdeas.flatMap((idea) => [idea.text, idea.equation ?? ""]),
+      ...area.keyIdeas.flatMap((idea) => [
+        idea.text,
+        idea.equation ?? "",
+        idea.equationLabel ?? "",
+        idea.spokenAs ?? "",
+        ...(idea.variables ?? []).flatMap((variable) => [
+          variable.symbol,
+          variable.meaning,
+          variable.unit ?? "",
+        ]),
+      ]),
       ...area.labAnchors.map((anchor) => anchor.label),
       ...area.explorationLinks.flatMap((link) => [
         link.label,

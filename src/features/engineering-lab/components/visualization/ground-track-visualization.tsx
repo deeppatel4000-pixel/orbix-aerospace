@@ -8,6 +8,9 @@ import type { MissionProfileAnalysis } from "@/features/engineering-lab/types";
 import { GroundTrackControls } from "./ground-track-controls";
 import { OrbitGroundPath, type GroundTrackViewMode } from "./orbit-ground-path";
 import { PlanetMap } from "./planet-map";
+import { formatFigure } from "@/components/ui/readout";
+import { formatLabAltitude } from "./format-lab-value";
+import { LabHeading } from "./lab-heading";
 
 export interface GroundTrackVisualizationProps {
   readonly analysis?: MissionProfileAnalysis | null;
@@ -80,7 +83,7 @@ export function GroundTrackVisualization({
     GROUND_TRACK_PRESENTATION_ZOOM_LEVELS[state.zoomLevelIndex] ?? 1;
   const missionName = analysis?.missionName ?? "Not reported";
   const orbitSummary = transfer
-    ? `${groundTrackFormatter.format(transfer.initialOrbit.altitudeMetres)} m to ${groundTrackFormatter.format(transfer.finalOrbit.altitudeMetres)} m`
+    ? `${formatLabAltitude(transfer.initialOrbit.altitudeMetres)} to ${formatLabAltitude(transfer.finalOrbit.altitudeMetres)}`
     : planeChange
       ? "Circular orbit supplied by plane-change analysis"
       : "Not reported";
@@ -129,9 +132,7 @@ export function GroundTrackVisualization({
       onKeyDown={handleKeyboard}
     >
       <header className="border-b border-border-subtle pb-4">
-        <h3 className="orbix-h3 text-foreground" id="ground-track-title">
-          Orbital ground track
-        </h3>
+        <LabHeading id="ground-track-title">Orbital ground track</LabHeading>
         <p className="mt-1 text-sm text-muted">
           Illustrative orbital ground track, not a flight prediction.
         </p>
@@ -180,9 +181,17 @@ export function GroundTrackVisualization({
               <output>
                 {transfer ? (
                   <>
-                    <span className="orbix-data">{`${groundTrackFormatter.format(transfer.initialOrbit.altitudeMetres)} m`}</span>{" "}
+                    <span className="orbix-data">
+                      {formatFigure(
+                        formatLabAltitude(transfer.initialOrbit.altitudeMetres),
+                      )}
+                    </span>{" "}
                     to{" "}
-                    <span className="orbix-data">{`${groundTrackFormatter.format(transfer.finalOrbit.altitudeMetres)} m`}</span>
+                    <span className="orbix-data">
+                      {formatFigure(
+                        formatLabAltitude(transfer.finalOrbit.altitudeMetres),
+                      )}
+                    </span>
                   </>
                 ) : (
                   orbitSummary
@@ -201,7 +210,9 @@ export function GroundTrackVisualization({
             >
               <output>
                 {planeChange
-                  ? `${groundTrackFormatter.format(planeChange.inclinationChangeDegrees)}°`
+                  ? formatFigure(
+                      `${groundTrackFormatter.format(planeChange.inclinationChangeDegrees)}°`,
+                    )
                   : "Not reported"}
               </output>
             </dd>

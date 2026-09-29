@@ -6,6 +6,7 @@ import {
   expect,
   expectAllImagesLoaded,
   INFO_ROUTES,
+  PROJECT_ROUTES,
   ROCKET_IDS,
   ROUTES,
   test,
@@ -40,6 +41,7 @@ const SITE_ROUTES: readonly string[] = [
   ...AIRCRAFT_IDS.map((id) => `${ROUTES.aircraft}/${id}`),
   ...ROCKET_IDS.map((id) => `${ROUTES.rockets}/${id}`),
   ...Object.values(INFO_ROUTES),
+  ...Object.values(PROJECT_ROUTES),
 ];
 
 const OVERFLOW_WIDTHS = [320, 360, 1440] as const;
@@ -294,8 +296,11 @@ test.describe("Site integrity", () => {
 
     await expect(page.locator("main#main-content")).toBeVisible();
     await expect(page.getByRole("heading", { level: 1 })).toHaveText(
-      "Page not found",
+      "Off course.",
     );
+    await expect(
+      page.getByText("Page not found", { exact: true }),
+    ).toBeVisible();
     await expect(page).toHaveTitle(/ORBIX/);
 
     // The chrome: skip link, header with the logo, footer with the contact.

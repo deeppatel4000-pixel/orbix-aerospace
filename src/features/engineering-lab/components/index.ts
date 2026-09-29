@@ -170,8 +170,6 @@ export {
   type MissionControlShellProps,
   MissionControlSidebar,
   type MissionControlSidebarProps,
-  MissionControlStatusBar,
-  type MissionControlStatusBarProps,
   type MissionControlWorkspaceDefinition,
   type MissionControlWorkspaceView,
   MISSION_CONTROL_WORKSPACES,

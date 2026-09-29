@@ -168,12 +168,12 @@ describe("MissionTradeStudy", () => {
 
     expect(markup).toContain('aria-label="Mission architecture trade study"');
     expect(markup).toContain("<table");
-    expect(markup).toContain("<caption");
     expect(markup).toContain('scope="col"');
     expect(markup).toContain('scope="row"');
-    expect(markup).toContain(
-      'aria-label="Scrollable mission comparison table"',
-    );
+    // The shared DataTable names the table and its scroll region with the
+    // visible caption above them.
+    expect(markup).toContain("orbix-data-table__caption");
+    expect(markup).toMatch(/role="region"[^>]*tabindex="0"/i);
     expect(markup).toContain('aria-live="polite"');
     expect(markup).toContain('role="status"');
   });

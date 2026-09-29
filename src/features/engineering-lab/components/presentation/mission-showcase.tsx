@@ -1,13 +1,7 @@
 "use client";
 
 import { useEffect, useReducer, type KeyboardEvent } from "react";
-import {
-  ChevronLeft,
-  ChevronRight,
-  Pause,
-  Play,
-  RotateCcw,
-} from "lucide-react";
+import { Pause, Play } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import type {
@@ -19,6 +13,7 @@ import type {
 import { SHOWCASE_PHASES, ShowcasePhase } from "./showcase-phase";
 import { ShowcaseStage } from "./showcase-stage";
 import { ShowcaseTelemetry } from "./showcase-telemetry";
+import { LabHeading } from "../visualization/lab-heading";
 
 export interface MissionShowcaseProps {
   readonly insights?: MissionInsightsAnalysis;
@@ -50,7 +45,13 @@ export function missionShowcaseReducer(
   state: MissionShowcaseState,
   action: MissionShowcaseAction,
 ): MissionShowcaseState {
-  if (action.type === "play") return { ...state, isPlaying: true };
+  if (action.type === "play") {
+    // Play at the last phase starts again from phase 1, so the toggle never
+    // has to be disabled (a disabled button that holds focus drops it).
+    return state.currentPhaseIndex >= SHOWCASE_PHASES.length - 1
+      ? { currentPhaseIndex: 0, isPlaying: true }
+      : { ...state, isPlaying: true };
+  }
   if (action.type === "pause") return { ...state, isPlaying: false };
   if (action.type === "restart") return INITIAL_SHOWCASE_STATE;
 
@@ -117,6 +118,7 @@ export function MissionShowcase({
     }
   }
 
+  const isFirstPhase = state.currentPhaseIndex === 0;
   const isLastPhase = state.currentPhaseIndex === SHOWCASE_PHASES.length - 1;
 
   return (
@@ -128,9 +130,7 @@ export function MissionShowcase({
     >
       <header className="border-b border-border-subtle pb-4">
         <p className="orbix-label">Mission walkthrough</p>
-        <h3 className="orbix-h3 mt-1 text-foreground">
-          {missionProfile.missionName}
-        </h3>
+        <LabHeading className="mt-1">{missionProfile.missionName}</LabHeading>
         <p className="mt-2 max-w-[68ch] text-sm leading-6 text-muted">
           Steps through the completed results one phase at a time. It is a
           presentation of existing values, not a flight simulation.
@@ -143,57 +143,63 @@ export function MissionShowcase({
           className="flex flex-wrap items-center gap-2"
           role="group"
         >
-          {state.isPlaying ? (
-            <Button
-              aria-label="Pause mission showcase"
-              onClick={() => dispatch({ type: "pause" })}
-              variant="secondary"
-            >
-              <Pause aria-hidden="true" size={16} />
-              Pause
-            </Button>
-          ) : (
-            <Button
-              aria-label="Play mission showcase"
-              disabled={isLastPhase}
-              onClick={() => dispatch({ type: "play" })}
-              variant="secondary"
-            >
-              <Play aria-hidden="true" size={16} />
-              Play
-            </Button>
-          )}
+          {/* One primary toggle, as in the replay controls. It is never
+           * disabled, so it keeps focus when auto-play reaches the end. */}
           <Button
+            aria-label={
+              state.isPlaying
+                ? "Pause mission showcase"
+                : "Play mission showcase"
+            }
+            onClick={() =>
+              dispatch({ type: state.isPlaying ? "pause" : "play" })
+            }
+          >
+            {state.isPlaying ? (
+              <Pause aria-hidden="true" size={16} />
+            ) : (
+              <Play aria-hidden="true" size={16} />
+            )}
+            {state.isPlaying ? "Pause" : "Play"}
+          </Button>
+          {/* aria-disabled rather than disabled: reaching the first or last
+           * phase must not drop focus from the button just pressed. */}
+          <Button
+            aria-disabled={isFirstPhase || undefined}
             aria-label="Previous showcase phase"
-            disabled={state.currentPhaseIndex === 0}
-            onClick={() => dispatch({ type: "previous" })}
+            arrow="back"
+            onClick={() => {
+              if (!isFirstPhase) dispatch({ type: "previous" });
+            }}
             variant="ghost"
           >
-            <ChevronLeft aria-hidden="true" size={16} />
             Previous
           </Button>
           <Button
+            aria-disabled={isLastPhase || undefined}
             aria-label="Next showcase phase"
-            disabled={isLastPhase}
-            onClick={() => dispatch({ type: "next" })}
+            arrow="right"
+            onClick={() => {
+              if (!isLastPhase) dispatch({ type: "next" });
+            }}
             variant="ghost"
           >
             Next
-            <ChevronRight aria-hidden="true" size={16} />
           </Button>
           <Button
             aria-label="Restart mission showcase"
             onClick={() => dispatch({ type: "restart" })}
-            variant="ghost"
+            variant="secondary"
           >
-            <RotateCcw aria-hidden="true" size={16} />
             Restart
           </Button>
         </div>
 
-        <div className="grid gap-6 lg:grid-cols-[14rem_minmax(0,1fr)]">
-          <nav aria-label="Walkthrough phases">
-            <ol className="space-y-0.5">
+        <div className="space-y-6">
+          {/* The same step row as the mission phases, replay and guided
+           * demo: 3 or 6 across by the column's width. */}
+          <nav aria-label="Walkthrough phases" className="@container">
+            <ol className="grid grid-cols-2 gap-x-4 gap-y-1 @md:grid-cols-3 @3xl:grid-cols-6">
               {SHOWCASE_PHASES.map((phase, index) => (
                 <ShowcasePhase
                   active={index === state.currentPhaseIndex}
@@ -224,9 +230,10 @@ export function MissionShowcase({
           className="text-sm leading-6 text-muted"
           id="mission-showcase-keyboard-help"
         >
-          Play advances one phase every few seconds and stops at the last phase.
-          With focus inside the walkthrough, the left and right arrow keys
-          change phase and Home restarts.
+          Play advances one phase every few seconds and stops at the last phase,
+          where Play starts again from phase 1. With focus inside the
+          walkthrough, the left and right arrow keys change phase and Home
+          restarts.
         </p>
         <p aria-live="polite" className="sr-only" role="status">
           Mission showcase phase {state.currentPhaseIndex + 1}:{" "}

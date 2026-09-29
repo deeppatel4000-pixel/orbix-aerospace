@@ -1,9 +1,10 @@
+import { DataTable } from "@/components/ui/data-table";
 import { formatRocketPropellant } from "@/features/rockets/utils";
-import { DataTable } from "@/features/vehicles/components/data-table";
 import { VehicleProfileSection } from "@/features/vehicles/components/vehicle-profile-section";
 import type { RocketStage } from "@/features/vehicles/types";
 
 interface ArchitecturePanelProps {
+  index?: number;
   name: string;
   stages: readonly RocketStage[];
 }
@@ -12,38 +13,58 @@ interface ArchitecturePanelProps {
  * Stages: one row per stage element in flight order. Parallel boosters share
  * a stage number with their core, so "Stage 1" can appear on two rows.
  */
-export function ArchitecturePanel({ name, stages }: ArchitecturePanelProps) {
+export function ArchitecturePanel({
+  index,
+  name,
+  stages,
+}: ArchitecturePanelProps) {
   const ordered = [...stages].sort((a, b) => a.stageNumber - b.stageNumber);
 
   return (
     <VehicleProfileSection
       description="Each stage element in flight order, with its propellants, engines and whether it is designed to be recovered."
       id="stages"
+      index={index}
       title="Stages"
     >
       <DataTable
         caption={`${name} stages`}
         columns={[
-          { label: "Element" },
-          { label: "Stage" },
-          { label: "Propellants" },
-          { label: "Engines" },
-          { label: "Recovery" },
+          {
+            cell: (stage) => (
+              <span className="block min-w-40">{stage.name}</span>
+            ),
+            header: "Element",
+            key: "element",
+          },
+          {
+            cell: (stage) => stage.stageNumber,
+            header: "Stage",
+            key: "stage",
+            numeric: true,
+          },
+          {
+            cell: (stage) => formatRocketPropellant(stage.propellant),
+            header: "Propellants",
+            key: "propellants",
+          },
+          {
+            cell: (stage) =>
+              stage.engines
+                .map((engine) => `${engine.quantity} × ${engine.name}`)
+                .join(", "),
+            header: "Engines",
+            key: "engines",
+          },
+          {
+            cell: (stage) =>
+              stage.reusable ? "Designed for recovery" : "Expended",
+            header: "Recovery",
+            key: "recovery",
+          },
         ]}
-        rows={ordered.map((stage) => ({
-          cells: [
-            <span className="whitespace-nowrap" key="stage">
-              Stage {stage.stageNumber}
-            </span>,
-            formatRocketPropellant(stage.propellant),
-            stage.engines
-              .map((engine) => `${engine.quantity} × ${engine.name}`)
-              .join(", "),
-            stage.reusable ? "Designed for recovery" : "Expended",
-          ],
-          header: <span className="block min-w-40">{stage.name}</span>,
-          key: stage.id,
-        }))}
+        getRowKey={(stage) => stage.id}
+        rows={ordered}
       />
     </VehicleProfileSection>
   );

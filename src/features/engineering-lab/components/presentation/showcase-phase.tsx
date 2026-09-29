@@ -69,7 +69,10 @@ export interface ShowcasePhaseProps {
   readonly phase: ShowcasePresentationPhase;
 }
 
-/** One step in the walkthrough's phase list. The number is a real sequence. */
+/**
+ * One step in the walkthrough's step row: B612 Mono number, label and a
+ * 2px rule, accent under the current step. The number is a real sequence.
+ */
 export function ShowcasePhase({
   active,
   index,
@@ -77,21 +80,24 @@ export function ShowcasePhase({
   phase,
 }: ShowcasePhaseProps) {
   return (
-    <li className="min-w-0">
+    <li className="flex min-w-0">
       <button
         aria-current={active ? "step" : undefined}
         className={
-          active
-            ? "flex min-h-10 w-full items-center gap-2 border-l-2 border-accent bg-accent/12 px-3 py-2 text-left text-sm font-medium text-foreground"
-            : "flex min-h-10 w-full items-center gap-2 border-l-2 border-transparent px-3 py-2 text-left text-sm text-text-secondary transition-colors duration-150 hover:border-border-strong hover:text-foreground"
+          "flex min-h-11 w-full items-end border-b-2 py-2 text-left text-sm leading-5 transition-colors focus-visible:outline-offset-[-2px] " +
+          (active
+            ? "border-accent font-medium text-foreground"
+            : "border-border text-text-secondary hover:border-border-control hover:text-foreground")
         }
         onClick={() => onSelect(index)}
         type="button"
       >
-        <span aria-hidden="true" className="orbix-data text-muted">
-          {index + 1}
+        <span className="[overflow-wrap:break-word]">
+          <span aria-hidden="true" className="orbix-data mr-2">
+            {index + 1}
+          </span>
+          {phase.label}
         </span>
-        {phase.label}
       </button>
     </li>
   );

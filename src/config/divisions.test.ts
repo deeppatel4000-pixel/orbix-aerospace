@@ -1,8 +1,10 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  accentDivisionFor,
   DEFAULT_DIVISION,
   resolveDivision,
+  type AccentDivision,
   type OrbixDivision,
 } from "@/config/divisions";
 import { navigationItems } from "@/config/navigation";
@@ -62,5 +64,28 @@ describe("resolveDivision", () => {
     // `/engineering-lab` must not be shadowed by a shorter rule, and adding
     // a longer, more specific rule later must be able to win.
     expect(resolveDivision("/engineering-lab/tools")).toBe("engineering");
+  });
+});
+
+describe("accentDivisionFor", () => {
+  it("maps each primary route to its v2 accent (spec 4)", () => {
+    const expected: ReadonlyArray<readonly [string, AccentDivision]> = [
+      ["/", "space"],
+      ["/aircraft", "aircraft"],
+      ["/aircraft/sr-71-blackbird", "aircraft"],
+      ["/rockets", "space"],
+      ["/compare", "lab"],
+      ["/engineering-lab", "lab"],
+      ["/learn", "lab"],
+      ["/verification", "lab"],
+      ["/showcase", "space"],
+      ["/build-log", "space"],
+    ];
+
+    for (const [pathname, accent] of expected) {
+      expect(accentDivisionFor(resolveDivision(pathname)), pathname).toBe(
+        accent,
+      );
+    }
   });
 });

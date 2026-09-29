@@ -1,19 +1,19 @@
 import type { Metadata, Viewport } from "next";
-import { IBM_Plex_Mono, IBM_Plex_Sans } from "next/font/google";
+import { B612_Mono, IBM_Plex_Sans } from "next/font/google";
 
 import { siteConfig } from "@/config/site";
 
 import "./globals.css";
 
 /**
- * ORBIX typography is self-hosted through `next/font/google`: the files are
- * downloaded at build time and served from this origin, so there is no
- * runtime request to a third party and no extra dependency. IBM Plex Sans and
- * IBM Plex Mono are licensed under the SIL Open Font License 1.1.
+ * ORBIX typography (design v2, spec 5) is self-hosted through
+ * `next/font/google`: the files are downloaded at build time and served from
+ * this origin, so there is no runtime request to a third party and no extra
+ * dependency. Both families are licensed under the SIL Open Font License 1.1.
  *
- * Plex Sans carries prose, headings and interface text at normal width
- * (spec 5). The `wdth` axis is still loaded so existing `font-stretch`
- * declarations resolve, but no condensed cut is used.
+ * IBM Plex Sans carries display, headings, body and interface text. The
+ * `wdth` axis is loaded for the condensed display cut (`font-stretch: 84%`,
+ * see `.orbix-display` and `.orbix-h1` in `src/styles/orbix-foundations.css`).
  */
 const plexSans = IBM_Plex_Sans({
   axes: ["wdth"],
@@ -22,12 +22,15 @@ const plexSans = IBM_Plex_Sans({
   variable: "--font-plex-sans",
 });
 
-/** Machine values: numbers with units, equations, identifiers. */
-const plexMono = IBM_Plex_Mono({
+/**
+ * B612 Mono, designed for Airbus cockpit displays, sets data: readouts, spec
+ * values, units, table figures and small uppercase labels.
+ */
+const b612Mono = B612_Mono({
   display: "swap",
   subsets: ["latin"],
-  variable: "--font-plex-mono",
-  weight: ["400", "500", "600"],
+  variable: "--font-b612-mono",
+  weight: ["400", "700"],
 });
 
 const productionUrl = "https://orbix-aerospace.vercel.app";
@@ -49,9 +52,9 @@ export const metadata: Metadata = {
     "STEM",
   ],
   metadataBase: new URL(productionUrl),
-  // The brand board is no longer used as the social preview image (spec
-  // 12.4). Until a real home page screenshot or a typographic image exists,
-  // no preview image is declared.
+  // The 1200x630 social preview image comes from src/app/opengraph-image.tsx
+  // and twitter-image.tsx; no static image is declared here so the file
+  // convention is the single source.
   openGraph: {
     description: siteConfig.description,
     locale: "en_US",
@@ -65,7 +68,7 @@ export const metadata: Metadata = {
     template: `%s | ${siteConfig.wordmark}`,
   },
   twitter: {
-    card: "summary",
+    card: "summary_large_image",
     description: siteConfig.description,
     title: `${siteConfig.wordmark} | ${siteConfig.tagline}`,
   },
@@ -73,7 +76,7 @@ export const metadata: Metadata = {
 
 export const viewport: Viewport = {
   colorScheme: "dark",
-  themeColor: "#0e1114",
+  themeColor: "#03060c",
 };
 
 export default function RootLayout({
@@ -82,7 +85,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${plexSans.variable} ${plexMono.variable}`}>
+    <html lang="en" className={`${plexSans.variable} ${b612Mono.variable}`}>
       <body>{children}</body>
     </html>
   );

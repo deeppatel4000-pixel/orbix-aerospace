@@ -1,16 +1,18 @@
 import type { Metadata } from "next";
 
 import { ShowcasePage } from "@/features/showcase";
+import { socialOpenGraph, socialTwitter } from "@/lib/social-image";
 
 const description =
-  "How ORBIX is built: the data, calculator, analysis and report layers beneath React, the five mission presets shown from their inputs, and the checks that run in CI.";
+  "Inside ORBIX: the data, calculator, analysis and report layers beneath React, the five mission presets shown from their inputs, and the checks that run in CI.";
 
-const socialTitle = "How ORBIX is built | ORBIX";
+const socialTitle = "Inside ORBIX | ORBIX";
 
 export const metadata: Metadata = {
   alternates: { canonical: "/showcase" },
   description,
   openGraph: {
+    ...socialOpenGraph,
     description,
     locale: "en_US",
     siteName: "ORBIX",
@@ -18,9 +20,9 @@ export const metadata: Metadata = {
     type: "website",
     url: "/showcase",
   },
-  title: "How ORBIX is built",
+  title: "Inside ORBIX",
   twitter: {
-    card: "summary",
+    ...socialTwitter,
     description,
     title: socialTitle,
   },

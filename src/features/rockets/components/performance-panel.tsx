@@ -1,73 +1,103 @@
+import { DataTable } from "@/components/ui/data-table";
+import { Tag } from "@/components/ui/tag";
 import {
   formatLaunchConfiguration,
   formatOrbitType,
 } from "@/features/rockets/utils";
-import { DataTable } from "@/features/vehicles/components/data-table";
+import { renderDualMeasurement } from "@/features/vehicles/components/measurement-display";
 import { VehicleProfileSection } from "@/features/vehicles/components/vehicle-profile-section";
-import type { RocketPerformance } from "@/features/vehicles/types";
-import {
-  formatMeasurementParts,
-  formatQualifierLabel,
-} from "@/features/vehicles/utils/format-measurement";
+import type { OrbitType, RocketPerformance } from "@/features/vehicles/types";
+import { formatQualifierLabel } from "@/features/vehicles/utils/format-measurement";
 
 interface PerformancePanelProps {
+  index?: number;
   name: string;
   performance: RocketPerformance;
 }
 
 /**
- * Performance (spec 14): payload to each published destination, then the
- * orbit classes the record lists as supported.
+ * "Low Earth orbit (LEO)", or just "Earth escape" where the code only
+ * repeats a word of the name (ESCAPE).
  */
-export function PerformancePanel({ name, performance }: PerformancePanelProps) {
+function orbitName(orbit: OrbitType) {
+  const name = formatOrbitType(orbit);
+  const code = orbit.toLocaleUpperCase("en-US");
+  return name.toLocaleUpperCase("en-US").split(/\s+/).includes(code)
+    ? name
+    : `${name} (${orbit})`;
+}
+
+/**
+ * Performance (spec 9): payload to each published destination as a spec
+ * sheet, then the orbit classes the record lists as supported.
+ */
+export function PerformancePanel({
+  index,
+  name,
+  performance,
+}: PerformancePanelProps) {
   return (
     <VehicleProfileSection
       description="Payload mass depends on the destination orbit and on whether boosters are recovered, so each figure is tied to both."
       id="performance"
+      index={index}
       title="Performance"
     >
       {performance.payloadCapabilities.length > 0 ? (
         <DataTable
           caption={`${name} payload capability`}
           columns={[
-            { label: "Destination" },
-            { label: "Configuration" },
-            { label: "Payload", numeric: true },
-            { label: "Unit" },
-            { label: "Basis" },
-          ]}
-          rows={performance.payloadCapabilities.map((capability) => {
-            const { unit, value } = formatMeasurementParts(capability.mass);
-
-            return {
-              cells: [
-                formatLaunchConfiguration(capability.configuration),
-                value,
-                <span className="orbix-table-unit" key="unit">
-                  {unit}
-                </span>,
-                <span className="text-muted" key="basis">
-                  {formatQualifierLabel(capability.mass.qualifier)}
-                </span>,
-              ],
-              header: (
+            {
+              cell: (capability) => (
                 <span className="whitespace-nowrap">
-                  {formatOrbitType(capability.orbit)} ({capability.orbit})
+                  {orbitName(capability.orbit)}
                 </span>
               ),
-              key: `${capability.orbit}-${capability.configuration}`,
-            };
-          })}
+              header: "Destination",
+              key: "destination",
+            },
+            {
+              cell: (capability) =>
+                formatLaunchConfiguration(capability.configuration),
+              header: "Configuration",
+              key: "configuration",
+            },
+            {
+              cell: (capability) => renderDualMeasurement(capability.mass),
+              header: "Payload",
+              key: "payload",
+              numeric: true,
+            },
+            {
+              cell: (capability) => (
+                <span className="text-muted">
+                  {formatQualifierLabel(capability.mass.qualifier)}
+                </span>
+              ),
+              header: "Basis",
+              key: "basis",
+            },
+          ]}
+          getRowKey={(capability) =>
+            `${capability.orbit}-${capability.configuration}`
+          }
+          rows={performance.payloadCapabilities}
         />
       ) : (
         <p className="text-muted">No payload figures are published.</p>
       )}
 
-      <h3 className="orbix-h4 mt-8 text-foreground">Supported destinations</h3>
-      <ul className="mt-3 flex flex-wrap gap-2">
+      {/* Set like the table caption above: a label for the list, not a
+          heading larger than the tables' own. */}
+      <h3 className="mt-10 text-sm leading-[1.4] font-medium text-foreground">
+        Supported destinations
+      </h3>
+      <ul className="mt-4 flex flex-wrap gap-2">
         {performance.supportedOrbits.map((orbit) => (
-          <li className="orbix-tag" key={orbit}>
-            {formatOrbitType(orbit)} ({orbit})
+          <li key={orbit}>
+            {/* Allowed to wrap: "Geostationary transfer orbit (GTO)" is wider
+                than a 320px screen's column. */}
+            <Tag className="whitespace-normal">{orbitName(orbit)}</Tag>
           </li>
         ))}
       </ul>

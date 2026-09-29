@@ -64,10 +64,18 @@ describe("legal pages", () => {
 
   it("names the real local storage key on the privacy and cookies pages", () => {
     for (const page of [<PrivacyPage key="p" />, <CookiesPage key="c" />]) {
-      expect(renderToStaticMarkup(page)).toContain(
-        "orbix.mission-scenarios.v1",
-      );
+      // The key is set with break points after its dots; compare its text.
+      const text = renderToStaticMarkup(page).replace(/<[^>]+>/g, "");
+      expect(text).toContain("orbix.mission-scenarios.v1");
     }
+  });
+
+  it("says who made ORBIX on /about and links to the build log", () => {
+    const markup = renderToStaticMarkup(<AboutPage />);
+    expect(markup).toContain('href="/build-log"');
+    expect(markup).toContain(
+      `a personal project created by ${siteLegal.operatorName}, a high school student who plans to study aerospace engineering`,
+    );
   });
 
   it("gives /about a #sources section for the home page link", () => {

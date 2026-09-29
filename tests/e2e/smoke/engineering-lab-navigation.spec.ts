@@ -15,10 +15,15 @@ import {
  * shell's `hashchange` listener (`laboratory-shell.tsx`). A regression there
  * would leave deep links working while the visible navigation silently broke.
  *
- * Behaviour asserted here is what the components implement (spec 14):
+ * Behaviour asserted here is what the components implement (design v2,
+ * spec 9):
  *   - from 1024px, `<nav aria-label="Engineering Lab tools">` lists every
- *     tool as a link to its own id, grouped under the workflow names; the
- *     active tool's link carries `aria-current="location"`
+ *     tool as a numbered link to its own id, grouped under the workflow
+ *     names; the active tool's link carries `aria-current="location"`
+ *   - each workflow is headed by a link to its first tool; only the active
+ *     workflow's list is unfolded (every list is shown on a window at least
+ *     1,200px tall), so reaching a tool in another workflow means following
+ *     that workflow's header link first
  *   - below 1024px the same nav offers a `<select>` labelled "Choose a tool"
  *     (option values are tool ids) plus the full list in a `<details>`
  *   - selecting a tool updates the URL hash, reveals that tool's workflow
@@ -68,11 +73,39 @@ function isDesktop(): boolean {
   return test.info().project.name === "desktop";
 }
 
-/** The visible (desktop) index link for a tool. */
-function indexLink(page: import("@playwright/test").Page, toolId: string) {
-  return page
-    .getByRole("navigation", { name: "Engineering Lab tools" })
-    .locator(`a[href="#${toolId}"]:visible`);
+type Page = import("@playwright/test").Page;
+
+function toolIndex(page: Page) {
+  return page.getByRole("navigation", {
+    exact: true,
+    name: "Engineering Lab tools",
+  });
+}
+
+/** The visible (desktop) index row link for a tool. */
+function indexLink(page: Page, toolId: string) {
+  return toolIndex(page).locator(`ol a[href="#${toolId}"]:visible`);
+}
+
+/** A workflow's header link, which opens that workflow's first tool. */
+function workflowLink(page: Page, label: string) {
+  return toolIndex(page).getByRole("link", { name: label, exact: true });
+}
+
+/**
+ * Opens a tool through the visible index the way a reader does: the tool's
+ * own row when its workflow is unfolded, otherwise the workflow's header
+ * link first (which unfolds it), then the row.
+ */
+async function openFromIndex(
+  page: Page,
+  workflowLabel: string,
+  toolId: string,
+) {
+  if ((await indexLink(page, toolId).count()) === 0) {
+    await workflowLink(page, workflowLabel).click();
+  }
+  await indexLink(page, toolId).click();
 }
 
 test.describe("Engineering Lab tool navigation", () => {
@@ -82,15 +115,39 @@ test.describe("Engineering Lab tool navigation", () => {
     test.skip(!isDesktop(), "The link index is only shown from 1024px.");
 
     await page.goto(ROUTES.engineeringLab, { waitUntil: "domcontentloaded" });
-    const nav = page.getByRole("navigation", { name: "Engineering Lab tools" });
+    const nav = toolIndex(page);
     await expect(nav).toBeVisible();
 
     for (const workflow of WORKFLOWS) {
+      // Every workflow is headed by a visible link to its first tool, and
+      // its tools are a list named by the workflow.
+      await expect(workflowLink(page, workflow.label)).toBeVisible();
+      await expect(workflowLink(page, workflow.label)).toHaveAttribute(
+        "href",
+        `#${workflow.firstTool}`,
+      );
+      // Folded lists stay mounted but hidden (out of the accessibility
+      // tree), so the list is found through the header that labels it.
+      const headerId = await workflowLink(page, workflow.label).getAttribute(
+        "id",
+      );
+      expect(headerId).toBeTruthy();
       await expect(
-        nav.getByRole("list", { name: workflow.label, exact: true }),
-      ).toBeVisible();
-      await expect(indexLink(page, workflow.firstTool)).toBeVisible();
+        nav.locator(`ol[aria-labelledby="${headerId}"] > li`),
+      ).not.toHaveCount(0);
     }
+
+    // The active workflow's list is unfolded on load.
+    await expect(
+      nav.getByRole("list", { name: WORKFLOWS[0].label, exact: true }),
+    ).toBeVisible();
+    await expect(indexLink(page, WORKFLOWS[0].firstTool)).toBeVisible();
+
+    // Following another workflow's header unfolds that workflow's list.
+    await workflowLink(page, WORKFLOWS[2].label).click();
+    await expect(
+      nav.getByRole("list", { name: WORKFLOWS[2].label, exact: true }),
+    ).toBeVisible();
   });
 
   test("clicking a tool in the index activates it and updates the hash", async ({
@@ -116,7 +173,7 @@ test.describe("Engineering Lab tool navigation", () => {
 
     // Click a tool in a DIFFERENT workflow through the visible index.
     const target = WORKFLOWS[3];
-    await indexLink(page, target.firstTool).click();
+    await openFromIndex(page, target.label, target.firstTool);
 
     // The clicked tool becomes the active one...
     await expect(page.locator(`[id="${target.firstTool}"]`)).toBeVisible();
@@ -141,10 +198,10 @@ test.describe("Engineering Lab tool navigation", () => {
     test.skip(!isDesktop(), "The link index is desktop-only.");
 
     await page.goto(ROUTES.engineeringLab, { waitUntil: "domcontentloaded" });
-    const nav = page.getByRole("navigation", { name: "Engineering Lab tools" });
+    const nav = toolIndex(page);
 
     for (const workflow of WORKFLOWS) {
-      await indexLink(page, workflow.firstTool).click();
+      await openFromIndex(page, workflow.label, workflow.firstTool);
 
       await expect(
         page.locator(`[id="${workflow.firstTool}"]`),
@@ -169,14 +226,18 @@ test.describe("Engineering Lab tool navigation", () => {
 
     await page.goto(ROUTES.engineeringLab, { waitUntil: "domcontentloaded" });
 
-    await indexLink(page, "hohmann-transfer-analyzer").click();
+    await openFromIndex(
+      page,
+      "Orbits and missions",
+      "hohmann-transfer-analyzer",
+    );
     await expect(
       page.locator('[id="hohmann-transfer-analyzer"]'),
     ).toBeVisible();
 
     // Switching to a tool in another workflow moves the content and hides the
     // previous workflow's tool.
-    await indexLink(page, "shock-condition-analyzer").click();
+    await openFromIndex(page, "Compressible flow", "shock-condition-analyzer");
     await expect(page.locator('[id="shock-condition-analyzer"]')).toBeVisible();
     await expect(page.locator('[id="hohmann-transfer-analyzer"]')).toBeHidden();
   });
@@ -203,7 +264,11 @@ test.describe("Engineering Lab tool navigation", () => {
       hasText: /^Current tool: /,
     });
 
-    await indexLink(page, "hypersonic-heating-analyzer").click();
+    await openFromIndex(
+      page,
+      "Atmospheric entry",
+      "hypersonic-heating-analyzer",
+    );
     await expect(liveRegion).toHaveText(
       "Current tool: Hypersonic heating analyzer",
     );

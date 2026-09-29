@@ -2,6 +2,7 @@ import { ChevronDown } from "lucide-react";
 
 import { EmptyState } from "@/components/ui/empty-state";
 import type { MissionInsightsAnalysis } from "@/features/engineering-lab/types";
+import { LabHeading } from "./visualization/lab-heading";
 
 export interface MissionInsightsPanelProps {
   readonly analysis?: MissionInsightsAnalysis | null;
@@ -29,9 +30,9 @@ export function MissionInsightsPanel({ analysis }: MissionInsightsPanelProps) {
       role="region"
     >
       <header className="border-b border-border-subtle pb-4">
-        <h3 className="orbix-h3 text-foreground" id="mission-insights-title">
+        <LabHeading id="mission-insights-title">
           Mission engineering insights
-        </h3>
+        </LabHeading>
         <p className="mt-2 max-w-[68ch] text-sm leading-6 text-muted">
           Plain-language notes generated from the completed results. They
           explain the numbers; they do not change any calculation or
@@ -66,7 +67,7 @@ export function MissionInsightsPanel({ analysis }: MissionInsightsPanelProps) {
                 {insight.title}
                 <ChevronDown
                   aria-hidden="true"
-                  className="shrink-0 text-muted transition-transform duration-150 group-open:rotate-180"
+                  className="shrink-0 text-muted transition-transform group-open:rotate-180"
                   size={16}
                 />
               </summary>
@@ -85,12 +86,9 @@ export function MissionInsightsPanel({ analysis }: MissionInsightsPanelProps) {
         </div>
 
         <section aria-labelledby="mission-insights-assumptions-title">
-          <h4
-            className="orbix-h4 text-foreground"
-            id="mission-insights-assumptions-title"
-          >
+          <LabHeading offset={1} id="mission-insights-assumptions-title">
             Source assumptions
-          </h4>
+          </LabHeading>
           <ul className="mt-2 list-disc space-y-1 pl-5 text-sm leading-6 text-muted md:columns-2 md:gap-8">
             {analysis.assumptions.map((assumption) => (
               <li key={assumption}>{assumption}</li>

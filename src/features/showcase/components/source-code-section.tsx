@@ -1,32 +1,33 @@
-import { ExternalLink } from "lucide-react";
+import { ButtonLink } from "@/components/ui/button-link";
+import { formatCode } from "@/components/ui/readout";
+import { siteLegal } from "@/config/site-legal";
+import {
+  ShowcaseSection,
+  ShowcaseText,
+} from "@/features/showcase/components/showcase-section";
 
-import { ShowcaseSection } from "@/features/showcase/components/showcase-section";
-
-export const SOURCE_REPOSITORY_URL =
-  "https://github.com/deeppatel4000-pixel/orbix-aerospace";
+export const SOURCE_REPOSITORY_URL = siteLegal.sourceCodeUrl;
 
 export function SourceCodeSection() {
   return (
     <ShowcaseSection
       id="source-code"
       lead="The full source, including the calculators, their unit tests and the browser tests, is on GitHub."
+      number={5}
       title="Source code"
     >
-      <p>
-        <a
-          className="orbix-link inline-flex items-center gap-1"
+      <ShowcaseText>
+        <ButtonLink
+          arrow="external"
           href={SOURCE_REPOSITORY_URL}
-          rel="noreferrer"
-          target="_blank"
+          variant="secondary"
         >
           View the ORBIX repository on GitHub
-          <ExternalLink aria-hidden="true" size={14} />
-          <span className="sr-only">(opens in a new tab)</span>
-        </a>
-      </p>
-      <p className="orbix-label mt-2">
-        github.com/deeppatel4000-pixel/orbix-aerospace
-      </p>
+        </ButtonLink>
+        <p className="orbix-data orbix-data--sm mt-4 text-text-muted">
+          {formatCode(SOURCE_REPOSITORY_URL.replace(/^https:\/\//, ""))}
+        </p>
+      </ShowcaseText>
     </ShowcaseSection>
   );
 }

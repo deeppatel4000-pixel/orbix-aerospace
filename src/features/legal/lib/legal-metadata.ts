@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 
 import { siteConfig } from "@/config/site";
+import { socialOpenGraph, socialTwitter } from "@/lib/social-image";
 
 interface LegalMetadataInput {
   readonly description: string;
@@ -24,6 +25,7 @@ export function legalMetadata({
     alternates: { canonical: path },
     description,
     openGraph: {
+      ...socialOpenGraph,
       description,
       locale: "en_US",
       siteName: siteConfig.wordmark,
@@ -33,7 +35,7 @@ export function legalMetadata({
     },
     title,
     twitter: {
-      card: "summary",
+      ...socialTwitter,
       description,
       title: fullTitle,
     },

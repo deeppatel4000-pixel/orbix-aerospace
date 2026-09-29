@@ -67,7 +67,8 @@ describe("MissionControlShell", () => {
     expect(markup).toContain("Mission control");
     expect(markup).toContain("Mission workspaces");
     expect(markup).toContain("Existing workspace output");
-    expect(markup).toContain("Mission summary: computed values");
+    // The old footer summary row repeated the header and metrics; gone.
+    expect(markup).not.toContain("Mission summary: computed values");
     expect(markup).toContain('data-active-workspace="overview"');
   });
 
@@ -87,10 +88,8 @@ describe("MissionControlShell", () => {
 
     expect(markup).toContain("ORBIX Command Shell Mission");
     expect(markup).toContain("Orbital logistics");
-    expect(markup).toContain("Educational simulation");
-    expect(markup).toContain("Command Shell Vehicle");
-    expect(markup).toContain("Delta-v");
-    expect(markup).toContain("TPS");
+    expect(markup).toContain("educational simulation");
+    expect(markup).toContain("Analyses resolved");
   });
 
   it("renders all twelve workspace navigation entries with selected state", () => {
@@ -158,7 +157,7 @@ describe("MissionControlShell", () => {
 
     expect(markup).toContain('aria-label="Mission control sections"');
     expect(markup).toContain('aria-label="Mission control workspace content"');
-    expect(markup).toContain('aria-label="Mission summary"');
+    expect(markup).not.toContain('aria-label="Mission summary"');
     expect(markup).toContain('aria-live="polite"');
     expect(markup).not.toContain("animate-");
   });

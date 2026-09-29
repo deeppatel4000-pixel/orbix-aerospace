@@ -57,11 +57,31 @@ const learningAreas: readonly LearningArea[] = [
     id: "aerodynamics-flight-fundamentals",
     keyIdeas: [
       {
-        equation: "L = ½ ρ V² S C_L",
+        equation: "L = ½ · ρ · V² · S · C_L",
+        equationLabel: "Lift equation",
+        spokenAs:
+          "L equals one half times rho times V squared times S times C L",
+        variables: [
+          { meaning: "Lift", symbol: "L", unit: "N" },
+          { meaning: "Air density", symbol: "ρ", unit: "kg/m³" },
+          { meaning: "True airspeed", symbol: "V", unit: "m/s" },
+          { meaning: "Wing reference area", symbol: "S", unit: "m²" },
+          { meaning: "Lift coefficient", symbol: "C_L" },
+        ],
         text: "Lift equals dynamic pressure times the wing reference area S times the lift coefficient C_L. Dynamic pressure is ½ ρ V², where ρ is air density and V is true airspeed.",
       },
       {
-        equation: "D = ½ ρ V² S C_D",
+        equation: "D = ½ · ρ · V² · S · C_D",
+        equationLabel: "Drag equation",
+        spokenAs:
+          "D equals one half times rho times V squared times S times C D",
+        variables: [
+          { meaning: "Drag", symbol: "D", unit: "N" },
+          { meaning: "Air density", symbol: "ρ", unit: "kg/m³" },
+          { meaning: "True airspeed", symbol: "V", unit: "m/s" },
+          { meaning: "Wing reference area", symbol: "S", unit: "m²" },
+          { meaning: "Drag coefficient", symbol: "C_D" },
+        ],
         text: "Drag has the same form with the drag coefficient C_D, which accounts for skin friction, pressure drag and the drag that comes with producing lift.",
       },
       {
@@ -118,15 +138,44 @@ const learningAreas: readonly LearningArea[] = [
     keyIdeas: [
       {
         equation: "T / W",
+        equationLabel: "Thrust-to-weight ratio",
+        spokenAs: "T over W",
+        variables: [
+          { meaning: "Thrust", symbol: "T", unit: "N" },
+          { meaning: "Weight", symbol: "W", unit: "N" },
+        ],
         text: "Thrust-to-weight ratio is thrust divided by weight. A rocket needs a ratio above 1 at liftoff to rise vertically. An aircraft can fly with a ratio below 1 because its wings, not its engines, carry its weight.",
       },
       {
-        equation: "Δv = v_e ln(m₀ / m_f)",
-        text: "The ideal rocket equation gives the velocity change of a stage from its effective exhaust velocity v_e and its mass ratio: mass at ignition m₀ over mass at burnout m_f.",
+        equation: "Δv = v_e · ln(m_0 / m_f)",
+        equationLabel: "Ideal rocket equation",
+        spokenAs: "delta v equals v e times the natural log of m zero over m f",
+        variables: [
+          {
+            meaning: "Velocity change of the stage",
+            symbol: "Δv",
+            unit: "m/s",
+          },
+          { meaning: "Effective exhaust velocity", symbol: "v_e", unit: "m/s" },
+          { meaning: "Mass at ignition", symbol: "m_0", unit: "kg" },
+          { meaning: "Mass at burnout", symbol: "m_f", unit: "kg" },
+        ],
+        text: "The ideal rocket equation gives the velocity change of a stage from its effective exhaust velocity v_e and its mass ratio: mass at ignition m_0 over mass at burnout m_f.",
       },
       {
-        equation: "v_e = Isp g₀",
-        text: "Specific impulse Isp is effective exhaust velocity divided by standard gravity g₀, quoted in seconds. A higher value gives more velocity change from the same propellant mass.",
+        equation: "v_e = I_sp · g_0",
+        equationLabel: "Specific impulse",
+        spokenAs: "v e equals I s p times g zero",
+        variables: [
+          { meaning: "Effective exhaust velocity", symbol: "v_e", unit: "m/s" },
+          { meaning: "Specific impulse", symbol: "I_sp", unit: "s" },
+          {
+            meaning: "Standard gravity, 9.80665 m/s² by definition",
+            symbol: "g_0",
+            unit: "m/s²",
+          },
+        ],
+        text: "Specific impulse I_sp is effective exhaust velocity divided by standard gravity g_0, quoted in seconds. A higher value gives more velocity change from the same propellant mass.",
       },
       {
         text: "Because the mass ratio sits inside a logarithm, each additional unit of velocity costs more propellant than the last. Staging discards empty tanks and engines so each later stage starts with a better mass ratio.",
@@ -181,7 +230,21 @@ const learningAreas: readonly LearningArea[] = [
     id: "high-speed-compressible-flow",
     keyIdeas: [
       {
-        equation: "M = V / a, where a = √(γ R T)",
+        equation: "M = V / a\na = √(γ · R · T)",
+        equationLabel: "Mach number",
+        spokenAs:
+          "M equals V over a. a equals the square root of gamma times R times T",
+        variables: [
+          { meaning: "Mach number", symbol: "M" },
+          { meaning: "Flow speed", symbol: "V", unit: "m/s" },
+          { meaning: "Local speed of sound", symbol: "a", unit: "m/s" },
+          {
+            meaning: "Ratio of specific heats, about 1.4 for air",
+            symbol: "γ",
+          },
+          { meaning: "Specific gas constant", symbol: "R", unit: "J/(kg K)" },
+          { meaning: "Static temperature", symbol: "T", unit: "K" },
+        ],
         text: "Mach number is flow speed divided by the local speed of sound. The speed of sound depends on temperature T, the ratio of specific heats γ and the gas constant R.",
       },
       {
@@ -260,11 +323,38 @@ const learningAreas: readonly LearningArea[] = [
         text: "A blunt shape holds a strong bow shock away from its surface, so more of the heat stays in the air. Allen and Eggers published this result in NACA Report 1381.",
       },
       {
-        equation: "q ≈ k √(ρ / R_n) V³",
-        text: "For first estimates, heat flux at the stagnation point scales with the square root of air density over nose radius R_n, times velocity cubed. This is the Sutton-Graves form, with k a constant for the atmosphere's composition.",
+        equation: "q̇ ≈ k · √(ρ / r_n) · V³",
+        equationLabel: "Sutton-Graves stagnation-point heating",
+        spokenAs:
+          "q dot is approximately k times the square root of rho over r n, times V cubed",
+        variables: [
+          {
+            meaning: "Heat flux at the stagnation point",
+            symbol: "q̇",
+            unit: "W/m²",
+          },
+          {
+            meaning:
+              "Sutton-Graves constant, set by the atmosphere's composition",
+            symbol: "k",
+            unit: "kg^1/2/m",
+          },
+          { meaning: "Free-stream air density", symbol: "ρ", unit: "kg/m³" },
+          { meaning: "Nose radius", symbol: "r_n", unit: "m" },
+          { meaning: "Velocity", symbol: "V", unit: "m/s" },
+        ],
+        text: "For first estimates, heat flux at the stagnation point scales with the square root of air density over nose radius r_n, times velocity cubed. This is the Sutton-Graves form, with k a constant for the atmosphere's composition.",
       },
       {
-        equation: "β = m / (C_D A)",
+        equation: "β = m / (C_D · A)",
+        equationLabel: "Ballistic coefficient",
+        spokenAs: "beta equals m over C D times A",
+        variables: [
+          { meaning: "Ballistic coefficient", symbol: "β", unit: "kg/m²" },
+          { meaning: "Vehicle mass", symbol: "m", unit: "kg" },
+          { meaning: "Drag coefficient", symbol: "C_D" },
+          { meaning: "Reference area", symbol: "A", unit: "m²" },
+        ],
         text: "Ballistic coefficient β is mass divided by drag coefficient times reference area. A vehicle with a lower β slows down higher in the atmosphere, where the air is thinner.",
       },
       {
@@ -335,13 +425,35 @@ const learningAreas: readonly LearningArea[] = [
     keyIdeas: [
       {
         equation: "v = √(μ / r)",
+        equationLabel: "Circular orbital speed",
+        spokenAs: "v equals the square root of mu over r",
+        variables: [
+          { meaning: "Circular orbital speed", symbol: "v", unit: "m/s" },
+          {
+            meaning: "Gravitational parameter of the central body",
+            symbol: "μ",
+            unit: "m³/s²",
+          },
+          {
+            meaning: "Orbit radius, from the centre of the central body",
+            symbol: "r",
+            unit: "m",
+          },
+        ],
         text: "Circular orbital speed falls as orbit radius r grows. μ is the gravitational parameter of the central body.",
       },
       {
         text: "A Hohmann transfer moves between two circular, coplanar orbits with two burns: one to enter an elliptical transfer orbit, and one to circularise at the far end. For most pairs of orbits it is the two-burn transfer with the lowest delta-v.",
       },
       {
-        equation: "Δv = 2 v sin(Δi / 2)",
+        equation: "Δv = 2v · sin(Δi / 2)",
+        equationLabel: "Plane change",
+        spokenAs: "delta v equals 2 v times the sine of delta i over 2",
+        variables: [
+          { meaning: "Velocity change of the burn", symbol: "Δv", unit: "m/s" },
+          { meaning: "Orbital speed at the burn", symbol: "v", unit: "m/s" },
+          { meaning: "Change in orbit plane angle", symbol: "Δi" },
+        ],
         text: "Changing the orbit plane by an angle Δi at speed v costs this much delta-v. Because the cost grows with speed, plane changes are cheapest where the spacecraft moves slowest, such as at apoapsis.",
       },
       {
@@ -376,7 +488,7 @@ const learningAreas: readonly LearningArea[] = [
       {
         description: "How ORBIX itself is structured and checked.",
         href: "/showcase",
-        label: "How ORBIX is built",
+        label: "Inside ORBIX",
       },
     ],
     furtherReading: [

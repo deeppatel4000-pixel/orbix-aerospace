@@ -7,6 +7,7 @@ import {
   getAircraftById,
   listAircraftIds,
 } from "@/features/aircraft";
+import { socialOpenGraph } from "@/lib/social-image";
 
 interface AircraftDetailPageProps {
   params: Promise<{
@@ -41,6 +42,7 @@ export async function generateMetadata({
     alternates: { canonical: url },
     description,
     openGraph: {
+      ...socialOpenGraph,
       description,
       locale: "en_US",
       siteName: "ORBIX",

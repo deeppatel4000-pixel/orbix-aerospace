@@ -17,11 +17,89 @@ import {
  * 227px spread in aircraft card heights (317px for rockets) — the ragged grid
  * the audit reported. Nothing asserted any of it, so it was invisible to CI.
  *
- * These tests pin the contract that replaced it: one 16:9 media ratio shared
- * by both registries (spec section 10, card link), every vehicle present, every
- * card linking to its own profile, and exactly one interactive element per
- * card.
+ * These tests pin the contract that replaced it (design v2, spec 8): one
+ * media ratio per registry, 16:10 for aircraft and 3:4 portrait for launch
+ * vehicles (rockets are tall; they are shown whole), with the first card of
+ * each registry a feature that spans two columns and sets its photograph
+ * beside the text at the full height of the card; every vehicle present,
+ * every card linking to its own profile, and exactly one interactive
+ * element per card.
  */
+
+type Page = import("@playwright/test").Page;
+
+interface CardGeometry {
+  readonly height: number;
+  /** Height of the photograph's visible frame (the image may overflow it). */
+  readonly mediaHeight: number;
+  /** Width over height of the visible frame, not of the image inside it. */
+  readonly mediaRatio: number;
+  readonly top: number;
+  readonly width: number;
+}
+
+/** Each card's photo ratio and card width, once the grid has laid out. */
+async function cardGeometry(page: Page): Promise<CardGeometry[]> {
+  await expect
+    .poll(() =>
+      page
+        .locator(CARD)
+        .evaluateAll((cards) =>
+          cards.every(
+            (card) =>
+              (card.querySelector("img")?.getBoundingClientRect().height ?? 0) >
+              0,
+          ),
+        ),
+    )
+    .toBe(true);
+
+  return page.locator(CARD).evaluateAll((cards) =>
+    cards.map((card) => {
+      // The frame, not the <img>: in a row the feature makes taller, the
+      // image is deliberately larger than its frame and clipped by it, so
+      // the image box would not show what the visitor sees.
+      // The media well's first child is the frame itself; the well adds a
+      // 1px bottom rule that is not part of the photograph.
+      const frame =
+        card.firstElementChild?.firstElementChild?.getBoundingClientRect();
+      const box = card.getBoundingClientRect();
+      return {
+        height: box.height,
+        mediaHeight: frame?.height ?? 0,
+        mediaRatio: frame?.height
+          ? Number((frame.width / frame.height).toFixed(2))
+          : 0,
+        top: box.top,
+        width: box.width,
+      };
+    }),
+  );
+}
+
+/**
+ * Standard cards in a row below the feature's. A card beside the feature
+ * gives the row's spare height to its photograph (spec 8), so its frame is
+ * taller than the registry ratio by design; the ratio is pinned on the rows
+ * below, and the cards beside the feature must only ever grow.
+ */
+function splitByFeatureRow(geometry: readonly CardGeometry[]) {
+  const [feature, ...rest] = geometry;
+  const featureBottom = (feature?.top ?? 0) + (feature?.height ?? 0);
+  return {
+    below: rest.filter((card) => card.top >= featureBottom - 1),
+    beside: rest.filter((card) => card.top < featureBottom - 1),
+    feature,
+  };
+}
+
+/** The first card is the registry's feature: it spans two columns. */
+function expectFeatureFirst(geometry: readonly CardGeometry[]) {
+  const [feature, ...rest] = geometry;
+  for (const card of rest) {
+    expect(feature?.width ?? 0).toBeGreaterThan(card.width * 1.5);
+  }
+}
 
 const CARD = ".orbix-vehicle-card";
 
@@ -55,44 +133,53 @@ test.describe("Vehicle discovery", () => {
     }
   });
 
-  test("aircraft cards share one 16:9 media ratio", async ({ page }) => {
+  test("aircraft cards share one 16:10 media ratio", async ({ page }) => {
     await page.goto(ROUTES.aircraft, { waitUntil: "domcontentloaded" });
-    await page.locator(CARD).first().waitFor();
 
-    const ratios = await page.locator(CARD).evaluateAll((cards) =>
-      cards.map((card) => {
-        const image = card.querySelector("img");
-        if (!image) return 0;
-        const rect = image.getBoundingClientRect();
-        return Number((rect.width / rect.height).toFixed(2));
-      }),
-    );
+    const geometry = await cardGeometry(page);
+    const { below, beside, feature } = splitByFeatureRow(geometry);
+    const ratios = below.map((card) => card.mediaRatio);
 
-    // 16:9. Every card, not merely the first.
+    // 16:10, the visible frame of every standard card below the feature row.
+    expect(below.length).toBeGreaterThan(0);
     expect(new Set(ratios).size, `ratios were ${ratios.join(", ")}`).toBe(1);
-    expect(ratios[0]).toBeCloseTo(16 / 9, 1);
+    expect(ratios[0]).toBeCloseTo(16 / 10, 2);
+    // Beside the feature a frame may only grow taller than 16:10.
+    for (const card of beside) {
+      expect(card.mediaRatio).toBeLessThanOrEqual(16 / 10 + 0.01);
+    }
+
+    // The two-column feature sets its photo beside the text, filling the
+    // card's height (less its 1px outline), like the launch vehicle feature.
+    expect(feature?.mediaHeight ?? 0).toBeGreaterThanOrEqual(
+      (feature?.height ?? 0) - 2,
+    );
+    expectFeatureFirst(geometry);
   });
 
-  test("launch-vehicle cards share the same 16:9 media ratio", async ({
+  test("launch-vehicle cards share one 3:4 portrait media ratio", async ({
     page,
   }) => {
     await page.goto(ROUTES.rockets, { waitUntil: "domcontentloaded" });
-    await page.locator(CARD).first().waitFor();
 
-    const ratios = await page.locator(CARD).evaluateAll((cards) =>
-      cards.map((card) => {
-        const image = card.querySelector("img");
-        if (!image) return 0;
-        const rect = image.getBoundingClientRect();
-        return Number((rect.width / rect.height).toFixed(2));
-      }),
-    );
+    const geometry = await cardGeometry(page);
+    const { below, beside, feature } = splitByFeatureRow(geometry);
+    const ratios = below.map((card) => card.mediaRatio);
 
-    // The redesign uses one landscape frame for both registries so the two
-    // grids line up; each rocket photograph sets its own object position so
-    // the vehicle stays in frame.
+    // The visible frame of every standard card below the feature row is
+    // 3:4, so the whole vehicle stays in frame.
+    expect(below.length).toBeGreaterThan(0);
     expect(new Set(ratios).size, `ratios were ${ratios.join(", ")}`).toBe(1);
-    expect(ratios[0]).toBeCloseTo(16 / 9, 1);
+    expect(ratios[0]).toBeCloseTo(3 / 4, 2);
+    // Beside the feature a frame may only grow taller than 3:4.
+    for (const card of beside) {
+      expect(card.mediaRatio).toBeLessThanOrEqual(3 / 4 + 0.01);
+    }
+
+    // The two-column feature sets its photo beside the text at full card
+    // height: still a portrait frame, never a landscape crop.
+    expect(feature?.mediaRatio ?? 1).toBeLessThan(1);
+    expectFeatureFirst(geometry);
   });
 
   test("cards expose exactly one interactive element each", async ({
@@ -121,26 +208,42 @@ test.describe("Vehicle discovery", () => {
     page,
   }) => {
     // A shared schema is deliberately NOT imposed: an aircraft's ceiling and
-    // a rocket's stage count are not interchangeable rows.
+    // a rocket's thrust are not interchangeable rows. Spec 8: two per card;
+    // the feature card adds two more after the same two.
+    const labelsPerCard = (page: Page) =>
+      page
+        .locator(CARD)
+        .evaluateAll((cards) =>
+          cards.map((card) =>
+            [...card.querySelectorAll("dt")].map((dt) =>
+              (dt.textContent ?? "").trim(),
+            ),
+          ),
+        );
+
     await page.goto(ROUTES.aircraft, { waitUntil: "domcontentloaded" });
-    const aircraftLabels = await page
-      .locator(`${CARD} dt`)
-      .evaluateAll((nodes) => [
-        ...new Set(nodes.map((n) => (n.textContent ?? "").trim())),
-      ]);
-    expect(aircraftLabels.sort()).toEqual([
-      "First flight",
+    const [aircraftFeature, ...aircraftCards] = await labelsPerCard(page);
+    expect(aircraftFeature).toEqual([
       "Maximum speed",
       "Service ceiling",
+      "Range",
+      "First flight",
     ]);
+    for (const labels of aircraftCards) {
+      expect(labels).toEqual(["Maximum speed", "Service ceiling"]);
+    }
 
     await page.goto(ROUTES.rockets, { waitUntil: "domcontentloaded" });
-    const rocketLabels = await page
-      .locator(`${CARD} dt`)
-      .evaluateAll((nodes) => [
-        ...new Set(nodes.map((n) => (n.textContent ?? "").trim())),
-      ]);
-    expect(rocketLabels.sort()).toEqual(["Height", "Liftoff thrust", "Stages"]);
+    const [rocketFeature, ...rocketCards] = await labelsPerCard(page);
+    expect(rocketFeature).toEqual([
+      "Liftoff thrust",
+      "Height",
+      "Payload to LEO",
+      "First flight",
+    ]);
+    for (const labels of rocketCards) {
+      expect(labels).toEqual(["Liftoff thrust", "Height"]);
+    }
   });
 
   test("no specification renders as an empty or zero placeholder", async ({

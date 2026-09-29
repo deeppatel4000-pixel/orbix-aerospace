@@ -6,30 +6,42 @@ import { legalNavigationItems, navigationItems } from "@/config/navigation";
 import { siteLegal } from "@/config/site-legal";
 
 /**
- * Plain footer (spec 10). Row one: wordmark, one-sentence description, and
- * the "Platform" and "About" link groups. Row two: the operator and contact
- * line, then the copyright and educational-use notice.
+ * Site footer (spec 8), lighter than the header and never heavier than a
+ * hero. Set in the sans throughout; mono is for figures and labels only.
  *
- * The contact address comes from `src/config/site-legal.ts` so it can be
- * replaced in one place.
+ * 1. The logo and a one-line description.
+ * 2. A hairline rule, then the site sections at 14px (44px rows) and the
+ *    about and legal pages at 13px in the muted colour (36px rows).
+ * 3. The operator and contact line, then the copyright with the
+ *    educational-use notice.
+ *
+ * The DOM order is the same at every width and no CSS `order` is used, so
+ * the keyboard reaches the links in the order they are shown. Below 40rem
+ * each nav is a two-column grid, 24px apart. From 40rem the two navs share
+ * one wrapping row, site sections at the left and about and legal at the
+ * right; when the row is too narrow (below about 70rem) the about and
+ * legal links drop to their own line, left-aligned. From 80rem the
+ * copyright sits at the right of the operator line when it fits. The
+ * contact address comes from `src/config/site-legal.ts`.
  */
 export function SiteFooter() {
+  const siteLinks = navigationItems.slice(1);
+
   return (
     <footer className="orbix-site-footer">
-      <Container className="py-12">
-        <div className="grid gap-8 lg:grid-cols-12 lg:gap-6">
-          <div className="lg:col-span-6">
-            <SiteLogo />
-            <p className="mt-4 max-w-[50ch] text-sm leading-6 text-text-secondary">
-              An educational site about aircraft, launch vehicles and the
-              engineering behind them.
-            </p>
-          </div>
+      <Container className="py-10 sm:py-12">
+        <div className="flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:gap-6">
+          <SiteLogo />
+          <p className="text-sm leading-6 text-text-secondary">
+            An educational site about aircraft, launch vehicles and the
+            engineering behind them.
+          </p>
+        </div>
 
-          <nav aria-label="Footer navigation" className="lg:col-span-3">
-            <h2 className="orbix-footer-heading">Platform</h2>
-            <ul className="mt-3 flex flex-col gap-2">
-              {navigationItems.slice(1).map((item) => (
+        <div className="orbix-footer-navs mt-6 border-t border-border pt-4">
+          <nav aria-label="Footer navigation">
+            <ul className="orbix-footer-links">
+              {siteLinks.map((item) => (
                 <li key={item.href}>
                   <Link className="orbix-footer-link" href={item.href}>
                     {item.label}
@@ -38,13 +50,14 @@ export function SiteFooter() {
               ))}
             </ul>
           </nav>
-
-          <nav aria-label="About and legal" className="lg:col-span-3">
-            <h2 className="orbix-footer-heading">About</h2>
-            <ul className="mt-3 flex flex-col gap-2">
+          <nav aria-label="About and legal">
+            <ul className="orbix-footer-links orbix-footer-links--secondary">
               {legalNavigationItems.map((item) => (
                 <li key={item.href}>
-                  <Link className="orbix-footer-link" href={item.href}>
+                  <Link
+                    className="orbix-footer-link orbix-footer-link--secondary"
+                    href={item.href}
+                  >
                     {item.label}
                   </Link>
                 </li>
@@ -53,19 +66,16 @@ export function SiteFooter() {
           </nav>
         </div>
 
-        <div className="mt-12 flex flex-col gap-2 border-t border-border pt-6 text-sm leading-6 text-muted">
+        <div className="orbix-footer-base">
           <p>
-            Operated by {siteLegal.operatorName} · Massachusetts, USA · Contact:{" "}
-            <a
-              className="orbix-footer-link underline underline-offset-2"
-              href={`mailto:${siteLegal.contactEmail}`}
-            >
+            Operated by {siteLegal.operatorName}, Massachusetts, USA. Contact{" "}
+            <a href={`mailto:${siteLegal.contactEmail}`}>
               {siteLegal.contactEmail}
             </a>
           </p>
           <p>
             © {new Date().getFullYear()} {siteLegal.operatorName}. Educational
-            use only. Not for operational or certification use.
+            use only, not for operational or certification use.
           </p>
         </div>
       </Container>

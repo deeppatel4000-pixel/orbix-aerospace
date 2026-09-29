@@ -1,24 +1,27 @@
 "use client";
 
-import { Button, Tag } from "@/components/ui";
+import { Button, EquationBlock } from "@/components/ui";
 import { useMemo, useRef, useState, type FormEvent } from "react";
-import {
-  ChevronDown,
-  AlertTriangle,
-  Plus,
-  RotateCcw,
-  Trash2,
-  Wind,
-} from "lucide-react";
+import { ChevronDown, CircleAlert } from "lucide-react";
 
 import { analyzeInletCompression } from "@/features/engineering-lab/analysis";
 import {
+  EQ_CONT,
+  EQ_LINE,
+  EQ_SUP,
+  EQ_TERM,
   CalculatorNumberField,
   focusFirstInvalidField,
   focusFirstInvalidFieldOnEnter,
   CalculatorResultSection,
+  LAB_TOOL_SPLIT,
+  LabToolLayout,
   NotCalculated,
+  ReadoutGrid,
   ValidationErrorSummary,
+  LabFigure,
+  EqDot,
+  EqSubSup,
 } from "@/features/engineering-lab/components/shared";
 import type {
   InletCompressionAnalysis,
@@ -266,6 +269,92 @@ function collectValidationMessages(
   ];
 }
 
+const toolEquation = (
+  <EquationBlock
+    equation={
+      <>
+        <span className={EQ_LINE}>
+          <span className={EQ_TERM}>
+            π<sub>inlet</sub> = π<sub>external</sub>
+          </span>
+          <wbr />
+          <span className={EQ_TERM}>
+            <EqDot />π<sub>terminal</sub>
+          </span>
+        </span>
+        <span className={EQ_LINE}>
+          <span className={EQ_TERM}>
+            p<sub>t2</sub>/p<sub>t1</sub>
+          </span>
+        </span>
+        <span className={EQ_CONT}>
+          <span className={EQ_TERM}>
+            = [(γ+1)M
+            <EqSubSup sub="n" sup="2" />
+          </span>
+          <wbr />
+          <span className={EQ_TERM}>
+            /((γ−1)M
+            <EqSubSup sub="n" sup="2" />
+          </span>
+          <wbr />
+          <span className={EQ_TERM}>
+            +2)]<sup className={EQ_SUP}>γ/(γ−1)</sup>
+          </span>
+        </span>
+        <span className={EQ_CONT}>
+          <span className={EQ_TERM}>
+            <EqDot />
+            [(γ+1)
+          </span>
+          <wbr />
+          <span className={EQ_TERM}>
+            /(2γM
+            <EqSubSup sub="n" sup="2" />
+          </span>
+          <wbr />
+          <span className={EQ_TERM}>
+            −(γ−1))]<sup className={EQ_SUP}>1/(γ−1)</sup>
+          </span>
+        </span>
+      </>
+    }
+    label="Supersonic inlet compression"
+    spokenAs="Inlet recovery equals the external shock recovery times the terminal normal shock recovery, where the total pressure ratio across a shock equals gamma plus 1 times M n squared over gamma minus 1 times M n squared plus 2, raised to gamma over gamma minus 1, times gamma plus 1 over 2 gamma M n squared minus gamma minus 1, raised to 1 over gamma minus 1."
+    variables={[
+      {
+        symbol: (
+          <>
+            π<sub>external</sub>
+          </>
+        ),
+        meaning: "Product of the recoveries of the external shocks",
+      },
+      {
+        symbol: (
+          <>
+            π<sub>terminal</sub>
+          </>
+        ),
+        meaning:
+          "Recovery of the terminal normal shock at the Mach number reaching it",
+      },
+      {
+        symbol: (
+          <>
+            M<sub>n</sub>
+          </>
+        ),
+        meaning: "Normal Mach number of each shock",
+      },
+      {
+        symbol: "γ",
+        meaning: "Ratio of specific heats; 1.4, dry air, by default",
+      },
+    ]}
+  />
+);
+
 export function InletCompressionAnalyzer() {
   const [values, setValues] = useState<InletCompressionFormValues>(() =>
     createInitialFormValues(),
@@ -352,365 +441,403 @@ export function InletCompressionAnalyzer() {
   const displayedAltitude =
     values.altitudeMeters.trim() === ""
       ? "Not specified"
-      : altitudeFormatter.format(Number(values.altitudeMeters)) + " m";
+      : altitudeFormatter.format(Number(values.altitudeMeters));
+  const displayedAltitudeUnit =
+    values.altitudeMeters.trim() === "" ? undefined : "m";
 
   return (
-    <div className="grid gap-8 xl:grid-cols-[minmax(0,0.95fr)_minmax(25rem,1.05fr)] xl:gap-10">
-      <div>
-        <form
-          noValidate
-          onKeyDown={focusFirstInvalidFieldOnEnter}
-          onSubmit={preventSubmission}
-        >
-          <fieldset>
-            <legend className="text-base font-semibold text-foreground">
-              Inlet entry conditions
-            </legend>
-            <div className="mt-4 grid gap-5 sm:grid-cols-2">
-              <CalculatorNumberField
-                error={errors.initialMach}
-                field="initialMach"
-                hint="Supersonic Mach number entering the first external compression stage."
-                idPrefix="inlet-compression"
-                label="Initial Mach number"
-                onChange={updateCommonValue}
-                unit="Mach"
-                value={values.initialMach}
-              />
-              <CalculatorNumberField
-                error={errors.altitudeMeters}
-                field="altitudeMeters"
-                hint={
-                  "Optional compatibility check from 0 to " +
-                  STANDARD_ATMOSPHERE_MAX_ALTITUDE_METRES.toLocaleString(
-                    "en-US",
-                  ) +
-                  " metres. Leave blank to omit."
-                }
-                idPrefix="inlet-compression"
-                label="Altitude (optional)"
-                optional
-                onChange={updateCommonValue}
-                unit="m"
-                value={values.altitudeMeters}
-              />
-              <CalculatorNumberField
-                error={errors.gamma}
-                field="gamma"
-                hint="Optional ratio of specific heats greater than one. Leave blank to use 1.4."
-                idPrefix="inlet-compression"
-                label="Gamma (optional)"
-                optional
-                onChange={updateCommonValue}
-                unit=""
-                value={values.gamma}
-              />
-            </div>
-          </fieldset>
-
-          <section
-            aria-labelledby="inlet-external-sequence-title"
-            className="mt-8 border-t border-border pt-7"
+    <LabToolLayout equation={toolEquation}>
+      <div className={LAB_TOOL_SPLIT}>
+        <div className="@container/col min-w-0">
+          <form
+            noValidate
+            onKeyDown={focusFirstInvalidFieldOnEnter}
+            onSubmit={preventSubmission}
           >
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-              <div>
-                <p className="orbix-label">External compression</p>
-                <h3
-                  className="mt-1 text-lg font-semibold"
-                  id="inlet-external-sequence-title"
-                >
-                  Shock sequence
-                </h3>
+            <fieldset>
+              <legend className="text-base font-semibold text-foreground">
+                Inlet entry conditions
+              </legend>
+              <div className="mt-4 grid gap-5 @min-[36rem]/col:grid-cols-2">
+                <CalculatorNumberField
+                  error={errors.initialMach}
+                  field="initialMach"
+                  hint="Supersonic Mach number entering the first external compression stage."
+                  idPrefix="inlet-compression"
+                  label="Initial Mach number"
+                  onChange={updateCommonValue}
+                  unit="Mach"
+                  value={values.initialMach}
+                />
+                <CalculatorNumberField
+                  error={errors.altitudeMeters}
+                  field="altitudeMeters"
+                  hint={
+                    "Optional compatibility check from 0 to " +
+                    STANDARD_ATMOSPHERE_MAX_ALTITUDE_METRES.toLocaleString(
+                      "en-US",
+                    ) +
+                    " metres. Leave blank to omit."
+                  }
+                  idPrefix="inlet-compression"
+                  label="Altitude (optional)"
+                  optional
+                  onChange={updateCommonValue}
+                  unit="m"
+                  value={values.altitudeMeters}
+                />
+                <CalculatorNumberField
+                  error={errors.gamma}
+                  field="gamma"
+                  hint="Optional ratio of specific heats greater than one. Leave blank to use 1.4."
+                  idPrefix="inlet-compression"
+                  label="Gamma (optional)"
+                  optional
+                  onChange={updateCommonValue}
+                  unit=""
+                  value={values.gamma}
+                />
               </div>
-              <Button
-                aria-describedby="inlet-compression-stage-limit"
-                variant="secondary"
-                disabled={hasReachedStageLimit}
-                onClick={addShockStage}
+            </fieldset>
+
+            <section
+              aria-labelledby="inlet-external-sequence-title"
+              className="mt-8 border-t border-border pt-7"
+            >
+              <div className="flex flex-wrap items-end justify-between gap-3">
+                <div>
+                  <h3
+                    className="text-lg font-semibold"
+                    id="inlet-external-sequence-title"
+                  >
+                    Shock sequence
+                  </h3>
+                </div>
+                <Button
+                  className="whitespace-nowrap"
+                  aria-describedby="inlet-compression-stage-limit"
+                  variant="secondary"
+                  disabled={hasReachedStageLimit}
+                  onClick={addShockStage}
+                >
+                  Add external stage
+                </Button>
+              </div>
+
+              <p
+                aria-live="polite"
+                className={
+                  "mt-3 text-xs leading-5 " +
+                  (hasReachedStageLimit ? "text-status-warning" : "text-muted")
+                }
+                id="inlet-compression-stage-limit"
               >
-                <Plus aria-hidden="true" size={16} />
-                Add external stage
+                {hasReachedStageLimit
+                  ? "Maximum sequence length reached: five external shock stages."
+                  : `${values.externalShocks.length} of ${MAXIMUM_EXTERNAL_SHOCK_STAGES} external shock stages configured.`}
+              </p>
+
+              {values.externalShocks.length > 0 ? (
+                <div className="mt-5 space-y-4">
+                  {values.externalShocks.map((shock, index) => {
+                    const stageNumber = index + 1;
+                    const stageError = errors.externalShocks[shock.id];
+                    const stageErrorId = `inlet-compression-stage-${shock.id}-error`;
+                    const typeHintId = `inlet-compression-stage-${shock.id}-type-hint`;
+                    const typeInputId = `inlet-compression-stage-${shock.id}-type`;
+
+                    return (
+                      <fieldset
+                        aria-describedby={
+                          stageError?.stage
+                            ? `${typeHintId} ${stageErrorId}`
+                            : typeHintId
+                        }
+                        className="border-t border-border pt-6"
+                        key={shock.id}
+                      >
+                        <legend className="sr-only">
+                          External shock stage {stageNumber}
+                        </legend>
+                        <div className="flex items-center justify-between gap-4">
+                          <h4 className="text-base font-semibold">
+                            External stage {stageNumber}
+                          </h4>
+                          <Button
+                            className="whitespace-nowrap"
+                            aria-label={`Remove external shock stage ${stageNumber}`}
+                            variant="secondary"
+                            onClick={() => removeShockStage(shock.id)}
+                          >
+                            Remove
+                          </Button>
+                        </div>
+
+                        <div className="mt-5 grid gap-5 @min-[36rem]/col:grid-cols-2">
+                          <div>
+                            <label
+                              className="orbix-field__label block"
+                              htmlFor={typeInputId}
+                            >
+                              Shock type
+                            </label>
+                            <div className="orbix-field__control mt-2">
+                              <select
+                                aria-describedby={
+                                  stageError?.stage
+                                    ? `${typeHintId} ${stageErrorId}`
+                                    : typeHintId
+                                }
+                                aria-errormessage={
+                                  stageError?.stage ? stageErrorId : undefined
+                                }
+                                aria-invalid={Boolean(stageError?.stage)}
+                                className="orbix-select"
+                                id={typeInputId}
+                                onChange={(event) =>
+                                  updateShockType(
+                                    shock.id,
+                                    event.target.value as ShockStageType,
+                                  )
+                                }
+                                value={shock.type}
+                              >
+                                <option value="normal">Normal shock</option>
+                                <option value="oblique">Oblique shock</option>
+                              </select>
+                              <ChevronDown
+                                aria-hidden="true"
+                                className="orbix-field__icon orbix-field__icon--end"
+                                size={16}
+                              />
+                            </div>
+                            <p
+                              className="orbix-field__help mt-2"
+                              id={typeHintId}
+                            >
+                              Each stage receives the preceding downstream Mach.
+                            </p>
+                          </div>
+
+                          {shock.type === "oblique" ? (
+                            <CalculatorNumberField
+                              error={stageError?.deflectionAngleDegrees}
+                              field="deflectionAngleDegrees"
+                              hint="Positive turning angle that must permit an attached weak shock."
+                              idPrefix={`inlet-compression-stage-${shock.id}`}
+                              label="Deflection angle"
+                              onChange={(_field, value) =>
+                                updateDeflectionAngle(shock.id, value)
+                              }
+                              unit="deg"
+                              value={shock.deflectionAngleDegrees}
+                            />
+                          ) : null}
+                        </div>
+
+                        {stageError?.stage ? (
+                          <p
+                            className="orbix-field__error mt-4"
+                            id={stageErrorId}
+                            role="alert"
+                          >
+                            <CircleAlert
+                              aria-hidden="true"
+                              className="shrink-0"
+                              size={14}
+                            />
+                            {stageError.stage}
+                          </p>
+                        ) : null}
+                      </fieldset>
+                    );
+                  })}
+                </div>
+              ) : (
+                <div className="mt-5 rounded-lg border border-border p-4">
+                  <p className="text-sm font-semibold">
+                    No external shock stages
+                  </p>
+                  <p className="mt-2 text-sm leading-6 text-muted">
+                    Add an external compression stage before applying the
+                    terminal normal shock.
+                  </p>
+                </div>
+              )}
+
+              {errors.terminalShock ? (
+                <p
+                  className="orbix-field__error mt-4"
+                  id="inlet-compression-terminal-error"
+                  role="alert"
+                >
+                  <CircleAlert
+                    aria-hidden="true"
+                    className="shrink-0"
+                    size={14}
+                  />
+                  {errors.terminalShock}
+                </p>
+              ) : null}
+            </section>
+
+            <ValidationErrorSummary errors={validationMessages} />
+
+            <div className="mt-7 flex flex-wrap items-center gap-x-5 gap-y-3">
+              <p className="min-w-0 flex-[1_1_16rem] text-sm leading-6 text-muted">
+                Valid changes update the complete inlet workflow immediately.
+              </p>
+              <Button
+                className="shrink-0 whitespace-nowrap"
+                variant="secondary"
+                onClick={resetAnalyzer}
+              >
+                Reset inputs
               </Button>
             </div>
+          </form>
+        </div>
 
-            <p
-              aria-live="polite"
-              className={
-                "mt-3 text-xs leading-5 " +
-                (hasReachedStageLimit ? "text-status-warning" : "text-muted")
-              }
-              id="inlet-compression-stage-limit"
-            >
-              {hasReachedStageLimit
-                ? "Maximum sequence length reached: five external shock stages."
-                : `${values.externalShocks.length} of ${MAXIMUM_EXTERNAL_SHOCK_STAGES} external shock stages configured.`}
-            </p>
+        <div className="@container/col min-w-0 space-y-5">
+          <CalculatorResultSection
+            id="inlet-compression-result"
+            title="Inlet compression analysis"
+          >
+            {result ? (
+              <>
+                <ReadoutGrid columns={2} title="Complete inlet performance">
+                  <div>
+                    <dt className="orbix-label">Overall pressure recovery</dt>
+                    <dd className="mt-1">
+                      <output className="orbix-readout-lg" htmlFor={outputIds}>
+                        <LabFigure>
+                          {precisionFormatter.format(
+                            result.overallPressureRecoveryRatio,
+                          )}
+                        </LabFigure>
+                      </output>
+                    </dd>
+                  </div>
+                  <div>
+                    <dt className="orbix-label">
+                      Total pressure loss, 1 − recovery
+                    </dt>
+                    <dd className="mt-1">
+                      <output className="orbix-data" htmlFor={outputIds}>
+                        <LabFigure>
+                          {precisionFormatter.format(
+                            1 - result.overallPressureRecoveryRatio,
+                          )}
+                        </LabFigure>
+                      </output>
+                    </dd>
+                  </div>
+                  <div>
+                    <dt className="orbix-label">Final exit Mach</dt>
+                    <dd className="mt-1">
+                      <output className="orbix-data" htmlFor={outputIds}>
+                        <LabFigure>
+                          {precisionFormatter.format(result.finalExitMach)}
+                        </LabFigure>
+                      </output>
+                    </dd>
+                  </div>
+                </ReadoutGrid>
 
-            {values.externalShocks.length > 0 ? (
-              <div className="mt-5 space-y-4">
-                {values.externalShocks.map((shock, index) => {
-                  const stageNumber = index + 1;
-                  const stageError = errors.externalShocks[shock.id];
-                  const stageErrorId = `inlet-compression-stage-${shock.id}-error`;
-                  const typeHintId = `inlet-compression-stage-${shock.id}-type-hint`;
-                  const typeInputId = `inlet-compression-stage-${shock.id}-type`;
-
-                  return (
-                    <fieldset
-                      aria-describedby={
-                        stageError?.stage
-                          ? `${typeHintId} ${stageErrorId}`
-                          : typeHintId
-                      }
-                      className="rounded-md border border-border-subtle bg-surface-raised p-4 sm:p-6"
-                      key={shock.id}
-                    >
-                      <legend className="sr-only">
-                        External shock stage {stageNumber}
-                      </legend>
-                      <div className="flex items-center justify-between gap-4">
-                        <div>
-                          <p className="orbix-label">External compression</p>
-                          <h4 className="mt-1 text-base font-semibold">
-                            Stage {stageNumber}
-                          </h4>
-                        </div>
-                        <Button
-                          aria-label={`Remove external shock stage ${stageNumber}`}
-                          variant="secondary"
-                          onClick={() => removeShockStage(shock.id)}
-                        >
-                          <Trash2 aria-hidden="true" size={15} />
-                          Remove
-                        </Button>
-                      </div>
-
-                      <div className="mt-5 grid gap-5 sm:grid-cols-2">
-                        <div>
-                          <label
-                            className="orbix-field__label block"
-                            htmlFor={typeInputId}
-                          >
-                            Shock type
-                          </label>
-                          <div className="orbix-field__control mt-2">
-                            <select
-                              aria-describedby={
-                                stageError?.stage
-                                  ? `${typeHintId} ${stageErrorId}`
-                                  : typeHintId
-                              }
-                              aria-errormessage={
-                                stageError?.stage ? stageErrorId : undefined
-                              }
-                              aria-invalid={Boolean(stageError?.stage)}
-                              className="orbix-select"
-                              id={typeInputId}
-                              onChange={(event) =>
-                                updateShockType(
-                                  shock.id,
-                                  event.target.value as ShockStageType,
-                                )
-                              }
-                              value={shock.type}
-                            >
-                              <option value="normal">Normal shock</option>
-                              <option value="oblique">Oblique shock</option>
-                            </select>
-                            <ChevronDown
-                              aria-hidden="true"
-                              className="orbix-field__icon orbix-field__icon--end"
-                              size={16}
-                            />
-                          </div>
-                          <p className="orbix-field__help mt-2" id={typeHintId}>
-                            Each stage receives the preceding downstream Mach.
-                          </p>
-                        </div>
-
-                        {shock.type === "oblique" ? (
-                          <CalculatorNumberField
-                            error={stageError?.deflectionAngleDegrees}
-                            field="deflectionAngleDegrees"
-                            hint="Positive turning angle that must permit an attached weak shock."
-                            idPrefix={`inlet-compression-stage-${shock.id}`}
-                            label="Deflection angle"
-                            onChange={(_field, value) =>
-                              updateDeflectionAngle(shock.id, value)
-                            }
-                            unit="deg"
-                            value={shock.deflectionAngleDegrees}
-                          />
-                        ) : null}
-                      </div>
-
-                      {stageError?.stage ? (
-                        <p
-                          className="mt-4 border-l-2 border-status-warning pl-3 text-sm leading-6 text-status-warning"
-                          id={stageErrorId}
-                          role="alert"
-                        >
-                          {stageError.stage}
-                        </p>
-                      ) : null}
-                    </fieldset>
-                  );
-                })}
-              </div>
-            ) : (
-              <div className="mt-5 rounded-md border border-dashed border-border-strong p-4">
-                <p className="text-sm font-semibold">
-                  No external shock stages
-                </p>
-                <p className="mt-2 text-sm leading-6 text-muted">
-                  Add an external compression stage before applying the terminal
-                  normal shock.
-                </p>
-              </div>
-            )}
-
-            {errors.terminalShock ? (
-              <p
-                className="mt-4 border-l-2 border-status-warning pl-3 text-sm leading-6 text-status-warning"
-                id="inlet-compression-terminal-error"
-                role="alert"
-              >
-                {errors.terminalShock}
-              </p>
-            ) : null}
-          </section>
-
-          <ValidationErrorSummary errors={validationMessages} />
-
-          <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:items-center">
-            <p className="text-sm leading-6 text-muted">
-              Valid changes update the complete inlet workflow immediately.
-            </p>
-            <Button
-              className="shrink-0 whitespace-nowrap sm:ml-auto"
-              variant="secondary"
-              onClick={resetAnalyzer}
-            >
-              <RotateCcw aria-hidden="true" size={16} />
-              Reset inputs
-            </Button>
-          </div>
-        </form>
-      </div>
-
-      <div className="space-y-5">
-        <CalculatorResultSection
-          eyebrow="Supersonic inlet workflow"
-          icon={Wind}
-          id="inlet-compression-result"
-          title="Inlet compression analysis"
-        >
-          {result ? (
-            <div className="space-y-6">
-              <section aria-labelledby="inlet-initial-flow-title">
-                <h4
-                  className="text-sm font-semibold text-foreground"
-                  id="inlet-initial-flow-title"
-                >
-                  Initial flow
-                </h4>
-                <dl className="mt-3 grid gap-4 sm:grid-cols-2">
+                <ReadoutGrid columns={2} title="Initial flow">
                   <div>
                     <dt className="orbix-label">Mach number</dt>
                     <dd className="mt-1">
                       <output className="orbix-data" htmlFor={outputIds}>
-                        {precisionFormatter.format(result.initialMach)}
+                        <LabFigure>
+                          {precisionFormatter.format(result.initialMach)}
+                        </LabFigure>
                       </output>
                     </dd>
                   </div>
                   <div>
                     <dt className="orbix-label">Altitude</dt>
                     <dd className="mt-1">
+                      {displayedAltitudeUnit ? (
+                        <output className="orbix-data" htmlFor={outputIds}>
+                          <LabFigure unit={displayedAltitudeUnit}>
+                            {displayedAltitude}
+                          </LabFigure>
+                        </output>
+                      ) : (
+                        <output className="lab-value-text" htmlFor={outputIds}>
+                          {displayedAltitude}
+                        </output>
+                      )}
+                    </dd>
+                  </div>
+                </ReadoutGrid>
+
+                {result.externalShockStages.map((shock, index) => (
+                  <ReadoutGrid
+                    columns={2}
+                    key={values.externalShocks[index]?.id ?? index}
+                    title={`External stage ${index + 1}, ${shock.shockType} shock`}
+                  >
+                    <div>
+                      <dt className="orbix-label">Upstream Mach</dt>
+                      <dd className="mt-1">
+                        <output className="orbix-data" htmlFor={outputIds}>
+                          <LabFigure>
+                            {precisionFormatter.format(shock.upstreamMach)}
+                          </LabFigure>
+                        </output>
+                      </dd>
+                    </div>
+                    <div>
+                      <dt className="orbix-label">Downstream Mach</dt>
+                      <dd className="mt-1">
+                        <output className="orbix-data" htmlFor={outputIds}>
+                          <LabFigure>
+                            {precisionFormatter.format(shock.downstreamMach)}
+                          </LabFigure>
+                        </output>
+                      </dd>
+                    </div>
+                    <div>
+                      <dt className="orbix-label">
+                        Individual pressure recovery
+                      </dt>
+                      <dd className="mt-1">
+                        <output className="orbix-data" htmlFor={outputIds}>
+                          <LabFigure>
+                            {precisionFormatter.format(
+                              shock.pressureRecoveryRatio,
+                            )}
+                          </LabFigure>
+                        </output>
+                      </dd>
+                    </div>
+                  </ReadoutGrid>
+                ))}
+
+                <ReadoutGrid columns={2} title="Terminal normal shock">
+                  <div>
+                    <dt className="orbix-label">Pressure recovery</dt>
+                    <dd className="mt-1">
                       <output className="orbix-data" htmlFor={outputIds}>
-                        {displayedAltitude}
+                        <LabFigure>
+                          {precisionFormatter.format(
+                            result.terminalShockPressureRecoveryRatio,
+                          )}
+                        </LabFigure>
                       </output>
                     </dd>
                   </div>
-                </dl>
-              </section>
-
-              <section
-                aria-labelledby="inlet-external-results-title"
-                className="border-t border-border pt-5"
-              >
-                <h4
-                  className="text-sm font-semibold text-foreground"
-                  id="inlet-external-results-title"
-                >
-                  External compression
-                </h4>
-                <ol className="mt-4 space-y-4">
-                  {result.externalShockStages.map((shock, index) => (
-                    <li
-                      className="rounded-md border border-border-subtle bg-surface-raised p-4"
-                      key={values.externalShocks[index]?.id ?? index}
-                    >
-                      <div className="flex items-center justify-between gap-4">
-                        <p className="text-sm font-semibold">
-                          Stage {index + 1}
-                        </p>
-                        <Tag>
-                          {shock.shockType === "normal" ? "Normal" : "Oblique"}
-                        </Tag>
-                      </div>
-                      <dl className="mt-4 grid gap-4 sm:grid-cols-2">
-                        <div>
-                          <dt className="orbix-label">Upstream Mach</dt>
-                          <dd className="mt-1">
-                            <output className="orbix-data" htmlFor={outputIds}>
-                              {precisionFormatter.format(shock.upstreamMach)}
-                            </output>
-                          </dd>
-                        </div>
-                        <div>
-                          <dt className="orbix-label">Downstream Mach</dt>
-                          <dd className="mt-1">
-                            <output className="orbix-data" htmlFor={outputIds}>
-                              {precisionFormatter.format(shock.downstreamMach)}
-                            </output>
-                          </dd>
-                        </div>
-                        <div>
-                          <dt className="orbix-label">
-                            Individual pressure recovery
-                          </dt>
-                          <dd className="mt-1">
-                            <output className="orbix-data" htmlFor={outputIds}>
-                              {precisionFormatter.format(
-                                shock.pressureRecoveryRatio,
-                              )}
-                            </output>
-                          </dd>
-                        </div>
-                      </dl>
-                    </li>
-                  ))}
-                </ol>
-              </section>
-
-              <section
-                aria-labelledby="inlet-terminal-shock-title"
-                className="border-t border-border pt-5"
-              >
-                <h4
-                  className="text-sm font-semibold text-foreground"
-                  id="inlet-terminal-shock-title"
-                >
-                  Terminal normal shock
-                </h4>
-                <dl className="mt-3 grid gap-4 sm:grid-cols-2">
                   <div>
                     <dt className="orbix-label">Upstream Mach</dt>
                     <dd className="mt-1">
                       <output className="orbix-data" htmlFor={outputIds}>
-                        {precisionFormatter.format(
-                          result.terminalShock.upstreamMach,
-                        )}
+                        <LabFigure>
+                          {precisionFormatter.format(
+                            result.terminalShock.upstreamMach,
+                          )}
+                        </LabFigure>
                       </output>
                     </dd>
                   </div>
@@ -718,96 +845,47 @@ export function InletCompressionAnalyzer() {
                     <dt className="orbix-label">Downstream Mach</dt>
                     <dd className="mt-1">
                       <output className="orbix-data" htmlFor={outputIds}>
-                        {precisionFormatter.format(
-                          result.terminalShock.downstreamMach,
-                        )}
+                        <LabFigure>
+                          {precisionFormatter.format(
+                            result.terminalShock.downstreamMach,
+                          )}
+                        </LabFigure>
                       </output>
                     </dd>
                   </div>
-                  <div>
-                    <dt className="orbix-label">Pressure recovery</dt>
-                    <dd className="mt-1">
-                      <output className="orbix-data-lg" htmlFor={outputIds}>
-                        {precisionFormatter.format(
-                          result.terminalShockPressureRecoveryRatio,
-                        )}
-                      </output>
-                    </dd>
-                  </div>
-                </dl>
-              </section>
+                </ReadoutGrid>
 
-              <section
-                aria-labelledby="inlet-complete-performance-title"
-                className="border-t border-border pt-5"
-              >
-                <h4
-                  className="text-sm font-semibold text-foreground"
-                  id="inlet-complete-performance-title"
-                >
-                  Complete inlet performance
-                </h4>
-                <dl className="mt-3 grid gap-4 sm:grid-cols-2">
-                  <div>
-                    <dt className="orbix-label">Overall pressure recovery</dt>
-                    <dd className="mt-1">
-                      <output className="orbix-data-lg" htmlFor={outputIds}>
-                        {precisionFormatter.format(
-                          result.overallPressureRecoveryRatio,
-                        )}
-                      </output>
-                    </dd>
-                  </div>
-                  <div>
-                    <dt className="orbix-label">Total pressure loss (ratio)</dt>
-                    <dd className="mt-1">
-                      <output className="orbix-data-lg" htmlFor={outputIds}>
-                        1 −{" "}
-                        {precisionFormatter.format(
-                          result.overallPressureRecoveryRatio,
-                        )}
-                      </output>
-                    </dd>
-                  </div>
-                  <div>
-                    <dt className="orbix-label">Final exit Mach</dt>
-                    <dd className="mt-1">
-                      <output className="orbix-data-lg" htmlFor={outputIds}>
-                        {precisionFormatter.format(result.finalExitMach)}
-                      </output>
-                    </dd>
-                  </div>
-                </dl>
-                <p className="mt-4 text-sm leading-6 text-muted">
-                  Pressure loss is displayed as the exact complement of the
-                  analysis-layer recovery ratio; the interface does not
-                  recalculate inlet physics.
+                <p className="text-sm leading-6 text-muted">
+                  Pressure loss is 1 minus the overall recovery ratio returned
+                  by the analysis layer; both are rounded to four decimal
+                  places.
                 </p>
-              </section>
-            </div>
-          ) : (
-            <NotCalculated invalid={validationMessages.some(Boolean)}>
-              Configure valid external compression that remains supersonic
-              before the terminal normal shock.
-            </NotCalculated>
-          )}
-        </CalculatorResultSection>
+              </>
+            ) : (
+              <NotCalculated invalid={validationMessages.some(Boolean)}>
+                Configure valid external compression that remains supersonic
+                before the terminal normal shock.
+              </NotCalculated>
+            )}
+          </CalculatorResultSection>
+        </div>
 
-        <aside className="orbix-lab-note">
-          <p className="orbix-lab-note__title">
-            <AlertTriangle aria-hidden="true" size={17} />
-            Engineering assumptions
-          </p>
-          <ul className="mt-4 grid list-disc gap-2 pl-5 text-sm leading-6 text-muted sm:grid-cols-2">
-            <li>Ideal gas flow</li>
-            <li>Perfectly controlled shock sequence</li>
-            <li>No boundary-layer losses</li>
-            <li>No viscous losses</li>
-            <li>No shock interaction losses</li>
-            <li>No inlet geometry modeling</li>
-          </ul>
-        </aside>
+        <div className="@container/col min-w-0 space-y-5">
+          <aside className="orbix-lab-note">
+            <p className="orbix-lab-note__title font-medium">
+              Engineering assumptions
+            </p>
+            <ul className="mt-4 grid list-disc gap-2 pl-5 text-sm leading-6 text-muted @min-[36rem]/col:grid-cols-2">
+              <li>Ideal gas flow</li>
+              <li>Perfectly controlled shock sequence</li>
+              <li>No boundary-layer losses</li>
+              <li>No viscous losses</li>
+              <li>No shock interaction losses</li>
+              <li>No inlet geometry modeling</li>
+            </ul>
+          </aside>
+        </div>
       </div>
-    </div>
+    </LabToolLayout>
   );
 }

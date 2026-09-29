@@ -1,7 +1,13 @@
 import { readFileSync } from "node:fs";
 import path from "node:path";
 
-import { AIRCRAFT_IDS, expect, ROCKET_IDS, test } from "../fixtures/orbix";
+import {
+  AIRCRAFT_IDS,
+  expect,
+  PROJECT_ROUTES,
+  ROCKET_IDS,
+  test,
+} from "../fixtures/orbix";
 
 /**
  * Build-output regression check: the set of pages Next.js actually generates.
@@ -29,12 +35,13 @@ import { AIRCRAFT_IDS, expect, ROCKET_IDS, test } from "../fixtures/orbix";
  * derives its invariant from the manifest rather than from any number
  * written in prose.
  *
- * Measured from `.next/prerender-manifest.json`:
+ * Measured from `.next/prerender-manifest.json` (design v2, 2026-09-29):
  *
- *   26 prerendered routes total
- *    5 framework outputs: /_global-error, /_not-found, /favicon.ico,
- *      /icon.png, /manifest.webmanifest
- *   21 user-facing pages  <- the meaningful invariant
+ *   36 prerendered routes total
+ *    7 framework outputs: /_global-error, /_not-found, /favicon.ico,
+ *      /icon.png, /manifest.webmanifest, and the two metadata image routes
+ *      /opengraph-image and /twitter-image
+ *   29 user-facing pages  <- the meaningful invariant
  *    3 dynamic templates: /aircraft/[id], /rockets/[id], /showcase-capture/[id]
  *
  * `/compare` is intentionally dynamic — it reads `searchParams` — and is
@@ -43,7 +50,7 @@ import { AIRCRAFT_IDS, expect, ROCKET_IDS, test } from "../fixtures/orbix";
  * The framework internals are deliberately EXCLUDED. They are Next's own
  * output, they already changed once across a major version, and asserting
  * them would make this test fail on a framework upgrade that lost nothing of
- * ORBIX's. The 21 user-facing pages are what actually represent the product.
+ * ORBIX's. The 29 user-facing pages are what actually represent the product.
  *
  * The expected set is built from the same fixture lists the rest of the suite
  * uses, so adding a vehicle extends this assertion automatically rather than
@@ -74,6 +81,8 @@ const STATIC_PAGE_ROUTES = [
   "/credits",
   "/privacy",
   "/terms",
+  // The build log and verification pages (added in design v2).
+  ...Object.values(PROJECT_ROUTES),
 ] as const;
 
 /**
@@ -81,7 +90,14 @@ const STATIC_PAGE_ROUTES = [
  * Excluded from the assertion on purpose — see the file comment.
  */
 function isFrameworkInternal(route: string): boolean {
-  return route.startsWith("/_") || /\.(ico|png|webmanifest)$/.test(route);
+  return (
+    route.startsWith("/_") ||
+    /\.(ico|png|webmanifest)$/.test(route) ||
+    // Next's metadata image routes (src/app/opengraph-image.tsx and
+    // twitter-image.tsx): share-card images, not pages.
+    route === "/opengraph-image" ||
+    route === "/twitter-image"
+  );
 }
 
 interface PrerenderManifest {
@@ -175,6 +191,16 @@ test.describe("Build output", () => {
       count("/showcase-capture/"),
       "one capture page per mission preset",
     ).toBe(SHOWCASE_MISSION_IDS.length);
+  });
+
+  test("prerenders the share-card images", () => {
+    const manifest = readPrerenderManifest();
+    const generated = Object.keys(manifest.routes);
+
+    // Excluded from the page set above, but a lost share card should still
+    // fail: social previews of every page point at these two routes.
+    expect(generated).toContain("/opengraph-image");
+    expect(generated).toContain("/twitter-image");
   });
 
   test("keeps /compare dynamic rather than prerendering it", () => {

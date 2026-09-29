@@ -92,7 +92,7 @@ async function readPhase(
   const text =
     (await page
       .locator('section[aria-labelledby="mission-replay-title"]')
-      .getByText(/^Phase \d+ of \d+, (paused|playing)$/)
+      .getByText(/^Phase \d+ of \d+, (paused|playing): \S.*$/)
       .textContent()) ?? "";
   const match = /^Phase (\d+) of (\d+),/.exec(text.trim());
   if (match === null) throw new Error(`Unrecognised phase readout: "${text}"`);
@@ -301,7 +301,11 @@ test.describe("Mission Replay telemetry", () => {
     for (const index of [0, 2, total - 1]) {
       const button = phaseButtons(page).nth(index);
       const label = (await button.getAttribute("aria-label")) ?? "";
-      const expected = label.replace("Show replay phase: ", "");
+      // The label ends with the step's state ("..., Current"), which the
+      // telemetry value does not repeat.
+      const expected = label
+        .replace("Show replay phase: ", "")
+        .replace(/, (Current|Reviewed|Upcoming)$/, "");
 
       await button.click();
       await expect

@@ -42,10 +42,13 @@ describe("GroundTrackVisualization", () => {
     );
 
     expect(markup).toContain("ORBIX Ground Track Mission");
-    expect(markup).toContain("200,000 m");
-    expect(markup).toContain("400,000 m");
+    // Figures carry `.orbix-num-sep` spans around separators, so compare the
+    // text a reader sees rather than the raw markup.
+    const text = markup.replace(/<[^>]+>/g, "");
+    expect(text).toContain("200 km");
+    expect(text).toContain("400 km");
     expect(markup).toContain("Plane change (supplied maneuver)");
-    expect(markup).toContain("<output>5°</output>");
+    expect(text).toContain("5°");
   });
 
   it("handles missing orbital data without generating a replacement path", () => {

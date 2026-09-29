@@ -1,3 +1,5 @@
+import { LabHeading } from "../visualization/lab-heading";
+
 export interface BriefingOverviewProps {
   readonly analysesResolved: number;
   readonly purpose: string;
@@ -11,12 +13,9 @@ export function BriefingOverview({
 }: BriefingOverviewProps) {
   return (
     <section aria-labelledby="mission-briefing-overview-title">
-      <h4
-        className="orbix-h4 text-foreground"
-        id="mission-briefing-overview-title"
-      >
+      <LabHeading offset={1} id="mission-briefing-overview-title">
         Mission overview
-      </h4>
+      </LabHeading>
 
       <div className="mt-3 grid gap-6 lg:grid-cols-[minmax(0,1.2fr)_minmax(16rem,0.8fr)]">
         <div>
