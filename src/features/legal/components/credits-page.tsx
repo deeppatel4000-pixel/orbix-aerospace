@@ -198,8 +198,10 @@ export function CreditsPage() {
 
       <LegalSection id="logo" title="ORBIX logo">
         <p>
-          The ORBIX name, logo and wordmark were supplied by the site owner.
-          They identify this project and are not licensed for reuse.
+          The ORBIX logo and wordmark were created by Deep Patel with the help
+          of AI image generation tools. They identify this project and are not
+          licensed for reuse. Every other image on ORBIX is a credited
+          photograph listed above.
         </p>
       </LegalSection>
 

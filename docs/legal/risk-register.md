@@ -15,8 +15,8 @@ watched), **Owner action** (needs a decision or fact only the operator can suppl
 | 1   | Third-party and AI-generated images    | Mitigated    | Images are being replaced with verified public-domain or openly licensed files, each recorded in `docs/assets/image-provenance.md` and credited on `/credits`. AI-generated environment plates are being removed.         |
 | 2   | Trademarks of named organisations      | Mitigated    | Vehicle, manufacturer, and agency names are used only to identify subjects. `NOTICE.md`, the README, and `/credits` state non-affiliation and no endorsement.                                                             |
 | 3   | Personal contact email published       | Owner action | `deep.patel4000@gmail.com` is published as a temporary contact. Replace it with a dedicated ORBIX address in `src/config/site-legal.ts`, `README.md`, and `NOTICE.md`.                                                    |
-| 4   | ORBIX logo provenance                  | Owner action | The owner must confirm the logo in `public/brand/` was not AI-generated and does not copy third-party work. If it was AI-generated, say so on `/credits`.                                                                 |
-| 5   | "ORBIX" name conflicts                 | Open         | Existing uses of "Orbix" in software and in the space sector were found (see below). No clearance search has been done.                                                                                                   |
+| 4   | ORBIX logo provenance                  | Accepted     | The owner confirmed on 28 September 2026 that the logo was partly AI-generated and chose to keep it. `/credits` discloses this.                                                                                           |
+| 5   | "ORBIX" name conflicts                 | Accepted     | Other uses of "Orbix" exist (see below). The owner judged on 28 September 2026 that none is the same kind of use as a free educational site. Revisit before any commercial use.                                           |
 | 6   | Operator is a student (possible minor) | Mitigated    | Terms are accepted by users of the site, not by the operator. The site has no accounts, no payments, and no analytics, and collects no personal data.                                                                     |
 | 7   | Accessibility (ADA)                    | Mitigated    | Exposure is low for a free, non-commercial educational site, but WCAG 2.2 AA is the target and the `/accessibility` page gives a contact route for problems.                                                              |
 | 8   | Export control (ITAR / EAR)            | Mitigated    | The site uses only public-domain, published information and simplified textbook models. Keep it that way: no controlled technical data, no non-public specifications.                                                     |
@@ -55,9 +55,10 @@ watched), **Owner action** (needs a decision or fact only the operator can suppl
 
 - `docs/brand/orbix-brand-assets.md` records the logo files and their hashes but not how the
   artwork was created.
-- Action: the owner confirms whether the logo was drawn by hand, made with a design tool, or
-  AI-generated, and whether it is based on any third-party artwork. Record the answer in
-  `docs/brand/orbix-brand-assets.md` and on `/credits` if relevant.
+- Owner decision, 28 September 2026: the logo was made with the help of AI image generation tools and is
+  kept. `/credits` says so. Under current U.S. Copyright Office guidance, purely AI-generated
+  material is not protected by copyright, so the logo may have limited copyright protection; the name
+  and logo can still identify the project, and `NOTICE.md` does not license them for reuse.
 
 ### 5. "ORBIX" name conflicts
 
@@ -73,6 +74,8 @@ found these existing uses of the name:
 - Other historic or unrelated "Orbix" filings, including Orbix Healthcare Corporation and a
   cancelled "ORBIX REV360" registration.
 - **Orbex** (Orbital Express Launch Ltd.), a UK launch company with a similar-sounding name.
+
+Owner decision, 28 September 2026: accepted for non-commercial educational use.
 
 Assessment: ORBIX is a non-commercial educational project, which lowers the practical risk, but
 "Orbix" is already used in software and in the space sector. The name should not be registered,
