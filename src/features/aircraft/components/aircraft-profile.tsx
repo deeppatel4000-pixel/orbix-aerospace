@@ -131,13 +131,14 @@ export function AircraftProfile({ aircraft }: AircraftProfileProps) {
             visual
               ? {
                   ...visual,
-                  // From 64rem the photograph is shown whole beside the
-                  // text, so only the phone plate and the tablet banner
-                  // crop it.
+                  // The phone plate and the banner (48rem to 80rem) use the
+                  // banner crop; from 80rem the full-bleed photograph is
+                  // cropped only when the text is taller than it.
                   position: {
                     base: visual.heroObjectPosition,
-                    lg: "50% 50%",
+                    lg: visual.heroObjectPosition,
                     md: visual.heroObjectPosition,
+                    xl: visual.profileHeroObjectPosition,
                   },
                 }
               : undefined

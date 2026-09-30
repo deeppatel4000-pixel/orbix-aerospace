@@ -137,7 +137,7 @@ describe("showcase capture view", () => {
     }
   });
 
-  it("keeps every detail list within the height the capture reserves", () => {
+  it("keeps every detail list to at most CAPTURE_DETAIL_MAX_ITEMS items", () => {
     for (const mission of SHOWCASE_MISSIONS) {
       for (const list of [
         mission.availableVisualizations,

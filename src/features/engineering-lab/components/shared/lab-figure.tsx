@@ -43,10 +43,31 @@ export function LabFigure({ children: figure, unit }: LabFigureProps) {
       {unit ? (
         <>
           <span className="lab-figure__gap"> </span>
-          <span className="lab-figure__unit">{formatFigure(unit)}</span>
+          <span className="lab-figure__unit">{unitWithSubscripts(unit)}</span>
         </>
       ) : null}
     </span>
+  );
+}
+
+const SUBSCRIPT_DIGITS = "₀₁₂₃₄₅₆₇₈₉";
+
+/**
+ * A unit with its Unicode subscript digits ("g₀") set as real `<sub>`
+ * elements. B612 Mono has no subscript figures, so U+2080 fell back to a
+ * glyph about 5px tall at a note's size and "g₀" read as "g.".
+ */
+function unitWithSubscripts(unit: string): ReactNode {
+  const parts = unit.split(/([₀-₉]+)/u);
+  if (parts.length === 1) return formatFigure(unit);
+  return parts.map((part, index) =>
+    index % 2 === 1 ? (
+      <sub className="lab-figure__sub" key={index}>
+        {Array.from(part, (digit) => SUBSCRIPT_DIGITS.indexOf(digit)).join("")}
+      </sub>
+    ) : (
+      part
+    ),
   );
 }
 
@@ -200,6 +221,15 @@ const EQ_DOT = "lab-eq-dot";
 /** The multiplication dot as an element, for use inside equation terms. */
 export function EqDot() {
   return <span className={EQ_DOT}>·</span>;
+}
+
+/**
+ * The operator that opens a continuation line (`=` or the product dot),
+ * set in a fixed 1.5ch column so the brackets after "=" and after "·" on
+ * consecutive `EQ_CONT` lines start at the same x.
+ */
+export function EqOp({ children }: { children: ReactNode }) {
+  return <span className="lab-eq-op">{children}</span>;
 }
 
 /**

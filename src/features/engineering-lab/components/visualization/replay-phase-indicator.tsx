@@ -5,12 +5,7 @@ import { LabHeading } from "./lab-heading";
 export type ReplaySceneMode = "orbital" | "reentry";
 
 export type ReplayPhaseId =
-  | "launch"
-  | "orbit-insertion"
-  | "transfer"
-  | "arrival"
-  | "reentry"
-  | "complete";
+  "launch" | "orbit-insertion" | "transfer" | "arrival" | "reentry" | "review";
 
 export interface ReplayPresentationPhase {
   readonly description: string;

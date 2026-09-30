@@ -108,7 +108,12 @@ export function ReentryProfileChart({
   // Axis titles sit on their own line above the top tick labels.
   const axisTitleTopY = Math.ceil(fontSize + 6);
   const plotTop = Math.max(40, Math.ceil(axisTitleTopY + fontSize + 10));
-  const plotBottom = 300;
+  // CSS pixels per user unit: the text is held at 11 CSS px, so the
+  // font size in user units gives the drawing's scale.
+  const unitsPerPixel = fontSize / 11;
+  // The plot keeps at least 200 CSS px of height, so on a phone the
+  // drawing grows taller (about 4:3) instead of shrinking to a strip.
+  const plotBottom = Math.ceil(plotTop + Math.max(260, 200 * unitsPerPixel));
   const timeLabelY = plotBottom + fontSize + 6;
   const axisTitleY = timeLabelY + fontSize + 8;
   const chartHeight = Math.ceil(axisTitleY + fontSize * 0.4);
@@ -135,7 +140,7 @@ export function ReentryProfileChart({
   );
   // Markers are held a marker's half-width inside the plot, so a peak at
   // t = 0 or at an axis limit never sits on the axis or its tick labels.
-  const markerInset = 7;
+  const markerInset = 8;
   const insetX = (x: number) =>
     Math.min(Math.max(x, plotLeft + markerInset), plotRight - markerInset);
   const insetY = (y: number) =>
@@ -153,29 +158,42 @@ export function ReentryProfileChart({
   const peakHeatingY = peakHeating
     ? insetY(plotAltitudeY(peakHeating.altitudeMeters))
     : 0;
-  // When the two peaks land on (nearly) the same spot, the triangle would
-  // cover the square. The square then moves a marker's width to the side,
-  // tied to the true point by a short leader, and the caption says why.
-  const markersCoincide =
-    peakHeating !== undefined &&
-    Math.hypot(
-      peakDecelerationX - peakHeatingX,
-      peakDecelerationY - peakHeatingY,
-    ) < 10;
-  // The square is placed 14 units from the triangle's centre (not from its
-  // own point, which can sit up to 10 units away), on the side the true
-  // point lies, flipped when it would leave the plot.
-  const markerSide = Math.sign(peakDecelerationX - peakHeatingX) || 1;
-  const markerSideInPlot =
-    peakHeatingX + markerSide * 14 > plotRight - 4 ||
-    peakHeatingX + markerSide * 14 < plotLeft + 4
-      ? -markerSide
-      : markerSide;
-  const decelerationMarkerX = markersCoincide
-    ? peakHeatingX + markerSideInPlot * 14
-    : peakDecelerationX;
-  // Direction from the true point to the moved square, for the leader.
-  const leaderDirection = Math.sign(decelerationMarkerX - peakDecelerationX);
+  // Each peak is named inline: a B612 Mono label 12 CSS px to the right
+  // of its marker (to the left when it would leave the plot), and a second
+  // label that would overlap the first is stacked 14 CSS px below it.
+  const labelOffset = 12 * unitsPerPixel + 7;
+  const lineGap = 14 * unitsPerPixel;
+  const heatingLabel = peakHeating
+    ? `Peak heating ${formatLabValue(peakHeating.heatFluxKilowattsPerSquareMetre)} kW/m², ${formatLabValue(peakHeating.timeSeconds)} s`
+    : undefined;
+  const decelerationLabel = `Peak decel ${formatLabValue(peakDeceleration.decelerationGs)} g, ${formatLabValue(peakDeceleration.timeSeconds)} s`;
+  const placeLabel = (markerX: number, markerY: number, text: string) => {
+    const fitsRight = markerX + labelOffset + labelWidth(text) <= plotRight - 4;
+    return {
+      anchor: fitsRight ? ("start" as const) : ("end" as const),
+      x: fitsRight ? markerX + labelOffset : markerX - labelOffset,
+      y: Math.min(
+        Math.max(markerY + fontSize * 0.35, plotTop + fontSize),
+        plotBottom - lineGap - 4,
+      ),
+    };
+  };
+  const heatingPlacement =
+    heatingLabel !== undefined
+      ? placeLabel(peakHeatingX, peakHeatingY, heatingLabel)
+      : undefined;
+  const decelerationPlacementRaw = placeLabel(
+    peakDecelerationX,
+    peakDecelerationY,
+    decelerationLabel,
+  );
+  const decelerationPlacement =
+    heatingPlacement &&
+    Math.abs(decelerationPlacementRaw.y - heatingPlacement.y) < lineGap &&
+    Math.abs(decelerationPlacementRaw.x - heatingPlacement.x) <
+      Math.max(labelWidth(decelerationLabel), labelWidth(heatingLabel ?? ""))
+      ? { ...heatingPlacement, y: heatingPlacement.y + lineGap }
+      : decelerationPlacementRaw;
   const visualSummary = `${analysis.vehicle.vehicleName} descends from ${formatLabAltitude(analysis.trajectory.initialState.altitudeMeters)} to ${formatLabAltitude(analysis.trajectory.finalState.altitudeMeters)} while velocity changes from ${formatLabValue(analysis.trajectory.initialState.velocityMetersPerSecond)} m/s to ${formatLabValue(analysis.trajectory.finalState.velocityMetersPerSecond)} m/s over ${formatLabValue(analysis.trajectory.durationSeconds)} s.`;
 
   return (
@@ -237,6 +255,28 @@ export function ReentryProfileChart({
           strokeWidth="2"
         />
 
+        {/* 1px dashed drop lines from each peak to the time axis. */}
+        {peakHeating ? (
+          <line
+            stroke="var(--orbix-data-2)"
+            strokeDasharray="3 3"
+            strokeWidth="1"
+            x1={peakHeatingX}
+            x2={peakHeatingX}
+            y1={peakHeatingY}
+            y2={plotBottom}
+          />
+        ) : null}
+        <line
+          stroke="var(--orbix-data-3)"
+          strokeDasharray="3 3"
+          strokeWidth="1"
+          x1={peakDecelerationX}
+          x2={peakDecelerationX}
+          y1={peakDecelerationY}
+          y2={plotBottom}
+        />
+
         {peakHeating ? (
           <path
             d={`M ${peakHeatingX} ${peakHeatingY - 6} L ${peakHeatingX + 6} ${peakHeatingY + 5} L ${peakHeatingX - 6} ${peakHeatingY + 5} Z`}
@@ -245,25 +285,17 @@ export function ReentryProfileChart({
             strokeWidth="1.5"
           />
         ) : null}
-        {markersCoincide ? (
-          <line
-            stroke="var(--orbix-data-3)"
-            strokeWidth="1"
-            x1={peakDecelerationX}
-            x2={decelerationMarkerX - leaderDirection * 4}
-            y1={peakDecelerationY}
-            y2={peakDecelerationY}
-          />
-        ) : null}
         {/* Drawn after the triangle so it is never hidden under it. */}
+        {/* A hollow square, so a heating triangle at the same point still
+         * shows inside it. */}
         <rect
-          fill="var(--orbix-data-3)"
-          height="8"
-          stroke="var(--orbix-surface)"
-          strokeWidth="1.5"
-          width="8"
-          x={decelerationMarkerX - 4}
-          y={peakDecelerationY - 4}
+          fill="none"
+          height="14"
+          stroke="var(--orbix-data-3)"
+          strokeWidth="2"
+          width="14"
+          x={peakDecelerationX - 7}
+          y={peakDecelerationY - 7}
         />
 
         <g
@@ -306,6 +338,35 @@ export function ReentryProfileChart({
             Elapsed time
           </text>
         </g>
+
+        {/* Inline peak labels, with a surface-coloured outline so they stay
+         * legible where they cross a curve or gridline. */}
+        <g
+          fill="var(--orbix-text-secondary)"
+          fontFamily="var(--font-telemetry), monospace"
+          fontSize={fontSize}
+          paintOrder="stroke"
+          stroke="var(--orbix-surface)"
+          strokeLinejoin="round"
+          strokeWidth={3 * unitsPerPixel}
+        >
+          {heatingLabel && heatingPlacement ? (
+            <text
+              textAnchor={heatingPlacement.anchor}
+              x={heatingPlacement.x}
+              y={heatingPlacement.y}
+            >
+              {heatingLabel}
+            </text>
+          ) : null}
+          <text
+            textAnchor={decelerationPlacement.anchor}
+            x={decelerationPlacement.x}
+            y={decelerationPlacement.y}
+          >
+            {decelerationLabel}
+          </text>
+        </g>
       </svg>
 
       <figcaption className="mt-3 text-sm text-text-secondary">
@@ -340,8 +401,10 @@ export function ReentryProfileChart({
           <li className="flex items-center gap-2">
             <svg aria-hidden="true" height="10" width="10">
               <rect
-                fill="var(--orbix-data-3)"
+                fill="none"
                 height="8"
+                stroke="var(--orbix-data-3)"
+                strokeWidth="2"
                 width="8"
                 x="1"
                 y="1"
@@ -358,12 +421,6 @@ export function ReentryProfileChart({
             </li>
           ) : null}
         </ul>
-        {markersCoincide ? (
-          <p className="mt-2 max-w-[68ch] text-pretty">
-            The deceleration square is offset from the heating triangle; a
-            leader marks its true point.
-          </p>
-        ) : null}
       </figcaption>
     </figure>
   );

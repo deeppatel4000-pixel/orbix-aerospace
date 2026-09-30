@@ -30,6 +30,7 @@ export {
   EQ_TERM,
   EqDot,
   EqFrac,
+  EqOp,
   EqSubSup,
   LAB_GROUP,
   LAB_GROUP_LEGEND,

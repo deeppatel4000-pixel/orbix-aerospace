@@ -6,6 +6,8 @@ import type {
 import { VehicleProfileSection } from "./vehicle-profile-section";
 
 interface EngineeringNotesListProps {
+  /** One sentence under the heading, as on the other sections. */
+  description?: string;
   formatTopic: (topic: EngineeringDomain) => string;
   index?: number;
   notes: readonly EngineeringNote[];
@@ -18,12 +20,14 @@ interface EngineeringNotesListProps {
  * it is useful while writing, not to a reader.
  */
 export function EngineeringNotesList({
+  description,
   formatTopic,
   index,
   notes,
 }: EngineeringNotesListProps) {
   return (
     <VehicleProfileSection
+      description={description}
       id="engineering-notes"
       index={index}
       title="Engineering analysis"

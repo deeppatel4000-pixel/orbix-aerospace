@@ -263,7 +263,7 @@ export function VehicleRecordCard({
           >
             {formatFigure(spec.value)}
             {spec.unit ? (
-              <span className="ml-[0.3em] text-[0.7em] text-muted">
+              <span className="ml-[0.3em] text-[0.875em] text-muted">
                 {spec.unit}
               </span>
             ) : null}

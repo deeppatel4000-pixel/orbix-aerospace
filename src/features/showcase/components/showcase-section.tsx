@@ -1,65 +1,42 @@
 import type { ReactNode } from "react";
 
-import { Container } from "@/components/layout/container";
-import { formatIndexNumber } from "@/components/ui/section-index";
+import { LegalSection } from "@/features/legal/components/legal-section";
 import { cn } from "@/lib/cn";
 
 interface ShowcaseSectionProps {
   readonly children: ReactNode;
-  /** Extra classes for the section, for example a tighter top padding. */
-  readonly className?: string;
   readonly id: string;
   readonly lead?: ReactNode;
-  /** Position on the page, shown as a two-digit section number. */
-  readonly number: number;
   readonly title: string;
 }
 
 /**
- * One section of the showcase (spec 9, editorial pages): a hairline, the
- * section number above the H2 on the text edge, and a lead held to the 68ch
- * reading measure. The children decide their own track: running text stays
- * in `ShowcaseText`; figures and tables use the full container width.
+ * One numbered section of the showcase, set as a major section of the
+ * shared editorial reading layout (`LegalSection` inside `ReadingPage`, as
+ * on /verification): the number comes from the page's section counter, so
+ * it always matches the "On this page" list. The lead keeps the reading
+ * measure; figures and tables in `children` take the full reading track.
  */
 export function ShowcaseSection({
   children,
-  className,
   id,
   lead,
-  number,
   title,
 }: ShowcaseSectionProps) {
-  const titleId = `${id}-title`;
-
   return (
-    <section
-      aria-labelledby={titleId}
-      className={cn("scroll-mt-20 pt-16 sm:pt-24", className)}
-      id={id}
-    >
-      <Container>
-        <div className="border-t border-border pt-6 sm:pt-8">
-          {/* The number sits above the heading on the text edge, as on the
-              profiles, /verification, /about and /build-log. */}
-          <div className="max-w-[68ch]">
-            <span aria-hidden="true" className="orbix-caps block text-accent">
-              {formatIndexNumber(number)}
-            </span>
-            <h2 className="orbix-h2 mt-3 text-text-primary" id={titleId}>
-              {title}
-            </h2>
-            {lead ? <p className="orbix-prose mt-5">{lead}</p> : null}
-          </div>
-          <div className="mt-10 sm:mt-12">{children}</div>
-        </div>
-      </Container>
-    </section>
+    <LegalSection id={id} major title={title}>
+      {lead ? <p>{lead}</p> : null}
+      {/* Figures, keys and tables set their own lists: the reading
+          layout's prose list markers, indents and measure stop here. */}
+      <div className="mt-6 min-w-0 sm:mt-8 [&_:is(ul,ol)]:max-w-none! [&_:is(ul,ol)]:list-none! [&_:is(ul,ol)]:pl-0! [&_li+li]:mt-0!">
+        {children}
+      </div>
+    </LegalSection>
   );
 }
 
 /**
- * Running text inside a section, on the heading's text edge and held to the
- * 68ch measure.
+ * Running text inside a section, held to the 68ch measure.
  */
 export function ShowcaseText({
   children,

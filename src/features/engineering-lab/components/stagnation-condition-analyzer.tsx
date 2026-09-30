@@ -103,7 +103,15 @@ const toolEquation = (
       <>
         <span className={EQ_LINE}>
           <span className={EQ_TERM}>
-            T<sub>t</sub>/T = 1
+            <EqFrac
+              den="T"
+              num={
+                <>
+                  T<sub>t</sub>
+                </>
+              }
+            />{" "}
+            = 1
           </span>{" "}
           <span className={EQ_TERM}>
             + <EqFrac den="2" num="γ−1" />
@@ -115,7 +123,14 @@ const toolEquation = (
         </span>
         <span className={EQ_LINE}>
           <span className={EQ_TERM}>
-            p<sub className={EQ_SUB_CLEAR}>t</sub>/p
+            <EqFrac
+              den="p"
+              num={
+                <>
+                  p<sub className={EQ_SUB_CLEAR}>t</sub>
+                </>
+              }
+            />
           </span>{" "}
           <span className={EQ_TERM}>
             ={" "}
@@ -132,7 +147,14 @@ const toolEquation = (
         </span>
         <span className={EQ_LINE}>
           <span className={EQ_TERM}>
-            ρ<sub>t</sub>/ρ
+            <EqFrac
+              den="ρ"
+              num={
+                <>
+                  ρ<sub>t</sub>
+                </>
+              }
+            />
           </span>{" "}
           <span className={EQ_TERM}>
             ={" "}

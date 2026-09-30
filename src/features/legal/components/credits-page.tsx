@@ -75,25 +75,22 @@ const creditColumns: readonly DataTableColumn<ImageCredit>[] = [
           <span className="lg:order-last">{item.vehicleName}</span>
           {/* One 112px slot for every thumbnail from 64rem, so aircraft and
               launch vehicle names share one left edge across both tables.
-              Aircraft frames fill the slot; portrait launch vehicle frames sit
-              centred in it so they line up optically under the aircraft
-              frames. Below 40rem the frames shrink (64x40, 45x60) so the
-              pinned column leaves room for Credit, Licence and Source.
+              Aircraft frames fill the slot; launch vehicle frames keep a
+              fixed height with the width taken from the photograph, so each
+              rocket stays whole with no bands, and start at the same left
+              edge as the aircraft frames. Below 40rem the frames shrink
+              (64x40, 60px tall) so the pinned column leaves room for Credit,
+              Licence and Source.
               loading="eager": these are small thumbnails (1 to 3 KB each),
               so fetching them with the page costs little. */}
-          <span
-            className={cn(
-              "flex shrink-0 justify-start lg:w-[112px]",
-              portrait && "lg:justify-center",
-            )}
-          >
+          <span className="flex shrink-0 justify-start lg:w-[112px]">
             <Image
               alt={item.alt}
               loading="eager"
               className={cn(
                 "shrink-0 rounded-sm border border-border",
                 portrait
-                  ? "h-[60px] w-[45px] bg-page object-contain object-bottom sm:h-[72px] sm:w-[54px]"
+                  ? "h-[60px] w-auto max-w-[112px] sm:h-[72px]"
                   : "h-10 w-16 object-cover sm:h-[70px] sm:w-[112px]",
               )}
               height={portrait ? 72 : 70}

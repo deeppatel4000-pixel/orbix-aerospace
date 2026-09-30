@@ -171,10 +171,7 @@
 
   /* Section rhythm (v1): generous, fluid. */
   --space-section: clamp(4rem, 8vw, 7.5rem);
-  --space-section-compact: var(--space-7);
-  --space-panel: var(--space-5);
   --space-stack: var(--space-5);
-  --space-stack-compact: var(--space-3);
 
   /* ------------------------------------------------------------------ *
    * 4c. GEOMETRY (spec 7). Never above 12px.
@@ -223,17 +220,9 @@
    * utilities (`text-muted`, `bg-surface`, `border-border`).
    * ------------------------------------------------------------------ */
 
-  --background: var(--bg-page);
   --surface: var(--bg-surface);
-  --surface-elevated: var(--bg-raised);
-  --foreground: var(--text-primary);
   --muted: var(--text-muted);
-  --muted-strong: var(--text-secondary);
   --border: var(--border-default);
-  --border-bright: var(--border-emphasis);
-  --signal: var(--status-warning);
-  --positive: var(--status-success);
-  --critical: var(--status-danger);
 }
 
 /* -------------------------------------------------------------------- *
@@ -265,7 +254,6 @@
 
   --orbix-accent: var(--accent);
   --orbix-accent-hover: var(--accent-strong);
-  --orbix-accent-subtle: color-mix(in srgb, var(--accent) 12%, transparent);
   --orbix-focus: var(--accent);
 }
 

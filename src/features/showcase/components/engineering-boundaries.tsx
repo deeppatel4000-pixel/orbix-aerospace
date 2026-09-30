@@ -38,7 +38,6 @@ export function EngineeringBoundaries() {
     <ShowcaseSection
       id="engineering-boundaries"
       lead="Rules the code follows so that a displayed number can be traced back to the function that produced it."
-      number={3}
       title="Engineering boundaries"
     >
       <dl className="border-t border-border-subtle">

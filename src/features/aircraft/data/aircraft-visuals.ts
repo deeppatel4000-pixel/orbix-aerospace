@@ -40,6 +40,12 @@ export interface AircraftVisual {
   readonly modifications: string;
   readonly objectPosition: string;
   /**
+   * `object-position` for the full-bleed profile hero photograph from
+   * 80rem, which is cropped only where the hero text is taller than the
+   * photograph at that width: the y value keeps the airframe in frame.
+   */
+  readonly profileHeroObjectPosition?: string;
+  /**
    * The crop in the `/aircraft` registry hero, per breakpoint (below 48rem,
    * 48rem to 64rem, from 64rem). Only the featured aircraft needs one.
    */
@@ -81,6 +87,7 @@ const aircraftVisuals = {
     ...PUBLIC_DOMAIN_USAF,
     modifications: RESIZED,
     objectPosition: "50% 45%",
+    profileHeroObjectPosition: "85% 40%",
     // The featured aircraft on /aircraft (see aircraft-explorer.tsx). The
     // airframe spans 4.7 to 96.1 percent of the width and 25 to 48 percent
     // of the height, leaving open ocean across the lower half, so the spec
@@ -111,6 +118,7 @@ const aircraftVisuals = {
     ...PUBLIC_DOMAIN_USAF,
     modifications: RESIZED,
     objectPosition: "50% 50%",
+    profileHeroObjectPosition: "50% 50%",
     sourceUrl:
       "https://commons.wikimedia.org/wiki/File:F-15C_Eagle_from_the_44th_Fighter_Squadron_flies_during_a_routine_training_exercise_April_15,_2019.jpg",
     src: "/images/aircraft/f-15-eagle.webp",
@@ -130,6 +138,7 @@ const aircraftVisuals = {
     ...PUBLIC_DOMAIN_USAF,
     modifications: RESIZED,
     objectPosition: "50% 48%",
+    profileHeroObjectPosition: "50% 50%",
     sourceUrl: "https://commons.wikimedia.org/wiki/File:F-22_Raptor.JPG",
     src: "/images/aircraft/f-22-raptor.webp",
     width: 1920,
@@ -147,6 +156,7 @@ const aircraftVisuals = {
     modifications:
       "Converted to WebP from the Wikimedia Commons crop of the original",
     objectPosition: "50% 50%",
+    profileHeroObjectPosition: "70% 50%",
     sourceUrl:
       "https://commons.wikimedia.org/wiki/File:F-35A_flight_(cropped).jpg",
     src: "/images/aircraft/f-35-lightning-ii.webp",
@@ -164,6 +174,7 @@ const aircraftVisuals = {
     ...PUBLIC_DOMAIN_NASA,
     modifications: RESIZED,
     objectPosition: "50% 55%",
+    profileHeroObjectPosition: "70% 50%",
     sourceUrl:
       "https://commons.wikimedia.org/wiki/File:SR-71_Over_Snow_Capped_Mountains_-_GPN-2000-000162.jpg",
     src: "/images/aircraft/sr-71-blackbird.webp",

@@ -114,13 +114,14 @@ export function buildReplayPhases({
   const hasReentryData = Boolean(vehicleReentryEvaluation);
 
   // The same stages, in the same order, as the mission phase timeline,
-  // plus one trailing step that marks the end of the replay.
+  // plus the one shared trailing step, Review.
   const stagePhases: Readonly<
     Record<CoreMissionStage, Omit<ReplayPresentationPhase, "label">>
   > = {
     [MISSION_STAGE.launch]: {
-      description:
-        "Launch is not modelled; the mission starts from the reported starting orbit.",
+      description: transfer
+        ? "Launch is not modelled; the mission starts from the reported starting orbit."
+        : "Launch is not modelled, and no starting orbit was reported.",
       id: "launch",
       sceneMode: "orbital",
       statusLabel: "Launch is not modelled",
@@ -168,11 +169,11 @@ export function buildReplayPhases({
   );
 
   phases.push({
-    description: "The end of the replay.",
-    id: "complete",
-    label: "Complete",
+    description: "The last step: review the reported values below.",
+    id: "review",
+    label: MISSION_STAGE.review,
     sceneMode: hasReentryData ? "reentry" : "orbital",
-    statusLabel: "End of replay",
+    statusLabel: "Reviewing the results",
   });
 
   return phases;
@@ -320,10 +321,6 @@ export function MissionReplay({
         {/* The selected step's note. Its name is already on the step row and
          * in the status line, so it is not repeated as a heading here. */}
         <p className="max-w-[68ch] text-sm leading-6 text-text-secondary">
-          <span className="text-muted">
-            {activePhase.sceneMode === "orbital" ? "Orbital" : "Reentry"}{" "}
-            phase.{" "}
-          </span>
           {activePhase.description}
         </p>
 

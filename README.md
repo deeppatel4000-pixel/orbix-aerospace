@@ -13,7 +13,7 @@ shock waves, atmospheric entry heating and orbital transfers. The calculators sh
 inputs and units, and the analyzers state their assumptions. A verification page runs the same calculations against published textbook
 and reference values and shows every difference.
 
-![ORBIX home page on a desktop browser, with the ORBIX logo, the heading "Aerospace engineering, explained with real vehicles." and a NASA photograph of the SR-71 Blackbird over mountains](docs/assets/screenshots/home.png)
+![ORBIX home page on a desktop browser, with the ORBIX logo, the heading "Aerospace engineering, explained with real vehicles." and a NASA photograph of the SR-71 Blackbird over mountains](docs/assets/screenshots/home.jpg)
 
 ## Features
 
@@ -32,9 +32,9 @@ and reference values and shows every difference.
 
 ## Screenshots
 
-| SR-71 Blackbird profile                                                                                                                                                                                                                            | Three aircraft compared                                                                                                                                                                          |
-| -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| ![SR-71 Blackbird profile page: title, description, maximum speed, service ceiling, range and first flight beside a framed NASA photograph, then the section navigation and the start of the overview](docs/assets/screenshots/aircraft-sr-71.png) | ![Spec sheet comparing the SR-71 Blackbird, F-22 Raptor and F-15 Eagle: photographs, manufacturers and the start of the heritage and program rows](docs/assets/screenshots/compare-aircraft.png) |
+| SR-71 Blackbird profile                                                                                                                                                                                                                                        | Three aircraft compared                                                                                                                                                                          |
+| -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| ![SR-71 Blackbird profile page: title, description, maximum speed, service ceiling, range and first flight beside the NASA photograph set on the right, then the section navigation and the start of the overview](docs/assets/screenshots/aircraft-sr-71.jpg) | ![Spec sheet comparing the SR-71 Blackbird, F-22 Raptor and F-15 Eagle: photographs, manufacturers and the start of the heritage and program rows](docs/assets/screenshots/compare-aircraft.png) |
 
 | How I built ORBIX                                                                                                | Home on a phone                                                                               | SR-71 profile on a phone                                                                                                                                                       |
 | ---------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |

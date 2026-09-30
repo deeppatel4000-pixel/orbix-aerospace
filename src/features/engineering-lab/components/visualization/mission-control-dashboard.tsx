@@ -276,17 +276,26 @@ export function MissionControlDashboard({
         vehicleReentryEvaluation={vehicleReentryEvaluation}
       >
         <div className="min-w-0 space-y-8">
-          <MissionMetricsGrid
-            missionProfileAnalysis={missionProfileAnalysis}
-            missionReport={missionReport}
-            vehicleReentryEvaluation={vehicleReentryEvaluation}
-          />
+          {/* The headline figures open the Overview only; the other
+           * workspaces carry their own values, so they are not repeated
+           * above every view. */}
+          {activeView === "overview" ? (
+            <MissionMetricsGrid
+              missionProfileAnalysis={missionProfileAnalysis}
+              missionReport={missionReport}
+              vehicleReentryEvaluation={vehicleReentryEvaluation}
+            />
+          ) : null}
 
           {/* The workspace is marked by a muted label, not a heading, so
            * the view's own title is the first heading inside it. */}
           <section
             aria-label="Mission visualization workspace"
-            className="border-t border-border-subtle pt-8"
+            className={
+              activeView === "overview"
+                ? "border-t border-border-subtle pt-8"
+                : undefined
+            }
           >
             <p className="orbix-label">
               Workspace: {activeWorkspace?.label ?? "Overview"}
@@ -304,72 +313,76 @@ export function MissionControlDashboard({
             </div>
           </section>
 
-          <section
-            aria-labelledby="engineering-review-title"
-            className="border-t border-border-subtle pt-8"
-          >
-            <LabHeading id="engineering-review-title">
-              Engineering review
-            </LabHeading>
+          {/* Design review already lists the assumptions and limits in
+           * full, so this summary is left out there. */}
+          {activeView === "design-review" ? null : (
+            <section
+              aria-labelledby="engineering-review-title"
+              className="border-t border-border-subtle pt-8"
+            >
+              <LabHeading id="engineering-review-title">
+                Engineering review
+              </LabHeading>
 
-            {missionReport ? (
-              <div className="mt-3 grid gap-6 lg:grid-cols-3">
-                <section aria-labelledby="engineering-review-scope-title">
-                  <LabHeading
-                    id="engineering-review-scope-title"
-                    offset={1}
-                    variant="sub"
-                  >
-                    Modeling scope
-                  </LabHeading>
-                  <p className="mt-2 text-sm leading-6 text-text-secondary">
-                    {missionReport.missionAssessment.educationalSummary}
-                  </p>
-                </section>
-                <section aria-labelledby="engineering-review-assumptions-title">
-                  <LabHeading
-                    id="engineering-review-assumptions-title"
-                    offset={1}
-                    variant="sub"
-                  >
-                    Assumptions
-                  </LabHeading>
-                  <ul className="mt-2 list-disc space-y-1 pl-5 text-sm leading-6 text-muted">
-                    {missionReport.missionAssessment.modelAssumptions.map(
-                      (assumption) => (
-                        <li key={assumption}>{assumption}</li>
-                      ),
-                    )}
-                  </ul>
-                </section>
-                <section aria-labelledby="engineering-review-limits-title">
-                  <LabHeading
-                    id="engineering-review-limits-title"
-                    offset={1}
-                    variant="sub"
-                  >
-                    Limits
-                  </LabHeading>
-                  <ul className="mt-2 list-disc space-y-1 pl-5 text-sm leading-6 text-muted">
-                    {missionReport.missionAssessment.limitations.map(
-                      (limitation) => (
-                        <li key={limitation}>{limitation}</li>
-                      ),
-                    )}
-                  </ul>
-                </section>
-              </div>
-            ) : (
-              <div className="mt-3">
-                <WorkspaceEmptyState
-                  expected="Reported modeling scope, assumptions, and analysis limitations."
-                  message="Engineering review unavailable because no mission report was supplied."
-                  source="MissionReport supplied to Mission control after report generation."
-                  title="Engineering review awaiting report"
-                />
-              </div>
-            )}
-          </section>
+              {missionReport ? (
+                <div className="mt-3 grid gap-6 lg:grid-cols-3">
+                  <section aria-labelledby="engineering-review-scope-title">
+                    <LabHeading
+                      id="engineering-review-scope-title"
+                      offset={1}
+                      variant="sub"
+                    >
+                      Modeling scope
+                    </LabHeading>
+                    <p className="mt-2 text-sm leading-6 text-text-secondary">
+                      {missionReport.missionAssessment.educationalSummary}
+                    </p>
+                  </section>
+                  <section aria-labelledby="engineering-review-assumptions-title">
+                    <LabHeading
+                      id="engineering-review-assumptions-title"
+                      offset={1}
+                      variant="sub"
+                    >
+                      Assumptions
+                    </LabHeading>
+                    <ul className="mt-2 list-disc space-y-1 pl-5 text-sm leading-6 text-muted">
+                      {missionReport.missionAssessment.modelAssumptions.map(
+                        (assumption) => (
+                          <li key={assumption}>{assumption}</li>
+                        ),
+                      )}
+                    </ul>
+                  </section>
+                  <section aria-labelledby="engineering-review-limits-title">
+                    <LabHeading
+                      id="engineering-review-limits-title"
+                      offset={1}
+                      variant="sub"
+                    >
+                      Limits
+                    </LabHeading>
+                    <ul className="mt-2 list-disc space-y-1 pl-5 text-sm leading-6 text-muted">
+                      {missionReport.missionAssessment.limitations.map(
+                        (limitation) => (
+                          <li key={limitation}>{limitation}</li>
+                        ),
+                      )}
+                    </ul>
+                  </section>
+                </div>
+              ) : (
+                <div className="mt-3">
+                  <WorkspaceEmptyState
+                    expected="Reported modeling scope, assumptions, and analysis limitations."
+                    message="Engineering review unavailable because no mission report was supplied."
+                    source="MissionReport supplied to Mission control after report generation."
+                    title="Engineering review awaiting report"
+                  />
+                </div>
+              )}
+            </section>
+          )}
         </div>
       </MissionControlShell>
     </HeadingLevel>

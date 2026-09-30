@@ -250,10 +250,13 @@ export function TradeStudyMetrics({ entries }: TradeStudyMetricsProps) {
         </p>
       ) : (
         <DataTable
-          caption="Metrics by mission"
+          // The h3 above already names the table, so its caption is for
+          // assistive technology only; the caption's own bottom margin
+          // keeps the gap under the intro line.
+          caption={<span className="sr-only">Mission comparison metrics</span>}
           // Mono figures and sans words share one 20px line and a baseline,
           // so a figure never sits above the label in its row.
-          className="mt-3 [&_tbody_:is(th,td)]:align-baseline"
+          className="[&_tbody_:is(th,td)]:align-baseline"
           columns={columns}
           getRowKey={(row) => row.key}
           rows={rows}

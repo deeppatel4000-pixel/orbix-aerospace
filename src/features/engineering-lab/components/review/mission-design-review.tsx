@@ -121,7 +121,6 @@ export function MissionDesignReview({
         >
           <dl className="grid gap-x-8 sm:grid-cols-2">
             <DesignConstraintCard
-              description="Mission category."
               label="Mission category"
               value={
                 missionCategory ? categoryLabels[missionCategory] : undefined

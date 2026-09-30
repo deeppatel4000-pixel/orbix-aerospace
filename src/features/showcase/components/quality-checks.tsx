@@ -89,21 +89,52 @@ function CommandArgument({ part }: { part: string }) {
   );
 }
 
+/** A command in the data face, breaking only at safe points. */
+function Command({
+  className,
+  command,
+}: {
+  className?: string;
+  command: string;
+}) {
+  return (
+    <code
+      className={cn(
+        "orbix-data orbix-data--sm block bg-transparent! p-0! text-[length:var(--text-caps)]! leading-[1.4rem] font-normal text-text-secondary",
+        className,
+      )}
+    >
+      {command.split(" ").map((part, index) => (
+        <Fragment key={index}>
+          {index > 0 ? " " : null}
+          <CommandArgument part={part} />
+        </Fragment>
+      ))}
+    </code>
+  );
+}
+
 /**
- * Check, then command, then tool. Below 48rem the Tool column is hidden and
- * each tool is set under its check, the Check column narrows to 8rem, and
- * long arguments break after a path `/` or before a flag's `=`, so both
- * tables fit a 320px screen without scrolling.
+ * Check, then command, then tool. Below 48rem the Tool column is hidden
+ * and each tool is set under its check, with the Check column 8rem wide.
+ * Below 40rem the Command column is hidden too and each command follows
+ * its tool in the one remaining column, so a check reads as one short
+ * block instead of a narrow column several lines deep. Long arguments
+ * break after a path `/` or before a flag's `=`, so both tables fit a
+ * 320px screen without scrolling.
  */
 const columns: readonly DataTableColumn<QualityCheck>[] = [
   {
     cell: (row) => (
-      <span className="block w-[8rem] md:w-auto">
+      <span className="block sm:w-[8rem] md:w-auto">
         {row.check}
         {/* Below 48rem the Tool column is hidden and the tool rides here. */}
         <span className="mt-1 block font-normal text-text-muted md:hidden">
           {row.tool}
         </span>
+        {/* Below 40rem the Command column is hidden and the command
+            rides here too. */}
+        <Command className="mt-2 sm:hidden" command={row.command} />
       </span>
     ),
     header: "Check",
@@ -111,14 +142,7 @@ const columns: readonly DataTableColumn<QualityCheck>[] = [
   },
   {
     cell: (row) => (
-      <code className="orbix-data orbix-data--sm block leading-[1.4rem] font-normal text-text-secondary md:min-w-[14rem]">
-        {row.command.split(" ").map((part, index) => (
-          <Fragment key={index}>
-            {index > 0 ? " " : null}
-            <CommandArgument part={part} />
-          </Fragment>
-        ))}
-      </code>
+      <Command className="md:min-w-[14rem]" command={row.command} />
     ),
     header: "Command",
     key: "command",
@@ -134,11 +158,11 @@ const columns: readonly DataTableColumn<QualityCheck>[] = [
  * From 48rem both tables share fixed column widths, so the two workflows
  * line up as one list; the Command column takes the largest share, so
  * long commands break as rarely as possible. Below that the third (Tool)
- * column is hidden, and below 40rem the cells take 12px side padding
- * instead of 16px.
+ * column is hidden, and below 40rem the second (Command) column too, and
+ * the cells take 12px side padding instead of 16px.
  */
 const alignedColumns = cn(
-  "max-md:[&_tr>:nth-child(3)]:hidden max-sm:[&_:is(th,td)]:px-3",
+  "max-md:[&_tr>:nth-child(3)]:hidden max-sm:[&_tr>:nth-child(2)]:hidden max-sm:[&_:is(th,td)]:px-3",
   "md:[&_table]:table-fixed md:[&_thead_th:nth-child(1)]:w-[36%] md:[&_thead_th:nth-child(2)]:w-[46%]",
   // Check, command and tool share one baseline in each row.
   "[&_tbody_:is(th,td)]:align-baseline",
@@ -158,7 +182,6 @@ export function QualityChecks() {
           .
         </>
       }
-      number={4}
       title="Quality checks"
     >
       <div className="grid grid-cols-[minmax(0,1fr)] gap-10">

@@ -20,9 +20,9 @@ const CORE_SHOWCASE_PHASES: Readonly<
 > = {
   [MISSION_STAGE.launch]: {
     description:
-      "The mission inputs and the completed results that the rest of the walkthrough draws on.",
-    id: "launch-preparation",
-    label: "Launch preparation",
+      "Launch is not modelled; the mission starts from the reported starting orbit.",
+    id: "launch",
+    label: "Launch",
     scene: "launch",
   },
   [MISSION_STAGE.orbitInsertion]: {
@@ -35,21 +35,21 @@ const CORE_SHOWCASE_PHASES: Readonly<
   [MISSION_STAGE.transfer]: {
     description:
       "The transfer between orbits, with the delta-v and transfer time already calculated.",
-    id: "orbital-transfer",
-    label: "Orbital transfer",
+    id: "transfer",
+    label: "Transfer",
     scene: "transfer",
   },
   [MISSION_STAGE.arrival]: {
     description:
       "Arrival at the target orbit. This phase is a label for the supplied results, not a separate calculation.",
-    id: "arrival-mission-phase",
-    label: "Arrival and mission phase",
+    id: "arrival",
+    label: "Arrival",
     scene: "arrival",
   },
   [MISSION_STAGE.reentry]: {
     description:
       "The vehicle and heating results from the completed reentry evaluation.",
-    id: "atmospheric-entry",
+    id: "reentry",
     label: "Reentry",
     scene: "entry",
   },
@@ -71,8 +71,8 @@ export const SHOWCASE_PHASES: readonly [
   ...MISSION_STAGE_SEQUENCE.slice(1).map(toShowcasePhase),
   {
     description: "A summary of the completed results for the whole mission.",
-    id: "mission-review",
-    label: "Mission review",
+    id: "review",
+    label: "Review",
     scene: "review",
     shortLabel: MISSION_STAGE.review,
   },

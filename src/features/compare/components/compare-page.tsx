@@ -35,14 +35,15 @@ const ROCKET_TILE_POSITION = "50% 15%";
 
 function buildThumbnails(options: ComparisonOptions): ComparisonThumbnails {
   const pick = (
-    visual: ReturnType<typeof getAircraftVisual>,
+    visual: ReturnType<typeof getAircraftVisual | typeof getRocketVisual>,
     wideTilePosition?: string,
+    tilePosition?: string,
   ) =>
     visual
       ? {
           credit: visual.credit,
           license: visual.license,
-          objectPosition: visual.objectPosition,
+          objectPosition: tilePosition ?? visual.objectPosition,
           src: visual.src,
           wideTilePosition,
         }
@@ -50,10 +51,13 @@ function buildThumbnails(options: ComparisonOptions): ComparisonThumbnails {
 
   return {
     aircraft: Object.fromEntries(
-      options.aircraft.map((option) => [
-        option.id,
-        pick(getAircraftVisual(option.id)),
-      ]),
+      options.aircraft.map((option) => {
+        // The aircraft tiles are 16:10, as the registry cards are, so they
+        // use the card crop, which keeps the whole airframe in frame (the
+        // shared crop cut the SR-71's fins and nose).
+        const visual = getAircraftVisual(option.id);
+        return [option.id, pick(visual, undefined, visual?.cardObjectPosition)];
+      }),
     ),
     rockets: Object.fromEntries(
       options.rockets.map((option) => [

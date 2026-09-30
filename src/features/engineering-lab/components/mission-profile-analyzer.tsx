@@ -793,7 +793,7 @@ function VehicleFields({
   return (
     <fieldset className={LAB_GROUP}>
       <legend className={LAB_GROUP_LEGEND}>{label}</legend>
-      <div className="mt-4">
+      <div className="mt-4 @min-[36rem]/col:w-[calc(50%-0.625rem)]">
         <label className="orbix-field__label block" htmlFor={nameId}>
           Vehicle name
         </label>
@@ -1258,6 +1258,22 @@ export function MissionProfileAnalyzer({
               </fieldset>
             ) : null}
 
+            {/* The results follow the whole form in this stacked tool, so
+                the headline figure is repeated here, straight after the
+                inputs that set it. */}
+            {deltaVBudget ? (
+              <p className="mt-5 flex flex-wrap items-baseline gap-x-4 gap-y-1 border-t border-border pt-4">
+                <span className="orbix-label">Total mission delta-v</span>
+                <output className="orbix-data" htmlFor={deltaOutputIds}>
+                  <LabFigure unit="m/s">
+                    {standardFormatter.format(
+                      deltaVBudget.totalDeltaVMetresPerSecond,
+                    )}
+                  </LabFigure>
+                </output>
+              </p>
+            ) : null}
+
             {reentryEnabled ? (
               <div id="mission-profile-reentry-system">
                 <fieldset className={LAB_GROUP}>
@@ -1278,7 +1294,7 @@ export function MissionProfileAnalyzer({
                     <CalculatorNumberField
                       error={errors.initialVelocityMetersPerSecond}
                       field="initialVelocityMetersPerSecond"
-                      hint="Vehicle speed at the start of reentry."
+                      hint="Vehicle speed at the start of reentry. The default, 400 m/s, is a late-descent speed with little heating. This model's atmosphere ends at 11 km, so it cannot start an entry at orbital speed (about 7.8 km/s)."
                       idPrefix="mission-profile"
                       label="Initial velocity"
                       onChange={updateValue}
@@ -1360,7 +1376,7 @@ export function MissionProfileAnalyzer({
                 Reset inputs
               </Button>
               <p className="min-w-0 flex-[1_1_14rem] text-[0.8125rem] leading-5 text-muted">
-                Valid changes update the integrated mission profile immediately.
+                Valid changes update the mission profile below immediately.
               </p>
             </div>
           </form>

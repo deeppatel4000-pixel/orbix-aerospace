@@ -13,14 +13,13 @@ export function SourceCodeSection() {
     <ShowcaseSection
       id="source-code"
       lead="The full source, including the calculators, their unit tests and the browser tests, is on GitHub."
-      number={5}
       title="Source code"
     >
       <ShowcaseText>
         <ButtonLink
           arrow="external"
           href={SOURCE_REPOSITORY_URL}
-          variant="secondary"
+          variant="tertiary"
         >
           View the ORBIX repository on GitHub
         </ButtonLink>

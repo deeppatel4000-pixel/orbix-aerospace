@@ -3,5 +3,9 @@ export { EngineeringBoundaries } from "@/features/showcase/components/engineerin
 export { MissionPresets } from "@/features/showcase/components/mission-presets";
 export { QualityChecks } from "@/features/showcase/components/quality-checks";
 export { ShowcaseCapture } from "@/features/showcase/components/showcase-capture";
-export { ShowcaseIntro } from "@/features/showcase/components/showcase-intro";
+export {
+  SHOWCASE_CONTENTS,
+  ShowcaseActions,
+  ShowcaseLead,
+} from "@/features/showcase/components/showcase-intro";
 export { SourceCodeSection } from "@/features/showcase/components/source-code-section";

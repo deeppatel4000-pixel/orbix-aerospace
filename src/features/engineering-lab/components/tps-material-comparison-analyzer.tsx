@@ -399,7 +399,7 @@ export function TPSMaterialComparisonAnalyzer() {
                 <CalculatorNumberField
                   error={errors.initialVelocityMetersPerSecond}
                   field="initialVelocityMetersPerSecond"
-                  hint="Positive initial velocity used for every material case."
+                  hint="Positive initial velocity used for every material case. The default, 400 m/s, is a late-descent speed with little heating. This model's atmosphere ends at 11 km, so it cannot start an entry at orbital speed (about 7.8 km/s)."
                   idPrefix="tps-material-comparison"
                   label="Initial velocity"
                   onChange={updateValue}
@@ -451,7 +451,7 @@ export function TPSMaterialComparisonAnalyzer() {
 
             <fieldset className={LAB_GROUP}>
               <legend className={LAB_GROUP_LEGEND}>TPS design</legend>
-              <div className="mt-4">
+              <div className="mt-4 @min-[36rem]/col:w-[calc(50%-0.625rem)]">
                 <CalculatorNumberField
                   error={errors.safetyFactor}
                   field="safetyFactor"
@@ -674,7 +674,7 @@ export function TPSMaterialComparisonAnalyzer() {
                     </dd>
                   </div>
                 </ReadoutGrid>
-                <p className="text-sm leading-6 text-muted">
+                <p className="lab-result-prose text-sm leading-6 text-muted">
                   {result.recommendedMaterial.rankingLogic.description}
                 </p>
               </>

@@ -38,6 +38,12 @@ const DETAIL_LABEL_Y = 150;
  */
 const LOCATOR_DOT = 8;
 /**
+ * Where a narrow capture plate sets the locator up to 18rem wide, the dot
+ * radius drops to 4.5 units (CSS `r` overrides the attribute), so the dot
+ * stays about 8px across instead of growing to cover box A.
+ */
+const WIDE_LOCATOR_DOT = "@max-[24rem]/transfer:[r:4.5px]";
+/**
  * The locator's rendered width in px: 12rem on the page, 9rem in capture.
  * A narrow capture plate sets it wider (up to 18rem), where box A is then
  * larger than its minimum and still contains the window.
@@ -298,6 +304,7 @@ export function TransferOrbitDiagram({
         />
         {[HALF - r1, HALF + r2].map((cx) => (
           <circle
+            className={compact && hasDetail ? WIDE_LOCATOR_DOT : undefined}
             cx={cx}
             cy={HALF}
             fill="var(--orbix-data-2)"
@@ -625,9 +632,35 @@ export function TransferOrbitDiagram({
 }
 
 /**
+ * The sum of the preset's allowances as a large readout under a caps
+ * label. It closes the allowance plate on the page and sits in the text
+ * column of the capture view.
+ */
+export function AllowanceSum({
+  className,
+  diagram,
+}: {
+  className?: string;
+  diagram: AllowanceDiagram;
+}) {
+  return (
+    <p className={cn("grid gap-2", className)}>
+      <span className="orbix-caps text-text-muted">Sum of the allowances</span>
+      <span className="text-text-primary">
+        <Readout className="orbix-readout-lg">
+          {formatShowcaseNumber(diagram.sumMetresPerSecond)}
+        </Readout>{" "}
+        <span className="text-sm text-text-muted">m/s</span>
+      </span>
+    </p>
+  );
+}
+
+/**
  * The preset's ordered maneuver allowances as bars on one scale, closed by
- * their sum as a large readout. `fill` (the capture view) lets the plate
- * grow to the height of its column and spreads the rows over that height,
+ * their sum as a large readout unless `showSum` is false (the capture view
+ * sets the sum beside the plate). `fill` (the capture view) lets the plate
+ * grow to the height of its column, with the caption on its bottom edge,
  * so the plate ends on the same line as the columns beside it (from
  * 1024px, where the capture sets its columns side by side).
  */
@@ -635,10 +668,12 @@ export function AllowanceBars({
   diagram,
   fill = false,
   missionId,
+  showSum = true,
 }: {
   diagram: AllowanceDiagram;
   fill?: boolean;
   missionId: string;
+  showSum?: boolean;
 }) {
   const largest = Math.max(
     ...diagram.maneuvers.map((maneuver) => maneuver.deltaVMetresPerSecond),
@@ -661,7 +696,7 @@ export function AllowanceBars({
       <ol
         className={cn(
           "grid gap-5",
-          fill && "lg:flex-1 lg:content-between lg:gap-y-12 lg:py-2",
+          fill && "lg:flex-1 lg:content-evenly lg:gap-7 lg:pb-6",
         )}
       >
         {diagram.maneuvers.map((maneuver) => (
@@ -689,18 +724,19 @@ export function AllowanceBars({
           </li>
         ))}
       </ol>
-      <p className="mt-6 grid gap-2 border-t border-border-subtle pt-4">
-        <span className="orbix-caps text-text-muted">
-          Sum of the allowances
-        </span>
-        <span className="text-text-primary">
-          <Readout className="orbix-readout-lg">
-            {formatShowcaseNumber(diagram.sumMetresPerSecond)}
-          </Readout>{" "}
-          <span className="text-sm text-text-muted">m/s</span>
-        </span>
-      </p>
-      <figcaption className="orbix-label mt-3">
+      {showSum ? (
+        <AllowanceSum
+          className="mt-6 border-t border-border-subtle pt-4"
+          diagram={diagram}
+        />
+      ) : null}
+      <figcaption
+        className={cn(
+          "orbix-label mt-3",
+          !showSum && "mt-6 border-t border-border-subtle pt-4",
+          fill && "lg:mt-auto",
+        )}
+      >
         Allowances are preset inputs, not optimized trajectory values. Their sum
         is the only derived number.
       </figcaption>

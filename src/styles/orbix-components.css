@@ -408,6 +408,13 @@
     position: relative;
   }
 
+  /* A large readout stands alone, not in a column, so its separator gives
+     up part of its cell: at 40px a full cell reads "5 , 400". */
+  .orbix-readout-lg .orbix-num-sep {
+    left: 0;
+    margin-inline: -0.02em -0.22em;
+  }
+
   .orbix-readout-inline {
     font-family: var(--font-telemetry);
     font-variant-numeric: tabular-nums;

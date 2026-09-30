@@ -14,6 +14,7 @@ export function EngineeringNotesPanel({
 }: EngineeringNotesPanelProps) {
   return (
     <EngineeringNotesList
+      description="Short notes on the engineering of the launch vehicle, one for each topic in the record."
       formatTopic={formatRocketEngineeringDomain}
       index={index}
       notes={notes}

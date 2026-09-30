@@ -100,11 +100,12 @@ export function VariantsPanel({ index, name, variants }: VariantsPanelProps) {
             key: "first-flight",
           },
           {
-            // At least 16rem from 48rem (18rem below, set by the `wrap`
+            // At least 14rem from 48rem (18rem below, set by the `wrap`
             // column), so a note sets in a few lines instead of a narrow
-            // column several lines taller than the rest of the row.
+            // column several lines taller than the rest of the row. 16rem
+            // made the table scroll in the 1024px section column.
             cell: (variant) => (
-              <span className="block md:min-w-[16rem]">
+              <span className="block md:min-w-[14rem]">
                 {variant.notes ?? (
                   <span className="text-muted">None recorded</span>
                 )}

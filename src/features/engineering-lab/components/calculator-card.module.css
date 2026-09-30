@@ -178,6 +178,17 @@
   min-width: 4.5rem;
 }
 
+/* A dimensionless numeric field draws no suffix cell, but its value
+ * stops where a suffixed field's value stops (4.5rem short of the right
+ * edge), so figures in one column line up. */
+.workspace
+  :global(
+    .orbix-field__control:not(:has(.lab-field__unit))
+      > .orbix-input[type="number"]
+  ) {
+  padding-inline-end: calc(0.75rem + 4.5rem);
+}
+
 /* A list of checkbox or radio choices (`LAB_CHOICE_*`): one hairline
  * rule between rows and above and below the list, no outline per row, so
  * the native control alone shows the state. */
@@ -249,9 +260,20 @@
 
 .workspace :global(.lab-eq-line) {
   display: block;
-  padding-block: 0.2em;
   padding-inline-start: 1ch;
   text-indent: -1ch;
+}
+
+/* One row gap between the lines of a relation, whatever they hold, so
+ * plain lines never bunch under one another while fraction lines sit
+ * apart. A stacked fraction already carries its own air above and below
+ * its rule, so its line adds no padding. */
+.workspace :global(.lab-eq-line + .lab-eq-line) {
+  margin-block-start: 0.75em;
+}
+
+.workspace :global(.lab-eq-line:has(.lab-eq-frac)) {
+  padding-block: 0;
 }
 
 .workspace :global(.lab-eq-line--cont) {
@@ -269,19 +291,12 @@
   vertical-align: 0.75em;
 }
 
-/* A continuation line clears the exponents of the line above it. */
-.workspace :global(.lab-eq-line--cont) {
-  padding-block-start: 0.45em;
-}
-
-/* A line holding a stacked fraction gets more air above and below, so the
- * next line never sits tight under a denominator. */
-.workspace :global(.lab-eq-line:has(.lab-eq-frac)) {
-  padding-block: 0.35em;
-}
-
-.workspace :global(.lab-eq-line--cont:has(.lab-eq-frac)) {
-  padding-block-start: 0.45em;
+/* The operator opening a continuation line (`EqOp`): a fixed 1.5ch
+ * column, so the brackets after "=" and after "·" line up. */
+.workspace :global(.lab-eq-op) {
+  display: inline-block;
+  text-indent: 0;
+  width: 1.5ch;
 }
 
 /* A relation written as a head line ("tan θ") and a continuation
@@ -297,7 +312,7 @@
   }
 
   .workspace :global(.lab-eq-line.lab-eq-join + .lab-eq-line--cont) {
-    padding-block-start: 0.35em;
+    margin-block-start: 0;
   }
 }
 
@@ -416,6 +431,10 @@
  * ==================================================================== */
 
 .workspace :global(.lab-result-body) {
+  /* A size container, so a prose note can take the same inline padding as
+   * the readout compartments beside it (those switch at a 29rem grid, and a
+   * grid in the body is exactly the body's width). */
+  container: result / inline-size;
   display: flow-root;
 }
 
@@ -459,7 +478,7 @@
  * readout grid draws above them, runs the whole panel width. */
 .workspace :global(.lab-result-body > .lab-result-prose) {
   margin: 0;
-  padding: var(--space-4);
+  padding: var(--space-4) 0.75rem;
 }
 
 .workspace :global(.lab-result-body > .lab-result-prose + .lab-result-prose) {
@@ -467,13 +486,19 @@
 }
 
 @container col (min-width: 30rem) {
-  .workspace :global(.lab-result-body > :not(.lab-readout-grid)) {
+  .workspace
+    :global(.lab-result-body > :not(.lab-readout-grid, .lab-result-prose)) {
     margin: var(--space-5);
   }
+}
 
+/* The prose note keeps no margin at any column width (the rule above
+ * would inset it), and its inset matches `--lab-cell-inline`, so its text starts on the
+ * same x as the readout labels above it. */
+@container result (min-width: 29rem) {
   .workspace :global(.lab-result-body > .lab-result-prose) {
     margin: 0;
-    padding: var(--space-5);
+    padding: var(--space-5) 1rem;
   }
 }
 
@@ -818,6 +843,19 @@
   text-transform: none;
 }
 
+/* The reentry trajectory table (`lab-trajectory-table`): seven numeric
+ * columns and up to 50 rows. Cells are 0.75rem apart and rows 0.5rem deep
+ * (36px), so all seven columns fit a 44rem tool and the table does
+ * not swamp the tool. */
+.workspace :global(.lab-trajectory-table .orbix-table :is(th, td)) {
+  padding-inline: 0.75rem;
+}
+
+.workspace :global(.lab-trajectory-table .orbix-table tbody :is(th, td)) {
+  line-height: 1.25rem;
+  padding-block: 0.5rem;
+}
+
 /* A worded result: sans 500, never a readout face. */
 .workspace :global(.lab-value-text) {
   color: var(--orbix-text-primary);
@@ -858,10 +896,19 @@
 }
 
 /* A unit inside a figure note ("4.591 g₀" under a figure in m/s²) is set
- * at the note's own size: at 0.8em of the 12px note its subscript would
- * shrink to a dot. */
+ * at the note's own size, so its subscript stays legible. */
 .workspace :global(.lab-figure-note .lab-figure__unit) {
   font-size: 1em;
+}
+
+/* A subscript figure in a unit (g₀), drawn as a real <sub>: B612 Mono has
+ * no subscript digits, and U+2080 fell back to a 5px glyph. Tailwind's
+ * preflight offset is replaced by vertical-align so the line box holds it. */
+.workspace :global(.lab-figure__sub) {
+  font-size: 0.8em;
+  line-height: 1;
+  position: static;
+  vertical-align: -0.2em;
 }
 
 .workspace :global(.orbix-readout-lg .lab-figure__unit) {
@@ -873,7 +920,7 @@
   color: var(--orbix-text-muted);
   display: block;
   font-family: var(--font-telemetry);
-  font-size: var(--text-caps);
+  font-size: 0.8125rem;
   letter-spacing: 0;
   line-height: 1.4;
 }

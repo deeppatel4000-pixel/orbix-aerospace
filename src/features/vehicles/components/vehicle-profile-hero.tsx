@@ -39,8 +39,9 @@ interface VehicleProfileHeroProps {
   name: string;
   /**
    * `side` (default), for a landscape photograph of an airframe: a banner
-   * across the top from 48rem, then from 64rem the photograph on the right
-   * at its own aspect, uncropped, beside the text (`STOPGAP_PHOTO_HERO_SIDE`).
+   * across the top from 48rem, then from 80rem the photograph full-bleed
+   * behind the right of the content, off the window's right edge
+   * (`STOPGAP_PHOTO_HERO_SIDE`).
    * `right`, for a portrait photograph of a launch vehicle: from 48rem the
    * photograph stands on the right at the hero's height with a feathered
    * left edge; below 48rem a 3:4 plate. The hero is the one place a
@@ -85,8 +86,8 @@ export function VehicleProfileHero({
       {/*
        * Beside a portrait photograph the lead and the record row stop at
        * 38rem, clear of the plate, and the record row is one row from 64rem.
-       * Beside an aircraft photograph the whole column is 31 to 32rem, and
-       * the record row is 2x2, one row of four from 64rem.
+       * On an aircraft profile the record row is 2x2, one row of four from
+       * 64rem.
        */}
       <p className={cn("orbix-lead mt-6", !isSide && "lg:max-w-[38rem]")}>
         {lead}
@@ -121,7 +122,9 @@ export function VehicleProfileHero({
         isSide ? STOPGAP_PHOTO_HERO_SIDE : STOPGAP_PHOTO_HERO_PHONE_TALL,
         // Rocket profiles (placement="right") are top-aligned, so the full
         // min(88svh, 60rem) hero left a tall empty band under the actions.
-        !isSide && "md:min-h-[min(76svh,52rem)]",
+        // The portrait photograph is height-bound, so the whole vehicle
+        // still shows at this height.
+        !isSide && "md:min-h-[min(88svh,44rem)]",
       )}
       placement={isSide ? "behind" : "right"}
       plate={isSide ? "landscape" : "portrait"}

@@ -7,7 +7,7 @@ export const starship = {
     name: "United States",
   },
   description:
-    "A fully reusable launch-system design in active development, represented as a labeled 2026 public snapshot with published system targets and the 33-plus-six engine flight architecture.",
+    "A fully reusable two-stage launch system in active development, with 33 Raptor engines on the Super Heavy booster and six on the Starship upper stage, burning liquid methane and liquid oxygen.",
   dimensions: {
     height: {
       qualifier: "nominal",

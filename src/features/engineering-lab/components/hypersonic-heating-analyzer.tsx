@@ -20,6 +20,7 @@ import {
   ValidationErrorSummary,
   LabFigure,
   EqDot,
+  EqFrac,
   EQ_SUP,
 } from "@/features/engineering-lab/components/shared";
 import type {
@@ -208,7 +209,9 @@ const toolEquation = (
           </span>
         </span>
         <span className={EQ_LINE}>
-          <span className={EQ_TERM}>M = V/a</span>
+          <span className={EQ_TERM}>
+            M = <EqFrac den="a" num="V" />
+          </span>
         </span>
       </>
     }

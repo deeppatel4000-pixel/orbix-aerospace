@@ -329,7 +329,7 @@ export function HohmannTransferAnalyzer() {
           >
             <fieldset className={LAB_GROUP}>
               <legend className={LAB_GROUP_LEGEND}>Initial orbit</legend>
-              <div className="mt-4">
+              <div className="mt-4 @min-[36rem]/col:w-[calc(50%-0.625rem)]">
                 <CalculatorNumberField
                   error={errors.initialAltitudeMetres}
                   field="initialAltitudeMetres"
@@ -345,7 +345,7 @@ export function HohmannTransferAnalyzer() {
 
             <fieldset className={LAB_GROUP}>
               <legend className={LAB_GROUP_LEGEND}>Final orbit</legend>
-              <div className="mt-4">
+              <div className="mt-4 @min-[36rem]/col:w-[calc(50%-0.625rem)]">
                 <CalculatorNumberField
                   error={errors.finalAltitudeMetres}
                   field="finalAltitudeMetres"

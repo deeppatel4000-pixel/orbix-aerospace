@@ -82,8 +82,10 @@ const stateFormatter = new Intl.NumberFormat("en-US", {
   minimumFractionDigits: 2,
 });
 
-// Display only: the table shows density to 4 decimals so its seven
-// columns fit a desktop tool without scrolling. The analysis is unchanged.
+// Display only: the table shows density to 4 decimals and sets every
+// header as a label over its unit (with tighter cells, see
+// `lab-trajectory-table`), so its seven columns fit a 44rem tool without
+// scrolling. The analysis is unchanged.
 const densityFormatter = new Intl.NumberFormat("en-US", {
   maximumFractionDigits: 4,
   minimumFractionDigits: 4,
@@ -547,7 +549,7 @@ export function ReentryTrajectoryAnalyzer() {
                 </ReadoutGrid>
 
                 {result.peakHeatingVelocityState.timeSeconds === 0 ? (
-                  <p className="text-sm leading-6 text-muted">
+                  <p className="lab-result-prose text-sm leading-6 text-muted">
                     Velocity is highest at the initial state (t = 0 s), so the
                     peak velocity state is the initial state above.
                   </p>
@@ -603,6 +605,7 @@ export function ReentryTrajectoryAnalyzer() {
 
           {result ? (
             <DataTable
+              className="lab-trajectory-table"
               caption={
                 visibleTrajectoryPoints.length ===
                 result.trajectoryPoints.length
@@ -664,7 +667,13 @@ export function ReentryTrajectoryAnalyzer() {
                 },
                 {
                   key: "dynamic-pressure",
-                  header: <span className="block">Dynamic pressure</span>,
+                  // Two lines, with the unit on the second, so the widest
+                  // header does not set the column width.
+                  header: (
+                    <>
+                      <span className="block">Dynamic</span> pressure
+                    </>
+                  ),
                   unit: "Pa",
                   numeric: true,
                   cell: ({ point }) => (
@@ -688,9 +697,17 @@ export function ReentryTrajectoryAnalyzer() {
                 },
                 {
                   key: "g-load",
-                  header: "G-load",
+                  // The unit is written here, not as `unit`, so its
+                  // subscript is a real <sub> (B612 Mono has no U+2080).
+                  header: (
+                    <>
+                      <span className="block">G-load</span>
+                      <span className="orbix-table-unit">
+                        (g<sub className="lab-figure__sub">0</sub>)
+                      </span>
+                    </>
+                  ),
                   numeric: true,
-                  unit: "g₀",
                   cell: ({ point }) => (
                     <output htmlFor={allOutputIds}>
                       {loadFormatter.format(point.decelerationGs)}

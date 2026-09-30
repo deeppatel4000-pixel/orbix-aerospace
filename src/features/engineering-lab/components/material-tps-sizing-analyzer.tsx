@@ -341,7 +341,7 @@ export function MaterialTPSSizingAnalyzer() {
                 <CalculatorNumberField
                   error={errors.initialVelocityMetersPerSecond}
                   field="initialVelocityMetersPerSecond"
-                  hint="Positive initial velocity along the simplified descent path."
+                  hint="Positive initial velocity along the simplified descent path. The default, 400 m/s, is a late-descent speed with little heating. This model's atmosphere ends at 11 km, so it cannot start an entry at orbital speed (about 7.8 km/s)."
                   idPrefix="material-tps-sizing"
                   label="Initial velocity"
                   onChange={updateValue}

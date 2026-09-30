@@ -176,11 +176,21 @@ const toolEquation = (
           </span>
         </span>
         <span className={EQ_LINE}>
-          <span className={EQ_TERM}>a = q/β</span>
+          <span className={EQ_TERM}>
+            a = <EqFrac den="β" num="q" />
+          </span>
         </span>
         <span className={EQ_LINE}>
           <span className={EQ_TERM}>
-            n = a/g<sub className={EQ_SUB_CLEAR}>0</sub>
+            n ={" "}
+            <EqFrac
+              den={
+                <>
+                  g<sub className={EQ_SUB_CLEAR}>0</sub>
+                </>
+              }
+              num="a"
+            />
           </span>
         </span>
       </>

@@ -102,8 +102,8 @@ const resultColumns: readonly DataTableColumn<VerificationRow>[] = [
 /**
  * Column widths for the results tables. A fixed layout makes every table
  * fit the track from 48rem and lines the columns up down the page; cells
- * use 12px side padding there. From 64rem: Quantity 11.5rem, ORBIX 13.5%,
- * Published 12.5%, Difference 13.5%, As printed 10rem, and Rounding check
+ * use 12px side padding there. From 64rem: Quantity 10.75rem, ORBIX 13.5%,
+ * Published 12.5%, Difference 13.5%, As printed 10.75rem, and Rounding check
  * takes the rest, its header on one line (it wrapped to two lines at
  * 133px, doubling every header row). At the 808px
  * track every figure and the longest As printed value fit their cell's
@@ -120,11 +120,11 @@ const resultTableClass = [
   "md:[&_table]:table-fixed md:[&_table]:w-full md:[&_:is(th,td)]:px-3",
   "md:[&_thead_th]:[overflow-wrap:normal] md:max-lg:[&_thead_th]:whitespace-normal md:max-lg:[&_thead_th]:tracking-[0.06em]",
   "lg:[&_td:nth-child(5)]:whitespace-nowrap lg:[&_thead_th:nth-child(6)]:whitespace-nowrap",
-  "md:[&_thead_th:nth-child(1)]:w-[19%] lg:[&_thead_th:nth-child(1)]:w-[11.5rem]",
+  "md:[&_thead_th:nth-child(1)]:w-[19%] lg:[&_thead_th:nth-child(1)]:w-[10.75rem]",
   "md:[&_thead_th:nth-child(2)]:w-[16%] lg:[&_thead_th:nth-child(2)]:w-[13.5%]",
   "md:[&_thead_th:nth-child(3)]:w-[14%] lg:[&_thead_th:nth-child(3)]:w-[12.5%]",
   "md:[&_thead_th:nth-child(4)]:w-[15%] lg:[&_thead_th:nth-child(4)]:w-[13.5%]",
-  "md:[&_thead_th:nth-child(5)]:w-[17%] lg:[&_thead_th:nth-child(5)]:w-[10rem]",
+  "md:[&_thead_th:nth-child(5)]:w-[17%] lg:[&_thead_th:nth-child(5)]:w-[10.75rem]",
   "md:[&_thead_th:nth-child(6)]:w-[19%] lg:[&_thead_th:nth-child(6)]:w-auto",
 ].join(" ");
 
@@ -132,9 +132,12 @@ const resultTableClass = [
  * A figure exactly as the source prints it. B612 Mono gives a leading
  * decimal point (".1278") a full character cell, which reads as ". 1278";
  * pulling the digits in by a quarter cell closes that gap without changing
- * the printed text.
+ * the printed text. In the standard atmosphere's notation ("8.9874 + 2 mb")
+ * no-break spaces hold the exponent and the unit together, so a narrow
+ * cell breaks only between the mantissa and "+ 2 mb".
  */
-function PrintedFigure({ value }: { readonly value: string }) {
+function PrintedFigure({ value: printed }: { readonly value: string }) {
+  const value = printed.replace(/ ([+−]) (\d+) /g, " $1 $2 ");
   if (!value.startsWith(".")) return formatFigure(value);
 
   return (

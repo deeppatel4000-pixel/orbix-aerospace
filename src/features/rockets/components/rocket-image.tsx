@@ -50,6 +50,8 @@ export function RocketImage({
   sizes,
 }: RocketImageProps) {
   const visual = getRocketVisual(rocket.id);
+  const cardScale =
+    framing === "card" && visual?.cardScale ? visual.cardScale : undefined;
 
   if (!visual) {
     return (
@@ -81,13 +83,18 @@ export function RocketImage({
           "object-cover [filter:saturate(0.85)_contrast(1.05)]",
           framing === "feature" &&
             "object-(--crop-card) sm:object-(--crop-feature)",
+          // A zoomed card crop: the zoom and the card's hover zoom (spec 7,
+          // scale 1.03 from `.orbix-vehicle-card:hover img`) multiply, so
+          // the photograph still responds to hover.
+          cardScale !== undefined &&
+            "[transform:scale(calc(var(--card-scale)*var(--card-hover,1)))] [.orbix-vehicle-card:hover_&]:[--card-hover:1.03]",
           imageClassName,
         )}
         fill
         fetchPriority={priority ? "high" : undefined}
         priority={priority}
         quality={priority ? 90 : 75}
-        sizes={sizes}
+        sizes={cardScale ? scaleSizes(sizes, cardScale) : sizes}
         src={visual.src}
         style={
           framing === "feature"
@@ -98,11 +105,11 @@ export function RocketImage({
             : framing === "card"
               ? {
                   objectPosition: visual.cardObjectPosition,
-                  ...(visual.cardScale
-                    ? {
-                        transform: `scale(${visual.cardScale})`,
+                  ...(cardScale
+                    ? ({
+                        "--card-scale": cardScale,
                         transformOrigin: visual.cardScaleOrigin,
-                      }
+                      } as CSSProperties)
                     : {}),
                 }
               : { objectPosition: visual.objectPosition }
@@ -110,4 +117,22 @@ export function RocketImage({
       />
     </div>
   );
+}
+
+/**
+ * `sizes` for a photograph shown `scale` times larger than its frame: each
+ * slot width multiplied, so the browser picks a file with enough pixels
+ * for the zoomed crop instead of upscaling the frame-sized one.
+ */
+export function scaleSizes(sizes: string, scale: number) {
+  return sizes
+    .split(",")
+    .map((entry) => {
+      const trimmed = entry.trim();
+      const split = trimmed.lastIndexOf(" ");
+      const condition = split === -1 ? "" : `${trimmed.slice(0, split)} `;
+      const length = split === -1 ? trimmed : trimmed.slice(split + 1);
+      return `${condition}calc(${length} * ${scale})`;
+    })
+    .join(", ");
 }

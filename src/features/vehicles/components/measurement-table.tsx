@@ -32,13 +32,25 @@ interface MeasurementTableProps {
  * Basis column at 40/30/30, so the figures end on the 70 percent line
  * instead of the far edge of the track. Below 48rem the Basis column is
  * hidden and the qualifier is a third line under the figure, so the figure
- * stays the second column and in view on a phone.
+ * stays the second column and in view on a phone. When no row has a
+ * qualifier the Basis column is left out: Parameter | Figure at 40/60.
  */
 export function MeasurementTable({
   caption,
   note,
   rows,
 }: MeasurementTableProps) {
+  const hasBasis = rows.some((row) => measurementBasis(row.measurement));
+  const valueColumn = {
+    cell: (row: MeasurementRow) =>
+      renderDualMeasurement(row.measurement, {
+        qualifierClassName: "md:hidden",
+      }),
+    header: "Figure",
+    key: "value",
+    numeric: true,
+  };
+
   return (
     <DataTable
       singleLineCells
@@ -46,31 +58,32 @@ export function MeasurementTable({
       // edge per page); from 48rem a fixed layout with the label column at
       // 40 percent, matching the facts sheets.
       className={
-        "max-md:[&_td:nth-child(3)]:hidden max-md:[&_th:nth-child(3)]:hidden " +
-        "md:[&_table]:table-fixed md:[&_tbody_th]:w-2/5 " +
-        "md:[&_thead_th:first-child]:w-2/5 md:[&_thead_th:nth-child(n+2)]:w-[30%]"
+        "md:[&_table]:table-fixed md:[&_tbody_th]:w-2/5 md:[&_thead_th:first-child]:w-2/5" +
+        (hasBasis
+          ? " max-md:[&_td:nth-child(3)]:hidden max-md:[&_th:nth-child(3)]:hidden md:[&_thead_th:nth-child(n+2)]:w-[30%]"
+          : "")
       }
       caption={caption}
       columns={[
-        { cell: (row) => row.label, header: "Parameter", key: "label" },
         {
-          cell: (row) =>
-            renderDualMeasurement(row.measurement, {
-              qualifierClassName: "md:hidden",
-            }),
-          header: "Figure",
-          key: "value",
-          numeric: true,
+          cell: (row: MeasurementRow) => row.label,
+          header: "Parameter",
+          key: "label",
         },
-        {
-          cell: (row) => (
-            <span className="text-sm text-muted">
-              {measurementBasis(row.measurement)}
-            </span>
-          ),
-          header: "Basis",
-          key: "basis",
-        },
+        valueColumn,
+        ...(hasBasis
+          ? [
+              {
+                cell: (row: MeasurementRow) => (
+                  <span className="text-sm text-muted">
+                    {measurementBasis(row.measurement)}
+                  </span>
+                ),
+                header: "Basis",
+                key: "basis",
+              },
+            ]
+          : []),
       ]}
       getRowKey={(row) => row.label}
       note={joinTableNotes(note, basisNote(rows.map((row) => row.measurement)))}

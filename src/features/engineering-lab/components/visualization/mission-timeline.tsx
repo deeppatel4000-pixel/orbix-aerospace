@@ -59,8 +59,9 @@ function buildMissionPhases({
   > = {
     [MISSION_STAGE.launch]: {
       available: false,
-      detail:
-        "Launch is not modelled; the mission starts from the reported starting orbit.",
+      detail: transfer
+        ? "Launch is not modelled; the mission starts from the reported starting orbit."
+        : "Launch is not modelled, and no starting orbit was reported.",
       id: "departure",
       label: "Launch",
       timingLabel: "Mission start",
@@ -97,9 +98,13 @@ function buildMissionPhases({
       available:
         vehicleReentryEvaluation !== undefined &&
         vehicleReentryEvaluation !== null,
-      detail: vehicleReentryEvaluation
-        ? `${vehicleReentryEvaluation.vehicle.vehicleName} completed the reported reentry profile.`
-        : "No completed vehicle reentry evaluation is present.",
+      detail:
+        (vehicleReentryEvaluation
+          ? `${vehicleReentryEvaluation.vehicle.vehicleName} completed the reported reentry profile.`
+          : "No completed vehicle reentry evaluation is present.") +
+        (tps
+          ? ` ${tps.material.name} is the report's recommended thermal protection material.`
+          : ""),
       id: "reentry",
       label: "Reentry",
       timingLabel: vehicleReentryEvaluation
@@ -111,22 +116,21 @@ function buildMissionPhases({
     },
   };
 
-  // The shared sequence, then one trailing result step: the heat-shield
-  // recommendation assessed from the reentry results.
+  // The shared sequence, then the one shared trailing step, Review. The
+  // thermal protection recommendation is part of the Reentry step.
   return [
     ...MISSION_STAGE_SEQUENCE.map((stage) => ({
       ...corePhases[stage],
       shortLabel: stage,
     })),
     {
-      available: tps !== undefined,
-      detail: tps
-        ? `${tps.material.name} is the report's recommended material.`
-        : "No thermal protection recommendation is present.",
-      id: "thermal-protection",
-      label: "Thermal protection result",
-      shortLabel: MISSION_STAGE.thermalProtection,
-      timingLabel: "Assessed after reentry",
+      available: true,
+      detail:
+        "The end of the sequence. The mission report holds every reported value for review.",
+      id: "review",
+      label: "Review",
+      shortLabel: MISSION_STAGE.review,
+      timingLabel: "After reentry",
     },
   ];
 }
@@ -182,12 +186,11 @@ export function MissionTimeline(props: MissionTimelineProps) {
       {/* The same step row as the guided demo: B612 Mono number, label,
        * 2px rule under each step, accent under the selected one. A
        * container query, not a viewport breakpoint, sets 2, 3 or 6 across
-       * (the longer trailing label gets a wider track),
        * so the row reflows to its column instead of scrolling sideways. */}
       <div className="@container mt-4">
         <div
           aria-label="Mission phases"
-          className="grid grid-cols-2 gap-x-4 gap-y-1 @md:grid-cols-3 @3xl:grid-cols-[repeat(5,minmax(0,1fr))_minmax(0,1.5fr)]"
+          className="grid grid-cols-2 gap-x-4 gap-y-1 @md:grid-cols-3 @3xl:grid-cols-6"
           role="tablist"
         >
           {phases.map((phase, index) => {
@@ -199,7 +202,7 @@ export function MissionTimeline(props: MissionTimelineProps) {
                 aria-controls={`${timelineId}-phase-detail`}
                 aria-selected={isActive}
                 className={
-                  "flex min-h-11 flex-col items-start justify-end border-b-2 py-2 text-left text-sm leading-5 transition-colors focus-visible:outline-offset-[-2px] " +
+                  "flex min-h-11 flex-col items-start justify-start border-b-2 py-2 text-left text-sm leading-5 transition-colors focus-visible:outline-offset-[-2px] " +
                   (isActive
                     ? "border-accent font-medium text-foreground"
                     : phase.available
@@ -217,10 +220,6 @@ export function MissionTimeline(props: MissionTimelineProps) {
                 tabIndex={isActive ? 0 : -1}
                 type="button"
               >
-                {/* A status only when it differs from the norm. */}
-                {phase.available ? null : (
-                  <span className="orbix-label mb-1">Label only</span>
-                )}
                 <span className="[overflow-wrap:anywhere]">
                   <span aria-hidden="true" className="orbix-data mr-2">
                     {index + 1}
@@ -229,6 +228,13 @@ export function MissionTimeline(props: MissionTimelineProps) {
                    * shared rule; the panel below gives the full name. */}
                   {phase.shortLabel}
                 </span>
+                {/* A status only when it differs from the norm, as a
+                 * second line inside the tab. */}
+                {phase.available ? null : (
+                  <span className="orbix-label mt-0.5 text-muted">
+                    Label only
+                  </span>
+                )}
               </button>
             );
           })}
@@ -238,7 +244,7 @@ export function MissionTimeline(props: MissionTimelineProps) {
       {activePhase ? (
         <div
           aria-labelledby={`${timelineId}-${activePhase.id}-tab`}
-          className="mt-3 flex flex-col gap-2 border-t border-border-subtle pt-3 sm:flex-row sm:items-start sm:justify-between"
+          className="mt-3 flex flex-col-reverse gap-2 border-t border-border-subtle pt-3 sm:flex-row sm:items-start sm:justify-between"
           id={`${timelineId}-phase-detail`}
           role="tabpanel"
           tabIndex={0}

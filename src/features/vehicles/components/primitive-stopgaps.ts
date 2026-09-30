@@ -96,13 +96,14 @@ export const STOPGAP_RECORD_ROW = [
 ].join(" ");
 
 /**
- * With `STOPGAP_RECORD_ROW`, beside an aircraft photograph (a 31 to 32rem
- * column): the four figures in one row from 64rem, as on the launch
- * vehicle profiles, with a 0.75rem inset so "Service ceiling" and
- * "50,000+ ft" fit a quarter of the column. Two by two below.
+ * With `STOPGAP_RECORD_ROW`, in the aircraft profile hero: the four figures
+ * in one row from 64rem, as on the launch vehicle profiles. From 64rem to
+ * 80rem the column is `min(46rem, 58vw)` wide; from 80rem it is 32rem, and
+ * a 0.75rem inset lets "Service ceiling" and "50,000+ ft" fit a quarter of
+ * it. Two by two below 64rem.
  */
 export const STOPGAP_RECORD_ROW_SIDE = [
-  "lg:[--record-inset:0.75rem]",
+  "xl:[--record-inset:0.75rem]",
   String.raw`lg:[&_.orbix-record-row\_\_list]:grid-cols-4`,
 ].join(" ");
 
@@ -115,55 +116,42 @@ export const STOPGAP_RECORD_ROW_WIDE = String.raw`lg:[&_.orbix-record-row\_\_lis
 /**
  * The aircraft profile hero, for a landscape photograph whose airframe
  * reaches close to its edges. Set `--orbix-hero-aspect` (the photograph's
- * width over its height) on the hero with this class.
+ * width over its height) on the hero with this class. Below 48rem the
+ * PhotoHero 4:3 phone plate is unchanged.
  *
- * - 48rem to 64rem, a banner: the photograph full-bleed across the top at
+ * - 48rem to 80rem, a banner, as on the `/aircraft` registry hero: the
+ *   photograph full-bleed across the top at
  *   `min(70svh, 44rem, 100vw / aspect)`, never taller than the photograph
  *   at the window's width, so it is not cropped at the sides; only a
- *   bottom fade (no horizontal overlay), and the text starting on the fade
- *   over the photograph's last 6rem.
- * - From 64rem, beside the text: the photograph as a hard framed plate at
- *   its own aspect, never cropped, with a 6px radius and the registration
- *   marks outside the trim, as on a phone. Its top is level with the
- *   breadcrumb (6rem into the hero), its right edge on the container's
- *   content edge and its left edge 34rem into the content, so the 31rem
- *   (32rem from 80rem) text column stays clear of it. No overlay: no text
- *   is set on the photograph. A feathered four-edge mask read as a soft
- *   vignette box and faded wingtips and noses.
- * - From 64rem the hero is as tall as its text (no 88svh minimum, the
- *   body's own 6rem padding), at least tall enough for the plate and its
- *   credit, and the credit sits 1rem under the plate, right-aligned to its
- *   edge, instead of at the foot of the hero far below the photograph.
- *   The plate's height is its width over the aspect, and its width is a
- *   share of the hero's width, so the hero is a size container and the
- *   offsets use `cqw`.
+ *   bottom fade, and the text starting on the fade over the photograph's
+ *   last 6rem.
+ * - From 80rem, full-bleed: no frame, no radius, no registration marks.
+ *   The photograph runs from the hero's top to its bottom fade and off the
+ *   right edge of the window, behind the right of the content. Its left
+ *   edge sits 26rem into the content with a feathered mask, so the
+ *   airframe stands right of about 55 percent and the 32rem text column
+ *   is set on the page ground and the transparent start of the feather.
+ *   A photograph as wide as the whole hero put the text over the
+ *   airframe: the SR-71 and B-2 fill 15 to 95 percent of their frames, and
+ *   `object-fit: cover` cannot move a subject right of its own position.
+ *   The hero is at least as tall as the photograph at that width, so it is
+ *   cropped only when the text column is taller. The credit is at the
+ *   bottom right on the content edge (PhotoHero's default).
  */
 export const STOPGAP_PHOTO_HERO_SIDE = [
   "[--orbix-hero-banner-h:min(70svh,44rem,calc(100vw/var(--orbix-hero-aspect,1.5)))]",
-  "md:max-lg:min-h-0 md:max-lg:justify-start",
-  String.raw`md:max-lg:[&_.orbix-photo-hero\_\_plate]:bottom-auto`,
-  String.raw`md:max-lg:[&_.orbix-photo-hero\_\_plate]:h-(--orbix-hero-banner-h)`,
-  String.raw`md:max-lg:[&_.orbix-photo-hero\_\_scrim]:[background:linear-gradient(to_bottom,transparent_55%,color-mix(in_srgb,var(--bg-page)_55%,transparent)_72%,color-mix(in_srgb,var(--bg-page)_92%,transparent)_84%,var(--bg-page)_92%)]`,
-  String.raw`md:max-lg:[&_.orbix-photo-hero\_\_body]:pt-[calc(var(--orbix-hero-banner-h)-6rem)]`,
-  "[--orbix-hero-edge:max(2rem,calc((100%-72rem)/2+2rem))]",
-  "[--orbix-hero-plate-bottom:calc(var(--space-9)+(100cqw-2*max(2rem,calc((100cqw-72rem)/2+2rem))-34rem)/var(--orbix-hero-aspect,1.5))]",
-  "lg:[container-type:inline-size]",
-  "lg:min-h-0",
-  String.raw`lg:[&_.orbix-photo-hero\_\_body]:min-h-[calc(var(--orbix-hero-plate-bottom)+4.5rem)]`,
-  String.raw`lg:[&_.orbix-photo-hero\_\_credit]:bottom-auto`,
-  String.raw`lg:[&_.orbix-photo-hero\_\_credit]:top-[calc(var(--orbix-hero-plate-bottom)+1rem)]`,
-  // The credit runs only under the plate (its 2rem gutter plus the 34rem
-  // text column), wrapping there rather than reaching into the text.
-  String.raw`lg:[&_.orbix-photo-hero\_\_credit-inner]:pl-[36rem]`,
-  String.raw`lg:[&_.orbix-photo-hero\_\_plate]:inset-auto`,
-  String.raw`lg:[&_.orbix-photo-hero\_\_plate]:top-(--space-9)`,
-  String.raw`lg:[&_.orbix-photo-hero\_\_plate]:right-(--orbix-hero-edge)`,
-  String.raw`lg:[&_.orbix-photo-hero\_\_plate]:left-[calc(var(--orbix-hero-edge)+34rem)]`,
-  String.raw`lg:[&_.orbix-photo-hero\_\_plate]:aspect-(--orbix-hero-aspect)`,
-  String.raw`lg:[&_.orbix-photo-hero\_\_frame]:rounded-(--radius-photo)`,
-  String.raw`lg:[&_.orbix-photo-hero\_\_marks]:block`,
-  String.raw`lg:[&_.orbix-photo-hero\_\_scrim]:[background:none]`,
-  String.raw`lg:[&_.orbix-photo-hero\_\_content]:max-w-[31rem]`,
+  "md:max-xl:min-h-0 md:max-xl:justify-start",
+  String.raw`md:max-xl:[&_.orbix-photo-hero\_\_plate]:bottom-auto`,
+  String.raw`md:max-xl:[&_.orbix-photo-hero\_\_plate]:h-(--orbix-hero-banner-h)`,
+  String.raw`md:max-xl:[&_.orbix-photo-hero\_\_scrim]:[background:linear-gradient(to_bottom,transparent_55%,color-mix(in_srgb,var(--bg-page)_55%,transparent)_72%,color-mix(in_srgb,var(--bg-page)_92%,transparent)_84%,var(--bg-page)_92%)]`,
+  String.raw`md:max-xl:[&_.orbix-photo-hero\_\_body]:pt-[calc(var(--orbix-hero-banner-h)-6rem)]`,
+  "xl:[container-type:inline-size]",
+  "xl:min-h-0",
+  "xl:[--orbix-hero-plate-left:calc((100cqw-72rem)/2+2rem+26rem)]",
+  String.raw`xl:[&_.orbix-photo-hero\_\_body]:min-h-[calc((100cqw-var(--orbix-hero-plate-left))/var(--orbix-hero-aspect,1.5))]`,
+  String.raw`xl:[&_.orbix-photo-hero\_\_plate]:left-(--orbix-hero-plate-left)`,
+  String.raw`xl:[&_.orbix-photo-hero\_\_plate]:[mask-image:linear-gradient(90deg,transparent_0,color-mix(in_srgb,var(--bg-page)_25%,transparent)_12%,color-mix(in_srgb,var(--bg-page)_70%,transparent)_24%,var(--bg-page)_36%)]`,
+  String.raw`xl:[&_.orbix-photo-hero\_\_scrim]:[background:linear-gradient(to_bottom,transparent_70%,color-mix(in_srgb,var(--bg-page)_80%,transparent)_92%,var(--bg-page)_100%)]`,
   String.raw`xl:[&_.orbix-photo-hero\_\_content]:max-w-[32rem]`,
 ].join(" ");
 
@@ -191,11 +179,15 @@ export const STOPGAP_PHOTO_HERO_BANNER_TABLET = [
  */
 export const STOPGAP_PHOTO_HERO_PHONE_TALL = String.raw`max-md:[&_.orbix-photo-hero\_\_frame]:aspect-[3/4]`;
 
-/** A photo crop per breakpoint: below 48rem, 48rem to 64rem, from 64rem. */
+/**
+ * A photo crop per breakpoint: below 48rem, 48rem to 64rem, from 64rem and
+ * (optionally) from 80rem.
+ */
 export interface ResponsiveObjectPosition {
   readonly base: string;
   readonly lg: string;
   readonly md: string;
+  readonly xl?: string;
 }
 
 /**
@@ -211,12 +203,14 @@ export function responsiveHeroPosition(position: ResponsiveObjectPosition) {
       "[--orbix-hero-pos:var(--orbix-hero-pos-base)]",
       "md:[--orbix-hero-pos:var(--orbix-hero-pos-md)]",
       "lg:[--orbix-hero-pos:var(--orbix-hero-pos-lg)]",
+      "xl:[--orbix-hero-pos:var(--orbix-hero-pos-xl)]",
     ].join(" "),
     objectPosition: "var(--orbix-hero-pos)",
     style: {
       "--orbix-hero-pos-base": position.base,
       "--orbix-hero-pos-lg": position.lg,
       "--orbix-hero-pos-md": position.md,
+      "--orbix-hero-pos-xl": position.xl ?? position.lg,
     } as CSSProperties,
   };
 }

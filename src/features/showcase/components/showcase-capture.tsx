@@ -23,12 +23,13 @@ const detailGroups = [
 
 /**
  * The most items any preset has in one detail list. From 1024px the lists
- * are at least 9.625rem tall, the height of a five-item list (ISS Style
- * Resupply, "Used in the Lab"), so their rule sits on the same line in
- * every capture. The unit test holds every preset to this limit; a longer
- * list needs a new minimum height.
+ * are at least 9.625rem tall: three items, the ISS "Used in the Lab" list
+ * wrapping to five lines at 1440px, plus the rule and its 16px padding, so
+ * their rule sits on the same line in every capture. The unit test holds
+ * every preset to this many items; a longer list, or a longer item, needs
+ * a new minimum height.
  */
-export const CAPTURE_DETAIL_MAX_ITEMS = 5;
+export const CAPTURE_DETAIL_MAX_ITEMS = 3;
 
 /**
  * The three detail lists, across the page in one row of three from 40rem.

@@ -10,7 +10,7 @@ import { BriefingHeader } from "./briefing-header";
 import { BriefingObjectives } from "./briefing-objectives";
 import { BriefingOverview } from "./briefing-overview";
 import { BriefingSystemSummary } from "./briefing-system-summary";
-import { MISSION_STAGE_SEQUENCE } from "../mission-stages";
+import { MISSION_STEPS } from "../mission-stages";
 import { LabHeading } from "../visualization/lab-heading";
 
 export interface MissionBriefingProps {
@@ -95,7 +95,7 @@ export function MissionBriefing({
            * B612 numbers, so it never reads as tabs beside the interactive
            * rows in the walkthrough, demo and viewer. */}
           <ol className="mt-3 flex flex-wrap gap-x-6 gap-y-2 border-t border-border-subtle pt-3 text-sm leading-5 text-text-secondary">
-            {MISSION_STAGE_SEQUENCE.map((phase, index) => (
+            {MISSION_STEPS.map((phase, index) => (
               <li className="whitespace-nowrap" key={phase}>
                 <span className="orbix-data mr-2 text-muted">{index + 1}</span>
                 {phase}

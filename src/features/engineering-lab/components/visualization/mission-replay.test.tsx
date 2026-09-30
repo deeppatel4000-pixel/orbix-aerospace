@@ -133,11 +133,27 @@ describe("MissionReplay", () => {
       "Transfer",
       "Arrival",
       "Reentry",
-      "Complete",
+      "Review",
     ]);
     expect(advanced.currentPhaseIndex).toBe(1);
     expect(selected.currentPhaseIndex).toBe(phases.length - 1);
     expect(selected.isPlaying).toBe(false);
+  });
+
+  it("does not claim a starting orbit when no transfer was reported", () => {
+    const phases = buildReplayPhases({
+      vehicleReentryEvaluation: reentryEvaluation,
+    });
+    const launch = phases.find((phase) => phase.id === "launch");
+
+    expect(launch?.description).toBe(
+      "Launch is not modelled, and no starting orbit was reported.",
+    );
+    expect(
+      phases.some((phase) =>
+        phase.description.includes("reported starting orbit"),
+      ),
+    ).toBe(false);
   });
 
   it("handles missing mission data with an explicit empty state", () => {

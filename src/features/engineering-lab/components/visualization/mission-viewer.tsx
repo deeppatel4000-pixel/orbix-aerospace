@@ -194,9 +194,8 @@ export function MissionViewer({
            * the foot line, so this one shows only on the standalone viewer. */}
           {embedded ? null : (
             <p className="border-t border-border-subtle pt-4 text-[0.8125rem] leading-5 text-muted">
-              Educational mission viewer. Every value and recommendation shown
-              here comes from the supplied report and completed analysis
-              objects; this view performs no engineering calculations.
+              Every value here comes from the mission report; this view
+              calculates nothing.
             </p>
           )}
         </div>

@@ -22,6 +22,7 @@ import {
   EqDot,
   EqSubSup,
   EqFrac,
+  EqOp,
   EQ_SUB_CLEAR,
   LAB_CHOICE_INPUT,
   LAB_CHOICE_LIST,
@@ -166,15 +167,25 @@ const toolEquation = (
       <>
         <span className={EQ_LINE}>
           <span className={EQ_TERM}>
-            p<sub className={EQ_SUB_CLEAR}>t2</sub>/p
-            <sub className={EQ_SUB_CLEAR}>t1</sub>
+            <EqFrac
+              den={
+                <>
+                  p<sub className={EQ_SUB_CLEAR}>t1</sub>
+                </>
+              }
+              num={
+                <>
+                  p<sub className={EQ_SUB_CLEAR}>t2</sub>
+                </>
+              }
+            />
           </span>
         </span>
         {/* Stacked fractions in tall parentheses, so one bracket family
             is used: B612 Mono draws "(" and "[" almost alike. */}
         <span className={EQ_CONT}>
           <span className={EQ_TERM}>
-            ={" "}
+            <EqOp>=</EqOp>
             <EqFrac
               den={
                 <>
@@ -194,7 +205,9 @@ const toolEquation = (
         </span>
         <span className={EQ_CONT}>
           <span className={EQ_TERM}>
-            <EqDot />
+            <EqOp>
+              <EqDot />
+            </EqOp>
             <EqFrac
               den={
                 <>

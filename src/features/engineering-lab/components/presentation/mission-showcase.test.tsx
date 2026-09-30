@@ -72,7 +72,7 @@ describe("MissionShowcase", () => {
     expect(SHOWCASE_PHASES).toHaveLength(6);
     // The step row shows the short labels; the stage titles the current
     // phase in full.
-    expect(markup).toContain("Launch preparation");
+    expect(markup).toContain("Launch is not modelled");
     for (const phase of SHOWCASE_PHASES) {
       expect(phase.shortLabel.length).toBeLessThanOrEqual(16);
       expect(markup).toContain(phase.shortLabel);

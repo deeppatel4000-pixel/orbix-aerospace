@@ -6,6 +6,8 @@ import { ShowcaseSection } from "@/features/showcase/components/showcase-section
 
 interface ArchitectureLayer {
   readonly description: string;
+  /** The folders, shortened to fit the layer's box in the diagram. */
+  readonly folders: string;
   readonly name: string;
   readonly paths: readonly string[];
 }
@@ -20,6 +22,7 @@ export const ARCHITECTURE_LAYERS: readonly ArchitectureLayer[] = [
   {
     description:
       "Vehicle records store each value with its own unit, such as ft, mi or Mach. Mission presets and material properties are typed constants whose property names state their units, for example initialAltitudeMetres.",
+    folders: "data, missions, materials",
     name: "Data",
     paths: [
       "src/features/vehicles/data",
@@ -30,31 +33,35 @@ export const ARCHITECTURE_LAYERS: readonly ArchitectureLayer[] = [
   {
     description:
       "Pure functions for one equation each, such as a Hohmann transfer or stagnation-point heating. They validate inputs, return plain objects and import only shared types, helpers and other calculators.",
+    folders: "engineering-lab/calculators",
     name: "Calculators",
     paths: ["src/features/engineering-lab/calculators"],
   },
   {
     description:
       "Compose several calculators, and the material data where needed, into one study, for example a delta-v budget or a vehicle reentry evaluation.",
+    folders: "engineering-lab/analysis",
     name: "Analyses",
     paths: ["src/features/engineering-lab/analysis"],
   },
   {
     description:
       "Arrange a finished mission profile analysis, passed in as an argument, into a report with assumptions and limits, exportable as JSON or Markdown. Reports import only shared types.",
+    folders: "engineering-lab/reports",
     name: "Reports",
     paths: ["src/features/engineering-lab/reports"],
   },
   {
     description:
       "Server and client components that render forms, tables and diagrams. Engineering equations stay in the layers above.",
+    folders: "app, */components",
     name: "React",
     paths: ["src/app", "src/features/*/components"],
   },
 ];
 
-const BOX_HEIGHT = 48;
-const STEP = 80;
+const BOX_HEIGHT = 64;
+const STEP = 84;
 /** Left edge of the boxes; the strip to its left carries the data rail. */
 const BOX_X = 24;
 const BOX_WIDTH = 256;
@@ -67,12 +74,12 @@ const WIDTH = 320;
 /** Room left of the data rail and right of the React rail for their labels. */
 const LABEL_ROOM = 16;
 /**
- * Rail labels, in user units. The drawing is 342 units wide: at 34rem it
- * draws at about 1.6px a unit, so 7.5 units is about 12px. Below 40rem it
+ * Rail labels, in user units. The drawing is 342 units wide: at 30rem it
+ * draws at about 1.4px a unit, so 8 units is about 11px. Below 40rem it
  * can shrink to about 246px at a 320px viewport (0.72px a unit), so 15.5
  * units keeps it at about 11px there.
  */
-const RAIL_LABEL = "text-[7.5px] max-sm:text-[15.5px]";
+const RAIL_LABEL = "text-[8px] max-sm:text-[15.5px]";
 /** Extra room above the React box for the presentation boundary label. */
 const BOUNDARY_GAP = 32;
 const LAST = ARCHITECTURE_LAYERS.length - 1;
@@ -90,8 +97,10 @@ function layerMid(index: number): number {
 }
 
 /**
- * The layer stack as an SVG. Box names only, so the text stays legible when
- * the drawing shrinks to a phone width; the list below carries the detail.
+ * The layer stack as an SVG. Each box names its layer and, from 40rem, its
+ * folders on a second line in the data face; below 40rem the names only,
+ * so the text stays legible at a phone width. The list below carries the
+ * full paths.
  * Every arrow is a real import edge, pointing from the imported layer to the
  * importing one: Calculators into Analyses, Data into Analyses (left rail),
  * and every upper layer into React (right rail). Calculators import no other
@@ -164,10 +173,23 @@ function ArchitectureDiagram() {
               x={BOX_X}
               y={y}
             />
-            {/* 12 units draw at about 19px at 34rem; below 40rem 16 units
-                keep about 11.5px at a 320px viewport. */}
+            {/* 12 units draw at about 17px at 30rem; below 40rem 16 units
+                keep about 11.5px at a 320px viewport, and the name is
+                centred in the box without the folder line. */}
             <text
-              className="text-[12px] max-sm:text-[16px]"
+              className="text-[12px] max-sm:hidden"
+              dominantBaseline="central"
+              fill="var(--orbix-text-primary)"
+              fontFamily="var(--font-interface)"
+              fontWeight="600"
+              textAnchor="middle"
+              x={BOX_X + BOX_WIDTH / 2}
+              y={y + BOX_HEIGHT / 2 - 9}
+            >
+              {layer.name}
+            </text>
+            <text
+              className="text-[16px] sm:hidden"
               dominantBaseline="central"
               fill="var(--orbix-text-primary)"
               fontFamily="var(--font-interface)"
@@ -177,6 +199,19 @@ function ArchitectureDiagram() {
               y={y + BOX_HEIGHT / 2}
             >
               {layer.name}
+            </text>
+            {/* 8 units draw at about 11px at 30rem. */}
+            <text
+              aria-hidden="true"
+              className="text-[8px] max-sm:hidden"
+              dominantBaseline="central"
+              fill="var(--orbix-text-muted)"
+              fontFamily="var(--font-telemetry)"
+              textAnchor="middle"
+              x={BOX_X + BOX_WIDTH / 2}
+              y={y + BOX_HEIGHT / 2 + 11}
+            >
+              {layer.folders}
             </text>
             {isPresentation ? null : (
               <line
@@ -262,7 +297,7 @@ function ArchitectureDiagram() {
         strokeWidth="1"
         vectorEffect="non-scaling-stroke"
         x1={BOX_X}
-        x2={RAIL_X - 8}
+        x2={RAIL_X}
         y1={boundaryY}
         y2={boundaryY}
       />
@@ -284,23 +319,17 @@ function ArchitectureDiagram() {
 export function ArchitectureSection() {
   return (
     <ShowcaseSection
-      // The hero has no bottom padding from 1024px; this sets the gap.
-      className="lg:pt-16"
       id="architecture"
       lead="Each layer imports only from layers above it or from shared types and helpers, and no layer above React imports React. Components import data, calculators, analyses and reports directly."
-      number={1}
       title="Architecture"
     >
-      {/* The page's hero figure: the drawing up to 34rem, then its key and
-          caption, level with the Data box from 1024px. */}
-      <DiagramPlate
-        aria-labelledby="architecture-figure-title architecture-figure-caption"
-        className="grid gap-y-4 lg:grid-cols-[minmax(0,34rem)_minmax(0,1fr)] lg:grid-rows-[auto_1fr] lg:items-start lg:gap-x-16"
-      >
-        <div className="mb-6 w-full max-w-[34rem] justify-self-center py-2 lg:row-span-2 lg:mb-0 lg:justify-self-start">
+      {/* The page's hero figure: the drawing up to 30rem, centred on the
+          reading track, then its title, key and caption in a row below. */}
+      <DiagramPlate aria-labelledby="architecture-figure-title architecture-figure-caption">
+        <div className="mx-auto w-full max-w-[30rem] py-2">
           <ArchitectureDiagram />
         </div>
-        <div className="max-w-[40ch] lg:pt-2">
+        <div className="mt-8 border-t border-border-subtle pt-5">
           <p
             className="orbix-caps text-text-muted"
             id="architecture-figure-title"
@@ -309,7 +338,7 @@ export function ArchitectureSection() {
           </p>
           <ul
             aria-label="Diagram key"
-            className="mt-4 grid gap-2 border-t border-border-subtle pt-4 text-sm text-text-secondary"
+            className="mt-4 grid gap-3 text-sm text-text-secondary sm:grid-cols-3 sm:gap-x-8"
           >
             <li className="flex items-start gap-2">
               <LegendSwatch
@@ -337,7 +366,7 @@ export function ArchitectureSection() {
           </ul>
         </div>
         <figcaption
-          className="max-w-[40ch] border-t border-border-subtle pt-4 text-sm leading-relaxed text-text-secondary lg:col-start-2 lg:mt-8 lg:self-start"
+          className="mt-5 max-w-[68ch] border-t border-border-subtle pt-4 text-sm leading-relaxed text-text-secondary"
           id="architecture-figure-caption"
         >
           Analyses import calculators and data, calculators and reports import
@@ -345,7 +374,6 @@ export function ArchitectureSection() {
           every layer above the boundary.
         </figcaption>
       </DiagramPlate>
-
       {/* Each layer once: its name and source folders, then what it holds. */}
       <dl className="mt-12 border-t border-border-subtle">
         {ARCHITECTURE_LAYERS.map((layer) => (
@@ -360,7 +388,7 @@ export function ArchitectureSection() {
               <span className="mt-2 grid gap-1">
                 {layer.paths.map((path) => (
                   <code
-                    className="orbix-data orbix-data--sm block break-words text-text-secondary"
+                    className="orbix-data orbix-data--sm block bg-transparent! p-0! text-[length:var(--text-caps)]! break-words text-text-secondary"
                     key={path}
                   >
                     {formatCode(path)}

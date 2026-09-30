@@ -34,6 +34,9 @@ const eslintConfig = [
       "output/**",
       "build/**",
       "next-env.d.ts",
+      // Local Playwright MCP scratch (gitignored): captures and one-off
+      // scripts, never part of the app.
+      ".playwright-mcp/**",
     ],
   },
 ];
