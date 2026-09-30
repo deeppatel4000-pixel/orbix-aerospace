@@ -1,7 +1,7 @@
 import { DataTable } from "@/components/ui/data-table";
 import { formatRocketEngineCycle } from "@/features/rockets/utils";
 import {
-  minimumNote,
+  basisNote,
   renderDualMeasurement,
 } from "@/features/vehicles/components/measurement-display";
 import { VehicleProfileSection } from "@/features/vehicles/components/vehicle-profile-section";
@@ -89,7 +89,7 @@ export function PropulsionPanel({ index, name, stages }: PropulsionPanelProps) {
           },
         ]}
         getRowKey={({ engine, stage }) => `${stage.id}-${engine.id}`}
-        note={minimumNote(
+        note={basisNote(
           engineRows.flatMap(({ engine }) => [
             engine.thrust.seaLevel,
             engine.thrust.vacuum,

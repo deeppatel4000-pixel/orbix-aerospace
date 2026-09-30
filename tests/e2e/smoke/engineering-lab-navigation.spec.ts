@@ -102,9 +102,14 @@ async function openFromIndex(
   workflowLabel: string,
   toolId: string,
 ) {
-  if ((await indexLink(page, toolId).count()) === 0) {
-    await workflowLink(page, workflowLabel).click();
-  }
+  // Retried as a unit: before hydration settles, the open workflow can
+  // change under the check, and the open workflow's header is not a link.
+  await expect(async () => {
+    if ((await indexLink(page, toolId).count()) === 0) {
+      await workflowLink(page, workflowLabel).click({ timeout: 2_000 });
+    }
+    await expect(indexLink(page, toolId)).toBeVisible({ timeout: 2_000 });
+  }).toPass({ timeout: 20_000 });
   await indexLink(page, toolId).click();
 }
 
@@ -118,19 +123,29 @@ test.describe("Engineering Lab tool navigation", () => {
     const nav = toolIndex(page);
     await expect(nav).toBeVisible();
 
-    for (const workflow of WORKFLOWS) {
-      // Every workflow is headed by a visible link to its first tool, and
-      // its tools are a list named by the workflow.
-      await expect(workflowLink(page, workflow.label)).toBeVisible();
-      await expect(workflowLink(page, workflow.label)).toHaveAttribute(
-        "href",
-        `#${workflow.firstTool}`,
-      );
+    for (const [index, workflow] of WORKFLOWS.entries()) {
+      // Every workflow has a visible header. A folded workflow's header is
+      // a link to its first tool; the open one (the first, on load) is the
+      // same element without an href, so it is not a link and not a tab
+      // stop, and its list's first row is the way to its first tool.
+      const header = nav
+        .locator("a")
+        .filter({ has: page.getByText(workflow.label, { exact: true }) });
+      await expect(header).toHaveCount(1);
+      await expect(header).toBeVisible();
+      if (index === 0) {
+        await expect(header).not.toHaveAttribute("href", /.*/);
+        await expect(workflowLink(page, workflow.label)).toHaveCount(0);
+      } else {
+        await expect(workflowLink(page, workflow.label)).toBeVisible();
+        await expect(workflowLink(page, workflow.label)).toHaveAttribute(
+          "href",
+          `#${workflow.firstTool}`,
+        );
+      }
       // Folded lists stay mounted but hidden (out of the accessibility
       // tree), so the list is found through the header that labels it.
-      const headerId = await workflowLink(page, workflow.label).getAttribute(
-        "id",
-      );
+      const headerId = await header.getAttribute("id");
       expect(headerId).toBeTruthy();
       await expect(
         nav.locator(`ol[aria-labelledby="${headerId}"] > li`),
@@ -197,8 +212,9 @@ test.describe("Engineering Lab tool navigation", () => {
   }) => {
     test.skip(!isDesktop(), "The link index is desktop-only.");
 
-    await page.goto(ROUTES.engineeringLab, { waitUntil: "domcontentloaded" });
+    await page.goto(ROUTES.engineeringLab, { waitUntil: "load" });
     const nav = toolIndex(page);
+    await expect(nav).toBeVisible();
 
     for (const workflow of WORKFLOWS) {
       await openFromIndex(page, workflow.label, workflow.firstTool);

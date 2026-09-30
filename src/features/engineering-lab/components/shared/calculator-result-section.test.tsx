@@ -22,12 +22,14 @@ describe("CalculatorResultSection", () => {
       </CalculatorResultSection>,
     );
     expect(html).not.toContain("data-stale");
-    expect(html).not.toContain("Inputs changed");
-    // The slot is rendered, empty, so the head does not change when the
-    // line appears.
+    // The words are always in the slot, hidden, so the slot keeps its
+    // width and the head does not change when the line appears.
     expect(html).toContain("lab-result-head");
     expect(html).toContain(
-      '<p aria-live="polite" class="lab-result-stale" role="status"></p>',
+      '<span aria-hidden="true" class="lab-result-stale__text">Inputs changed</span>',
+    );
+    expect(html).toContain(
+      '<span aria-live="polite" class="sr-only" role="status"></span>',
     );
   });
 
@@ -39,13 +41,13 @@ describe("CalculatorResultSection", () => {
     );
     expect(html).toContain('data-stale=""');
     expect(html).toContain(
-      'Inputs changed<span class="sr-only">. Calculate to update.</span>',
+      '<span aria-hidden="true" class="lab-result-stale__text" data-shown="">Inputs changed</span>',
     );
     expect(html).toContain("<p>figure</p>");
     // The line has its own small status slot in the head, outside the
     // figures region, so appearing does not re-announce every figure.
-    expect(html).toMatch(
-      /<p aria-live="polite" class="lab-result-stale" role="status">Inputs changed</,
+    expect(html).toContain(
+      '<span aria-live="polite" class="sr-only" role="status">Inputs changed. Calculate to update.</span>',
     );
     expect(html).toMatch(/class="lab-result-body"[^>]*>\s*<p>figure<\/p>/);
   });
@@ -61,9 +63,7 @@ describe("CalculatorResultSection", () => {
         <p>figure</p>
       </CalculatorResultSection>,
     );
-    expect(html).toContain(
-      'Inputs changed<span class="sr-only">. Analyze to update.</span>',
-    );
+    expect(html).toContain("Inputs changed. Analyze to update.");
     expect(html).not.toContain("Calculate to update");
   });
 });

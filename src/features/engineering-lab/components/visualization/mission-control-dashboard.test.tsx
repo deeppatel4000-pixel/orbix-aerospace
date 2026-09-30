@@ -63,8 +63,9 @@ describe("MissionControlDashboard", () => {
     expect(markup).toContain("Mission Control");
     expect(markup).toContain("Mission Control Integration Test");
     expect(markup).toContain("Orbital logistics");
-    expect(markup).toContain("Analyses resolved");
-    expect(markup).toContain("Educational mission");
+    expect(markup).toContain("Systems used");
+    // One foot line: the viewer's own disclaimer shows only standalone.
+    expect(markup).not.toContain("Educational mission viewer");
   });
 
   it("displays orbital, vehicle, and thermal metrics from supplied outputs", () => {
@@ -122,7 +123,8 @@ describe("MissionControlDashboard", () => {
     expect(emptyMarkup).toContain(
       "No completed analysis has been supplied to this workspace yet.",
     );
-    expect(suppliedMarkup).toContain("and the mission report.");
+    // Every source is present, so no sources sentence repeats the header.
+    expect(suppliedMarkup).not.toContain("Built from");
     expect(suppliedMarkup).not.toContain("Not supplied:");
     expect(suppliedMarkup).not.toContain("data-current-status");
     expect(suppliedMarkup).not.toContain("Mission status");
@@ -163,7 +165,7 @@ describe("MissionControlDashboard", () => {
     );
 
     expect(markup).toContain("Mission control shell");
-    expect(markup).toContain("Mission summary");
+    expect(markup).toContain("Mission phases");
     expect(markup).toContain("Orbital visualization unavailable");
     expect(markup).toContain("Reentry visualization unavailable");
     expect(markup).toContain("Not reported");

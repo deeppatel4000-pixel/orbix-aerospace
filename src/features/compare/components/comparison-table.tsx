@@ -40,18 +40,16 @@ function getVisual(category: ComparisonCategory, id: string) {
 
 /**
  * Column geometry shared by the header band and every group table, so the
- * groups read as one sheet with one set of columns. The first column is
- * 6.25rem on a phone (sticky there, wide enough for "Manufacturer"), 10rem
- * from 48rem and 16rem from 64rem; vehicle columns share the rest. Below
- * 48rem every vehicle column is at least 8rem: 112px of content inside 8px
- * padding, measured to hold the widest unbroken designation
- * ("2 × F119-PW-100", about 109px at 13px medium), the longest figure with
- * its unit, and single words such as "Reconnaissance". Two vehicles fit
- * side by side from 24.375rem (a 390px phone); narrower than that, and for
- * three vehicles, the sheet scrolls sideways instead.
+ * groups read as one sheet with one set of columns. On a phone the first
+ * column is sticky: 5.75rem for two vehicles and 6.25rem for three (both
+ * wide enough for "Manufacturer"); 10rem from 48rem and 16rem from 64rem.
+ * Vehicle columns share the rest. Two vehicles fit side by side from
+ * 21.25rem, so a 375px phone (or a 390px one with a classic scrollbar)
+ * shows the whole sheet. Three vehicles need 8rem each and scroll sideways
+ * below 48rem.
  */
 const sheetWidth: Record<number, string> = {
-  2: "min-w-[22.25rem] md:min-w-[32rem] lg:min-w-0",
+  2: "min-w-[21.25rem] md:min-w-[32rem] lg:min-w-0",
   3: "min-w-[30.25rem] md:min-w-[43.5rem] lg:min-w-0",
 };
 
@@ -62,13 +60,19 @@ const sheetWidth: Record<number, string> = {
  * reserves a scrollbar gutter still shows the hint when the sheet overflows.
  */
 const hintVisibility: Record<number, string> = {
-  2: "@min-[22.375rem]/sheet:hidden",
+  2: "@min-[21.375rem]/sheet:hidden",
   3: "@min-[30.375rem]/sheet:hidden",
 };
 
 const bandColumns: Record<number, string> = {
-  2: "grid-cols-[6.25rem_repeat(2,minmax(0,1fr))] md:grid-cols-[10rem_repeat(2,minmax(0,1fr))] lg:grid-cols-[16rem_repeat(2,minmax(0,1fr))]",
+  2: "grid-cols-[5.75rem_repeat(2,minmax(0,1fr))] md:grid-cols-[10rem_repeat(2,minmax(0,1fr))] lg:grid-cols-[16rem_repeat(2,minmax(0,1fr))]",
   3: "grid-cols-[6.25rem_repeat(3,minmax(0,1fr))] md:grid-cols-[10rem_repeat(3,minmax(0,1fr))] lg:grid-cols-[16rem_repeat(3,minmax(0,1fr))]",
+};
+
+/** The phone width of the sticky first column (see `sheetWidth`). */
+const firstColumn: Record<number, string> = {
+  2: "[&_tr>:first-child]:w-[5.75rem]",
+  3: "[&_tr>:first-child]:w-[6.25rem]",
 };
 
 const stripColumns: Record<number, string> = {
@@ -85,7 +89,7 @@ const stripColumns: Record<number, string> = {
  */
 const joinedTables = cn(
   "[&_table]:w-full [&_table]:table-fixed",
-  "[&_tr>:first-child]:w-[6.25rem] md:[&_tr>:first-child]:w-40 lg:[&_tr>:first-child]:w-64",
+  "md:[&_tr>:first-child]:w-40 lg:[&_tr>:first-child]:w-64",
   // Each table keeps its real header row for assistive technology, and the
   // fixed layout takes its column widths from it, so it stays in the table
   // at zero height instead of being taken out of flow (sr-only would drop
@@ -401,7 +405,7 @@ export function ComparisonTable({ result }: ComparisonTableProps) {
                       </span>
                     </>
                   }
-                  className={joinedTables}
+                  className={cn(joinedTables, firstColumn[count])}
                   columns={columns}
                   getRowKey={(row) => row.id}
                   rows={group.rows}

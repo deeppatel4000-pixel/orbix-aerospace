@@ -38,11 +38,16 @@ interface AircraftExplorerProps {
  * over open ocean, so neither the text nor the spec panel at the bottom
  * right covers it (the F-22 photograph fills the middle of the frame and
  * sat behind both). Not the SR-71, whose photograph opens the home page,
- * nor the F-22, pictured in the home page's aircraft card. The registry's
- * wide first card is then the next aircraft in the record order, so the
- * hero photograph is not repeated directly below it.
+ * nor the F-22, pictured in the home page's aircraft card.
  */
 const FEATURED_AIRCRAFT_ID = "b-2-spirit";
+
+/**
+ * The registry's wide first card. Not the hero aircraft: on a phone the
+ * same photograph came round again within one screen of the hero. The
+ * hero spec panel stays the page's one featured aircraft.
+ */
+const REGISTRY_LEAD_ID = "f-22-raptor";
 
 /** Words the registry search matches for one aircraft. */
 function aircraftKeywords(aircraft: Aircraft) {
@@ -59,12 +64,9 @@ function aircraftKeywords(aircraft: Aircraft) {
   ].join(" ");
 }
 
-/**
- * The record order, except that the aircraft featured in the hero does not
- * also lead the grid as its wide first card: the first other aircraft does.
- */
-function registryOrder(aircraft: readonly Aircraft[], featuredId?: string) {
-  const lead = aircraft.find((item) => item.id !== featuredId);
+/** The record order with the registry's lead aircraft first. */
+function registryOrder(aircraft: readonly Aircraft[], leadId: string) {
+  const lead = aircraft.find((item) => item.id === leadId);
   return lead
     ? [lead, ...aircraft.filter((item) => item !== lead)]
     : [...aircraft];
@@ -180,12 +182,13 @@ export function AircraftExplorer({ aircraft }: AircraftExplorerProps) {
         ) : (
           <VehicleRegistry
             description="Each card opens a full profile. Maximum speed and service ceiling are the published figures for the baseline aircraft."
-            entries={registryOrder(aircraft, featured?.id).map(
+            entries={registryOrder(aircraft, REGISTRY_LEAD_ID).map(
               (item, index) => ({
                 card: (
                   <AircraftCard
                     aircraft={item}
                     layout={index === 0 ? "feature" : "stacked"}
+                    leadRow={index === 1}
                   />
                 ),
                 featured: index === 0,

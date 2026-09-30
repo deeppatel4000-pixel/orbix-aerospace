@@ -12,9 +12,9 @@ import { CircleAlert } from "lucide-react";
  * message. The invalid state marks the border and prints a message with an
  * icon, so colour is never the only signal.
  *
- * In the lab every suffix is one fixed width (`.lab-field__unit`), and a
- * dimensionless field keeps an empty slot of that width, so the right edges
- * of neighbouring inputs, and the numbers set against them, line up.
+ * In the lab every suffix is one fixed width (`.lab-field__unit`). A
+ * dimensionless field has no suffix at all: its input fills the row, so an
+ * empty bordered cell is never mistaken for a missing unit.
  * The input keeps an 8rem minimum so a value stays readable beside the
  * suffix on a 320px screen.
  *
@@ -79,9 +79,7 @@ export function CalculatorNumberField<Field extends string>({
           >
             {unit}
           </span>
-        ) : (
-          <span aria-hidden="true" className="lab-field__unit-slot" />
-        )}
+        ) : null}
       </div>
       {unit ? (
         <span className="sr-only" id={unitId}>

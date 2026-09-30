@@ -9,6 +9,11 @@ import type {
 } from "@/features/engineering-lab/types";
 import { formatLabAltitude, formatLabValue } from "./format-lab-value";
 import { formatFigure } from "@/components/ui/readout";
+import {
+  MISSION_STAGE,
+  MISSION_STAGE_SEQUENCE,
+  type CoreMissionStage,
+} from "../mission-stages";
 import { LabHeading } from "./lab-heading";
 
 export interface MissionTimelineProps {
@@ -38,54 +43,57 @@ function buildMissionPhases({
   const deltaVBudget = missionProfileAnalysis.sourceAnalyses.deltaVBudget;
   const transfer = deltaVBudget?.sourceAnalyses.hohmannTransfer;
   const planeChange = deltaVBudget?.sourceAnalyses.orbitalPlaneChange;
-  const firstManeuver = deltaVBudget?.maneuvers[0];
   const tps = missionReport.thermalAnalysis?.tpsRecommendation;
 
-  return [
-    {
-      available: deltaVBudget !== undefined,
+  const transferDetail = transfer
+    ? `Transfer from ${formatLabAltitude(transfer.initialOrbit.altitudeMetres)} to ${formatLabAltitude(transfer.finalOrbit.altitudeMetres)}` +
+      (planeChange
+        ? `, with a ${formatLabValue(planeChange.inclinationChangeDegrees)}° plane change.`
+        : ".")
+    : planeChange
+      ? `${formatLabValue(planeChange.inclinationChangeDegrees)}° plane change; no orbit transfer was reported.`
+      : "No resolved orbit-transfer output is present.";
+
+  const corePhases: Readonly<
+    Record<CoreMissionStage, Omit<MissionPhase, "shortLabel">>
+  > = {
+    [MISSION_STAGE.launch]: {
+      available: false,
       detail:
-        firstManeuver?.name ??
-        "Departure is an educational sequence label; no departure maneuver output was reported.",
+        "Launch is not modelled; the mission starts from the reported starting orbit.",
       id: "departure",
-      label: "Launch and departure",
-      shortLabel: "Launch",
+      label: "Launch",
       timingLabel: "Mission start",
     },
-    {
+    [MISSION_STAGE.orbitInsertion]: {
       available: transfer !== undefined,
       detail: transfer
-        ? `Transfer from ${formatLabAltitude(transfer.initialOrbit.altitudeMetres)} to ${formatLabAltitude(transfer.finalOrbit.altitudeMetres)}.`
-        : "No resolved orbit-transfer output is present.",
+        ? `Starting orbit at ${formatLabAltitude(transfer.initialOrbit.altitudeMetres)}.`
+        : "No starting orbit was reported.",
+      id: "orbit-insertion",
+      label: "Orbit insertion",
+      timingLabel: "Timing not reported",
+    },
+    [MISSION_STAGE.transfer]: {
+      available: transfer !== undefined || planeChange !== undefined,
+      detail: transferDetail,
       id: "orbit-transfer",
-      label: "Orbit transfer",
-      shortLabel: "Transfer",
+      label: planeChange ? "Orbit transfer and plane change" : "Orbit transfer",
       timingLabel: transfer ? "reported duration" : "Timing not reported",
       timingValue: transfer
         ? `${formatLabValue(transfer.transfer.transferTimeHours)} h`
         : undefined,
     },
-    {
-      available: planeChange !== undefined || Boolean(firstManeuver),
-      detail: planeChange
-        ? `${formatLabValue(planeChange.inclinationChangeDegrees)}° reported inclination change.`
-        : (firstManeuver?.name ?? "No resolved maneuver output is present."),
-      id: "maneuver",
-      label: "Maneuver",
-      shortLabel: "Maneuver",
-      timingLabel: "Timing not reported",
-    },
-    {
+    [MISSION_STAGE.arrival]: {
       available: transfer !== undefined,
       detail: transfer
         ? `${formatLabAltitude(transfer.finalOrbit.altitudeMetres)} reported arrival-orbit altitude.`
-        : "Arrival orbit is an educational sequence label without a resolved target orbit.",
+        : "No target orbit was reported.",
       id: "arrival-orbit",
       label: "Arrival orbit",
-      shortLabel: "Arrival",
       timingLabel: "Timing not reported",
     },
-    {
+    [MISSION_STAGE.reentry]: {
       available:
         vehicleReentryEvaluation !== undefined &&
         vehicleReentryEvaluation !== null,
@@ -94,7 +102,6 @@ function buildMissionPhases({
         : "No completed vehicle reentry evaluation is present.",
       id: "reentry",
       label: "Reentry",
-      shortLabel: "Reentry",
       timingLabel: vehicleReentryEvaluation
         ? "reported duration"
         : "Timing not reported",
@@ -102,15 +109,24 @@ function buildMissionPhases({
         ? `${formatLabValue(vehicleReentryEvaluation.trajectory.durationSeconds)} s`
         : undefined,
     },
+  };
+
+  // The shared sequence, then one trailing result step: the heat-shield
+  // recommendation assessed from the reentry results.
+  return [
+    ...MISSION_STAGE_SEQUENCE.map((stage) => ({
+      ...corePhases[stage],
+      shortLabel: stage,
+    })),
     {
       available: tps !== undefined,
       detail: tps
-        ? `${tps.material.name} is the existing report recommendation.`
-        : "No TPS recommendation is present.",
+        ? `${tps.material.name} is the report's recommended material.`
+        : "No thermal protection recommendation is present.",
       id: "thermal-protection",
-      label: "Thermal protection",
-      shortLabel: "TPS",
-      timingLabel: "Post-reentry assessment",
+      label: "Thermal protection result",
+      shortLabel: MISSION_STAGE.thermalProtection,
+      timingLabel: "Assessed after reentry",
     },
   ];
 }
@@ -165,12 +181,13 @@ export function MissionTimeline(props: MissionTimelineProps) {
 
       {/* The same step row as the guided demo: B612 Mono number, label,
        * 2px rule under each step, accent under the selected one. A
-       * container query, not a viewport breakpoint, sets 2, 3 or 6 across,
+       * container query, not a viewport breakpoint, sets 2, 3 or 6 across
+       * (the longer trailing label gets a wider track),
        * so the row reflows to its column instead of scrolling sideways. */}
       <div className="@container mt-4">
         <div
           aria-label="Mission phases"
-          className="grid grid-cols-2 gap-x-4 gap-y-1 @md:grid-cols-3 @3xl:grid-cols-6"
+          className="grid grid-cols-2 gap-x-4 gap-y-1 @md:grid-cols-3 @3xl:grid-cols-[repeat(5,minmax(0,1fr))_minmax(0,1.5fr)]"
           role="tablist"
         >
           {phases.map((phase, index) => {

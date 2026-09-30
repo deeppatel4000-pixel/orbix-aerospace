@@ -43,6 +43,19 @@ function shortLicense(license: AircraftVisual["license"]) {
   return license.startsWith("Public domain") ? "public domain" : license;
 }
 
+/**
+ * "34.5 MN" as value and unit, so the card sets the unit muted at 0.7em
+ * like every other figure. Mach is written before the number and stays
+ * whole.
+ */
+function splitUnit(text: string) {
+  if (text.startsWith("Mach")) return { value: text };
+  const space = text.lastIndexOf(" ");
+  return space === -1
+    ? { value: text }
+    : { unit: text.slice(space + 1), value: text.slice(0, space) };
+}
+
 export function RegistrySplit() {
   const aircraft = getAircraftById(PICTURED_AIRCRAFT_ID);
   const rocket = getRocketById(PICTURED_ROCKET_ID);
@@ -97,9 +110,10 @@ export function RegistrySplit() {
                   { label: "Pictured", value: aircraft.name },
                   {
                     label: "Maximum speed",
-                    value: formatAircraftMeasurement(
-                      aircraft.performance.maxSpeed,
-                    ).value,
+                    ...splitUnit(
+                      formatAircraftMeasurement(aircraft.performance.maxSpeed)
+                        .value,
+                    ),
                   },
                 ]}
                 summary="SR-71 to F-35: dimensions, engines, performance."
@@ -130,9 +144,10 @@ export function RegistrySplit() {
                   { label: "Pictured", value: rocket.name },
                   {
                     label: "Liftoff thrust",
-                    value: formatRocketMeasurement(
-                      rocket.performance.liftoffThrust,
-                    ).value,
+                    ...splitUnit(
+                      formatRocketMeasurement(rocket.performance.liftoffThrust)
+                        .value,
+                    ),
                   },
                 ]}
                 summary="Saturn V to Starship: stages, thrust, payload."

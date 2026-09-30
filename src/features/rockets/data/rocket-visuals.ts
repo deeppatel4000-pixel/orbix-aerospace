@@ -10,6 +10,14 @@ export interface RocketVisual {
    */
   readonly cardObjectPosition: string;
   /**
+   * Optional zoom for the stacked registry card, for a photograph whose
+   * vehicle is small in the frame (SLS: about a quarter of the card height,
+   * over trees and a wall), with the point it zooms towards. The frame
+   * clips the overflow. The feature card and other surfaces are unscaled.
+   */
+  readonly cardScale?: number;
+  readonly cardScaleOrigin?: string;
+  /**
    * A shorter card title that the record name starts with, for a name that
    * would wrap in a card. The full name stays in the heading for assistive
    * technology.
@@ -25,6 +33,13 @@ export interface RocketVisual {
    * never truncated; the visuals test enforces the limit.
    */
   readonly cardSummary: string;
+  /**
+   * Replaces the reuse clause of the classification ("fully reusable") on
+   * the card and the profile, for a record whose reuse is a design goal
+   * rather than a demonstrated fact (Starship: "a design in active
+   * development").
+   */
+  readonly reuseLabel?: string;
   /** Photographer or agency, as the licence asks to be credited. */
   readonly credit: string;
   /**
@@ -122,6 +137,8 @@ const rocketVisuals = {
     alt: "Space Launch System lifting off from Launch Complex 39B for Artemis II, seen from across the water",
     cardName: "Space Launch System",
     cardObjectPosition: "50% 0%",
+    cardScale: 1.25,
+    cardScaleOrigin: "55% 10%",
     cardSummary: "Solid boosters and four RS-25s",
     cardTreatment: "standard",
     credit: "NASA/Michael DeMocker",
@@ -151,6 +168,7 @@ const rocketVisuals = {
     licenseUrl: "https://creativecommons.org/licenses/by/2.0/",
     modifications: RESIZED,
     objectPosition: "50% 35%",
+    reuseLabel: "designed for full reuse",
     sourceUrl:
       "https://commons.wikimedia.org/wiki/File:Liftoff_of_SpaceX_IFT-5_(54064037095).jpg",
     src: "/images/rockets/starship.webp",

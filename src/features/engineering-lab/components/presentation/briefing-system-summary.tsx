@@ -30,7 +30,7 @@ function SummaryCard({ description, id, metrics, title }: SummaryCardProps) {
   return (
     <section
       aria-labelledby={`briefing-summary-${id}`}
-      className="min-w-0 py-4 xl:px-6 xl:first:pl-0 xl:last:pr-0"
+      className="min-w-0 py-4 xl:row-span-3 xl:grid xl:grid-rows-subgrid xl:px-6 xl:first:pl-0 xl:last:pr-0"
     >
       <LabHeading offset={2} variant="sub" id={`briefing-summary-${id}`}>
         {title}
@@ -39,7 +39,7 @@ function SummaryCard({ description, id, metrics, title }: SummaryCardProps) {
       {/* Figures sit on the label's line, right-aligned in B612 Mono;
        * words (vehicle, material, margin) stack under their label so a
        * narrow column never wraps them against the right edge. */}
-      <dl className="mt-3">
+      <dl className="mt-3 self-start">
         {metrics.map((metric) =>
           typeof metric.value === "number" ? (
             <div
@@ -107,7 +107,9 @@ export function BriefingSystemSummary({
       </LabHeading>
 
       {/* An open hairline grid: rules between the three summaries, no
-       * outer box, so nothing nests inside the tool frame. */}
+       * outer box, so nothing nests inside the tool frame. From xl each
+       * summary shares the grid's rows through subgrid, so the heading,
+       * the description and the first data row line up across columns. */}
       <div className="mt-3 grid divide-y divide-border-subtle border-y border-border-subtle xl:grid-cols-3 xl:divide-x xl:divide-y-0">
         <SummaryCard
           description="Reported orbital maneuver and transfer information from the completed mission profile."
@@ -155,7 +157,7 @@ export function BriefingSystemSummary({
           title="Vehicle"
         />
         <SummaryCard
-          description={`Reported heating and thermal-protection outputs. ${THERMAL_MODEL_NOTE}`}
+          description="Reported heating and thermal-protection outputs."
           id="thermal"
           metrics={[
             {
@@ -185,6 +187,9 @@ export function BriefingSystemSummary({
           title="Thermal"
         />
       </div>
+      <p className="mt-3 max-w-[68ch] text-sm leading-6 text-muted">
+        {THERMAL_MODEL_NOTE}
+      </p>
     </section>
   );
 }

@@ -203,9 +203,10 @@ export function MissionControlSidebar({
       <nav aria-label="Mission control sections" className="mt-3">
         {/* Square segmented controls, one per group, above the workspace
          * so the content keeps the full tool column. From 48rem the four
-         * groups sit on a fixed two-column grid, so both rows line up; a
-         * group too wide for its cell wraps its own segments, and each
-         * segment grows so a wrapped row leaves no gap. */}
+         * groups sit on a fixed two-column grid, so both rows line up. A
+         * four-segment group folds to 2 x 2 in a narrow cell and a
+         * three-segment group stays a row of three, so no segment is ever
+         * left on a row of its own. */}
         <div
           aria-label="Mission systems workspaces"
           aria-orientation="horizontal"
@@ -214,7 +215,7 @@ export function MissionControlSidebar({
         >
           {MISSION_CONTROL_WORKSPACE_GROUPS.map((group) => (
             <div
-              className="flex max-w-full min-w-0 flex-col gap-1.5"
+              className="@container/segments flex max-w-full min-w-0 flex-col gap-1.5"
               key={group.id}
               role="presentation"
             >
@@ -225,11 +226,17 @@ export function MissionControlSidebar({
               <div
                 className={cn(
                   "w-full gap-px overflow-hidden rounded border border-border-control bg-border-control",
-                  // Below 30rem a four-segment group is a 2 x 2 grid, so it
-                  // never wraps 3 + 1 with one segment on a row of its own.
+                  // A four-segment group is a 2 x 2 grid until its own cell
+                  // holds all four on one row, so it never wraps 3 + 1 with
+                  // one segment on a row of its own.
+                  // A three-segment group stays one row of three at every
+                  // width (never 2 + 1); in a narrow cell its segments
+                  // tighten and a two-word label may break onto two lines.
                   group.workspaceIds.length === 4
-                    ? "grid grid-cols-2 min-[30rem]:flex min-[30rem]:flex-wrap"
-                    : "flex flex-wrap",
+                    ? "grid grid-cols-2 @min-[23.5rem]/segments:grid-cols-4"
+                    : group.workspaceIds.length === 3
+                      ? "grid grid-cols-3"
+                      : "flex flex-wrap",
                 )}
                 role="presentation"
               >
@@ -250,7 +257,10 @@ export function MissionControlSidebar({
                       aria-label={workspace.accessibleLabel}
                       aria-selected={isActive}
                       className={cn(
-                        "inline-flex min-h-11 grow items-center justify-center px-3.5 text-sm whitespace-nowrap transition-colors focus-visible:outline-offset-[-3px]",
+                        "inline-flex min-h-11 grow items-center justify-center text-center transition-colors focus-visible:outline-offset-[-3px]",
+                        group.workspaceIds.length === 3
+                          ? "px-2 py-1 text-[0.8125rem] leading-tight @min-[22rem]/segments:px-3 @min-[22rem]/segments:text-sm @min-[22rem]/segments:whitespace-nowrap"
+                          : "px-3 text-sm whitespace-nowrap",
                         isActive
                           ? "bg-accent font-medium text-on-accent"
                           : "bg-background text-text-secondary hover:bg-surface-raised hover:text-foreground",

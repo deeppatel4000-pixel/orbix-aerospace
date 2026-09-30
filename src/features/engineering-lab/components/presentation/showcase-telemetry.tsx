@@ -121,9 +121,6 @@ export function ShowcaseTelemetry({
       <LabHeading offset={1} id="showcase-telemetry-title">
         Mission values
       </LabHeading>
-      <p className="mt-1 text-sm leading-6 text-muted">
-        Values from the completed calculation. No values recalculated.
-      </p>
 
       <div className="mt-3 grid gap-x-8 gap-y-4 xl:grid-cols-3">
         {telemetryGroups.map((group) => (

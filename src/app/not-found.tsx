@@ -14,7 +14,7 @@ export const metadata: Metadata = {
 };
 
 /**
- * 404 (spec 9): a display "Off course." line over the US Air Force B-2 photo,
+ * 404 (spec 9): a display "Off course." line over the US Air Force F-15C photo,
  * with a way home and into both registries. "Off course." is the H1; the
  * plain "Page not found" eyebrow above it and the document title name the
  * page for assistive technology and search.
@@ -23,7 +23,7 @@ export const metadata: Metadata = {
  * chrome itself to keep the header, main and footer on every page.
  */
 export default function NotFound() {
-  const visual = getAircraftVisual("b-2-spirit");
+  const visual = getAircraftVisual("f-15-eagle");
 
   const content = (
     <>
@@ -58,9 +58,12 @@ export default function NotFound() {
       <SiteHeader />
       <main className="flex-1" id="main-content">
         {visual ? (
-          // A different crop from the /aircraft hero, which uses the same
-          // photograph, so this page reads as its own.
-          <PhotoHero visual={{ ...visual, objectPosition: "70% 40%" }}>
+          // The F-15C is not the hero of home or either registry (only of
+          // its own profile; the registries lead with the B-2 and the
+          // Saturn V, home with the SR-71), so this page reads as its own.
+          <PhotoHero
+            visual={{ ...visual, objectPosition: visual.heroObjectPosition }}
+          >
             {content}
           </PhotoHero>
         ) : (

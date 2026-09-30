@@ -20,11 +20,18 @@ import {
   ReadoutGrid,
   ValidationErrorSummary,
   LabFigure,
-  LabValueText,
   EqDot,
   EQ_SUP,
   LAB_GROUP,
   LAB_GROUP_LEGEND,
+  LAB_CHOICE_INPUT,
+  LAB_CHOICE_LIST,
+  LAB_CHOICE_ROW,
+  LabSegmented,
+  TpsFigure,
+  tpsColumn,
+  withMinusSign,
+  EqFrac,
 } from "@/features/engineering-lab/components/shared";
 import { listTPSMaterials } from "@/features/engineering-lab/materials";
 import type {
@@ -68,8 +75,8 @@ const allMaterialIds = tpsMaterials.map((material) => material.id);
 
 const initialFormValues: TPSMaterialComparisonFormValues = {
   dragCoefficient: "1.5",
-  initialAltitudeMeters: "1000",
-  initialVelocityMetersPerSecond: "150",
+  initialAltitudeMeters: "11000",
+  initialVelocityMetersPerSecond: "400",
   noseRadiusMetres: "1",
   referenceAreaSquareMetres: "12",
   safetyFactor: "1.5",
@@ -79,11 +86,6 @@ const initialFormValues: TPSMaterialComparisonFormValues = {
 const standardFormatter = new Intl.NumberFormat("en-US", {
   maximumFractionDigits: 3,
   minimumFractionDigits: 2,
-});
-
-const preciseFormatter = new Intl.NumberFormat("en-US", {
-  maximumFractionDigits: 6,
-  minimumFractionDigits: 3,
 });
 
 const integerFormatter = new Intl.NumberFormat("en-US", {
@@ -205,17 +207,36 @@ const toolEquation = (
         </span>
         <span className={EQ_LINE}>
           <span className={EQ_TERM}>
-            m<sub>A</sub> = n<EqDot />Q
-          </span>
-          <wbr />
-          <span className={EQ_TERM}>
-            /(η
-            <EqDot />Q<sub>a</sub>)
+            m<sub>A</sub> ={" "}
+            <EqFrac
+              den={
+                <>
+                  η<EqDot />Q<sub>a</sub>
+                </>
+              }
+              num={
+                <>
+                  n<EqDot />Q
+                </>
+              }
+            />
           </span>
         </span>
         <span className={EQ_LINE}>
           <span className={EQ_TERM}>
-            t = m<sub>A</sub>/ρ<sub>m</sub>
+            t ={" "}
+            <EqFrac
+              den={
+                <>
+                  ρ<sub>m</sub>
+                </>
+              }
+              num={
+                <>
+                  m<sub>A</sub>
+                </>
+              }
+            />
           </span>
         </span>
         <span className={EQ_LINE}>
@@ -299,6 +320,18 @@ export function TPSMaterialComparisonAnalyzer() {
     () => deriveViewState(values, selectionMode, selectedMaterialIds),
     [selectedMaterialIds, selectionMode, values],
   );
+  const massColumn = tpsColumn(
+    result?.results.map(
+      (entry) => entry.estimatedTPSMass.totalTPSMassKilograms,
+    ) ?? [],
+    "kg",
+    "g",
+  );
+  const thicknessColumn = tpsColumn(
+    result?.results.map((entry) => entry.thickness.millimetres) ?? [],
+    "mm",
+    "µm",
+  );
   const displayedSelection =
     selectionMode === "all" ? allMaterialIds : selectedMaterialIds;
   const reentryOutputIds =
@@ -327,10 +360,6 @@ export function TPSMaterialComparisonAnalyzer() {
         ? Array.from(new Set([...current, materialId]))
         : current.filter((id) => id !== materialId),
     );
-  }
-
-  function removeMaterial(materialId: string) {
-    toggleMaterial(materialId, false);
   }
 
   function preventSubmission(event: FormEvent<HTMLFormElement>) {
@@ -400,7 +429,7 @@ export function TPSMaterialComparisonAnalyzer() {
                 <CalculatorNumberField
                   error={errors.referenceAreaSquareMetres}
                   field="referenceAreaSquareMetres"
-                  hint="Aerodynamic reference area and protected area used by the existing analysis."
+                  hint="Aerodynamic reference area, also taken as the area the TPS covers."
                   idPrefix="tps-material-comparison"
                   label="Reference area"
                   onChange={updateValue}
@@ -455,38 +484,33 @@ export function TPSMaterialComparisonAnalyzer() {
                 className="mt-4 text-sm leading-6 text-muted"
                 id="tps-material-comparison-selection-hint"
               >
-                Compare the complete catalog or pass a selected catalog subset
-                to the existing comparison analysis.
+                Compare every material in the catalog, or tick the ones you want
+                to compare.
               </p>
 
-              <div className="mt-4 grid gap-3 @min-[36rem]/col:grid-cols-2">
-                <label className="flex min-h-12 cursor-pointer items-center gap-3 rounded border border-border-control bg-surface-input px-4 py-3 text-sm font-medium transition-colors hover:border-muted has-checked:border-accent has-checked:bg-surface-raised">
-                  <input
-                    checked={selectionMode === "all"}
-                    className="h-4 w-4 accent-current"
-                    id="tps-material-comparison-mode-all"
-                    name="tps-material-comparison-mode"
-                    onChange={compareAllMaterials}
-                    type="radio"
-                    value="all"
-                  />
-                  Compare all materials
-                </label>
-                <label className="flex min-h-12 cursor-pointer items-center gap-3 rounded border border-border-control bg-surface-input px-4 py-3 text-sm font-medium transition-colors hover:border-muted has-checked:border-accent has-checked:bg-surface-raised">
-                  <input
-                    checked={selectionMode === "subset"}
-                    className="h-4 w-4 accent-current"
-                    id="tps-material-comparison-mode-subset"
-                    name="tps-material-comparison-mode"
-                    onChange={compareSubset}
-                    type="radio"
-                    value="subset"
-                  />
-                  Compare selected subset
-                </label>
-              </div>
+              <LabSegmented
+                className="mt-4"
+                label="Materials to compare"
+                name="tps-material-comparison-mode"
+                onChange={(mode) =>
+                  mode === "all" ? compareAllMaterials() : compareSubset()
+                }
+                options={[
+                  {
+                    id: "tps-material-comparison-mode-all",
+                    label: "All materials",
+                    value: "all",
+                  },
+                  {
+                    id: "tps-material-comparison-mode-subset",
+                    label: "Selected subset",
+                    value: "subset",
+                  },
+                ]}
+                value={selectionMode}
+              />
 
-              <div className="mt-4 space-y-3">
+              <div className={LAB_CHOICE_LIST + " mt-4"}>
                 {tpsMaterials.map((material) => {
                   const checked =
                     selectionMode === "all" ||
@@ -496,13 +520,13 @@ export function TPSMaterialComparisonAnalyzer() {
 
                   return (
                     <label
-                      className="flex cursor-pointer items-start gap-3 rounded border border-border-control bg-surface-input p-4 transition-colors hover:border-muted has-checked:border-accent has-checked:bg-surface-raised"
+                      className={LAB_CHOICE_ROW}
                       htmlFor={inputId}
                       key={material.id}
                     >
                       <input
                         checked={checked}
-                        className="mt-0.5 h-4 w-4 shrink-0 accent-current"
+                        className={LAB_CHOICE_INPUT}
                         id={inputId}
                         onChange={(event) =>
                           toggleMaterial(material.id, event.target.checked)
@@ -510,10 +534,10 @@ export function TPSMaterialComparisonAnalyzer() {
                         type="checkbox"
                       />
                       <span>
-                        <span className="block text-sm font-semibold">
+                        <span className="block font-semibold">
                           {material.name}
                         </span>
-                        <span className="mt-1 block text-sm leading-6 text-muted">
+                        <span className="block font-normal text-muted">
                           {integerFormatter.format(
                             material.densityKilogramsPerCubicMetre,
                           )}{" "}
@@ -525,37 +549,18 @@ export function TPSMaterialComparisonAnalyzer() {
                               ) + " K"}
                           , {material.reusable ? "reusable" : "single-use"}
                         </span>
+                        <span className="mt-1 block font-normal text-muted">
+                          {material.description}
+                        </span>
                       </span>
                     </label>
                   );
                 })}
               </div>
 
-              <div className="mt-4 flex flex-wrap items-center gap-2">
-                {displayedSelection.map((materialId) => {
-                  const material = tpsMaterials.find(
-                    (candidate) => candidate.id === materialId,
-                  );
-
-                  if (!material) return null;
-
-                  return (
-                    <Button
-                      className="max-w-full"
-                      key={material.id}
-                      onClick={() => removeMaterial(material.id)}
-                      variant="secondary"
-                    >
-                      Remove {material.name}
-                    </Button>
-                  );
-                })}
-                {displayedSelection.length === 0 ? (
-                  <span className="orbix-field__error">
-                    No materials selected
-                  </span>
-                ) : null}
-              </div>
+              {displayedSelection.length === 0 && !errors.materialSelection ? (
+                <p className="orbix-field__error mt-3">No materials selected</p>
+              ) : null}
 
               {errors.materialSelection ? (
                 <p
@@ -570,14 +575,6 @@ export function TPSMaterialComparisonAnalyzer() {
                   {errors.materialSelection}
                 </p>
               ) : null}
-
-              <Button
-                className="mt-4"
-                variant="secondary"
-                onClick={compareAllMaterials}
-              >
-                Reset to all materials
-              </Button>
             </fieldset>
 
             <ValidationErrorSummary
@@ -594,10 +591,7 @@ export function TPSMaterialComparisonAnalyzer() {
               ]}
             />
 
-            <div className="mt-7 flex flex-wrap items-center gap-x-5 gap-y-3">
-              <p className="min-w-0 flex-[1_1_16rem] text-sm leading-6 text-muted">
-                Valid changes rerun the complete catalog comparison immediately.
-              </p>
+            <div className="mt-7 flex flex-wrap items-center gap-x-4 gap-y-2">
               <Button
                 className="shrink-0 whitespace-nowrap"
                 variant="secondary"
@@ -605,6 +599,9 @@ export function TPSMaterialComparisonAnalyzer() {
               >
                 Reset inputs
               </Button>
+              <p className="min-w-0 flex-[1_1_14rem] text-[0.8125rem] leading-5 text-muted">
+                Valid changes rerun the complete catalog comparison immediately.
+              </p>
             </div>
           </form>
         </div>
@@ -618,25 +615,42 @@ export function TPSMaterialComparisonAnalyzer() {
               <>
                 <ReadoutGrid columns={2} title="Recommended material">
                   <div>
-                    <dt className="orbix-label">Ranking score</dt>
+                    <dt className="orbix-label">Material</dt>
                     <dd>
                       <output
-                        className="orbix-readout-lg"
+                        className="lab-value-text lab-value-text--lead"
                         htmlFor={allOutputIds}
                       >
-                        <LabFigure>
-                          {standardFormatter.format(
-                            result.recommendedMaterial.rankingScore,
-                          )}
-                        </LabFigure>
+                        {result.recommendedMaterial.material.name}
                       </output>
                     </dd>
                   </div>
                   <div>
-                    <dt className="orbix-label">Material</dt>
+                    <dt className="orbix-label">Estimated TPS mass</dt>
                     <dd>
-                      <output className="lab-value-text" htmlFor={allOutputIds}>
-                        {result.recommendedMaterial.material.name}
+                      <output className="orbix-data" htmlFor={allOutputIds}>
+                        <TpsFigure
+                          smallUnit="g"
+                          unit="kg"
+                          value={
+                            result.recommendedMaterial.estimatedTPSMass
+                              .totalTPSMassKilograms
+                          }
+                        />
+                      </output>
+                    </dd>
+                  </div>
+                  <div>
+                    <dt className="orbix-label">Estimated thickness</dt>
+                    <dd>
+                      <output className="orbix-data" htmlFor={allOutputIds}>
+                        <TpsFigure
+                          smallUnit="µm"
+                          unit="mm"
+                          value={
+                            result.recommendedMaterial.thickness.millimetres
+                          }
+                        />
                       </output>
                     </dd>
                   </div>
@@ -652,35 +666,10 @@ export function TPSMaterialComparisonAnalyzer() {
                         </LabFigure>
                       </output>
                       <output
-                        className="lab-figure-note"
+                        className="lab-figure-note lab-figure-note--words"
                         htmlFor={allOutputIds}
                       >
                         {result.recommendedMaterial.marginClassification}
-                      </output>
-                    </dd>
-                  </div>
-                  <div>
-                    <dt className="orbix-label">Estimated TPS mass</dt>
-                    <dd>
-                      <output className="orbix-data" htmlFor={allOutputIds}>
-                        <LabFigure unit="kg">
-                          {preciseFormatter.format(
-                            result.recommendedMaterial.estimatedTPSMass
-                              .totalTPSMassKilograms,
-                          )}
-                        </LabFigure>
-                      </output>
-                    </dd>
-                  </div>
-                  <div>
-                    <dt className="orbix-label">Estimated thickness</dt>
-                    <dd>
-                      <output className="orbix-data" htmlFor={allOutputIds}>
-                        <LabFigure unit="mm">
-                          {preciseFormatter.format(
-                            result.recommendedMaterial.thickness.millimetres,
-                          )}
-                        </LabFigure>
                       </output>
                     </dd>
                   </div>
@@ -688,61 +677,6 @@ export function TPSMaterialComparisonAnalyzer() {
                 <p className="text-sm leading-6 text-muted">
                   {result.recommendedMaterial.rankingLogic.description}
                 </p>
-
-                {result.results.map((entry) => (
-                  <ReadoutGrid
-                    columns={3}
-                    key={entry.material.id}
-                    title={
-                      entry.material.id ===
-                      result.recommendedMaterial.material.id
-                        ? entry.material.name + ", recommended"
-                        : entry.material.name
-                    }
-                  >
-                    <div>
-                      <dt className="orbix-label">Density</dt>
-                      <dd className="orbix-data">
-                        <LabFigure unit="kg/m³">
-                          {integerFormatter.format(
-                            entry.material.densityKilogramsPerCubicMetre,
-                          )}
-                        </LabFigure>
-                      </dd>
-                    </div>
-                    <div>
-                      <dt className="orbix-label">Maximum temperature</dt>
-                      <dd>
-                        {entry.material.maximumTemperatureKelvin ===
-                        undefined ? (
-                          <LabValueText>Unavailable</LabValueText>
-                        ) : (
-                          <span className="orbix-data">
-                            <LabFigure unit="K">
-                              {integerFormatter.format(
-                                entry.material.maximumTemperatureKelvin,
-                              )}
-                            </LabFigure>
-                          </span>
-                        )}
-                      </dd>
-                    </div>
-                    <div>
-                      <dt className="orbix-label">Reusability</dt>
-                      <dd>
-                        <LabValueText>
-                          {entry.material.reusable ? "Reusable" : "Single-use"}
-                        </LabValueText>
-                      </dd>
-                    </div>
-                    <div>
-                      <dt className="orbix-label">About</dt>
-                      <dd className="text-sm leading-6 text-muted">
-                        {entry.material.description}
-                      </dd>
-                    </div>
-                  </ReadoutGrid>
-                ))}
               </>
             ) : (
               <NotCalculated invalid={Object.values(errors).some(Boolean)}>
@@ -751,7 +685,9 @@ export function TPSMaterialComparisonAnalyzer() {
               </NotCalculated>
             )}
           </CalculatorResultSection>
+        </div>
 
+        <div className="@container/col min-w-0">
           {result ? (
             <DataTable
               caption="TPS materials ranked for the shared reentry scenario"
@@ -759,19 +695,26 @@ export function TPSMaterialComparisonAnalyzer() {
                 {
                   key: "material",
                   header: "Material",
-                  cell: (entry) =>
-                    entry.material.id === result.recommendedMaterial.material.id
-                      ? entry.material.name + ", recommended"
-                      : entry.material.name,
+                  cell: (entry) => (
+                    <span className="block min-w-[12ch]">
+                      {entry.material.name}
+                      {entry.material.id ===
+                      result.recommendedMaterial.material.id ? (
+                        <span className="block text-sm text-muted">
+                          <span className="sr-only">, </span>Recommended
+                        </span>
+                      ) : null}
+                    </span>
+                  ),
                 },
                 {
                   key: "mass",
-                  header: "TPS mass",
-                  unit: "kg",
+                  header: <span className="block">TPS mass</span>,
+                  unit: massColumn.unit,
                   numeric: true,
                   cell: (entry) => (
                     <output htmlFor={allOutputIds}>
-                      {preciseFormatter.format(
+                      {massColumn.format(
                         entry.estimatedTPSMass.totalTPSMassKilograms,
                       )}
                     </output>
@@ -779,24 +722,52 @@ export function TPSMaterialComparisonAnalyzer() {
                 },
                 {
                   key: "thickness",
-                  header: "Thickness",
-                  unit: "mm",
+                  header: <span className="block">Thickness</span>,
+                  unit: thicknessColumn.unit,
                   numeric: true,
                   cell: (entry) => (
                     <output htmlFor={allOutputIds}>
-                      {preciseFormatter.format(entry.thickness.millimetres)}
+                      {thicknessColumn.format(entry.thickness.millimetres)}
                     </output>
                   ),
                 },
                 {
+                  key: "density",
+                  header: <span className="block">Density</span>,
+                  unit: "kg/m³",
+                  numeric: true,
+                  cell: (entry) =>
+                    integerFormatter.format(
+                      entry.material.densityKilogramsPerCubicMetre,
+                    ),
+                },
+                {
+                  key: "maxTemperature",
+                  header: (
+                    <span className="block whitespace-normal">
+                      Max temperature
+                    </span>
+                  ),
+                  unit: "K",
+                  numeric: true,
+                  cell: (entry) =>
+                    entry.material.maximumTemperatureKelvin === undefined
+                      ? "Unavailable"
+                      : integerFormatter.format(
+                          entry.material.maximumTemperatureKelvin,
+                        ),
+                },
+                {
                   key: "margin",
-                  header: "Heat margin",
+                  header: <span className="block">Heat margin</span>,
                   unit: "%",
                   numeric: true,
                   cell: (entry) => (
                     <output htmlFor={allOutputIds}>
-                      {standardFormatter.format(
-                        entry.heatLoadMargin.marginPercentage,
+                      {withMinusSign(
+                        standardFormatter.format(
+                          entry.heatLoadMargin.marginPercentage,
+                        ),
                       )}
                     </output>
                   ),
@@ -807,7 +778,9 @@ export function TPSMaterialComparisonAnalyzer() {
                   numeric: true,
                   cell: (entry) => (
                     <output htmlFor={allOutputIds}>
-                      {standardFormatter.format(entry.rankingScore)}
+                      {withMinusSign(
+                        standardFormatter.format(entry.rankingScore),
+                      )}
                     </output>
                   ),
                 },

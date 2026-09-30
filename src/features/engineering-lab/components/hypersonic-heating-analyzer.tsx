@@ -13,7 +13,7 @@ import {
   GEOPOTENTIAL_ALTITUDE_LABEL,
   focusFirstInvalidFieldOnEnter,
   CalculatorResultSection,
-  LAB_TOOL_SPLIT,
+  LAB_TOOL_SPLIT_STICKY,
   LabToolLayout,
   NotCalculated,
   ReadoutGrid,
@@ -21,8 +21,6 @@ import {
   LabFigure,
   EqDot,
   EQ_SUP,
-  LAB_GROUP,
-  LAB_GROUP_LEGEND,
 } from "@/features/engineering-lab/components/shared";
 import type {
   FlowRegime,
@@ -82,6 +80,47 @@ const heatFluxFormatter = new Intl.NumberFormat("en-US", {
 const coefficientFormatter = new Intl.NumberFormat("en-US", {
   maximumSignificantDigits: 6,
 });
+
+const SUPERSCRIPT_DIGITS: Record<string, string> = {
+  "-": "⁻",
+  "0": "⁰",
+  "1": "¹",
+  "2": "²",
+  "3": "³",
+  "4": "⁴",
+  "5": "⁵",
+  "6": "⁶",
+  "7": "⁷",
+  "8": "⁸",
+  "9": "⁹",
+};
+
+/**
+ * The heating coefficient in the same scientific form the equation legend
+ * uses ("1.83 × 10⁻⁴"), so the readout and the legend agree. A value
+ * between 0.01 and 10,000 is shown plainly. Display only.
+ */
+function formatCoefficient(value: number): string {
+  if (value === 0 || !Number.isFinite(value)) {
+    return coefficientFormatter.format(value);
+  }
+  let exponent = Math.floor(Math.log10(Math.abs(value)));
+  if (exponent >= -2 && exponent <= 4) {
+    return coefficientFormatter.format(value);
+  }
+  let mantissa = Number((value / 10 ** exponent).toPrecision(6));
+  if (Math.abs(mantissa) >= 10) {
+    mantissa /= 10;
+    exponent += 1;
+  }
+  const power = String(exponent)
+    .split("")
+    .map((digit) => SUPERSCRIPT_DIGITS[digit] ?? digit)
+    .join("");
+  return (
+    coefficientFormatter.format(mantissa).replace(/^-/, "−") + " × 10" + power
+  );
+}
 
 const flowRegimeLabels: Record<FlowRegime, string> = {
   hypersonic: "Hypersonic",
@@ -236,61 +275,56 @@ export function HypersonicHeatingAnalyzer() {
 
   return (
     <LabToolLayout equation={toolEquation}>
-      <div className={LAB_TOOL_SPLIT}>
+      <div className={LAB_TOOL_SPLIT_STICKY}>
         <div className="@container/col min-w-0">
           <form
             noValidate
             onKeyDown={focusFirstInvalidFieldOnEnter}
             onSubmit={preventSubmission}
           >
-            <fieldset className={LAB_GROUP}>
-              <legend className={LAB_GROUP_LEGEND}>
-                Thermal analysis inputs
-              </legend>
-              <div className="mt-4 grid gap-5 @min-[36rem]/col:grid-cols-2">
-                <CalculatorNumberField
-                  error={errors.altitudeMetres}
-                  field="altitudeMetres"
-                  hint={GEOPOTENTIAL_ALTITUDE_HINT}
-                  idPrefix="hypersonic-heating"
-                  label={GEOPOTENTIAL_ALTITUDE_LABEL}
-                  onChange={updateValue}
-                  unit="m"
-                  value={values.altitudeMetres}
-                />
-                <CalculatorNumberField
-                  error={errors.velocityMetresPerSecond}
-                  field="velocityMetresPerSecond"
-                  hint="Positive vehicle velocity relative to the surrounding atmosphere."
-                  idPrefix="hypersonic-heating"
-                  label="Velocity"
-                  onChange={updateValue}
-                  unit="m/s"
-                  value={values.velocityMetresPerSecond}
-                />
-                <CalculatorNumberField
-                  error={errors.noseRadiusMetres}
-                  field="noseRadiusMetres"
-                  hint="Positive local radius of curvature at the stagnation point."
-                  idPrefix="hypersonic-heating"
-                  label="Nose radius"
-                  onChange={updateValue}
-                  unit="m"
-                  value={values.noseRadiusMetres}
-                />
-                <CalculatorNumberField
-                  error={errors.heatingCoefficient}
-                  field="heatingCoefficient"
-                  hint="Optional positive empirical coefficient. Leave blank to use the educational default."
-                  idPrefix="hypersonic-heating"
-                  label="Heating coefficient k (optional)"
-                  optional
-                  onChange={updateValue}
-                  unit="kg½/m"
-                  value={values.heatingCoefficient}
-                />
-              </div>
-            </fieldset>
+            <div className="grid gap-5 @min-[36rem]/col:grid-cols-2">
+              <CalculatorNumberField
+                error={errors.altitudeMetres}
+                field="altitudeMetres"
+                hint={GEOPOTENTIAL_ALTITUDE_HINT}
+                idPrefix="hypersonic-heating"
+                label={GEOPOTENTIAL_ALTITUDE_LABEL}
+                onChange={updateValue}
+                unit="m"
+                value={values.altitudeMetres}
+              />
+              <CalculatorNumberField
+                error={errors.velocityMetresPerSecond}
+                field="velocityMetresPerSecond"
+                hint="Positive vehicle velocity relative to the surrounding atmosphere."
+                idPrefix="hypersonic-heating"
+                label="Velocity"
+                onChange={updateValue}
+                unit="m/s"
+                value={values.velocityMetresPerSecond}
+              />
+              <CalculatorNumberField
+                error={errors.noseRadiusMetres}
+                field="noseRadiusMetres"
+                hint="Positive local radius of curvature at the stagnation point."
+                idPrefix="hypersonic-heating"
+                label="Nose radius"
+                onChange={updateValue}
+                unit="m"
+                value={values.noseRadiusMetres}
+              />
+              <CalculatorNumberField
+                error={errors.heatingCoefficient}
+                field="heatingCoefficient"
+                hint="Optional positive empirical coefficient. Leave blank to use the educational default."
+                idPrefix="hypersonic-heating"
+                label="Heating coefficient k (optional)"
+                optional
+                onChange={updateValue}
+                unit="√kg/m"
+                value={values.heatingCoefficient}
+              />
+            </div>
 
             <ValidationErrorSummary
               errors={[
@@ -302,11 +336,7 @@ export function HypersonicHeatingAnalyzer() {
               ]}
             />
 
-            <div className="mt-7 flex flex-wrap items-center gap-x-5 gap-y-3">
-              <p className="min-w-0 flex-[1_1_16rem] text-sm leading-6 text-muted">
-                Valid changes update the atmospheric, flow, and thermal states
-                immediately.
-              </p>
+            <div className="mt-7 flex flex-wrap items-center gap-x-4 gap-y-2">
               <Button
                 className="shrink-0 whitespace-nowrap"
                 variant="secondary"
@@ -314,6 +344,10 @@ export function HypersonicHeatingAnalyzer() {
               >
                 Reset inputs
               </Button>
+              <p className="min-w-0 flex-[1_1_14rem] text-[0.8125rem] leading-5 text-muted">
+                Valid changes update the atmospheric, flow, and thermal states
+                immediately.
+              </p>
             </div>
           </form>
         </div>
@@ -325,6 +359,44 @@ export function HypersonicHeatingAnalyzer() {
           >
             {result ? (
               <>
+                <ReadoutGrid columns={2} title="Thermal state">
+                  <div>
+                    <dt className="orbix-label">Heat flux</dt>
+                    <dd className="mt-1">
+                      <output
+                        className="orbix-readout-lg"
+                        htmlFor={thermalOutputIds}
+                      >
+                        <LabFigure unit="kW/m²">
+                          {heatFluxFormatter.format(
+                            result.thermal.heatFluxKilowattsPerSquareMetre,
+                          )}
+                        </LabFigure>
+                      </output>
+                      <output
+                        className="lab-figure-note"
+                        htmlFor={thermalOutputIds}
+                      >
+                        <LabFigure unit="W/m²">
+                          {heatFluxFormatter.format(
+                            result.thermal.heatFluxWattsPerSquareMetre,
+                          )}
+                        </LabFigure>
+                      </output>
+                    </dd>
+                  </div>
+                  <div>
+                    <dt className="orbix-label">Heating coefficient used</dt>
+                    <dd className="mt-1">
+                      <output className="orbix-data" htmlFor={thermalOutputIds}>
+                        <LabFigure unit="√kg/m">
+                          {formatCoefficient(result.thermal.heatingCoefficient)}
+                        </LabFigure>
+                      </output>
+                    </dd>
+                  </div>
+                </ReadoutGrid>
+
                 <ReadoutGrid columns={2} title="Atmospheric state">
                   <div>
                     <dt className="orbix-label">Temperature</dt>
@@ -419,50 +491,6 @@ export function HypersonicHeatingAnalyzer() {
                         htmlFor={flowOutputIds}
                       >
                         {flowRegimeLabels[result.flow.flowRegime]}
-                      </output>
-                    </dd>
-                  </div>
-                </ReadoutGrid>
-
-                <ReadoutGrid columns={2} title="Thermal state">
-                  <div>
-                    <dt className="orbix-label">Heat flux</dt>
-                    <dd className="mt-1">
-                      <output
-                        className="orbix-readout-lg"
-                        htmlFor={thermalOutputIds}
-                      >
-                        <LabFigure unit="kW/m²">
-                          {heatFluxFormatter.format(
-                            result.thermal.heatFluxKilowattsPerSquareMetre,
-                          )}
-                        </LabFigure>
-                      </output>
-                    </dd>
-                  </div>
-                  <div>
-                    <dt className="orbix-label">
-                      Heat flux, watts per square metre
-                    </dt>
-                    <dd className="mt-1">
-                      <output className="orbix-data" htmlFor={thermalOutputIds}>
-                        <LabFigure unit="W/m²">
-                          {heatFluxFormatter.format(
-                            result.thermal.heatFluxWattsPerSquareMetre,
-                          )}
-                        </LabFigure>
-                      </output>
-                    </dd>
-                  </div>
-                  <div>
-                    <dt className="orbix-label">Heating coefficient used</dt>
-                    <dd className="mt-1">
-                      <output className="orbix-data" htmlFor={thermalOutputIds}>
-                        <LabFigure unit="kg½/m">
-                          {coefficientFormatter.format(
-                            result.thermal.heatingCoefficient,
-                          )}
-                        </LabFigure>
                       </output>
                     </dd>
                   </div>

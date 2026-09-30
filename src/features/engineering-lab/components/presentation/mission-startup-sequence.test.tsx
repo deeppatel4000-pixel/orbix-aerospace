@@ -26,7 +26,7 @@ const missionReport = generateMissionReport({
 });
 
 describe("MissionStartupSequence", () => {
-  it("names the supplied sources in one sentence before the workspace", () => {
+  it("names the missing sources in one sentence before the workspace", () => {
     const markup = renderToStaticMarkup(
       <MissionStartupSequence
         missionCategory="orbital-deployment"
@@ -38,9 +38,7 @@ describe("MissionStartupSequence", () => {
     );
 
     // One sentence naming the sources, not a list of check icons.
-    expect(markup).toContain(
-      "Built from the mission profile, the orbital analysis, and the mission report.",
-    );
+    expect(markup).not.toContain("Built from");
     expect(markup).toContain(
       "Not supplied: vehicle analysis and thermal analysis.",
     );
@@ -48,7 +46,7 @@ describe("MissionStartupSequence", () => {
     expect(markup).not.toContain("ORBIX Startup Test Mission");
     expect(markup).not.toContain("<svg");
     expect(markup).toContain("Existing Mission Control workspace");
-    expect(markup.indexOf("Built from")).toBeLessThan(
+    expect(markup.indexOf("Not supplied")).toBeLessThan(
       markup.indexOf("Existing Mission Control workspace"),
     );
   });

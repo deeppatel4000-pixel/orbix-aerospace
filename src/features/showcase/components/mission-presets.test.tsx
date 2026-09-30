@@ -2,7 +2,10 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 
 import { MissionPresets } from "@/features/showcase/components/mission-presets";
-import { ShowcaseCapture } from "@/features/showcase/components/showcase-capture";
+import {
+  CAPTURE_DETAIL_MAX_ITEMS,
+  ShowcaseCapture,
+} from "@/features/showcase/components/showcase-capture";
 import { ShowcasePage } from "@/features/showcase/showcase-page";
 import { SHOWCASE_MISSIONS } from "@/features/showcase/data/mission-showcase";
 
@@ -131,6 +134,18 @@ describe("showcase capture view", () => {
         mission.diagram.kind === "transfer" &&
           mission.diagram.planetRadiusSource === "calculator-default",
       );
+    }
+  });
+
+  it("keeps every detail list within the height the capture reserves", () => {
+    for (const mission of SHOWCASE_MISSIONS) {
+      for (const list of [
+        mission.availableVisualizations,
+        mission.analysisAvailability,
+        mission.engineeringFocus,
+      ]) {
+        expect(list.length).toBeLessThanOrEqual(CAPTURE_DETAIL_MAX_ITEMS);
+      }
     }
   });
 });

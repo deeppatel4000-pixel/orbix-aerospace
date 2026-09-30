@@ -77,7 +77,13 @@ function getScenarioMetrics({
 
 const NUMERIC_COLUMNS = [
   { key: "deltaVMetresPerSecond", label: "Delta-v", unit: "m/s" },
-  { key: "transferDurationHours", label: "Transfer duration", unit: "h" },
+  // formatLabValue, as in the briefing, viewer and walkthrough, so the
+  // same transfer reads 0.754 h in every tool.
+  {
+    key: "transferDurationHours",
+    label: "Transfer duration",
+    unit: "h",
+  },
   { key: "maneuverCount", label: "Maneuvers" },
 ] as const;
 

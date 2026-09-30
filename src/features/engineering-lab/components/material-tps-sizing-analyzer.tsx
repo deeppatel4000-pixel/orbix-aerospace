@@ -15,7 +15,7 @@ import {
   focusFirstInvalidField,
   focusFirstInvalidFieldOnEnter,
   CalculatorResultSection,
-  LAB_TOOL_SPLIT,
+  LAB_TOOL_STACK,
   GEOPOTENTIAL_ALTITUDE_HINT,
   INITIAL_GEOPOTENTIAL_ALTITUDE_LABEL,
   LabToolLayout,
@@ -23,10 +23,12 @@ import {
   ReadoutGrid,
   ValidationErrorSummary,
   LabFigure,
+  TpsFigure,
   EqDot,
   EQ_SUP,
   LAB_GROUP,
   LAB_GROUP_LEGEND,
+  EqFrac,
 } from "@/features/engineering-lab/components/shared";
 import {
   getTPSMaterialById,
@@ -71,8 +73,8 @@ const tpsMaterials = listTPSMaterials();
 
 const initialFormValues: MaterialTPSSizingFormValues = {
   dragCoefficient: "1.5",
-  initialAltitudeMeters: "1000",
-  initialVelocityMetersPerSecond: "150",
+  initialAltitudeMeters: "11000",
+  initialVelocityMetersPerSecond: "400",
   materialId: tpsMaterials[0]?.id ?? "",
   noseRadiusMetres: "1",
   referenceAreaSquareMetres: "12",
@@ -83,11 +85,6 @@ const initialFormValues: MaterialTPSSizingFormValues = {
 const standardFormatter = new Intl.NumberFormat("en-US", {
   maximumFractionDigits: 3,
   minimumFractionDigits: 2,
-});
-
-const preciseFormatter = new Intl.NumberFormat("en-US", {
-  maximumFractionDigits: 6,
-  minimumFractionDigits: 3,
 });
 
 const integerFormatter = new Intl.NumberFormat("en-US", {
@@ -200,17 +197,36 @@ const toolEquation = (
         </span>
         <span className={EQ_LINE}>
           <span className={EQ_TERM}>
-            m<sub>A</sub> = n<EqDot />Q
-          </span>
-          <wbr />
-          <span className={EQ_TERM}>
-            /(η
-            <EqDot />Q<sub>a</sub>)
+            m<sub>A</sub> ={" "}
+            <EqFrac
+              den={
+                <>
+                  η<EqDot />Q<sub>a</sub>
+                </>
+              }
+              num={
+                <>
+                  n<EqDot />Q
+                </>
+              }
+            />
           </span>
         </span>
         <span className={EQ_LINE}>
           <span className={EQ_TERM}>
-            t = m<sub>A</sub>/ρ<sub>m</sub>
+            t ={" "}
+            <EqFrac
+              den={
+                <>
+                  ρ<sub>m</sub>
+                </>
+              }
+              num={
+                <>
+                  m<sub>A</sub>
+                </>
+              }
+            />
           </span>
         </span>
       </>
@@ -302,7 +318,7 @@ export function MaterialTPSSizingAnalyzer() {
 
   return (
     <LabToolLayout equation={toolEquation}>
-      <div className={LAB_TOOL_SPLIT}>
+      <div className={LAB_TOOL_STACK}>
         <div className="@container/col min-w-0">
           <form
             noValidate
@@ -355,7 +371,7 @@ export function MaterialTPSSizingAnalyzer() {
                 <CalculatorNumberField
                   error={errors.referenceAreaSquareMetres}
                   field="referenceAreaSquareMetres"
-                  hint="Aerodynamic reference area; the existing analysis also uses it as the protected TPS coverage area."
+                  hint="Aerodynamic reference area, also taken as the area the TPS covers."
                   idPrefix="material-tps-sizing"
                   label="Reference area"
                   onChange={updateValue}
@@ -442,7 +458,7 @@ export function MaterialTPSSizingAnalyzer() {
                 <CalculatorNumberField
                   error={errors.safetyFactor}
                   field="safetyFactor"
-                  hint="Positive multiplier applied by the existing TPS sizing analysis."
+                  hint="Multiplies the heat load used to size the TPS."
                   idPrefix="material-tps-sizing"
                   label="Safety factor"
                   onChange={updateValue}
@@ -488,7 +504,7 @@ export function MaterialTPSSizingAnalyzer() {
                       </LabFigure>
                     </output>
                     <p className="mt-1 text-xs leading-5 text-muted">
-                      Current analysis default; not overridden by this workflow.
+                      Fixed at this value in this tool.
                     </p>
                   </dd>
                 </div>
@@ -529,11 +545,7 @@ export function MaterialTPSSizingAnalyzer() {
               ]}
             />
 
-            <div className="mt-7 flex flex-wrap items-center gap-x-5 gap-y-3">
-              <p className="min-w-0 flex-[1_1_16rem] text-sm leading-6 text-muted">
-                Valid changes rerun material lookup, thermal history, and TPS
-                sizing immediately.
-              </p>
+            <div className="mt-7 flex flex-wrap items-center gap-x-4 gap-y-2">
               <Button
                 className="shrink-0 whitespace-nowrap"
                 variant="secondary"
@@ -541,6 +553,10 @@ export function MaterialTPSSizingAnalyzer() {
               >
                 Reset inputs
               </Button>
+              <p className="min-w-0 flex-[1_1_14rem] text-[0.8125rem] leading-5 text-muted">
+                Valid changes rerun material lookup, thermal history, and TPS
+                sizing immediately.
+              </p>
             </div>
           </form>
         </div>
@@ -552,6 +568,92 @@ export function MaterialTPSSizingAnalyzer() {
           >
             {result ? (
               <>
+                <ReadoutGrid columns={2} title="TPS sizing">
+                  <div>
+                    <dt className="orbix-label">Estimated thickness</dt>
+                    <dd>
+                      <output
+                        className="orbix-readout-lg"
+                        htmlFor={allOutputIds}
+                      >
+                        <TpsFigure
+                          smallUnit="µm"
+                          unit="mm"
+                          value={
+                            result.tpsSizing.estimatedThickness.millimetres
+                          }
+                        />
+                      </output>
+                    </dd>
+                  </div>
+                  <div>
+                    <dt className="orbix-label">Estimated TPS mass</dt>
+                    <dd>
+                      <output
+                        className="orbix-readout-lg"
+                        htmlFor={allOutputIds}
+                      >
+                        <TpsFigure
+                          smallUnit="g"
+                          unit="kg"
+                          value={
+                            result.estimatedTPSMassForArea.totalTPSMassKilograms
+                          }
+                        />
+                      </output>
+                    </dd>
+                  </div>
+                  <div>
+                    <dt className="orbix-label">Required areal density</dt>
+                    <dd>
+                      <output className="orbix-data" htmlFor={allOutputIds}>
+                        <TpsFigure
+                          smallUnit="g/m²"
+                          unit="kg/m²"
+                          value={
+                            result.estimatedTPSMassForArea
+                              .arealDensityKilogramsPerSquareMetre
+                          }
+                        />
+                      </output>
+                    </dd>
+                  </div>
+                  <div>
+                    <dt className="orbix-label">Safety margin</dt>
+                    <dd>
+                      <output className="orbix-data" htmlFor={allOutputIds}>
+                        <LabFigure unit="%">
+                          {standardFormatter.format(
+                            result.tpsSizing.safetyMargin.marginPercentage,
+                          )}
+                        </LabFigure>
+                      </output>
+                      <output
+                        className="lab-figure-note"
+                        htmlFor={allOutputIds}
+                      >
+                        <TpsFigure
+                          smallUnit="kJ/m²"
+                          unit="MJ/m²"
+                          value={
+                            result.tpsSizing.safetyMargin
+                              .heatLoadMarginMegajoulesPerSquareMetre
+                          }
+                        />{" "}
+                        heat-load margin
+                      </output>
+                    </dd>
+                  </div>
+                  <div>
+                    <dt className="orbix-label">Margin classification</dt>
+                    <dd>
+                      <output className="lab-value-text" htmlFor={allOutputIds}>
+                        {result.suitabilitySummary}
+                      </output>
+                    </dd>
+                  </div>
+                </ReadoutGrid>
+
                 <ReadoutGrid columns={3} title="Selected material">
                   <div>
                     <dt className="orbix-label">Material</dt>
@@ -617,7 +719,7 @@ export function MaterialTPSSizingAnalyzer() {
                   </div>
                   <div>
                     <dt className="orbix-label">About</dt>
-                    <dd className="text-sm leading-6 text-muted">
+                    <dd className="lab-readout-text text-sm leading-6 text-muted">
                       {result.material.description}
                     </dd>
                   </div>
@@ -641,12 +743,14 @@ export function MaterialTPSSizingAnalyzer() {
                     <dt className="orbix-label">Total heat load</dt>
                     <dd>
                       <output className="orbix-data" htmlFor={reentryOutputIds}>
-                        <LabFigure unit="MJ/m²">
-                          {preciseFormatter.format(
+                        <TpsFigure
+                          smallUnit="kJ/m²"
+                          unit="MJ/m²"
+                          value={
                             result.tpsSizing.peakHeatLoad
-                              .heatLoadMegajoulesPerSquareMetre,
-                          )}
-                        </LabFigure>
+                              .heatLoadMegajoulesPerSquareMetre
+                          }
+                        />
                       </output>
                     </dd>
                   </div>
@@ -687,95 +791,6 @@ export function MaterialTPSSizingAnalyzer() {
                             result.tpsSizing.peakHeatFlux.timeSeconds,
                           )}
                         </LabFigure>
-                      </output>
-                    </dd>
-                  </div>
-                </ReadoutGrid>
-
-                <ReadoutGrid columns={2} title="TPS sizing">
-                  <div>
-                    <dt className="orbix-label">Estimated thickness</dt>
-                    <dd>
-                      <output
-                        className="orbix-readout-lg"
-                        htmlFor={allOutputIds}
-                      >
-                        <LabFigure unit="mm">
-                          {preciseFormatter.format(
-                            result.tpsSizing.estimatedThickness.millimetres,
-                          )}
-                        </LabFigure>
-                      </output>
-                      <output
-                        className="lab-figure-note"
-                        htmlFor={allOutputIds}
-                      >
-                        <LabFigure unit="m">
-                          {preciseFormatter.format(
-                            result.tpsSizing.estimatedThickness.metres,
-                          )}
-                        </LabFigure>
-                      </output>
-                    </dd>
-                  </div>
-                  <div>
-                    <dt className="orbix-label">Estimated TPS mass</dt>
-                    <dd>
-                      <output
-                        className="orbix-readout-lg"
-                        htmlFor={allOutputIds}
-                      >
-                        <LabFigure unit="kg">
-                          {preciseFormatter.format(
-                            result.estimatedTPSMassForArea
-                              .totalTPSMassKilograms,
-                          )}
-                        </LabFigure>
-                      </output>
-                    </dd>
-                  </div>
-                  <div>
-                    <dt className="orbix-label">Required areal density</dt>
-                    <dd>
-                      <output className="orbix-data" htmlFor={allOutputIds}>
-                        <LabFigure unit="kg/m²">
-                          {preciseFormatter.format(
-                            result.estimatedTPSMassForArea
-                              .arealDensityKilogramsPerSquareMetre,
-                          )}
-                        </LabFigure>
-                      </output>
-                    </dd>
-                  </div>
-                  <div>
-                    <dt className="orbix-label">Safety margin</dt>
-                    <dd>
-                      <output className="orbix-data" htmlFor={allOutputIds}>
-                        <LabFigure unit="%">
-                          {standardFormatter.format(
-                            result.tpsSizing.safetyMargin.marginPercentage,
-                          )}
-                        </LabFigure>
-                      </output>
-                      <output
-                        className="lab-figure-note"
-                        htmlFor={allOutputIds}
-                      >
-                        <LabFigure unit="MJ/m²">
-                          {preciseFormatter.format(
-                            result.tpsSizing.safetyMargin
-                              .heatLoadMarginMegajoulesPerSquareMetre,
-                          )}
-                        </LabFigure>{" "}
-                        heat-load margin
-                      </output>
-                    </dd>
-                  </div>
-                  <div>
-                    <dt className="orbix-label">Margin classification</dt>
-                    <dd>
-                      <output className="lab-value-text" htmlFor={allOutputIds}>
-                        {result.suitabilitySummary}
                       </output>
                     </dd>
                   </div>

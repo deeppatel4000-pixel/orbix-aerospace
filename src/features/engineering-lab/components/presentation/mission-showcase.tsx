@@ -212,6 +212,12 @@ export function MissionShowcase({
                 />
               ))}
             </ol>
+            <p
+              className="mt-2 text-sm text-muted"
+              id="mission-showcase-keyboard-help"
+            >
+              Left and right arrow keys change phase; Home restarts.
+            </p>
           </nav>
 
           <ShowcaseStage
@@ -226,15 +232,8 @@ export function MissionShowcase({
           <ShowcaseTelemetry missionProfile={missionProfile} report={report} />
         </div>
 
-        <p
-          className="text-sm leading-6 text-muted"
-          id="mission-showcase-keyboard-help"
-        >
-          The walkthrough presents values that were already calculated; it is
-          not a flight simulation. Play advances one phase every few seconds and
-          stops at the last phase, where Play starts again from phase 1. With
-          focus inside the walkthrough, the left and right arrow keys change
-          phase and Home restarts.
+        <p className="text-sm leading-6 text-muted">
+          Values were already calculated; this is not a flight simulation.
         </p>
         <p aria-live="polite" className="sr-only" role="status">
           Mission showcase phase {state.currentPhaseIndex + 1}:{" "}

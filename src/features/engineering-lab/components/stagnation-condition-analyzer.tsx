@@ -22,6 +22,7 @@ import {
   LabFigure,
   EqDot,
   EQ_SUB_CLEAR,
+  EqFrac,
 } from "@/features/engineering-lab/components/shared";
 import type {
   StagnationConditionAnalysis,
@@ -104,7 +105,9 @@ const toolEquation = (
           <span className={EQ_TERM}>
             T<sub>t</sub>/T = 1
           </span>{" "}
-          <span className={EQ_TERM}>+ ((γ−1)/2)</span>
+          <span className={EQ_TERM}>
+            + <EqFrac den="2" num="γ−1" />
+          </span>
           <wbr />
           <span className={EQ_TERM}>
             <EqDot />M<sup className={EQ_SUP}>2</sup>
@@ -115,8 +118,16 @@ const toolEquation = (
             p<sub className={EQ_SUB_CLEAR}>t</sub>/p
           </span>{" "}
           <span className={EQ_TERM}>
-            = (T<sub>t</sub>/T)
-            <sup className={EQ_SUP}>γ/(γ−1)</sup>
+            ={" "}
+            <EqFrac
+              den="T"
+              num={
+                <>
+                  T<sub>t</sub>
+                </>
+              }
+              power={"γ/(γ−1)"}
+            />
           </span>
         </span>
         <span className={EQ_LINE}>
@@ -124,8 +135,16 @@ const toolEquation = (
             ρ<sub>t</sub>/ρ
           </span>{" "}
           <span className={EQ_TERM}>
-            = (T<sub>t</sub>/T)
-            <sup className={EQ_SUP}>1/(γ−1)</sup>
+            ={" "}
+            <EqFrac
+              den="T"
+              num={
+                <>
+                  T<sub>t</sub>
+                </>
+              }
+              power={"1/(γ−1)"}
+            />
           </span>
         </span>
       </>
@@ -210,10 +229,7 @@ export function StagnationConditionAnalyzer() {
               idPrefix="stagnation-condition"
             />
 
-            <div className="mt-7 flex flex-wrap items-center gap-x-5 gap-y-3">
-              <p className="min-w-0 flex-[1_1_16rem] text-sm leading-6 text-muted">
-                Valid changes update the thermodynamic state immediately.
-              </p>
+            <div className="mt-7 flex flex-wrap items-center gap-x-4 gap-y-2">
               <Button
                 className="shrink-0 whitespace-nowrap"
                 variant="secondary"
@@ -221,6 +237,9 @@ export function StagnationConditionAnalyzer() {
               >
                 Reset inputs
               </Button>
+              <p className="min-w-0 flex-[1_1_14rem] text-[0.8125rem] leading-5 text-muted">
+                Valid changes update the thermodynamic state immediately.
+              </p>
             </div>
           </form>
         </div>

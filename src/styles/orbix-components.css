@@ -689,6 +689,50 @@
     }
   }
 
+  /* placement="right": a tall photograph stands on the right from 48rem.
+   * From 64rem the plate starts at the larger of 50% + 10rem and 46rem,
+   * the content edge plus 44rem, so a 44rem text column or strip panel
+   * ends where the plate begins. The left edge is feathered into the page
+   * with an eased mask over the plate's left 48 percent (a straight or
+   * shorter ramp read as a soft vertical wall on bright skies); the plate
+   * has no fill, so the blueprint grid runs on under the feather. The
+   * horizontal overlay is not drawn: it was made for a photo behind the
+   * text and would darken the vehicle a second time. */
+  @media (min-width: 48rem) {
+    .orbix-photo-hero[data-placement="right"] .orbix-photo-hero__plate {
+      left: 56vw;
+      mask-image: linear-gradient(
+        90deg,
+        transparent 0,
+        rgb(255 255 255 / 0.2) 14%,
+        rgb(255 255 255 / 0.6) 30%,
+        #fff 48%
+      );
+    }
+
+    .orbix-photo-hero[data-placement="right"] .orbix-photo-hero__scrim {
+      background: linear-gradient(
+        to bottom,
+        transparent 62%,
+        color-mix(in srgb, var(--bg-page) 80%, transparent) 90%,
+        var(--bg-page) 100%
+      );
+    }
+  }
+
+  @media (min-width: 48rem) and (max-width: 63.99rem) {
+    .orbix-photo-hero[data-placement="right"] .orbix-photo-hero__content,
+    .orbix-photo-hero[data-placement="right"] .orbix-photo-hero__aside {
+      max-width: calc(56vw - 3.5rem);
+    }
+  }
+
+  @media (min-width: 64rem) {
+    .orbix-photo-hero[data-placement="right"] .orbix-photo-hero__plate {
+      left: max(calc(50% + 10rem), 46rem);
+    }
+  }
+
   /* ==================================================================== *
    * SPEC PANEL (spec 6, 8): hairline compartments. Cells are separated by
    * 1px rules made from the gap over a border-coloured ground.

@@ -20,8 +20,8 @@ export interface AircraftVisual {
   /** Photographer or agency, as the licence asks to be credited. */
   readonly credit: string;
   /**
-   * `object-position` for the first registry card from 40rem: the left
-   * half of a two-column card, as tall as the card.
+   * `object-position` for the wide first registry card from 40rem: the
+   * photograph across a two-column card at 2:1.
    */
   readonly featureObjectPosition: string;
   /** Intrinsic height of the file in pixels. */
@@ -75,7 +75,7 @@ const aircraftVisuals = {
     cardSummary: "Four-engine flying-wing bomber",
     cardTreatment: "wide",
     credit: "U.S. Air Force photo by Staff Sgt. Bennie J. Davis III",
-    featureObjectPosition: "50% 40%",
+    featureObjectPosition: "50% 35%",
     height: 1202,
     heroObjectPosition: "50% 40%",
     ...PUBLIC_DOMAIN_USAF,
@@ -122,7 +122,9 @@ const aircraftVisuals = {
     cardSummary: "Twin-engine stealth fighter",
     cardTreatment: "flagship",
     credit: "U.S. Air Force photo by Master Sgt. Andy Dunaway",
-    featureObjectPosition: "38% 50%",
+    // The 2:1 wide first registry card: the tail tip at 12 percent and the
+    // nose at 78 percent of the height fit the 75 percent band this keeps.
+    featureObjectPosition: "50% 30%",
     height: 1277,
     heroObjectPosition: "50% 58%",
     ...PUBLIC_DOMAIN_USAF,

@@ -230,10 +230,10 @@ export const verificationGroups: readonly VerificationGroup[] = [
         id: "atmosphere-1000",
         inputs: ["Altitude 1,000 m (geopotential)"],
         location:
-          "Table I, geopotential altitude, metric units, page 52, row H = 1000 m",
+          "Table I, geopotential altitude, metric units, page 52, row H = 1000 m",
         notes: [
           USSA_GEOPOTENTIAL_NOTE,
-          "Density is just outside the table's rounding. ORBIX divides by the rounded gas constant 287.05 J/(kg·K); the standard's value is R*/M₀ = 8,314.32 / 28.9644 = 287.053 J/(kg·K) (pages 3 and 9). With that value and the same pressure and temperature, the density is 1.11164 kg/m³, which rounds to the printed 1.1116.",
+          "Density is just outside the table's rounding. ORBIX divides by the rounded gas constant 287.05 J/(kg·K); the standard's value is R*/M₀ = 8,314.32 / 28.9644 = 287.053 J/(kg·K) (pages 3 and 9). With that value and the same pressure and temperature, the density is 1.11164 kg/m³, which rounds to the printed 1.1116.",
         ],
         rows: atmosphereRows("atmosphere-1000", atmosphere1000, {
           density: {
@@ -256,10 +256,10 @@ export const verificationGroups: readonly VerificationGroup[] = [
         id: "atmosphere-5000",
         inputs: ["Altitude 5,000 m (geopotential)"],
         location:
-          "Table I, geopotential altitude, metric units, page 54, row H = 5000 m",
+          "Table I, geopotential altitude, metric units, page 54, row H = 5000 m",
         notes: [
           USSA_GEOPOTENTIAL_NOTE,
-          "Pressure is 0.55 Pa above the table value, about 0.001 percent. The table itself sits low of its own equation here: the standard's pressure equation for this layer, with its constants R*/M₀ = 8,314.32 / 28.9644, g₀ = 9.80665 m/s² and P₀ = 101,325 Pa, gives 54,019.9 Pa at H = 5,000 m, while the table prints 5.4019 + 2 mb (54,019 Pa). The same happens at 1,000 m, where the equation gives 89,874.6 Pa and the table prints 8.9874 + 2 mb. ORBIX, at 54,019.55 Pa, lies between the table and the equation, so the gap is not an ORBIX error. Why the table's last digit falls low has not been confirmed here.",
+          "Pressure is 0.55 Pa above the table value, about 0.001 percent. The table itself sits low of its own equation here: the standard's pressure equation for this layer, with its constants R*/M₀ = 8,314.32 / 28.9644, g₀ = 9.80665 m/s² and P₀ = 101,325 Pa, gives 54,019.9 Pa at H = 5,000 m, while the table prints 5.4019 + 2 mb (54,019 Pa). The same happens at 1,000 m, where the equation gives 89,874.6 Pa and the table prints 8.9874 + 2 mb. ORBIX, at 54,019.55 Pa, lies between the table and the equation, so the gap is not an ORBIX error. Why the table's last digit falls low has not been confirmed here.",
         ],
         rows: atmosphereRows("atmosphere-5000", atmosphere5000, {
           density: {
@@ -282,7 +282,7 @@ export const verificationGroups: readonly VerificationGroup[] = [
         id: "atmosphere-11000",
         inputs: ["Altitude 11,000 m (geopotential)"],
         location:
-          "Table I, geopotential altitude, metric units, page 58, row H = 11000 m",
+          "Table I, geopotential altitude, metric units, page 58, row H = 11000 m",
         notes: [
           USSA_GEOPOTENTIAL_NOTE,
           "11,000 m is the top of the constant-lapse-rate layer and the highest altitude the ORBIX calculator accepts. Above it the standard holds temperature at 216.65 K, which ORBIX does not model, so no higher altitude is compared.",
@@ -308,7 +308,7 @@ export const verificationGroups: readonly VerificationGroup[] = [
         id: "atmosphere-11000-geometric",
         inputs: ["Altitude 11,000 m, compared as geometric altitude Z"],
         location:
-          "Table I, geometric altitude, metric units, page 59, row Z = 11000 m (H = 10981 m)",
+          "Table I, geometric altitude, metric units, page 59, row Z = 11000 m (H = 10981 m)",
         notes: [
           "The ORBIX atmosphere formula is the geopotential form, so its altitude input is a geopotential altitude. A geometric altitude of 11,000 m is a geopotential altitude of 10,981 m, so reading the input as geometric gives the differences shown. This row records the size of that error rather than hiding it.",
         ],
@@ -338,7 +338,7 @@ export const verificationGroups: readonly VerificationGroup[] = [
         calculator: "calculateIsentropicFlow",
         id: "isentropic-m2",
         inputs: ["Mach number 2.00", "γ = 1.4"],
-        location: "Table II, supersonic flow, γ = 7/5, page 634, row M = 2.00",
+        location: "Table II, supersonic flow, γ = 7/5, page 634, row M = 2.00",
         notes: [
           "ORBIX reports stagnation-to-static ratios (for example T₀/T = 1.8). The table prints static-to-stagnation ratios, so the ORBIX values are shown inverted.",
         ],
@@ -372,7 +372,7 @@ export const verificationGroups: readonly VerificationGroup[] = [
         calculator: "calculateNormalShock",
         id: "normal-shock-m2",
         inputs: ["Upstream Mach number 2.00", "γ = 1.4"],
-        location: "Table II, supersonic flow, γ = 7/5, page 634, row M₁ = 2.00",
+        location: "Table II, supersonic flow, γ = 7/5, page 634, row M₁ = 2.00",
         notes: [],
         rows: [
           {
@@ -411,7 +411,7 @@ export const verificationGroups: readonly VerificationGroup[] = [
         calculator: "calculateTotalPressureRecovery",
         id: "total-pressure-recovery-m2",
         inputs: ["Upstream Mach number 2.00", "γ = 1.4"],
-        location: "Table II, supersonic flow, γ = 7/5, page 634, row M₁ = 2.00",
+        location: "Table II, supersonic flow, γ = 7/5, page 634, row M₁ = 2.00",
         notes: [],
         rows: [
           {
@@ -436,7 +436,7 @@ export const verificationGroups: readonly VerificationGroup[] = [
         location:
           "Oblique shock reflection example (Figure 6): M₁ = 3.0, shock angle 30°, deflection 12.7°, M₂ = 2.36",
         notes: [
-          "The source takes β = 30° as its input and reads the 12.7° deflection from its Figure 4; the exact deflection for M₁ = 3.0 and β = 30° is 12.77°. With β = 30° and 12.7°, the source's M₂ works out to 2.358, printed as 2.36. ORBIX works from deflection to shock angle, so given 12.7° it returns β = 29.93° and M₂ = 2.371. With the exact pair (β = 30°, 12.77°) M₂ is 2.367. M₂ is sensitive to β minus the deflection, so the chart-read deflection alone accounts for the gap.",
+          "The source takes β = 30° as its input and reads the 12.7° deflection from its Figure 4; the exact deflection for M₁ = 3.0 and β = 30° is 12.77°. With β = 30° and 12.7°, the source's M₂ works out to 2.358, printed as 2.36. ORBIX works from deflection to shock angle, so given 12.7° it returns β = 29.93° and M₂ = 2.371. With the exact pair (β = 30°, 12.77°) M₂ is 2.367. M₂ is sensitive to β minus the deflection, so the chart-read deflection alone accounts for the gap.",
         ],
         rows: [
           {

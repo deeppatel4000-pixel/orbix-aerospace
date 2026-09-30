@@ -25,15 +25,16 @@ import type { ReactNode } from "react";
  * on the first keystroke. Only such a tool passes `stale` (true or false);
  * a tool that recalculates as its inputs change never does, and its head
  * is the title alone. When passed, the head is a two-column grid: the
- * title, then a small `role="status"` slot on the same row. When stale,
- * the body takes `data-stale` and the figures turn muted, and the slot
- * shows "Inputs changed" (sans 500, text-sm, nowrap, about 110px), with
- * the rest of the instruction naming the tool's own submit verb
- * (`staleAction`, "Calculate" unless given) in screen-reader text. The
- * slot is always rendered for these tools and never wraps, so the head is
- * one row whether it is empty or filled (a long title wraps instead):
- * nothing below it moves on the first keystroke or on submit, and the
- * figures region is not re-announced when the line appears.
+ * title, then a slot on the same row. The slot always holds the visible
+ * words "Inputs changed" (sans 500, text-sm, nowrap, about 110px), hidden
+ * with `visibility: hidden` and from assistive technology until the
+ * figures are stale, so the slot is the same width either way and the
+ * title wraps the same way before and after the first keystroke: nothing
+ * below the head moves. A separate screen-reader-only `role="status"`
+ * span carries the live message, naming the tool's own submit verb
+ * (`staleAction`, "Calculate" unless given), so the figures region is not
+ * re-announced when the line appears. When stale, the body also takes
+ * `data-stale` and the figures turn muted.
  */
 
 interface CalculatorResultSectionProps {
@@ -78,15 +79,17 @@ export function CalculatorResultSection({
           {title}
         </h3>
         {stale === undefined ? null : (
-          <p aria-live="polite" className="lab-result-stale" role="status">
-            {stale ? (
-              <>
-                Inputs changed
-                <span className="sr-only">
-                  {". " + staleAction + " to update."}
-                </span>
-              </>
-            ) : null}
+          <p className="lab-result-stale">
+            <span
+              aria-hidden="true"
+              className="lab-result-stale__text"
+              data-shown={stale ? "" : undefined}
+            >
+              Inputs changed
+            </span>
+            <span aria-live="polite" className="sr-only" role="status">
+              {stale ? "Inputs changed. " + staleAction + " to update." : ""}
+            </span>
           </p>
         )}
       </div>

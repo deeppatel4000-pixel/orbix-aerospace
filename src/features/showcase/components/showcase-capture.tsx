@@ -21,31 +21,47 @@ const detailGroups = [
   { key: "engineeringFocus", title: "Focus" },
 ] as const;
 
-/** The three detail lists, across the page in one row of three from 40rem. */
+/**
+ * The most items any preset has in one detail list. From 1024px the lists
+ * are at least 9.625rem tall, the height of a five-item list (ISS Style
+ * Resupply, "Used in the Lab"), so their rule sits on the same line in
+ * every capture. The unit test holds every preset to this limit; a longer
+ * list needs a new minimum height.
+ */
+export const CAPTURE_DETAIL_MAX_ITEMS = 5;
+
+/**
+ * The three detail lists, across the page in one row of three from 40rem.
+ * `mt-auto` holds them to the bottom of the screen-filling body; the 12px
+ * above the rule, with the body's 20px gap, keeps the figure plate at
+ * least 32px clear of it.
+ */
 function CaptureDetails({ mission }: { mission: ShowcaseMission }) {
   return (
-    <div className="grid gap-5 border-t border-border-subtle pt-4 sm:grid-cols-3 sm:gap-x-8">
-      {detailGroups.map((group) => (
-        <section aria-labelledby={`capture-${group.key}`} key={group.key}>
-          <h2
-            className="orbix-caps whitespace-nowrap text-text-muted"
-            id={`capture-${group.key}`}
-          >
-            {group.title}
-          </h2>
-          <ul className="mt-2 grid gap-1.5 text-sm text-text-secondary">
-            {mission[group.key].map((item) => (
-              // An 8px hairline dash in place of a round bullet.
-              <li
-                className="flex items-start gap-2.5 before:mt-[calc(0.5lh-0.5px)] before:h-px before:w-2 before:shrink-0 before:bg-border-control"
-                key={item}
-              >
-                <span>{item}</span>
-              </li>
-            ))}
-          </ul>
-        </section>
-      ))}
+    <div className="mt-auto pt-3">
+      <div className="grid gap-5 border-t border-border-subtle pt-4 sm:grid-cols-3 sm:gap-x-8 lg:min-h-[9.625rem]">
+        {detailGroups.map((group) => (
+          <section aria-labelledby={`capture-${group.key}`} key={group.key}>
+            <h2
+              className="orbix-caps whitespace-nowrap text-text-muted"
+              id={`capture-${group.key}`}
+            >
+              {group.title}
+            </h2>
+            <ul className="mt-2 grid gap-1.5 text-sm text-text-secondary">
+              {mission[group.key].map((item) => (
+                // An 8px hairline dash in place of a round bullet.
+                <li
+                  className="flex items-start gap-2.5 before:mt-[calc(0.5lh-0.5px)] before:h-px before:w-2 before:shrink-0 before:bg-border-control"
+                  key={item}
+                >
+                  <span>{item}</span>
+                </li>
+              ))}
+            </ul>
+          </section>
+        ))}
+      </div>
     </div>
   );
 }
@@ -54,10 +70,10 @@ function CaptureDetails({ mission }: { mission: ShowcaseMission }) {
  * A single mission preset on one screen, without site chrome, for portfolio
  * screenshots. Every preset uses one template: from 1024px the figure (or
  * the entry conditions in its place) holds the first column and the title
- * and tables the second; the three detail lists run across both below,
- * and the note on the values sits in the title block, so a 1440x900
- * capture shows the whole preset. It lives outside the `(site)` layout
- * and is not indexed.
+ * and the other tables the second; the three detail lists run across both
+ * at the foot of the screen, and the note on the values sits in the title
+ * block, so a 1440x900 capture shows the whole preset. It lives outside
+ * the `(site)` layout and is not indexed.
  */
 export function ShowcaseCapture({ mission }: ShowcaseCaptureProps) {
   return (
@@ -86,8 +102,9 @@ export function ShowcaseCapture({ mission }: ShowcaseCaptureProps) {
           </ButtonLink>
         </header>
 
-        <div className="flex flex-1 flex-col justify-center py-8 sm:py-12 lg:py-4">
+        <div className="flex flex-1 flex-col justify-start py-8 sm:py-12 lg:pt-8 lg:pb-4">
           <MissionBody
+            className="flex-1"
             footer={<CaptureDetails mission={mission} />}
             header={
               <div className="max-w-[68ch]">

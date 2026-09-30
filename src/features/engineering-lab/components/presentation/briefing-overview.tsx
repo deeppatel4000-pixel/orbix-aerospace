@@ -1,16 +1,11 @@
 import { LabHeading } from "../visualization/lab-heading";
 
 export interface BriefingOverviewProps {
-  readonly analysesResolved: number;
   readonly purpose: string;
   readonly systems: readonly string[];
 }
 
-export function BriefingOverview({
-  analysesResolved,
-  purpose,
-  systems,
-}: BriefingOverviewProps) {
+export function BriefingOverview({ purpose, systems }: BriefingOverviewProps) {
   return (
     <section aria-labelledby="mission-briefing-overview-title">
       <LabHeading offset={1} id="mission-briefing-overview-title">
@@ -26,11 +21,7 @@ export function BriefingOverview({
         </div>
 
         <div>
-          <p className="orbix-label">
-            Mission systems (
-            <output className="orbix-data">{analysesResolved}</output> analyses
-            resolved)
-          </p>
+          <p className="orbix-label">Systems used</p>
           {systems.length > 0 ? (
             <ul className="mt-1 list-disc space-y-1 pl-5 text-sm leading-6 text-text-secondary">
               {systems.map((system) => (

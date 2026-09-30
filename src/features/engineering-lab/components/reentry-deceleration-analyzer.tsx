@@ -14,7 +14,7 @@ import {
   GEOPOTENTIAL_ALTITUDE_LABEL,
   focusFirstInvalidFieldOnEnter,
   CalculatorResultSection,
-  LAB_TOOL_SPLIT,
+  LAB_TOOL_SPLIT_STICKY,
   LabToolLayout,
   NotCalculated,
   ReadoutGrid,
@@ -22,9 +22,8 @@ import {
   LabFigure,
   EqDot,
   EQ_SUP,
-  LAB_GROUP,
-  LAB_GROUP_LEGEND,
   EQ_SUB_CLEAR,
+  EqFrac,
 } from "@/features/engineering-lab/components/shared";
 import type {
   ReentryDecelerationAnalysis,
@@ -158,12 +157,17 @@ const toolEquation = (
     equation={
       <>
         <span className={EQ_LINE}>
-          <span className={EQ_TERM}>β = m</span>
-          <wbr />
           <span className={EQ_TERM}>
-            /(C<sub>D</sub>
-            <EqDot />
-            A)
+            β ={" "}
+            <EqFrac
+              den={
+                <>
+                  C<sub>D</sub>
+                  <EqDot />A
+                </>
+              }
+              num="m"
+            />
           </span>
         </span>
         <span className={EQ_LINE}>
@@ -203,7 +207,11 @@ const toolEquation = (
       },
       { symbol: "V", meaning: "Velocity", unit: "m/s" },
       { symbol: "a", meaning: "Drag deceleration", unit: "m/s²" },
-      { symbol: "n", meaning: "Deceleration in standard gravities", unit: "g" },
+      {
+        symbol: "n",
+        meaning: "Deceleration in standard gravities",
+        unit: "g₀",
+      },
       {
         symbol: (
           <>
@@ -244,70 +252,65 @@ export function ReentryDecelerationAnalyzer() {
 
   return (
     <LabToolLayout equation={toolEquation}>
-      <div className={LAB_TOOL_SPLIT}>
+      <div className={LAB_TOOL_SPLIT_STICKY}>
         <div className="@container/col min-w-0">
           <form
             noValidate
             onKeyDown={focusFirstInvalidFieldOnEnter}
             onSubmit={preventSubmission}
           >
-            <fieldset className={LAB_GROUP}>
-              <legend className={LAB_GROUP_LEGEND}>
-                Reentry condition inputs
-              </legend>
-              <div className="mt-4 grid gap-5 @min-[36rem]/col:grid-cols-2">
-                <CalculatorNumberField
-                  error={errors.altitudeMetres}
-                  field="altitudeMetres"
-                  hint={GEOPOTENTIAL_ALTITUDE_HINT}
-                  idPrefix="reentry-deceleration"
-                  label={GEOPOTENTIAL_ALTITUDE_LABEL}
-                  onChange={updateValue}
-                  unit="m"
-                  value={values.altitudeMetres}
-                />
-                <CalculatorNumberField
-                  error={errors.velocityMetresPerSecond}
-                  field="velocityMetresPerSecond"
-                  hint="Positive instantaneous velocity relative to the surrounding atmosphere."
-                  idPrefix="reentry-deceleration"
-                  label="Velocity"
-                  onChange={updateValue}
-                  unit="m/s"
-                  value={values.velocityMetresPerSecond}
-                />
-                <CalculatorNumberField
-                  error={errors.vehicleMassKilograms}
-                  field="vehicleMassKilograms"
-                  hint="Positive vehicle mass at the analyzed flight condition."
-                  idPrefix="reentry-deceleration"
-                  label="Vehicle mass"
-                  onChange={updateValue}
-                  unit="kg"
-                  value={values.vehicleMassKilograms}
-                />
-                <CalculatorNumberField
-                  error={errors.dragCoefficient}
-                  field="dragCoefficient"
-                  hint="Positive dimensionless drag coefficient for the selected configuration."
-                  idPrefix="reentry-deceleration"
-                  label="Drag coefficient"
-                  onChange={updateValue}
-                  unit=""
-                  value={values.dragCoefficient}
-                />
-                <CalculatorNumberField
-                  error={errors.referenceAreaSquareMetres}
-                  field="referenceAreaSquareMetres"
-                  hint="Positive aerodynamic reference area for the selected configuration."
-                  idPrefix="reentry-deceleration"
-                  label="Reference area"
-                  onChange={updateValue}
-                  unit="m²"
-                  value={values.referenceAreaSquareMetres}
-                />
-              </div>
-            </fieldset>
+            <div className="grid gap-5 @min-[36rem]/col:grid-cols-2">
+              <CalculatorNumberField
+                error={errors.altitudeMetres}
+                field="altitudeMetres"
+                hint={GEOPOTENTIAL_ALTITUDE_HINT}
+                idPrefix="reentry-deceleration"
+                label={GEOPOTENTIAL_ALTITUDE_LABEL}
+                onChange={updateValue}
+                unit="m"
+                value={values.altitudeMetres}
+              />
+              <CalculatorNumberField
+                error={errors.velocityMetresPerSecond}
+                field="velocityMetresPerSecond"
+                hint="Positive instantaneous velocity relative to the surrounding atmosphere."
+                idPrefix="reentry-deceleration"
+                label="Velocity"
+                onChange={updateValue}
+                unit="m/s"
+                value={values.velocityMetresPerSecond}
+              />
+              <CalculatorNumberField
+                error={errors.vehicleMassKilograms}
+                field="vehicleMassKilograms"
+                hint="Positive vehicle mass at the analyzed flight condition."
+                idPrefix="reentry-deceleration"
+                label="Vehicle mass"
+                onChange={updateValue}
+                unit="kg"
+                value={values.vehicleMassKilograms}
+              />
+              <CalculatorNumberField
+                error={errors.dragCoefficient}
+                field="dragCoefficient"
+                hint="Positive dimensionless drag coefficient for the selected configuration."
+                idPrefix="reentry-deceleration"
+                label="Drag coefficient"
+                onChange={updateValue}
+                unit=""
+                value={values.dragCoefficient}
+              />
+              <CalculatorNumberField
+                error={errors.referenceAreaSquareMetres}
+                field="referenceAreaSquareMetres"
+                hint="Positive aerodynamic reference area for the selected configuration."
+                idPrefix="reentry-deceleration"
+                label="Reference area"
+                onChange={updateValue}
+                unit="m²"
+                value={values.referenceAreaSquareMetres}
+              />
+            </div>
 
             <ValidationErrorSummary
               errors={[
@@ -320,11 +323,7 @@ export function ReentryDecelerationAnalyzer() {
               ]}
             />
 
-            <div className="mt-7 flex flex-wrap items-center gap-x-5 gap-y-3">
-              <p className="min-w-0 flex-[1_1_16rem] text-sm leading-6 text-muted">
-                Valid changes update the atmosphere, vehicle, and deceleration
-                states immediately.
-              </p>
+            <div className="mt-7 flex flex-wrap items-center gap-x-4 gap-y-2">
               <Button
                 className="shrink-0 whitespace-nowrap"
                 variant="secondary"
@@ -332,6 +331,10 @@ export function ReentryDecelerationAnalyzer() {
               >
                 Reset inputs
               </Button>
+              <p className="min-w-0 flex-[1_1_14rem] text-[0.8125rem] leading-5 text-muted">
+                Valid changes update the atmosphere, vehicle, and deceleration
+                states immediately.
+              </p>
             </div>
           </form>
         </div>
@@ -432,7 +435,7 @@ export function ReentryDecelerationAnalyzer() {
                         className="orbix-data"
                         htmlFor={decelerationOutputIds}
                       >
-                        <LabFigure unit="g">
+                        <LabFigure unit="g₀">
                           {engineeringFormatter.format(
                             result.analysis.flight
                               .decelerationStandardGravities,

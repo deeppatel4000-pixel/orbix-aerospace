@@ -123,7 +123,7 @@ describe("MissionBriefing", () => {
     );
     expect(markup).toContain("Launch");
     expect(markup).toContain("Orbit insertion");
-    expect(markup).toContain("Recovery");
+    expect(markup).toContain("Reentry");
     expect(markup).toContain("Not simulated; shown for context only");
   });
 

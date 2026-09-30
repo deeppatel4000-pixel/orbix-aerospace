@@ -20,40 +20,29 @@ function joinList(items: readonly string[]): string {
 }
 
 /**
- * One sentence naming what the workspace was built from, and what was not
- * supplied. It replaces a five-row list of check icons that never changed
- * on this page and read as status chrome (spec 2).
+ * One sentence naming only what was not supplied, or null when every
+ * source is present: the header already names the systems used, so a
+ * "built from" sentence would repeat it as one more disclaimer.
  */
-export function describeMissionSources(checks: readonly SourceCheck[]): string {
+export function describeMissionSources(
+  checks: readonly SourceCheck[],
+): string | null {
   const byId = (id: string) => checks.find((check) => check.id === id);
   const analyses = ["orbital-systems", "vehicle-data", "thermal-data"]
     .map(byId)
     .filter((check): check is SourceCheck => check !== undefined);
-  const suppliedAnalyses = analyses
-    .filter((check) => check.available)
-    .map((check) => check.label);
-  const parts = [
-    byId("mission-profile")?.available ? "the mission profile" : null,
-    suppliedAnalyses.length > 0
-      ? `the ${joinList(suppliedAnalyses)} ${
-          suppliedAnalyses.length === 1 ? "analysis" : "analyses"
-        }`
-      : null,
-    byId("mission-report")?.available ? "the mission report" : null,
-  ].filter((part): part is string => part !== null);
+
+  if (!checks.some((check) => check.available)) {
+    return "No completed analysis has been supplied to this workspace yet.";
+  }
+
   const missing = checks
     .filter((check) => !check.available)
     .map((check) =>
       analyses.includes(check) ? `${check.label} analysis` : check.label,
     );
 
-  if (parts.length === 0) {
-    return "No completed analysis has been supplied to this workspace yet.";
-  }
-  const built = `Built from ${parts.length > 2 ? parts.slice(0, -1).join(", ") + ", and " + parts.at(-1) : parts.join(" and ")}.`;
-  return missing.length > 0
-    ? `${built} Not supplied: ${joinList(missing)}.`
-    : built;
+  return missing.length > 0 ? `Not supplied: ${joinList(missing)}.` : null;
 }
 
 export interface MissionStartupSequenceProps {
@@ -66,7 +55,7 @@ export interface MissionStartupSequenceProps {
 }
 
 /**
- * The sources of a mission workspace: which completed analyses were
+ * The sources of a mission workspace: which completed analyses were not
  * supplied, as one sentence. Mission control renders it at the foot of its header, under the
  * mission's name and identity row, so name and category are not repeated.
  *
@@ -121,14 +110,18 @@ export function MissionStartupSequence({
     },
   ];
 
+  const sources = describeMissionSources(checks);
+
   return (
     <>
-      <p
-        className="mt-6 max-w-[68ch] text-sm leading-6 text-muted"
-        data-mission-sources=""
-      >
-        {describeMissionSources(checks)}
-      </p>
+      {sources ? (
+        <p
+          className="mt-6 max-w-[68ch] text-sm leading-6 text-muted"
+          data-mission-sources=""
+        >
+          {sources}
+        </p>
+      ) : null}
 
       {children}
     </>

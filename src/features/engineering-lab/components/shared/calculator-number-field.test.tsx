@@ -37,9 +37,11 @@ describe("CalculatorNumberField", () => {
     expect(renderField(false, "m")).toContain("Unit: m");
   });
 
-  it("shows and announces no unit for a dimensionless quantity", () => {
+  it("announces no unit for a dimensionless quantity and draws no empty suffix cell", () => {
     const html = renderField(false, "");
     expect(html).not.toContain("Unit:");
+    // An empty bordered cell read as a missing unit, so the input fills
+    // the row instead.
     expect(html).not.toContain("orbix-field__unit");
   });
 

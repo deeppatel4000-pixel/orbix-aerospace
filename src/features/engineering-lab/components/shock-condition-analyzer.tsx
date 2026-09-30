@@ -131,12 +131,22 @@ const toolEquation = (
         </span>
         <span className={EQ_LINE}>
           <span className={EQ_TERM}>
-            p<sub className={EQ_SUB_CLEAR}>2</sub>/p
-            <sub className={EQ_SUB_CLEAR}>1</sub> = 1
+            <EqFrac
+              den={
+                <>
+                  p<sub className={EQ_SUB_CLEAR}>1</sub>
+                </>
+              }
+              num={
+                <>
+                  p<sub className={EQ_SUB_CLEAR}>2</sub>
+                </>
+              }
+            />{" "}
+            = 1
           </span>{" "}
-          <span className={EQ_TERM}>+ (2γ/(γ+1))</span>
-          <wbr />
           <span className={EQ_TERM}>
+            + <EqFrac den="γ+1" num="2γ" />
             <EqDot />
             (M
             <EqSubSup sub="1" sup="2" />
@@ -145,31 +155,81 @@ const toolEquation = (
         </span>
         <span className={EQ_LINE}>
           <span className={EQ_TERM}>
-            ρ<sub>2</sub>/ρ<sub>1</sub> = (γ+1)M
-            <EqSubSup sub="1" sup="2" />
-          </span>
-          <wbr />
-          <span className={EQ_TERM}>
-            /((γ−1)M
-            <EqSubSup sub="1" sup="2" />
-            +2)
+            <EqFrac
+              den={
+                <>
+                  ρ<sub>1</sub>
+                </>
+              }
+              num={
+                <>
+                  ρ<sub>2</sub>
+                </>
+              }
+            />{" "}
+            ={" "}
+            <EqFrac
+              den={
+                <>
+                  (γ−1)M
+                  <EqSubSup sub="1" sup="2" /> + 2
+                </>
+              }
+              num={
+                <>
+                  (γ+1)M
+                  <EqSubSup sub="1" sup="2" />
+                </>
+              }
+            />
           </span>
         </span>
         <span className={EQ_LINE}>
           <span className={EQ_TERM}>
-            T<sub>2</sub>/T<sub>1</sub> = (p
-            <sub className={EQ_SUB_CLEAR}>2</sub>/p
-            <sub className={EQ_SUB_CLEAR}>1</sub>)
-          </span>
-          <wbr />
-          <span className={EQ_TERM}>
-            /(ρ<sub>2</sub>/ρ<sub>1</sub>)
+            <EqFrac
+              den={
+                <>
+                  T<sub>1</sub>
+                </>
+              }
+              num={
+                <>
+                  T<sub>2</sub>
+                </>
+              }
+            />{" "}
+            ={" "}
+            <EqFrac
+              den={
+                <>
+                  p<sub className={EQ_SUB_CLEAR}>1</sub>
+                </>
+              }
+              num={
+                <>
+                  p<sub className={EQ_SUB_CLEAR}>2</sub>
+                </>
+              }
+            />
+            <EqDot />
+            <EqFrac
+              den={
+                <>
+                  ρ<sub>2</sub>
+                </>
+              }
+              num={
+                <>
+                  ρ<sub>1</sub>
+                </>
+              }
+            />
           </span>
         </span>
       </>
     }
     label="Normal shock relations"
-    spokenAs="M 2 squared equals gamma minus 1 times M 1 squared, plus 2, all over 2 gamma M 1 squared minus the quantity gamma minus 1. The pressure ratio equals 1 plus 2 gamma over gamma plus 1, times M 1 squared minus 1. The density ratio equals gamma plus 1 times M 1 squared over gamma minus 1 times M 1 squared plus 2. The temperature ratio equals the pressure ratio over the density ratio."
+    spokenAs="M 2 squared equals gamma minus 1 times M 1 squared, plus 2, all over 2 gamma M 1 squared minus the quantity gamma minus 1. The pressure ratio equals 1 plus 2 gamma over gamma plus 1, times M 1 squared minus 1. The density ratio equals gamma plus 1 times M 1 squared over gamma minus 1 times M 1 squared plus 2. The temperature ratio equals the pressure ratio times rho 1 over rho 2."
     variables={[
       {
         symbol: (
@@ -254,11 +314,7 @@ export function ShockConditionAnalyzer() {
               idPrefix="shock-condition"
             />
 
-            <div className="mt-7 flex flex-wrap items-center gap-x-5 gap-y-3">
-              <p className="min-w-0 flex-[1_1_16rem] text-sm leading-6 text-muted">
-                Valid changes update the upstream and downstream states
-                immediately.
-              </p>
+            <div className="mt-7 flex flex-wrap items-center gap-x-4 gap-y-2">
               <Button
                 className="shrink-0 whitespace-nowrap"
                 variant="secondary"
@@ -266,6 +322,10 @@ export function ShockConditionAnalyzer() {
               >
                 Reset inputs
               </Button>
+              <p className="min-w-0 flex-[1_1_14rem] text-[0.8125rem] leading-5 text-muted">
+                Valid changes update the upstream and downstream states
+                immediately.
+              </p>
             </div>
           </form>
         </div>
@@ -424,7 +484,7 @@ export function ShockConditionAnalyzer() {
             </p>
             <ul className="mt-4 grid list-disc gap-2 pl-5 text-sm leading-6 text-muted @min-[36rem]/col:grid-cols-2">
               <li>Perfect gas approximation</li>
-              <li>Dry air gamma = 1.4</li>
+              <li>Dry air, γ = 1.4</li>
               <li>One-dimensional normal shock</li>
               <li>No boundary-layer effects</li>
               <li>No heat transfer</li>

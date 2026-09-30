@@ -1,5 +1,7 @@
 import type { ReactNode } from "react";
 
+import { cn } from "@/lib/cn";
+
 import type { Measurement, MeasurementUnit } from "@/features/vehicles/types";
 import {
   formatMeasurementParts,
@@ -114,12 +116,6 @@ export function measurementParts(measurement: Measurement<MeasurementUnit>) {
     : { unit, value: `${value}${floor}` };
 }
 
-/** `measurementParts` as one string, for card spec rows: "50,000+ ft". */
-export function recordText(measurement: Measurement<MeasurementUnit>) {
-  const { unit, value } = measurementParts(measurement);
-  return unit ? `${value} ${unit}` : value;
-}
-
 /** The source's qualifier as a sentence-case label, or undefined if exact. */
 function qualifierNote(measurement: Measurement<MeasurementUnit>) {
   const { qualifier } = measurement;
@@ -222,6 +218,26 @@ export function minimumNote(
     : undefined;
 }
 
+/**
+ * The notes for a table's figures: `MINIMUM_NOTE` when one is a published
+ * minimum, and, when one is published as nominal, what an unmarked figure
+ * is (spec sheets drop the "Nominal" line under each figure, so the
+ * definition is said once here instead).
+ */
+export function basisNote(
+  measurements: readonly (Measurement<MeasurementUnit> | undefined)[],
+) {
+  const qualifiers = new Set(
+    measurements.map((measurement) => measurement?.qualifier ?? "exact"),
+  );
+  // One wording for every table, true whether the sheet mixes exact and
+  // nominal figures or has only nominal ones.
+  const unmarked = qualifiers.has("nominal")
+    ? "A figure with no qualifier is a published or nominal value."
+    : undefined;
+  return joinTableNotes(unmarked, minimumNote(measurements));
+}
+
 /** Notes for under a table, joined as sentences, or undefined if none. */
 export function joinTableNotes(...notes: (string | undefined)[]) {
   const present = notes.filter((note): note is string => Boolean(note));
@@ -232,15 +248,27 @@ export function joinTableNotes(...notes: (string | undefined)[]) {
  * The one dual-unit pattern used in every vehicle table (spec 8): the
  * published figure, then the ORBIX conversion on a second muted line, then
  * the source's qualifier ("Approximate", "Published minimum") on a third
- * line in the sans face. The qualifier is always read under its own figure,
- * so no vehicle table needs a separate Basis column, which on a phone sat
- * off-screen or was clipped mid-word.
+ * line in the sans face, except "Nominal", which the table note defines
+ * (`basisNote`). On a phone the qualifier is always read under its own
+ * figure, since a separate Basis column there sat off-screen or was
+ * clipped mid-word; the Specifications and Performance sheets move it to
+ * a Basis column from 48rem (`MeasurementTable`).
  */
 export function renderDualMeasurement(
   measurement: Measurement<MeasurementUnit>,
+  {
+    qualifierClassName,
+  }: {
+    /**
+     * Classes for the qualifier line, such as `md:hidden` in a table that
+     * gives the qualifier its own Basis column from 48rem
+     * (`measurementBasis`).
+     */
+    qualifierClassName?: string;
+  } = {},
 ) {
   const converted = convertMeasurement(measurement);
-  const note = qualifierNote(measurement);
+  const note = measurementBasis(measurement);
   const floor = measurement.qualifier === "minimum" ? "+" : "";
 
   return (
@@ -255,10 +283,28 @@ export function renderDualMeasurement(
         </span>
       ) : null}
       {note ? (
-        <span className="mt-1 block font-sans text-xs whitespace-nowrap text-muted">
+        <span
+          className={cn(
+            "mt-1 block font-sans text-xs whitespace-nowrap text-muted",
+            qualifierClassName,
+          )}
+        >
           {note}
         </span>
       ) : null}
     </span>
   );
+}
+
+/**
+ * The qualifier `renderDualMeasurement` sets under a figure ("Approximate",
+ * "Published minimum"), or undefined when exact or nominal (`basisNote`
+ * defines an unmarked figure), for a table's Basis column.
+ */
+export function measurementBasis(measurement: Measurement<MeasurementUnit>) {
+  // "Nominal" under every row turned the sheet into noise; `basisNote`
+  // says once, under the table, what an unmarked figure is.
+  return measurement.qualifier === "nominal"
+    ? undefined
+    : qualifierNote(measurement);
 }

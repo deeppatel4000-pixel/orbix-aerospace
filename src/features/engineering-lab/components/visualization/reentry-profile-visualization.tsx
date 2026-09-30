@@ -21,6 +21,18 @@ const MAXIMUM_RENDERED_POINTS = 96;
 
 /** The chart's viewBox width, user units. */
 const CHART_WIDTH = 660;
+/** Each vertical axis is split into this many labelled steps. */
+const GRID_STEPS = 4;
+
+/** The smallest 1, 2, 2.5 or 5 times a power of ten at or above `raw`. */
+function roundAxisStep(raw: number): number {
+  if (!(raw > 0)) return 1;
+  const magnitude = 10 ** Math.floor(Math.log10(raw));
+  const multiple =
+    [1, 2, 2.5, 5, 10].find((factor) => factor * magnitude >= raw * 0.999) ??
+    10;
+  return multiple * magnitude;
+}
 
 function sampleTrajectoryPoints(
   points: readonly ReentryTrajectoryPoint[],
@@ -70,15 +82,28 @@ export function ReentryProfileChart({
     ...trajectoryPoints.map((point) => point.velocityMetersPerSecond),
     1,
   );
-  const altitudeTick = formatLabValue(maximumAltitude / 1000);
-  const velocityTick = formatLabValue(maximumVelocity / 1000);
+  // Each axis runs to four round steps (10 km as 2.5 km steps, 0.75 km/s
+  // as 0.2 km/s steps to 0.8), so every gridline carries a label.
+  const altitudeStepKm = roundAxisStep(maximumAltitude / 1000 / GRID_STEPS);
+  const velocityStepKm = roundAxisStep(maximumVelocity / 1000 / GRID_STEPS);
+  const altitudeAxisMax = altitudeStepKm * GRID_STEPS * 1000;
+  const velocityAxisMax = velocityStepKm * GRID_STEPS * 1000;
+  const tickSteps = Array.from({ length: GRID_STEPS + 1 }, (_, step) => step);
+  const altitudeTicks = tickSteps.map((step) =>
+    formatLabValue(step * altitudeStepKm),
+  );
+  const velocityTicks = tickSteps.map((step) =>
+    formatLabValue(step * velocityStepKm),
+  );
   // B612 Mono advances about 0.62em per character; the axes give way so
   // the widest tick label always fits inside the drawing.
   const labelWidth = (text: string) => text.length * fontSize * 0.62;
-  const plotLeft = Math.max(64, Math.ceil(labelWidth(altitudeTick) + 16));
+  const widest = (labels: readonly string[]) =>
+    Math.max(...labels.map(labelWidth));
+  const plotLeft = Math.max(64, Math.ceil(widest(altitudeTicks) + 16));
   const plotRight = Math.min(
     596,
-    Math.floor(CHART_WIDTH - labelWidth(velocityTick) - 12),
+    Math.floor(CHART_WIDTH - widest(velocityTicks) - 12),
   );
   // Axis titles sit on their own line above the top tick labels.
   const axisTitleTopY = Math.ceil(fontSize + 6);
@@ -94,9 +119,9 @@ export function ReentryProfileChart({
   const plotX = (timeSeconds: number) =>
     plotLeft + (timeSeconds / maximumTime) * plotWidth;
   const plotAltitudeY = (altitudeMeters: number) =>
-    plotBottom - (altitudeMeters / maximumAltitude) * plotHeight;
+    plotBottom - (altitudeMeters / altitudeAxisMax) * plotHeight;
   const plotVelocityY = (velocityMetersPerSecond: number) =>
-    plotBottom - (velocityMetersPerSecond / maximumVelocity) * plotHeight;
+    plotBottom - (velocityMetersPerSecond / velocityAxisMax) * plotHeight;
   const toPath = (y: (point: ReentryTrajectoryPoint) => number) =>
     sampledPoints
       .map(
@@ -108,16 +133,25 @@ export function ReentryProfileChart({
   const velocityPath = toPath((point) =>
     plotVelocityY(point.velocityMetersPerSecond),
   );
+  // Markers are held a marker's half-width inside the plot, so a peak at
+  // t = 0 or at an axis limit never sits on the axis or its tick labels.
+  const markerInset = 7;
+  const insetX = (x: number) =>
+    Math.min(Math.max(x, plotLeft + markerInset), plotRight - markerInset);
+  const insetY = (y: number) =>
+    Math.min(Math.max(y, plotTop + markerInset), plotBottom - markerInset);
   const peakDeceleration = analysis.trajectory.peakDeceleration;
-  const peakDecelerationX = plotX(peakDeceleration.timeSeconds);
-  const peakDecelerationY = plotAltitudeY(peakDeceleration.altitudeMeters);
+  const peakDecelerationX = insetX(plotX(peakDeceleration.timeSeconds));
+  const peakDecelerationY = insetY(
+    plotAltitudeY(peakDeceleration.altitudeMeters),
+  );
   const peakHeating =
     analysis.thermalHistory.thermalPoints.length > 0
       ? analysis.thermalHistory.peakHeatFlux
       : undefined;
-  const peakHeatingX = peakHeating ? plotX(peakHeating.timeSeconds) : 0;
+  const peakHeatingX = peakHeating ? insetX(plotX(peakHeating.timeSeconds)) : 0;
   const peakHeatingY = peakHeating
-    ? plotAltitudeY(peakHeating.altitudeMeters)
+    ? insetY(plotAltitudeY(peakHeating.altitudeMeters))
     : 0;
   // When the two peaks land on (nearly) the same spot, the triangle would
   // cover the square. The square then moves a marker's width to the side,
@@ -143,7 +177,6 @@ export function ReentryProfileChart({
   // Direction from the true point to the moved square, for the leader.
   const leaderDirection = Math.sign(decelerationMarkerX - peakDecelerationX);
   const visualSummary = `${analysis.vehicle.vehicleName} descends from ${formatLabAltitude(analysis.trajectory.initialState.altitudeMeters)} to ${formatLabAltitude(analysis.trajectory.finalState.altitudeMeters)} while velocity changes from ${formatLabValue(analysis.trajectory.initialState.velocityMetersPerSecond)} m/s to ${formatLabValue(analysis.trajectory.finalState.velocityMetersPerSecond)} m/s over ${formatLabValue(analysis.trajectory.durationSeconds)} s.`;
-  const gridFractions = [0.25, 0.5, 0.75];
 
   return (
     <figure className="m-0">
@@ -157,15 +190,15 @@ export function ReentryProfileChart({
         <title id={titleId}>Vehicle reentry time history</title>
         <desc id={descriptionId}>{visualSummary}</desc>
 
-        {gridFractions.map((fraction) => (
+        {tickSteps.slice(1, -1).map((step) => (
           <line
-            key={fraction}
+            key={step}
             stroke="var(--orbix-data-grid)"
             strokeWidth="1"
             x1={plotLeft}
             x2={plotRight}
-            y1={plotBottom - fraction * plotHeight}
-            y2={plotBottom - fraction * plotHeight}
+            y1={plotBottom - (step / GRID_STEPS) * plotHeight}
+            y2={plotBottom - (step / GRID_STEPS) * plotHeight}
           />
         ))}
         <line
@@ -238,18 +271,20 @@ export function ReentryProfileChart({
           fontFamily="var(--font-telemetry), monospace"
           fontSize={fontSize}
         >
-          <text textAnchor="end" x={plotLeft - 8} y={plotTop + 4}>
-            {figureTspans(altitudeTick)}
-          </text>
-          <text textAnchor="end" x={plotLeft - 8} y={plotBottom + 4}>
-            0
-          </text>
-          <text textAnchor="start" x={plotRight + 8} y={plotTop + 4}>
-            {figureTspans(velocityTick)}
-          </text>
-          <text textAnchor="start" x={plotRight + 8} y={plotBottom + 4}>
-            0
-          </text>
+          {tickSteps.map((step) => {
+            const y = plotBottom - (step / GRID_STEPS) * plotHeight + 4;
+
+            return (
+              <g key={step}>
+                <text textAnchor="end" x={plotLeft - 8} y={y}>
+                  {figureTspans(altitudeTicks[step] ?? "")}
+                </text>
+                <text textAnchor="start" x={plotRight + 8} y={y}>
+                  {figureTspans(velocityTicks[step] ?? "")}
+                </text>
+              </g>
+            );
+          })}
           <text textAnchor="start" x={plotLeft} y={timeLabelY}>
             0 s
           </text>
@@ -325,9 +360,8 @@ export function ReentryProfileChart({
         </ul>
         {markersCoincide ? (
           <p className="mt-2 max-w-[68ch] text-pretty">
-            Peak deceleration and peak heating fall so close together on this
-            chart that the deceleration square is drawn beside the heating
-            triangle, joined to its true point by a short leader.
+            The deceleration square is offset from the heating triangle; a
+            leader marks its true point.
           </p>
         ) : null}
       </figcaption>

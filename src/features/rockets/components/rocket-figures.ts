@@ -1,4 +1,8 @@
-import { formatLaunchConfiguration } from "@/features/rockets/utils";
+import { getRocketVisual } from "@/features/rockets/data/rocket-visuals";
+import {
+  formatLaunchConfiguration,
+  formatRocketClassification,
+} from "@/features/rockets/utils";
 import { measurementParts } from "@/features/vehicles/components/measurement-display";
 import type {
   Measurement,
@@ -69,4 +73,44 @@ export function thrustParts(thrust: Measurement<MeasurementUnit>) {
 export function thrustText(thrust: Measurement<MeasurementUnit>) {
   const { unit, value } = thrustParts(thrust);
   return unit ? `${value} ${unit}` : value;
+}
+
+/**
+ * The classification line, "Two-stage launch vehicle, partially reusable",
+ * with the visual record's `reuseLabel` in place of the reuse clause where
+ * one is set, so a design still in development is not labelled fully
+ * reusable as a fact.
+ */
+export function rocketClassification(rocket: Rocket) {
+  const classification = formatRocketClassification(rocket.stages);
+  const reuseLabel = getRocketVisual(rocket.id)?.reuseLabel;
+  if (!reuseLabel) return classification;
+  const [stages] = classification.split(/\s*,\s*/);
+  return `${stages}, ${reuseLabel}`;
+}
+
+/** Newtons per published thrust unit, for the card figure in meganewtons. */
+const newtons: Partial<Record<MeasurementUnit, number>> = {
+  kN: 1e3,
+  lbf: 4.4482216152605,
+  MN: 1e6,
+  N: 1,
+};
+
+/**
+ * Liftoff thrust for the registry and related-vehicle cards, in meganewtons
+ * to one decimal place ("7.7 MN", "34.5 MN"), so cards in one grid can be
+ * compared at a glance whatever unit the source published. The profile,
+ * the hero spec panel and the tables keep the published unit
+ * (`thrustText`); the registry note says the card figure is converted.
+ * A published minimum keeps its plus sign.
+ */
+export function cardThrustText(thrust: Measurement<MeasurementUnit>) {
+  const factor = newtons[thrust.unit];
+  if (factor === undefined) return thrustText(thrust);
+  const meganewtons = new Intl.NumberFormat("en-US", {
+    maximumFractionDigits: 1,
+    minimumFractionDigits: 1,
+  }).format((thrust.value * factor) / 1e6);
+  return `${meganewtons}${thrust.qualifier === "minimum" ? "+" : ""} MN`;
 }

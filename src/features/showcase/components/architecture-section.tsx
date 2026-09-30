@@ -337,7 +337,7 @@ export function ArchitectureSection() {
           </ul>
         </div>
         <figcaption
-          className="max-w-[40ch] border-t border-border-subtle pt-4 text-sm leading-relaxed text-text-secondary lg:col-start-2 lg:self-end lg:pb-2"
+          className="max-w-[40ch] border-t border-border-subtle pt-4 text-sm leading-relaxed text-text-secondary lg:col-start-2 lg:mt-8 lg:self-start"
           id="architecture-figure-caption"
         >
           Analyses import calculators and data, calculators and reports import
@@ -347,7 +347,7 @@ export function ArchitectureSection() {
       </DiagramPlate>
 
       {/* Each layer once: its name and source folders, then what it holds. */}
-      <dl className="mt-12 border-t border-border-subtle sm:ml-20">
+      <dl className="mt-12 border-t border-border-subtle">
         {ARCHITECTURE_LAYERS.map((layer) => (
           <div
             className="grid gap-3 border-b border-border-subtle py-6 last:border-b-0 last:pb-0 md:grid-cols-[minmax(0,20rem)_minmax(0,40rem)] md:gap-10"

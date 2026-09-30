@@ -1,7 +1,10 @@
 import { AircraftImage } from "@/features/aircraft/components/aircraft-image";
 import { getAircraftVisual } from "@/features/aircraft/data/aircraft-visuals";
 import { formatAircraftRoles } from "@/features/aircraft/utils";
-import { recordText } from "@/features/vehicles/components/measurement-display";
+import {
+  measurementParts,
+  panelSecondary,
+} from "@/features/vehicles/components/measurement-display";
 import { VehicleMediaFrame } from "@/features/vehicles/components/vehicle-media-frame";
 import {
   VehicleRecordCard,
@@ -15,6 +18,11 @@ interface AircraftCardProps {
   className?: string;
   /** `feature` for the first registry card, which spans two columns. */
   layout?: VehicleRecordCardLayout;
+  /**
+   * A stacked card in the feature card's row: four figures from 64rem, so
+   * it ends on the same baseline as the feature card beside it.
+   */
+  leadRow?: boolean;
   priority?: boolean;
   sizes?: string;
   variant?: VehicleRecordCardVariant;
@@ -25,19 +33,21 @@ interface AircraftCardProps {
  * one-line `cardSummary` from the visual record and a two-spec row of
  * maximum speed and service ceiling. Both are required fields on
  * `Aircraft`, so neither can be missing. The feature card (the photograph
- * on the left half of a two-column card, the text on the right) adds the
- * description, range and the first-flight year from 64rem. A published
+ * across a two-column card at 2:1, the text in two columns under it) adds
+ * the description, range and the first-flight year from 48rem. A published
  * minimum carries a plus sign.
  */
 export function AircraftCard({
   aircraft,
   className,
   layout = "stacked",
+  leadRow = false,
   priority = false,
   sizes,
   variant = "default",
 }: AircraftCardProps) {
   const isFeature = layout === "feature";
+  const { maxSpeed, range, serviceCeiling } = aircraft.performance;
 
   return (
     <VehicleRecordCard
@@ -46,6 +56,7 @@ export function AircraftCard({
       description={isFeature ? aircraft.description : undefined}
       href={`/aircraft/${aircraft.id}`}
       layout={layout}
+      leadRow={leadRow}
       media={
         <VehicleMediaFrame aspect="wide" settle>
           <AircraftImage
@@ -55,10 +66,12 @@ export function AircraftCard({
             framing={isFeature ? "feature" : "card"}
             priority={priority}
             sizes={
-              // The feature photograph is half of a two-column card from
-              // 40rem, about as wide as one column.
+              // The feature photograph runs across a two-column card from
+              // 40rem.
               sizes ??
-              "(max-width: 639px) 100vw, (max-width: 1023px) 50vw, 23rem"
+              (isFeature
+                ? "(max-width: 1023px) 100vw, 46rem"
+                : "(max-width: 639px) 100vw, (max-width: 1023px) 50vw, 23rem")
             }
           />
         </VehicleMediaFrame>
@@ -67,16 +80,23 @@ export function AircraftCard({
       specs={[
         {
           label: "Maximum speed",
-          value: recordText(aircraft.performance.maxSpeed),
+          secondary: panelSecondary(maxSpeed),
+          ...measurementParts(maxSpeed),
         },
         {
           // "Service ceiling" wraps in a 1024px three-column card; the
           // profile and the hero give the full term.
           label: "Ceiling",
-          value: recordText(aircraft.performance.serviceCeiling),
+          secondary: panelSecondary(serviceCeiling),
+          ...measurementParts(serviceCeiling),
         },
-        // The feature card's third and fourth figures, from 64rem.
-        { label: "Range", value: recordText(aircraft.performance.range) },
+        // The third and fourth figures of the feature card (from 48rem)
+        // and of the card beside it (from 64rem).
+        {
+          label: "Range",
+          secondary: panelSecondary(range),
+          ...measurementParts(range),
+        },
         { label: "First flight", value: aircraft.firstFlight.slice(0, 4) },
       ]}
       summary={getAircraftVisual(aircraft.id)?.cardSummary}

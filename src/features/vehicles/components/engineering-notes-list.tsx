@@ -32,7 +32,7 @@ export function EngineeringNotesList({
       <div className="[&>article:first-child]:pt-0">
         {notes.map((note) => (
           <article
-            className="grid gap-3 border-b border-border-subtle py-6 sm:grid-cols-[10rem_minmax(0,1fr)] sm:gap-6"
+            className="grid gap-3 border-b border-border-subtle py-6 last:border-b-0 last:pb-0 sm:grid-cols-[10rem_minmax(0,1fr)] sm:gap-6"
             key={note.id}
           >
             <h3 className="orbix-caps pt-1 text-accent">

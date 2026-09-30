@@ -274,6 +274,7 @@ function collectValidationMessages(
 
 const toolEquation = (
   <EquationBlock
+    className="lab-equation--long"
     equation={
       <>
         <span className={EQ_LINE}>
@@ -694,10 +695,7 @@ export function InletCompressionAnalyzer() {
 
             <ValidationErrorSummary errors={validationMessages} />
 
-            <div className="mt-7 flex flex-wrap items-center gap-x-5 gap-y-3">
-              <p className="min-w-0 flex-[1_1_16rem] text-sm leading-6 text-muted">
-                Valid changes update the complete inlet workflow immediately.
-              </p>
+            <div className="mt-7 flex flex-wrap items-center gap-x-4 gap-y-2">
               <Button
                 className="shrink-0 whitespace-nowrap"
                 variant="secondary"
@@ -705,6 +703,9 @@ export function InletCompressionAnalyzer() {
               >
                 Reset inputs
               </Button>
+              <p className="min-w-0 flex-[1_1_14rem] text-[0.8125rem] leading-5 text-muted">
+                Valid changes update the complete inlet workflow immediately.
+              </p>
             </div>
           </form>
         </div>

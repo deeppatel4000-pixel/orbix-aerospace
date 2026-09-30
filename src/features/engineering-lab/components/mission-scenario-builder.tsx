@@ -24,14 +24,14 @@ type NumericField =
   | "heatingCoefficient"
   | "inclinationChangeDegrees"
   | "initialAltitudeMeters"
-  | "initialAltitudeMetres"
+  | "initialAltitudeKilometres"
   | "initialFlightPathAngleDegrees"
   | "initialVelocityMetersPerSecond"
   | "massKilograms"
   | "noseRadiusMetres"
   | "referenceAreaSquareMetres"
   | "safetyFactor"
-  | "targetAltitudeMetres";
+  | "targetAltitudeKilometres";
 
 type SystemField =
   | "enableOrbitalTransfer"
@@ -78,7 +78,7 @@ const initialValues: MissionScenarioFormValues = {
   heatingCoefficient: "",
   inclinationChangeDegrees: "5",
   initialAltitudeMeters: "10000",
-  initialAltitudeMetres: "200000",
+  initialAltitudeKilometres: "200",
   initialFlightPathAngleDegrees: "-6",
   initialVelocityMetersPerSecond: "1200",
   massKilograms: "6000",
@@ -86,7 +86,7 @@ const initialValues: MissionScenarioFormValues = {
   noseRadiusMetres: "1.2",
   referenceAreaSquareMetres: "14",
   safetyFactor: "1.5",
-  targetAltitudeMetres: "400000",
+  targetAltitudeKilometres: "400",
   vehicleName: "Educational Reentry Vehicle",
 };
 
@@ -122,8 +122,10 @@ function createConfiguration(
       inclinationChangeDegrees: parseRequiredNumber(
         values.inclinationChangeDegrees,
       ),
-      initialAltitudeMetres: parseRequiredNumber(values.initialAltitudeMetres),
-      targetAltitudeMetres: parseRequiredNumber(values.targetAltitudeMetres),
+      initialAltitudeMetres:
+        parseRequiredNumber(values.initialAltitudeKilometres) * 1000,
+      targetAltitudeMetres:
+        parseRequiredNumber(values.targetAltitudeKilometres) * 1000,
     },
     reentry: {
       initialAltitudeMeters: parseRequiredNumber(values.initialAltitudeMeters),
@@ -310,14 +312,6 @@ export function MissionScenarioBuilder({
 
   return (
     <div className="space-y-8">
-      <div className="max-w-[68ch]">
-        <p className="text-sm leading-6 text-muted">
-          This builder creates the existing mission-profile input object.
-          Engineering calculations begin only inside the Mission Profile
-          Analyzer, which runs below once you select Analyze mission.
-        </p>
-      </div>
-
       <form
         aria-label="Custom mission scenario"
         className="space-y-8"
@@ -530,22 +524,22 @@ export function MissionScenarioBuilder({
             <PanelHeading>Orbital parameters</PanelHeading>
             <div className="grid gap-6 md:grid-cols-2">
               <CalculatorNumberField
-                field="initialAltitudeMetres"
+                field="initialAltitudeKilometres"
                 hint="Starting circular-orbit altitude."
                 idPrefix="mission-scenario"
                 label="Initial altitude"
                 onChange={updateNumericField}
-                unit="m"
-                value={values.initialAltitudeMetres}
+                unit="km"
+                value={values.initialAltitudeKilometres}
               />
               <CalculatorNumberField
-                field="targetAltitudeMetres"
+                field="targetAltitudeKilometres"
                 hint="Target circular-orbit altitude."
                 idPrefix="mission-scenario"
                 label="Target altitude"
                 onChange={updateNumericField}
-                unit="m"
-                value={values.targetAltitudeMetres}
+                unit="km"
+                value={values.targetAltitudeKilometres}
               />
               <CalculatorNumberField
                 field="inclinationChangeDegrees"
@@ -595,7 +589,7 @@ export function MissionScenarioBuilder({
                 </div>
                 <CalculatorNumberField
                   field="massKilograms"
-                  hint="Constant vehicle mass used by existing reentry analyses."
+                  hint="Vehicle mass, held constant through reentry."
                   idPrefix="mission-scenario"
                   label="Vehicle mass"
                   onChange={updateNumericField}
@@ -663,16 +657,16 @@ export function MissionScenarioBuilder({
               <div className="grid gap-6 md:grid-cols-2">
                 <CalculatorNumberField
                   field="safetyFactor"
-                  hint="Safety factor passed to existing TPS workflows."
+                  hint="Multiplier applied to the heat load when sizing the heat shield."
                   idPrefix="mission-scenario"
                   label="Safety factor"
                   onChange={updateNumericField}
-                  unit="ratio"
+                  unit=""
                   value={values.safetyFactor}
                 />
                 <CalculatorNumberField
                   field="noseRadiusMetres"
-                  hint="Vehicle nose radius used by existing heating analysis."
+                  hint="Sets the stagnation-point heating estimate."
                   idPrefix="mission-scenario"
                   label="Nose radius"
                   onChange={updateNumericField}

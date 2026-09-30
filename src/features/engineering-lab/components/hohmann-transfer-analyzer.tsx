@@ -23,6 +23,8 @@ import {
   EQ_SUP,
   LAB_GROUP,
   LAB_GROUP_LEGEND,
+  EqFrac,
+  EQ_PAREN,
 } from "@/features/engineering-lab/components/shared";
 import type {
   HohmannTransferAnalysisInputs,
@@ -158,21 +160,42 @@ const toolEquation = (
             a<sub>t</sub>
           </span>{" "}
           <span className={EQ_TERM}>
-            = (r<sub>1</sub>+r<sub>2</sub>)/2
+            ={" "}
+            <EqFrac
+              den="2"
+              num={
+                <>
+                  r<sub>1</sub>+r<sub>2</sub>
+                </>
+              }
+            />
           </span>
         </span>
         <span className={EQ_LINE}>
           <span className={EQ_TERM}>
             v<sub>c</sub>(r)<sup className={EQ_SUP}>2</sup>
           </span>{" "}
-          <span className={EQ_TERM}>= μ/r</span>
+          <span className={EQ_TERM}>
+            = <EqFrac den="r" num="μ" />
+          </span>
         </span>
         <span className={EQ_LINE}>
           <span className={EQ_TERM}>
             v<sub>t</sub>(r)<sup className={EQ_SUP}>2</sup>
           </span>{" "}
           <span className={EQ_TERM}>
-            = μ(2/r−1/a<sub>t</sub>)
+            = μ<span className={EQ_PAREN}>(</span>
+            <EqFrac den="r" num="2" />
+            {" − "}
+            <EqFrac
+              den={
+                <>
+                  a<sub>t</sub>
+                </>
+              }
+              num="1"
+            />
+            <span className={EQ_PAREN}>)</span>
           </span>
         </span>
         <span className={EQ_LINE}>
@@ -376,10 +399,7 @@ export function HohmannTransferAnalyzer() {
               ]}
             />
 
-            <div className="mt-7 flex flex-wrap items-center gap-x-5 gap-y-3">
-              <p className="min-w-0 flex-[1_1_16rem] text-sm leading-6 text-muted">
-                Valid changes update the ideal transfer solution immediately.
-              </p>
+            <div className="mt-7 flex flex-wrap items-center gap-x-4 gap-y-2">
               <Button
                 className="shrink-0 whitespace-nowrap"
                 variant="secondary"
@@ -387,6 +407,9 @@ export function HohmannTransferAnalyzer() {
               >
                 Reset inputs
               </Button>
+              <p className="min-w-0 flex-[1_1_14rem] text-[0.8125rem] leading-5 text-muted">
+                Valid changes update the ideal transfer solution immediately.
+              </p>
             </div>
           </form>
         </div>
@@ -398,102 +421,6 @@ export function HohmannTransferAnalyzer() {
           >
             {result ? (
               <>
-                <ReadoutGrid columns={3} title="Initial orbit">
-                  <div>
-                    <dt className="orbix-label">Altitude</dt>
-                    <dd className="mt-1">
-                      <output
-                        className="orbix-data"
-                        htmlFor={initialOrbitOutputIds}
-                      >
-                        <LabFigure unit="m">
-                          {distanceFormatter.format(
-                            result.initialOrbit.altitudeMetres,
-                          )}
-                        </LabFigure>
-                      </output>
-                    </dd>
-                  </div>
-                  <div>
-                    <dt className="orbix-label">Orbital radius</dt>
-                    <dd className="mt-1">
-                      <output
-                        className="orbix-data"
-                        htmlFor={initialOrbitOutputIds}
-                      >
-                        <LabFigure unit="m">
-                          {distanceFormatter.format(
-                            result.initialOrbit.orbitalRadiusMetres,
-                          )}
-                        </LabFigure>
-                      </output>
-                    </dd>
-                  </div>
-                  <div>
-                    <dt className="orbix-label">Circular velocity</dt>
-                    <dd className="mt-1">
-                      <output
-                        className="orbix-data"
-                        htmlFor={initialOrbitOutputIds}
-                      >
-                        <LabFigure unit="m/s">
-                          {velocityFormatter.format(
-                            result.initialOrbit.circularVelocityMetresPerSecond,
-                          )}
-                        </LabFigure>
-                      </output>
-                    </dd>
-                  </div>
-                </ReadoutGrid>
-
-                <ReadoutGrid columns={3} title="Final orbit">
-                  <div>
-                    <dt className="orbix-label">Altitude</dt>
-                    <dd className="mt-1">
-                      <output
-                        className="orbix-data"
-                        htmlFor={finalOrbitOutputIds}
-                      >
-                        <LabFigure unit="m">
-                          {distanceFormatter.format(
-                            result.finalOrbit.altitudeMetres,
-                          )}
-                        </LabFigure>
-                      </output>
-                    </dd>
-                  </div>
-                  <div>
-                    <dt className="orbix-label">Orbital radius</dt>
-                    <dd className="mt-1">
-                      <output
-                        className="orbix-data"
-                        htmlFor={finalOrbitOutputIds}
-                      >
-                        <LabFigure unit="m">
-                          {distanceFormatter.format(
-                            result.finalOrbit.orbitalRadiusMetres,
-                          )}
-                        </LabFigure>
-                      </output>
-                    </dd>
-                  </div>
-                  <div>
-                    <dt className="orbix-label">Circular velocity</dt>
-                    <dd className="mt-1">
-                      <output
-                        className="orbix-data"
-                        htmlFor={finalOrbitOutputIds}
-                      >
-                        <LabFigure unit="m/s">
-                          {velocityFormatter.format(
-                            result.finalOrbit.circularVelocityMetresPerSecond,
-                          )}
-                        </LabFigure>
-                      </output>
-                    </dd>
-                  </div>
-                </ReadoutGrid>
-
                 <ReadoutGrid columns={2} title="Transfer orbit">
                   <div>
                     <dt className="orbix-label">
@@ -592,6 +519,102 @@ export function HohmannTransferAnalyzer() {
                     </dd>
                   </div>
                 </ReadoutGrid>
+
+                <ReadoutGrid columns={3} title="Initial orbit">
+                  <div>
+                    <dt className="orbix-label">Altitude</dt>
+                    <dd className="mt-1">
+                      <output
+                        className="orbix-data"
+                        htmlFor={initialOrbitOutputIds}
+                      >
+                        <LabFigure unit="m">
+                          {distanceFormatter.format(
+                            result.initialOrbit.altitudeMetres,
+                          )}
+                        </LabFigure>
+                      </output>
+                    </dd>
+                  </div>
+                  <div>
+                    <dt className="orbix-label">Orbital radius</dt>
+                    <dd className="mt-1">
+                      <output
+                        className="orbix-data"
+                        htmlFor={initialOrbitOutputIds}
+                      >
+                        <LabFigure unit="m">
+                          {distanceFormatter.format(
+                            result.initialOrbit.orbitalRadiusMetres,
+                          )}
+                        </LabFigure>
+                      </output>
+                    </dd>
+                  </div>
+                  <div>
+                    <dt className="orbix-label">Circular velocity</dt>
+                    <dd className="mt-1">
+                      <output
+                        className="orbix-data"
+                        htmlFor={initialOrbitOutputIds}
+                      >
+                        <LabFigure unit="m/s">
+                          {velocityFormatter.format(
+                            result.initialOrbit.circularVelocityMetresPerSecond,
+                          )}
+                        </LabFigure>
+                      </output>
+                    </dd>
+                  </div>
+                </ReadoutGrid>
+
+                <ReadoutGrid columns={3} title="Final orbit">
+                  <div>
+                    <dt className="orbix-label">Altitude</dt>
+                    <dd className="mt-1">
+                      <output
+                        className="orbix-data"
+                        htmlFor={finalOrbitOutputIds}
+                      >
+                        <LabFigure unit="m">
+                          {distanceFormatter.format(
+                            result.finalOrbit.altitudeMetres,
+                          )}
+                        </LabFigure>
+                      </output>
+                    </dd>
+                  </div>
+                  <div>
+                    <dt className="orbix-label">Orbital radius</dt>
+                    <dd className="mt-1">
+                      <output
+                        className="orbix-data"
+                        htmlFor={finalOrbitOutputIds}
+                      >
+                        <LabFigure unit="m">
+                          {distanceFormatter.format(
+                            result.finalOrbit.orbitalRadiusMetres,
+                          )}
+                        </LabFigure>
+                      </output>
+                    </dd>
+                  </div>
+                  <div>
+                    <dt className="orbix-label">Circular velocity</dt>
+                    <dd className="mt-1">
+                      <output
+                        className="orbix-data"
+                        htmlFor={finalOrbitOutputIds}
+                      >
+                        <LabFigure unit="m/s">
+                          {velocityFormatter.format(
+                            result.finalOrbit.circularVelocityMetresPerSecond,
+                          )}
+                        </LabFigure>
+                      </output>
+                    </dd>
+                  </div>
+                </ReadoutGrid>
               </>
             ) : (
               <NotCalculated invalid={Object.values(errors).some(Boolean)}>
@@ -620,7 +643,7 @@ export function HohmannTransferAnalyzer() {
                     </dd>
                   </div>
                 </ReadoutGrid>
-                <div className="border-t border-border pt-5">
+                <div className="lab-result-prose">
                   <h4 className="text-sm font-semibold">
                     Delta-v interpretation
                   </h4>
@@ -630,7 +653,7 @@ export function HohmannTransferAnalyzer() {
                     operational correction losses.
                   </p>
                 </div>
-                <div className="border-t border-border pt-5">
+                <div className="lab-result-prose">
                   <h4 className="text-sm font-semibold">Transfer character</h4>
                   <p className="mt-2 text-sm leading-6 text-muted">
                     The spacecraft coasts along half of an ideal transfer

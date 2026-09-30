@@ -41,7 +41,8 @@ export interface DataTableProps<Row> {
   rows: readonly Row[];
   /**
    * Below 48rem, keep every cell on one line (except `wrap` columns) with
-   * the first column 8.5rem wide (its text wraps), and let the table
+   * the first column 8.5rem wide (7.5rem below 22.5rem, so a two-column
+   * sheet fits a 320px screen; its text wraps), and let the table
    * scroll sideways, for spec sheets whose figures and short labels should
    * never break mid-phrase. Default false: cells wrap as usual.
    */
@@ -84,12 +85,15 @@ export function DataTable<Row>({
           role="region"
           tabIndex={0}
         >
-          {/* With `singleLineCells`, below 48rem the table is at least as
-              wide as its content, so figures and labels never wrap
-              mid-phrase, and the box scrolls sideways instead. */}
+          {/* With `singleLineCells`, below 48rem the table fills its frame
+              and is at least as wide as its content, so figures and labels
+              never wrap mid-phrase, and the box scrolls sideways instead. */}
           <table
             aria-labelledby={captionId}
-            className={cn("orbix-table", singleLineCells && "max-md:min-w-max")}
+            className={cn(
+              "orbix-table",
+              singleLineCells && "max-md:w-full max-md:min-w-max",
+            )}
           >
             <thead>
               <tr>
@@ -116,7 +120,7 @@ export function DataTable<Row>({
                         column.numeric && "orbix-num",
                         singleLineCells &&
                           columnIndex === 0 &&
-                          "max-md:w-[8.5rem] max-md:min-w-[8.5rem]",
+                          "max-md:w-[8.5rem] max-md:min-w-[8.5rem] max-[22.5rem]:w-[7.5rem] max-[22.5rem]:min-w-[7.5rem]",
                         singleLineCells &&
                           columnIndex > 0 &&
                           (column.wrap

@@ -1,7 +1,7 @@
 import { DataTable } from "@/components/ui/data-table";
 import { formatAircraftEngineType } from "@/features/aircraft/utils";
 import {
-  minimumNote,
+  basisNote,
   renderDualMeasurement,
 } from "@/features/vehicles/components/measurement-display";
 import { VehicleProfileSection } from "@/features/vehicles/components/vehicle-profile-section";
@@ -100,7 +100,7 @@ export function PropulsionPanel({
           },
         ]}
         getRowKey={(engine) => engine.id}
-        note={minimumNote(
+        note={basisNote(
           engines.flatMap((engine) =>
             thrustColumns.map((column) => engine.thrust[column.key]),
           ),

@@ -11,14 +11,7 @@ import {
   type KeyboardEvent,
   type ReactNode,
 } from "react";
-import {
-  CheckCircle2,
-  CircleAlert,
-  Copy,
-  Save,
-  Trash2,
-  Upload,
-} from "lucide-react";
+import { CheckCircle2, CircleAlert } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { buttonClass } from "@/components/ui/button-class";
@@ -388,7 +381,6 @@ export function ScenarioLibrary() {
           disabled={currentScenario === null}
           onClick={saveCurrentMission}
         >
-          <Save aria-hidden="true" size={16} />
           Save current mission
         </Button>
       </header>
@@ -525,7 +517,6 @@ export function ScenarioLibrary() {
                         onClick={() => confirmDelete(scenario.id)}
                         variant="secondary"
                       >
-                        <Trash2 aria-hidden="true" size={16} />
                         Delete scenario
                       </Button>
                       <button
@@ -545,7 +536,6 @@ export function ScenarioLibrary() {
                       onClick={() => loadScenario(scenario.id)}
                       variant="secondary"
                     >
-                      <Upload aria-hidden="true" size={16} />
                       Load
                     </Button>
                     <Button
@@ -553,7 +543,6 @@ export function ScenarioLibrary() {
                       onClick={() => copyScenario(scenario.id)}
                       variant="ghost"
                     >
-                      <Copy aria-hidden="true" size={16} />
                       Duplicate
                     </Button>
                     <button
@@ -572,7 +561,6 @@ export function ScenarioLibrary() {
                       }}
                       type="button"
                     >
-                      <Trash2 aria-hidden="true" size={16} />
                       Delete
                     </button>
                   </div>

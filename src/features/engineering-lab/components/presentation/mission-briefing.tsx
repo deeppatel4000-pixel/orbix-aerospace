@@ -10,6 +10,7 @@ import { BriefingHeader } from "./briefing-header";
 import { BriefingObjectives } from "./briefing-objectives";
 import { BriefingOverview } from "./briefing-overview";
 import { BriefingSystemSummary } from "./briefing-system-summary";
+import { MISSION_STAGE_SEQUENCE } from "../mission-stages";
 import { LabHeading } from "../visualization/lab-heading";
 
 export interface MissionBriefingProps {
@@ -20,15 +21,6 @@ export interface MissionBriefingProps {
   readonly preset?: MissionPreset;
   readonly report?: MissionReport;
 }
-
-const architecturePhases = [
-  "Launch",
-  "Orbit insertion",
-  "Transfer",
-  "Arrival",
-  "Reentry",
-  "Recovery",
-] as const;
 
 function getIntegratedSystems(
   missionProfile: MissionProfileAnalysis,
@@ -75,11 +67,7 @@ export function MissionBriefing({
       />
 
       <div className="space-y-8 pt-6">
-        <BriefingOverview
-          analysesResolved={missionProfile.missionSummaryState.analysesResolved}
-          purpose={purpose}
-          systems={systems}
-        />
+        <BriefingOverview purpose={purpose} systems={systems} />
 
         <div className="border-t border-border-subtle pt-8">
           <BriefingObjectives missionProfile={missionProfile} report={report} />
@@ -107,7 +95,7 @@ export function MissionBriefing({
            * B612 numbers, so it never reads as tabs beside the interactive
            * rows in the walkthrough, demo and viewer. */}
           <ol className="mt-3 flex flex-wrap gap-x-6 gap-y-2 border-t border-border-subtle pt-3 text-sm leading-5 text-text-secondary">
-            {architecturePhases.map((phase, index) => (
+            {MISSION_STAGE_SEQUENCE.map((phase, index) => (
               <li className="whitespace-nowrap" key={phase}>
                 <span className="orbix-data mr-2 text-muted">{index + 1}</span>
                 {phase}

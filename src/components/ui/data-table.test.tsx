@@ -92,9 +92,11 @@ describe("DataTable", () => {
         singleLineCells
       />,
     );
-    expect(markup).toContain('class="orbix-table max-md:min-w-max"');
     expect(markup).toContain(
-      '<th class="max-md:w-[8.5rem] max-md:min-w-[8.5rem]" scope="row">Falcon 9</th>',
+      'class="orbix-table max-md:w-full max-md:min-w-max"',
+    );
+    expect(markup).toContain(
+      '<th class="max-md:w-[8.5rem] max-md:min-w-[8.5rem] max-[22.5rem]:w-[7.5rem] max-[22.5rem]:min-w-[7.5rem]" scope="row">Falcon 9</th>',
     );
     expect(markup).toContain(
       '<td class="orbix-num max-md:whitespace-nowrap">35<span class="orbix-num-sep">,</span>100</td>',

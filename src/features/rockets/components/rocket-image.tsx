@@ -95,12 +95,17 @@ export function RocketImage({
                 "--crop-card": visual.cardObjectPosition,
                 "--crop-feature": visual.featureObjectPosition,
               } as CSSProperties)
-            : {
-                objectPosition:
-                  framing === "card"
-                    ? visual.cardObjectPosition
-                    : visual.objectPosition,
-              }
+            : framing === "card"
+              ? {
+                  objectPosition: visual.cardObjectPosition,
+                  ...(visual.cardScale
+                    ? {
+                        transform: `scale(${visual.cardScale})`,
+                        transformOrigin: visual.cardScaleOrigin,
+                      }
+                    : {}),
+                }
+              : { objectPosition: visual.objectPosition }
         }
       />
     </div>

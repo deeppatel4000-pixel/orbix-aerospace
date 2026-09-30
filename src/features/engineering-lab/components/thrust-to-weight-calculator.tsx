@@ -25,6 +25,7 @@ import {
   LabValueText,
   EqDot,
   EQ_SUB_CLEAR,
+  EqFrac,
 } from "@/features/engineering-lab/components/shared";
 import type {
   ThrustToWeightField,
@@ -110,11 +111,16 @@ const toolEquation = (
     equation={
       <>
         <span className={EQ_LINE}>
-          <span className={EQ_TERM}>TWR = T</span>
-          <wbr />
           <span className={EQ_TERM}>
-            /(m
-            <EqDot />g<sub className={EQ_SUB_CLEAR}>0</sub>)
+            TWR ={" "}
+            <EqFrac
+              den={
+                <>
+                  m<EqDot />g<sub className={EQ_SUB_CLEAR}>0</sub>
+                </>
+              }
+              num="T"
+            />
           </span>
         </span>
       </>

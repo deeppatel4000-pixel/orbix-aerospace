@@ -20,6 +20,10 @@ import {
   CalculatorResultSection,
   ValidationErrorSummary,
   LabFigure,
+  TpsFigure,
+  LAB_CHOICE_INPUT,
+  LAB_CHOICE_LIST,
+  LAB_CHOICE_ROW,
   EqDot,
   EQ_SUP,
   LAB_GROUP,
@@ -149,10 +153,10 @@ const initialFormValues: MissionProfileFormValues = {
   includeOrbitalPlaneChange: true,
   includeVehicleComparison: true,
   includeVehicleReentryEvaluation: true,
-  initialAltitudeMeters: "1000",
+  initialAltitudeMeters: "11000",
   initialAltitudeMetres: "400000",
   initialFlightPathAngleDegrees: "",
-  initialVelocityMetersPerSecond: "150",
+  initialVelocityMetersPerSecond: "400",
   missionName: "Integrated Orbital Reentry Mission",
   orbitalAltitudeMetres: "35786000",
   planetRadiusMetres: "",
@@ -287,11 +291,6 @@ function createFormValues(
 const standardFormatter = new Intl.NumberFormat("en-US", {
   maximumFractionDigits: 3,
   minimumFractionDigits: 2,
-});
-
-const preciseFormatter = new Intl.NumberFormat("en-US", {
-  maximumFractionDigits: 6,
-  minimumFractionDigits: 3,
 });
 
 const heatFluxFormatter = new Intl.NumberFormat("en-US", {
@@ -741,7 +740,7 @@ function OptionalNumberField({
           type="number"
           value={value}
         />
-        <span aria-hidden="true" className="orbix-field__unit">
+        <span aria-hidden="true" className="orbix-field__unit lab-field__unit">
           {unit}
         </span>
       </div>
@@ -812,7 +811,7 @@ function VehicleFields({
           value={values[nameField]}
         />
         <p className="orbix-field__help mt-2" id={nameHintId}>
-          Identifies this caller-supplied vehicle configuration.
+          A name for this vehicle, used in the results.
         </p>
         {nameError ? (
           <p className="orbix-field__error mt-1" id={nameErrorId}>
@@ -1052,7 +1051,7 @@ export function MissionProfileAnalyzer({
           >
             <fieldset className={LAB_GROUP}>
               <legend className={LAB_GROUP_LEGEND}>Mission identity</legend>
-              <div className="mt-4">
+              <div className="mt-4 @min-[36rem]/col:w-[calc(50%-0.625rem)]">
                 <label
                   className="orbix-field__label block"
                   htmlFor="mission-profile-missionName"
@@ -1104,7 +1103,7 @@ export function MissionProfileAnalyzer({
 
             <fieldset className={LAB_GROUP}>
               <legend className={LAB_GROUP_LEGEND}>Optional systems</legend>
-              <div className="mt-4 grid gap-3 @min-[40rem]/col:grid-cols-3">
+              <div className={LAB_CHOICE_LIST + " mt-4"}>
                 {[
                   {
                     checked: values.includeDeltaVBudget,
@@ -1125,14 +1124,11 @@ export function MissionProfileAnalyzer({
                     label: "Vehicle comparison",
                   },
                 ].map((system) => (
-                  <label
-                    className="flex min-h-12 cursor-pointer items-center gap-3 rounded border border-border-control bg-surface-input px-4 py-3 text-sm font-medium transition-colors hover:border-muted"
-                    key={system.field}
-                  >
+                  <label className={LAB_CHOICE_ROW} key={system.field}>
                     <input
                       aria-controls={system.controls}
                       checked={system.checked}
-                      className="h-4 w-4 accent-accent"
+                      className={LAB_CHOICE_INPUT}
                       onChange={(event) =>
                         updateToggle(system.field, event.target.checked)
                       }
@@ -1147,12 +1143,12 @@ export function MissionProfileAnalyzer({
             {values.includeDeltaVBudget ? (
               <fieldset className={LAB_GROUP} id="mission-profile-delta-system">
                 <legend className={LAB_GROUP_LEGEND}>Delta-v budget</legend>
-                <div className="mt-4 flex flex-wrap gap-3">
-                  <label className="flex min-h-11 cursor-pointer items-center gap-3 rounded border border-border-control bg-surface-input px-4 py-2 text-sm font-medium hover:border-muted has-checked:border-accent has-checked:bg-surface-raised">
+                <div className={LAB_CHOICE_LIST + " mt-4"}>
+                  <label className={LAB_CHOICE_ROW}>
                     <input
                       aria-controls="mission-profile-hohmann-inputs"
                       checked={values.includeHohmannTransfer}
-                      className="h-4 w-4 accent-accent"
+                      className={LAB_CHOICE_INPUT}
                       onChange={(event) =>
                         updateToggle(
                           "includeHohmannTransfer",
@@ -1163,11 +1159,11 @@ export function MissionProfileAnalyzer({
                     />
                     Hohmann transfer
                   </label>
-                  <label className="flex min-h-11 cursor-pointer items-center gap-3 rounded border border-border-control bg-surface-input px-4 py-2 text-sm font-medium hover:border-muted has-checked:border-accent has-checked:bg-surface-raised">
+                  <label className={LAB_CHOICE_ROW}>
                     <input
                       aria-controls="mission-profile-plane-change-inputs"
                       checked={values.includeOrbitalPlaneChange}
-                      className="h-4 w-4 accent-accent"
+                      className={LAB_CHOICE_INPUT}
                       onChange={(event) =>
                         updateToggle(
                           "includeOrbitalPlaneChange",
@@ -1282,7 +1278,7 @@ export function MissionProfileAnalyzer({
                     <CalculatorNumberField
                       error={errors.initialVelocityMetersPerSecond}
                       field="initialVelocityMetersPerSecond"
-                      hint="Initial vehicle speed for the reentry workflow."
+                      hint="Vehicle speed at the start of reentry."
                       idPrefix="mission-profile"
                       label="Initial velocity"
                       onChange={updateValue}
@@ -1292,7 +1288,7 @@ export function MissionProfileAnalyzer({
                     <CalculatorNumberField
                       error={errors.safetyFactor}
                       field="safetyFactor"
-                      hint="TPS sizing multiplier passed to the existing analysis."
+                      hint="Multiplies the heat load used to size the TPS."
                       idPrefix="mission-profile"
                       label="TPS safety factor"
                       onChange={updateValue}
@@ -1302,7 +1298,7 @@ export function MissionProfileAnalyzer({
                     <OptionalNumberField
                       error={errors.timestepSeconds}
                       field="timestepSeconds"
-                      hint="Leave blank to preserve the trajectory default."
+                      hint="Leave blank to use the 1 s default."
                       label="Time step (optional)"
                       onChange={updateValue}
                       unit="s"
@@ -1311,7 +1307,7 @@ export function MissionProfileAnalyzer({
                     <OptionalNumberField
                       error={errors.initialFlightPathAngleDegrees}
                       field="initialFlightPathAngleDegrees"
-                      hint="Leave blank to preserve the trajectory default."
+                      hint="Leave blank for a vertical descent (−90°)."
                       label="Flight-path angle (optional)"
                       onChange={updateValue}
                       unit="deg"
@@ -1320,10 +1316,10 @@ export function MissionProfileAnalyzer({
                     <OptionalNumberField
                       error={errors.heatingCoefficient}
                       field="heatingCoefficient"
-                      hint="Leave blank to preserve the heating-model default."
+                      hint="Leave blank to use the default of 1.83 × 10⁻⁴ for Earth air."
                       label="Heating coefficient k (optional)"
                       onChange={updateValue}
-                      unit="kg½/m"
+                      unit="√kg/m"
                       value={values.heatingCoefficient}
                     />
                   </div>
@@ -1355,10 +1351,7 @@ export function MissionProfileAnalyzer({
 
             <ValidationErrorSummary errors={[...Object.values(errors)]} />
 
-            <div className="mt-7 flex flex-wrap items-center gap-x-5 gap-y-3">
-              <p className="min-w-0 flex-[1_1_16rem] text-sm leading-6 text-muted">
-                Valid changes update the integrated mission profile immediately.
-              </p>
+            <div className="mt-7 flex flex-wrap items-center gap-x-4 gap-y-2">
               <Button
                 className="shrink-0 whitespace-nowrap"
                 variant="secondary"
@@ -1366,6 +1359,9 @@ export function MissionProfileAnalyzer({
               >
                 Reset inputs
               </Button>
+              <p className="min-w-0 flex-[1_1_14rem] text-[0.8125rem] leading-5 text-muted">
+                Valid changes update the integrated mission profile immediately.
+              </p>
             </div>
           </form>
         </div>
@@ -1504,7 +1500,7 @@ export function MissionProfileAnalyzer({
                       </LabFigure>
                     </output>
                     <output className="lab-figure-note" htmlFor={allOutputIds}>
-                      <LabFigure unit="g">
+                      <LabFigure unit="g₀">
                         {standardFormatter.format(
                           peakDeceleration.decelerationGs,
                         )}
@@ -1560,9 +1556,11 @@ export function MissionProfileAnalyzer({
                   <dt className="orbix-label">Required thickness</dt>
                   <dd className="mt-1">
                     <output className="orbix-data" htmlFor={allOutputIds}>
-                      <LabFigure unit="mm">
-                        {preciseFormatter.format(tpsThickness.millimetres)}
-                      </LabFigure>
+                      <TpsFigure
+                        smallUnit="µm"
+                        unit="mm"
+                        value={tpsThickness.millimetres}
+                      />
                     </output>
                   </dd>
                 </div>
@@ -1570,9 +1568,11 @@ export function MissionProfileAnalyzer({
                   <dt className="orbix-label">Estimated TPS mass</dt>
                   <dd className="mt-1">
                     <output className="orbix-data" htmlFor={allOutputIds}>
-                      <LabFigure unit="kg">
-                        {preciseFormatter.format(tpsMassKilograms)}
-                      </LabFigure>
+                      <TpsFigure
+                        smallUnit="g"
+                        unit="kg"
+                        value={tpsMassKilograms}
+                      />
                     </output>
                   </dd>
                 </div>
@@ -1586,14 +1586,17 @@ export function MissionProfileAnalyzer({
                         )}
                       </LabFigure>
                     </output>
-                    <output className="lab-figure-note" htmlFor={allOutputIds}>
+                    <output
+                      className="lab-figure-note lab-figure-note--words"
+                      htmlFor={allOutputIds}
+                    >
                       {thermalMargin.classification}
                     </output>
                   </dd>
                 </div>
                 <div>
                   <dt className="orbix-label">About</dt>
-                  <dd className="text-sm leading-6 text-muted">
+                  <dd className="lab-readout-text text-sm leading-6 text-muted">
                     {result.tpsRecommendation.description}
                   </dd>
                 </div>
@@ -1619,10 +1622,9 @@ export function MissionProfileAnalyzer({
               One profile, multiple engineering disciplines
             </h3>
             <p className="mt-3 text-sm leading-6 text-muted">
-              The mission profile composes existing orbital transfers, vehicle
-              reentry evaluation, thermal protection selection, and delta-v
-              budgeting. Each source analysis remains independent and retains
-              ownership of its equations, assumptions, and validation.
+              The mission profile combines the lab&apos;s orbital transfer,
+              vehicle reentry, thermal protection and delta-v tools. Each tool
+              keeps its own equations, assumptions and input checks.
             </p>
             <p className="mt-3 text-sm leading-6 text-muted">
               This integration is educational and does not determine mission
@@ -1636,10 +1638,12 @@ export function MissionProfileAnalyzer({
             <ul className="mt-4 grid list-disc gap-2 pl-5 text-sm leading-6 text-muted @min-[36rem]/col:grid-cols-2">
               <li>Educational mission integration only</li>
               <li>No mission-feasibility determination</li>
-              <li>Source-analysis assumptions remain in force</li>
+              <li>Each tool&apos;s own assumptions still apply</li>
               <li>No guidance, operations, or contingency planning</li>
               <li>No certified vehicle or TPS qualification data</li>
-              <li>No coupling beyond existing analysis outputs</li>
+              <li>
+                The tools share results only, with no feedback between them
+              </li>
             </ul>
             <p className="mt-4 flex items-center gap-2 text-sm leading-6 text-muted">
               Use the individual laboratory modules to inspect each source model

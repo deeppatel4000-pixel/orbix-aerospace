@@ -411,13 +411,7 @@ export function ComparisonControls({
                           id={nameId}
                           className={cn(
                             "font-display text-[1.125rem] leading-[1.1] tracking-[-0.03em] sm:text-[1.3125rem] sm:leading-[1.05]",
-                            // Five across from 64rem, "Space Launch System
-                            // (SLS)" wraps, so launch vehicle names reserve
-                            // two lines and the maker lines align across
-                            // that row. No aircraft name wraps, so aircraft
-                            // tiles read name, 8px, maker.
                             "lg:text-[1.25rem] lg:leading-[1.05]",
-                            !isAircraft && "lg:min-h-[2.2em]",
                             isBlocked ? "text-muted" : "text-foreground",
                           )}
                         >
@@ -432,13 +426,14 @@ export function ComparisonControls({
                       </span>
                     </span>
                     {thumbnail ? (
-                      // Five across from 64rem, "Steve Jurvetson, CC BY
-                      // 2.0" needs two lines even with no tracking, so
-                      // launch vehicle credits reserve two lines and
-                      // every credit in that row starts on one line.
+                      // Anchored to the tile foot. Five across from 64rem,
+                      // "Steve Jurvetson, CC BY 2.0" needs two lines, so
+                      // launch vehicle credits reserve two and every credit
+                      // in that row starts at one height. It may wrap, but the
+                      // no-break licence only breaks after the comma.
                       <span
                         className={cn(
-                          "orbix-micro mt-auto text-[0.6875rem] text-muted max-sm:whitespace-nowrap",
+                          "orbix-micro mt-auto text-[0.6875rem] text-muted",
                           !isAircraft && "lg:min-h-[2.9em]",
                         )}
                         id={creditId}

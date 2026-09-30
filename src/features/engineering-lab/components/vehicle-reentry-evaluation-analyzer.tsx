@@ -12,7 +12,7 @@ import {
   focusFirstInvalidField,
   focusFirstInvalidFieldOnEnter,
   CalculatorResultSection,
-  LAB_TOOL_SPLIT,
+  LAB_TOOL_STACK,
   GEOPOTENTIAL_ALTITUDE_HINT,
   INITIAL_GEOPOTENTIAL_ALTITUDE_LABEL,
   LabToolLayout,
@@ -20,10 +20,12 @@ import {
   ReadoutGrid,
   ValidationErrorSummary,
   LabFigure,
+  TpsFigure,
   EqDot,
   EQ_SUP,
   LAB_GROUP,
   LAB_GROUP_LEGEND,
+  EqFrac,
 } from "@/features/engineering-lab/components/shared";
 import type {
   VehicleReentryEvaluationAnalysis,
@@ -85,9 +87,9 @@ interface OptionalNumberFieldProps {
 const initialFormValues: VehicleReentryEvaluationFormValues = {
   dragCoefficient: "1.5",
   heatingCoefficient: "",
-  initialAltitudeMeters: "1000",
+  initialAltitudeMeters: "11000",
   initialFlightPathAngleDegrees: "",
-  initialVelocityMetersPerSecond: "150",
+  initialVelocityMetersPerSecond: "400",
   massKilograms: "5000",
   noseRadiusMetres: "1",
   referenceAreaSquareMetres: "12",
@@ -101,50 +103,9 @@ const standardFormatter = new Intl.NumberFormat("en-US", {
   minimumFractionDigits: 2,
 });
 
-const preciseFormatter = new Intl.NumberFormat("en-US", {
-  maximumFractionDigits: 6,
-  minimumFractionDigits: 3,
-});
-
 const heatFluxFormatter = new Intl.NumberFormat("en-US", {
   maximumFractionDigits: 2,
 });
-
-const smallFigureFormatter = new Intl.NumberFormat("en-US", {
-  maximumSignificantDigits: 3,
-});
-
-/**
- * Display only: a TPS figure below 1 in its base unit (0.000172 mm) is
- * shown in the unit a thousand times smaller, to 3 significant figures
- * (172 µm), so it reads as a readout. The analysis value is unchanged.
- */
-function tpsFigure(
-  value: number,
-  unit: string,
-  smallUnit: string,
-): { figure: string; unit: string } {
-  if (value !== 0 && Math.abs(value) < 1) {
-    return {
-      figure: smallFigureFormatter.format(value * 1000),
-      unit: smallUnit,
-    };
-  }
-  return { figure: preciseFormatter.format(value), unit };
-}
-
-function TpsFigure({
-  smallUnit,
-  unit,
-  value,
-}: {
-  smallUnit: string;
-  unit: string;
-  value: number;
-}) {
-  const shown = tpsFigure(value, unit, smallUnit);
-  return <LabFigure unit={shown.unit}>{shown.figure}</LabFigure>;
-}
 
 function parseRequiredNumber(value: string): number {
   return value.trim() === "" ? Number.NaN : Number(value);
@@ -296,7 +257,7 @@ function OptionalNumberField({
           type="number"
           value={value}
         />
-        <span aria-hidden="true" className="orbix-field__unit">
+        <span aria-hidden="true" className="orbix-field__unit lab-field__unit">
           {unit}
         </span>
       </div>
@@ -318,17 +279,30 @@ const toolEquation = (
     equation={
       <>
         <span className={EQ_LINE}>
-          <span className={EQ_TERM}>β = m</span>
-          <wbr />
           <span className={EQ_TERM}>
-            /(C<sub>D</sub>
-            <EqDot />
-            A)
+            β ={" "}
+            <EqFrac
+              den={
+                <>
+                  C<sub>D</sub>
+                  <EqDot />A
+                </>
+              }
+              num="m"
+            />
           </span>
         </span>
         <span className={EQ_LINE}>
           <span className={EQ_TERM}>
-            a = ½ρV<sup className={EQ_SUP}>2</sup>/β
+            a ={" "}
+            <EqFrac
+              den="β"
+              num={
+                <>
+                  ½ρV<sup className={EQ_SUP}>2</sup>
+                </>
+              }
+            />
           </span>
         </span>
         <span className={EQ_LINE}>
@@ -410,7 +384,7 @@ export function VehicleReentryEvaluationAnalyzer() {
 
   return (
     <LabToolLayout equation={toolEquation}>
-      <div className={LAB_TOOL_SPLIT}>
+      <div className={LAB_TOOL_STACK}>
         <div className="@container/col min-w-0">
           <form
             noValidate
@@ -454,8 +428,7 @@ export function VehicleReentryEvaluationAnalyzer() {
                     className="orbix-field__help mt-2"
                     id="vehicle-reentry-evaluation-vehicleName-hint"
                   >
-                    Descriptive configuration name used only to identify this
-                    evaluation.
+                    A name for this vehicle, used in the results.
                   </p>
                   {errors.vehicleName ? (
                     <p
@@ -475,7 +448,7 @@ export function VehicleReentryEvaluationAnalyzer() {
                 <CalculatorNumberField
                   error={errors.massKilograms}
                   field="massKilograms"
-                  hint="Positive vehicle mass held constant by the existing trajectory model."
+                  hint="Vehicle mass, held constant along the trajectory."
                   idPrefix="vehicle-reentry-evaluation"
                   label="Mass"
                   onChange={updateValue}
@@ -495,7 +468,7 @@ export function VehicleReentryEvaluationAnalyzer() {
                 <CalculatorNumberField
                   error={errors.referenceAreaSquareMetres}
                   field="referenceAreaSquareMetres"
-                  hint="Aerodynamic reference area and TPS coverage area used downstream."
+                  hint="Aerodynamic reference area, also taken as the area the TPS covers."
                   idPrefix="vehicle-reentry-evaluation"
                   label="Reference area"
                   onChange={updateValue}
@@ -505,7 +478,7 @@ export function VehicleReentryEvaluationAnalyzer() {
                 <CalculatorNumberField
                   error={errors.noseRadiusMetres}
                   field="noseRadiusMetres"
-                  hint="Effective stagnation-point radius used by the heating analysis."
+                  hint="Effective stagnation-point nose radius."
                   idPrefix="vehicle-reentry-evaluation"
                   label="Nose radius"
                   onChange={updateValue}
@@ -531,7 +504,7 @@ export function VehicleReentryEvaluationAnalyzer() {
                 <CalculatorNumberField
                   error={errors.initialVelocityMetersPerSecond}
                   field="initialVelocityMetersPerSecond"
-                  hint="Positive initial velocity for the integrated descent."
+                  hint="Vehicle speed at the start of reentry."
                   idPrefix="vehicle-reentry-evaluation"
                   label="Initial velocity"
                   onChange={updateValue}
@@ -541,7 +514,7 @@ export function VehicleReentryEvaluationAnalyzer() {
                 <CalculatorNumberField
                   error={errors.safetyFactor}
                   field="safetyFactor"
-                  hint="Positive TPS heat-load multiplier used by material comparison."
+                  hint="Multiplies the heat load used to size the TPS."
                   idPrefix="vehicle-reentry-evaluation"
                   label="Safety factor"
                   onChange={updateValue}
@@ -559,7 +532,7 @@ export function VehicleReentryEvaluationAnalyzer() {
                 <OptionalNumberField
                   error={errors.initialFlightPathAngleDegrees}
                   field="initialFlightPathAngleDegrees"
-                  hint="Leave blank to preserve the analysis default vertical descent."
+                  hint="Leave blank for a vertical descent (−90°)."
                   label="Flight-path angle"
                   max={0}
                   min={-90}
@@ -570,7 +543,7 @@ export function VehicleReentryEvaluationAnalyzer() {
                 <OptionalNumberField
                   error={errors.timestepSeconds}
                   field="timestepSeconds"
-                  hint="Leave blank to preserve the existing one-second timestep default."
+                  hint="Leave blank to use the 1 s default."
                   label="Time step"
                   min={0}
                   onChange={updateValue}
@@ -580,11 +553,11 @@ export function VehicleReentryEvaluationAnalyzer() {
                 <OptionalNumberField
                   error={errors.heatingCoefficient}
                   field="heatingCoefficient"
-                  hint="Leave blank to use the heating calculator's educational default."
+                  hint="Leave blank to use the default of 1.83 × 10⁻⁴ for Earth air."
                   label="Heating coefficient k"
                   min={0}
                   onChange={updateValue}
-                  unit="kg½/m"
+                  unit="√kg/m"
                   value={values.heatingCoefficient}
                 />
               </div>
@@ -607,11 +580,7 @@ export function VehicleReentryEvaluationAnalyzer() {
               ]}
             />
 
-            <div className="mt-7 flex flex-wrap items-center gap-x-5 gap-y-3">
-              <p className="min-w-0 flex-[1_1_16rem] text-sm leading-6 text-muted">
-                Valid changes rerun trajectory, thermal history, and TPS
-                comparison immediately.
-              </p>
+            <div className="mt-7 flex flex-wrap items-center gap-x-4 gap-y-2">
               <Button
                 className="shrink-0 whitespace-nowrap"
                 variant="secondary"
@@ -619,6 +588,10 @@ export function VehicleReentryEvaluationAnalyzer() {
               >
                 Reset inputs
               </Button>
+              <p className="min-w-0 flex-[1_1_14rem] text-[0.8125rem] leading-5 text-muted">
+                Valid changes rerun trajectory, thermal history, and TPS
+                comparison immediately.
+              </p>
             </div>
           </form>
         </div>
@@ -788,7 +761,7 @@ export function VehicleReentryEvaluationAnalyzer() {
                         className="lab-figure-note"
                         htmlFor={allOutputIds}
                       >
-                        <LabFigure unit="g">
+                        <LabFigure unit="g₀">
                           {standardFormatter.format(
                             result.summary.dynamics.peakDeceleration
                               .decelerationGs,

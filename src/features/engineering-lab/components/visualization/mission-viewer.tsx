@@ -97,35 +97,36 @@ export function MissionViewer({
 
       <HeadingLevel level={sectionLevel}>
         <div className={embedded ? "space-y-8" : "space-y-8 pt-6"}>
-          <section aria-labelledby="mission-control-summary-title">
-            <LabHeading id="mission-control-summary-title">
-              Mission summary
-            </LabHeading>
-            {embedded ? null : (
+          {/* Mission control's header already names the systems used, so
+           * the summary appears only when the viewer stands alone. */}
+          {embedded ? null : (
+            <section aria-labelledby="mission-control-summary-title">
+              <LabHeading id="mission-control-summary-title">
+                Mission summary
+              </LabHeading>
               <p className="mt-2 max-w-[68ch] text-sm leading-6 text-text-secondary">
                 {missionReport.missionAssessment.educationalSummary}
               </p>
-            )}
-            <dl className="mt-3">
-              {/* The count of systems carries what an "Analyses resolved"
-               * cell beside it would repeat. */}
-              <div className="border-t border-border-subtle py-2 text-sm">
-                <dt className="text-muted">
-                  Systems used (
-                  {missionReport.missionSummary.systemsUsed.length})
-                </dt>
-                <dd className="mt-1 text-foreground">
-                  {missionReport.missionSummary.systemsUsed.length > 0
-                    ? missionReport.missionSummary.systemsUsed.join(", ")
-                    : "No optional mission systems reported."}
-                </dd>
-              </div>
-            </dl>
-          </section>
+              <dl className="mt-3">
+                <div className="border-t border-border-subtle py-2 text-sm">
+                  <dt className="text-muted">Systems used</dt>
+                  <dd className="mt-1 text-foreground">
+                    {missionReport.missionSummary.systemsUsed.length > 0
+                      ? missionReport.missionSummary.systemsUsed.join(", ")
+                      : "No optional mission systems reported."}
+                  </dd>
+                </div>
+              </dl>
+            </section>
+          )}
 
           {/* Each part is a labelled section of its own, titled at this
            * level, so the wrappers are plain divs carrying the rule. */}
-          <div className="border-t border-border-subtle pt-8">
+          <div
+            className={
+              embedded ? undefined : "border-t border-border-subtle pt-8"
+            }
+          >
             <MissionTimeline
               missionProfileAnalysis={missionProfileAnalysis}
               missionReport={missionReport}
@@ -189,11 +190,15 @@ export function MissionViewer({
             </section>
           )}
 
-          <p className="border-t border-border-subtle pt-4 text-[0.8125rem] leading-5 text-muted">
-            Educational mission viewer. Every value and recommendation shown
-            here comes from the supplied report and completed analysis objects;
-            this view performs no engineering calculations.
-          </p>
+          {/* Inside Mission control the engineering review's limits are
+           * the foot line, so this one shows only on the standalone viewer. */}
+          {embedded ? null : (
+            <p className="border-t border-border-subtle pt-4 text-[0.8125rem] leading-5 text-muted">
+              Educational mission viewer. Every value and recommendation shown
+              here comes from the supplied report and completed analysis
+              objects; this view performs no engineering calculations.
+            </p>
+          )}
         </div>
       </HeadingLevel>
     </article>

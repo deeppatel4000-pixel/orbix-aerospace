@@ -52,6 +52,17 @@ export type PhotoHeroProps = Omit<
    * full-bleed.
    */
   plate?: "landscape" | "portrait";
+  /**
+   * Where the photo stands from 48rem: `behind` the text (default, the
+   * full-bleed spec 8 hero) or on the `right`, for a tall subject such as a
+   * launch vehicle. With `right` the photo plate starts at 56vw (48rem to
+   * 64rem) or at the larger of 50% + 10rem and 46rem (from 64rem), its left
+   * edge feathered into the page ground (no opaque fill behind it, so the
+   * blueprint grid carries on under the feather), and only the bottom fade
+   * is drawn over it: no text is set on the photograph. From 48rem to 64rem
+   * the text and aside stop 2rem short of the plate.
+   */
+  placement?: "behind" | "right";
   /** Load the photo with `priority` (the LCP image). Default true. */
   priority?: boolean;
   /** `sizes` for the photo. Full-bleed by default. */
@@ -88,6 +99,7 @@ export function PhotoHero({
   className,
   division,
   entrance = true,
+  placement = "behind",
   plate = "landscape",
   priority = true,
   sizes = "100vw",
@@ -101,6 +113,7 @@ export function PhotoHero({
     <section
       className={cn("orbix-photo-hero", className)}
       data-division={division}
+      data-placement={placement === "right" ? "right" : undefined}
       data-plate={plate === "portrait" ? "portrait" : undefined}
       {...props}
     >

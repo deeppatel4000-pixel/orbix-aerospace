@@ -19,9 +19,12 @@ interface LabFigureProps {
  * sign is the exception: it is part of the number, so it follows the
  * figure at full size with no space ("39.3139°"). The text content stays
  * "54,019.55 Pa" for copy, search and screen readers. Sizes are set in
- * `calculator-card.module.css`.
+ * `calculator-card.module.css`. A negative figure given as a string gets
+ * a true minus sign (U+2212) in place of the hyphen-minus `Intl` emits.
  */
-export function LabFigure({ children, unit }: LabFigureProps) {
+export function LabFigure({ children: figure, unit }: LabFigureProps) {
+  const children = typeof figure === "string" ? withMinusSign(figure) : figure;
+
   if (unit === "°") {
     return (
       <span className="lab-figure">
@@ -62,8 +65,26 @@ export function LabSymbol({ children }: { children: ReactNode }) {
  * material name). Set in sans 500 at 1.125rem, so it never passes for an
  * instrument readout.
  */
-export function LabValueText({ children }: { children: ReactNode }) {
-  return <span className="lab-value-text">{children}</span>;
+export function LabValueText({
+  children,
+  lead = false,
+}: {
+  children: ReactNode;
+  /**
+   * The words lead the sheet (a recommended material): set at 1.375rem,
+   * and the compartment takes a whole row like a primary figure.
+   */
+  lead?: boolean;
+}) {
+  return (
+    <span
+      className={
+        lead ? "lab-value-text lab-value-text--lead" : "lab-value-text"
+      }
+    >
+      {children}
+    </span>
+  );
 }
 
 /**
@@ -90,6 +111,12 @@ export const EQ_TERM = "whitespace-nowrap";
  */
 export const EQ_CONT = "lab-eq-line lab-eq-line--cont";
 /**
+ * The head line of a relation broken for a phone ("tan θ" over "= ..."):
+ * from a 44rem tool, where the relation fits, it joins the `EQ_CONT` line
+ * after it on one line. Put a `{" "}` between the two lines.
+ */
+export const EQ_JOIN = "lab-eq-line lab-eq-join";
+/**
  * A superscript exponent: smaller and clearly raised. Use it for every
  * power in an equation, never a Unicode superscript (², ³): in a mono face
  * those take a whole cell and leave a false space after them.
@@ -104,6 +131,13 @@ export const EQ_SUP = "lab-eq-sup";
 export const EQ_SUB_CLEAR = "lab-eq-sub-clear";
 
 /**
+ * A bracket drawn tall enough to enclose a stacked fraction, for a group
+ * such as μ(2/r − 1/a) whose terms are fractions. `EqFrac` with `power`
+ * uses the same bracket.
+ */
+export const EQ_PAREN = "lab-eq-paren";
+
+/**
  * A stacked fraction inside an equation: the numerator over a 1px rule
  * over the denominator, so neither needs an outer bracket.
  */
@@ -111,9 +145,15 @@ export function EqFrac({
   den,
   num,
   power,
+  wrap = false,
 }: {
   den: ReactNode;
   num: ReactNode;
+  /**
+   * The numerator may break at a `<wbr />` below a 22rem tool (keep its
+   * parts in `EQ_TERM` spans), for a numerator too long for a phone.
+   */
+  wrap?: boolean;
   /**
    * An exponent on the whole fraction: the fraction is then set in
    * parentheses drawn tall enough to hold it, with the exponent after.
@@ -121,7 +161,7 @@ export function EqFrac({
   power?: ReactNode;
 }) {
   const fraction = (
-    <span className="lab-eq-frac">
+    <span className={wrap ? "lab-eq-frac lab-eq-frac--wrap" : "lab-eq-frac"}>
       <span>{num}</span>
       <span>{den}</span>
     </span>
@@ -133,9 +173,9 @@ export function EqFrac({
 
   return (
     <>
-      <span className="lab-eq-paren">(</span>
+      <span className={EQ_PAREN}>(</span>
       {fraction}
-      <span className="lab-eq-paren">)</span>
+      <span className={EQ_PAREN}>)</span>
       <sup className={EQ_SUP}>{power}</sup>
     </>
   );
@@ -173,4 +213,104 @@ export function EqSubSup({ sub, sup }: { sub: ReactNode; sup: ReactNode }) {
       <span>{sub}</span>
     </span>
   );
+}
+
+/**
+ * A formatted number with its leading hyphen-minus (as `Intl.NumberFormat`
+ * emits it) replaced by the minus sign U+2212, which is the width of a
+ * figure and reads as a minus rather than a hyphen. Use it for a negative
+ * figure outside `LabFigure`, such as a table cell.
+ */
+export function withMinusSign(formatted: string): string {
+  return formatted.replace(/^-/, "−");
+}
+
+const tpsPreciseFormatter = new Intl.NumberFormat("en-US", {
+  maximumFractionDigits: 6,
+  minimumFractionDigits: 3,
+});
+
+const tpsSmallFormatter = new Intl.NumberFormat("en-US", {
+  maximumSignificantDigits: 4,
+  minimumSignificantDigits: 4,
+});
+
+/**
+ * Display only: a thermal protection figure below 1 in its base unit
+ * (0.000172 mm, 0.00102 kg, 0.001895 MJ/m²) is shown in the unit a
+ * thousand times smaller (`smallUnit`), to 4 significant figures with
+ * trailing zeros kept (0.1720 µm, 1.020 g, 1.895 kJ/m²), so it reads as a
+ * readout rather than a row of zeros. The analysis value is unchanged.
+ * Every tool that shows TPS mass, thickness or heat load uses this, so the
+ * same quantity reads the same way across the lab.
+ */
+export function tpsFigure(
+  value: number,
+  unit: string,
+  smallUnit: string,
+): { figure: string; unit: string } {
+  if (value !== 0 && Math.abs(value) < 1) {
+    return {
+      figure: withMinusSign(tpsSmallFormatter.format(value * 1000)),
+      unit: smallUnit,
+    };
+  }
+  return { figure: withMinusSign(tpsPreciseFormatter.format(value)), unit };
+}
+
+/**
+ * The fraction digits that give the smallest non-zero value of a column 4
+ * significant figures, between `min` and 6.
+ */
+function columnFractionDigits(values: readonly number[], min: number): number {
+  const smallest = Math.min(
+    ...values.map((value) => Math.abs(value)).filter((value) => value > 0),
+  );
+  if (!Number.isFinite(smallest)) return min;
+  const digits = 3 - Math.floor(Math.log10(smallest));
+  return Math.min(6, Math.max(min, digits));
+}
+
+/**
+ * `tpsFigure` for a table column: one unit and one number of fraction
+ * digits for every row, so the column reads down and its decimal points
+ * line up. The smaller unit is used only when every value in the column is
+ * below 1 in the base unit. The fraction digits are those that give the
+ * column's smallest value 4 significant figures (at least 3 in the base
+ * unit, as in `tpsFigure`, at most 6).
+ */
+export function tpsColumn(
+  values: readonly number[],
+  unit: string,
+  smallUnit: string,
+): { format: (value: number) => string; unit: string } {
+  const small =
+    values.length > 0 && values.every((value) => Math.abs(value) < 1);
+  const scale = small ? 1000 : 1;
+  const digits = columnFractionDigits(
+    values.map((value) => value * scale),
+    small ? 0 : 3,
+  );
+  const formatter = new Intl.NumberFormat("en-US", {
+    maximumFractionDigits: digits,
+    minimumFractionDigits: digits,
+  });
+  return {
+    format: (value) => withMinusSign(formatter.format(value * scale)),
+    unit: small ? smallUnit : unit,
+  };
+}
+
+/** `tpsFigure` as a `LabFigure`, for a readout grid value. */
+export function TpsFigure({
+  smallUnit,
+  unit,
+  value,
+}: {
+  smallUnit: string;
+  unit: string;
+  value: number;
+}) {
+  const shown = tpsFigure(value, unit, smallUnit);
+  return <LabFigure unit={shown.unit}>{shown.figure}</LabFigure>;
 }

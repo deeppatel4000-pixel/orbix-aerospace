@@ -32,18 +32,31 @@ const DETAIL_DOT = 7;
  */
 const DETAIL_LABEL_Y = 150;
 /**
- * Burn dot radius in the locator, in drawing units: 4px at the locator's
- * 10rem width, so the dots stay visible at that size.
+ * Burn dot radius in the locator, in drawing units: about 4px at the
+ * locator's 9rem (capture) width and 5px at its 12rem (page) width, so
+ * the dots stay visible at that size.
  */
 const LOCATOR_DOT = 8;
+/**
+ * The locator's rendered width in px: 12rem on the page, 9rem in capture.
+ * A narrow capture plate sets it wider (up to 18rem), where box A is then
+ * larger than its minimum and still contains the window.
+ */
+const LOCATOR_WIDTH = { compact: 144, page: 192 } as const;
+/**
+ * The smallest side, in px, of the box that marks window A on the locator.
+ * Where the window itself is smaller, the box is grown about the window's
+ * centre so it stays visible; it always contains the window.
+ */
+const LOCATOR_BOX_MIN = 10;
 
 /**
  * How a transfer plate is laid out. Wherever there is a detail, detail A
  * leads at the plate's full width and the whole transfer follows as a
- * 10rem locator beside the key. At point scale there is no detail, and the
- * whole drawing is the figure: large on the page (`feature`), smaller in
- * the capture column (`compact`). `standard` is a page plate that is not
- * at point scale.
+ * 12rem (capture: 9rem) locator beside the key. At point scale there is
+ * no detail, and the whole drawing is the figure: large on the page
+ * (`feature`), smaller in the capture column (`compact`). `standard` is a
+ * page plate that is not at point scale.
  */
 export type TransferDiagramSize = "compact" | "feature" | "standard";
 
@@ -224,11 +237,16 @@ export function TransferOrbitDiagram({
   // same window in the whole drawing's units.
   const windowLeft = outer - DETAIL_INSIDE;
   const windowRight = windowLeft + DETAIL_WIDTH;
+  const boxMin =
+    (LOCATOR_BOX_MIN * HALF * 2) /
+    (compact ? LOCATOR_WIDTH.compact : LOCATOR_WIDTH.page);
+  const boxWidth = Math.max(DETAIL_WIDTH * scale, boxMin);
+  const boxHeight = Math.max(detailHeight * scale, boxMin);
   const box = {
-    height: detailHeight * scale,
-    width: DETAIL_WIDTH * scale,
-    x: HALF + windowLeft * scale,
-    y: HALF - (detailHeight / 2) * scale,
+    height: boxHeight,
+    width: boxWidth,
+    x: HALF + (windowLeft + DETAIL_WIDTH / 2) * scale - boxWidth / 2,
+    y: HALF - boxHeight / 2,
   };
 
   const drawing = (
@@ -304,20 +322,32 @@ export function TransferOrbitDiagram({
         ) : null}
       </svg>
       {hasDetail ? (
-        // The window is only a few pixels across at locator size, so its
-        // letter stands 12px above it on a 1px leader. The leader rises
-        // from the window's outer edge, which lies outside the target
-        // orbit, so it crosses no other line.
+        // The box is only 10px or so across at locator size, so its
+        // letter stands off it on a 12px leader that leaves the box's top
+        // right corner at 45 degrees. The corner lies outside the target
+        // orbit and the leader runs away from the ring, so it crosses no
+        // other line and the letter stays clear of the ring.
         <span
           aria-hidden="true"
-          className="pointer-events-none absolute flex -translate-x-1/2 -translate-y-full flex-col items-center"
+          className="pointer-events-none absolute flex -translate-y-full items-start"
           style={{
             left: percent((box.x + box.width) / (HALF * 2)),
             top: percent(box.y / (HALF * 2)),
           }}
         >
-          <span className="orbix-micro pb-0.5 text-text-muted">A</span>
-          <span className="block h-3 w-px bg-border-control" />
+          <svg className="mt-2 block size-[9px]" viewBox="0 0 9 9">
+            <line
+              stroke="var(--orbix-border-control)"
+              strokeWidth="1"
+              x1="0"
+              x2="9"
+              y1="9"
+              y2="0"
+            />
+          </svg>
+          <span className="orbix-micro pl-0.5 leading-none text-text-muted">
+            A
+          </span>
         </span>
       ) : null}
     </div>
@@ -434,21 +464,41 @@ export function TransferOrbitDiagram({
     </div>
   ) : null;
 
-  const whole = (
+  // The panel label stays on the plate's left edge, like every other
+  // panel label; only the drawing and its scale bar are centred.
+  // In the capture view on a narrow plate, where the key stacks below the
+  // locator, the locator is set up to 18rem wide and centred, so it is not
+  // a small circle in a wide plate.
+  const whole = hasDetail ? (
     <div
       className={cn(
-        "min-w-0",
-        hasDetail
-          ? "w-40 shrink-0"
-          : cn("mx-auto w-full", compact ? "max-w-[15rem]" : "max-w-[34rem]"),
+        "min-w-0 shrink-0",
+        compact ? "w-36 @max-[24rem]/transfer:w-full" : "w-48",
       )}
     >
-      <PanelLabel>
-        {hasDetail ? "Whole transfer" : "Whole transfer, to scale"}
-      </PanelLabel>
-      {drawing}
+      <PanelLabel>Whole transfer</PanelLabel>
+      <div
+        className={cn(
+          compact &&
+            "@max-[24rem]/transfer:mx-auto @max-[24rem]/transfer:max-w-[18rem]",
+        )}
+      >
+        {drawing}
+      </div>
       {/* A locator only places detail A; the detail carries the scale. */}
-      {hasDetail ? null : <ScaleBar widthKilometres={(HALF * 2) / scale} />}
+    </div>
+  ) : (
+    <div className="min-w-0">
+      <PanelLabel>Whole transfer, to scale</PanelLabel>
+      <div
+        className={cn(
+          "mx-auto w-full",
+          compact ? "max-w-[15rem]" : "max-w-[34rem]",
+        )}
+      >
+        {drawing}
+        <ScaleBar widthKilometres={(HALF * 2) / scale} />
+      </div>
     </div>
   );
 
@@ -502,7 +552,7 @@ export function TransferOrbitDiagram({
       {hasDetail ? (
         <li className="flex items-start gap-2">
           <LegendSwatch stroke="var(--orbix-border-control)" width={1} />
-          <span>Window A, enlarged as detail A</span>
+          <span>Box A marks the window enlarged as detail A</span>
         </li>
       ) : null}
     </ul>
@@ -511,7 +561,9 @@ export function TransferOrbitDiagram({
   // The wrapper is the container the plate's layout responds to, measured
   // at the plate's outer width. From 24rem the locator stands beside the
   // key, and on the page beside the caption too; below that everything
-  // stacks.
+  // stacks. The locator's column is 1rem (capture) or 1.5rem (page) wider
+  // than the locator, room for the letter A, which stands off the
+  // drawing's right edge.
   return (
     <div className="@container/transfer min-w-0">
       <DiagramPlate
@@ -520,7 +572,10 @@ export function TransferOrbitDiagram({
           "grid content-start",
           compact ? "gap-5 lg:p-5" : "gap-6",
           hasDetail &&
-            "@min-[24rem]/transfer:grid-cols-[10rem_minmax(0,1fr)] @min-[24rem]/transfer:gap-x-5",
+            (compact
+              ? "@min-[24rem]/transfer:grid-cols-[10rem_minmax(0,1fr)]"
+              : "@min-[24rem]/transfer:grid-cols-[13.5rem_minmax(0,1fr)]"),
+          hasDetail && "@min-[24rem]/transfer:gap-x-5",
         )}
       >
         {hasDetail ? (
@@ -569,12 +624,20 @@ export function TransferOrbitDiagram({
   );
 }
 
-/** The preset's ordered maneuver allowances as bars on one scale. */
+/**
+ * The preset's ordered maneuver allowances as bars on one scale, closed by
+ * their sum as a large readout. `fill` (the capture view) lets the plate
+ * grow to the height of its column and spreads the rows over that height,
+ * so the plate ends on the same line as the columns beside it (from
+ * 1024px, where the capture sets its columns side by side).
+ */
 export function AllowanceBars({
   diagram,
+  fill = false,
   missionId,
 }: {
   diagram: AllowanceDiagram;
+  fill?: boolean;
   missionId: string;
 }) {
   const largest = Math.max(
@@ -583,13 +646,24 @@ export function AllowanceBars({
   const captionId = `${missionId}-allowances-caption`;
 
   return (
-    <DiagramPlate aria-labelledby={captionId}>
+    <DiagramPlate
+      aria-labelledby={captionId}
+      className={cn(fill && "lg:flex lg:flex-1 lg:flex-col")}
+    >
       {/* The plate's label, set like the panel labels on the transfer
-          plates so the figures read as one set of drawings. */}
-      <figcaption className="orbix-caps mb-3 text-text-muted" id={captionId}>
-        Delta-v allowances, in flight order
-      </figcaption>
-      <ol className="grid gap-4">
+          plates so the figures read as one set of drawings. It names the
+          figure; the note on the values closes the plate as its caption.
+          On a phone it breaks after the comma, so no fragment is left. */}
+      <p className="orbix-caps mb-3 text-text-muted" id={captionId}>
+        Delta-v allowances,
+        <br className="sm:hidden" /> in flight order
+      </p>
+      <ol
+        className={cn(
+          "grid gap-5",
+          fill && "lg:flex-1 lg:content-between lg:gap-y-12 lg:py-2",
+        )}
+      >
         {diagram.maneuvers.map((maneuver) => (
           <li key={maneuver.id}>
             <div className="flex flex-wrap items-baseline justify-between gap-x-4 text-sm">
@@ -603,7 +677,7 @@ export function AllowanceBars({
             </div>
             <span
               aria-hidden="true"
-              className="orbix-magnitude max-w-none"
+              className="orbix-magnitude mt-2.5 h-1.5 max-w-none"
               style={
                 {
                   "--orbix-magnitude": maneuver.deltaVMetresPerSecond / largest,
@@ -615,17 +689,21 @@ export function AllowanceBars({
           </li>
         ))}
       </ol>
-      <p className="mt-5 flex flex-wrap items-baseline justify-between gap-x-4 border-t border-border-subtle pt-4 text-sm">
-        <span className="text-text-secondary">Sum of the allowances</span>
+      <p className="mt-6 grid gap-2 border-t border-border-subtle pt-4">
+        <span className="orbix-caps text-text-muted">
+          Sum of the allowances
+        </span>
         <span className="text-text-primary">
-          <Readout>{formatShowcaseNumber(diagram.sumMetresPerSecond)}</Readout>{" "}
-          <span className="text-text-muted">m/s</span>
+          <Readout className="orbix-readout-lg">
+            {formatShowcaseNumber(diagram.sumMetresPerSecond)}
+          </Readout>{" "}
+          <span className="text-sm text-text-muted">m/s</span>
         </span>
       </p>
-      <p className="orbix-label mt-3">
+      <figcaption className="orbix-label mt-3">
         Allowances are preset inputs, not optimized trajectory values. Their sum
         is the only derived number.
-      </p>
+      </figcaption>
     </DiagramPlate>
   );
 }

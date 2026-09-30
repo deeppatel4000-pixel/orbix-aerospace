@@ -20,10 +20,13 @@ import {
   ReadoutGrid,
   ValidationErrorSummary,
   LabFigure,
+  TpsFigure,
+  tpsColumn,
   EqDot,
   EQ_SUP,
   LAB_GROUP,
   LAB_GROUP_LEGEND,
+  EqFrac,
 } from "@/features/engineering-lab/components/shared";
 import type {
   VehicleReentryComparisonAnalysis,
@@ -104,9 +107,9 @@ interface VehicleFailure {
 function createInitialFormValues(): ComparisonFormValues {
   return {
     heatingCoefficient: "",
-    initialAltitudeMeters: "1000",
+    initialAltitudeMeters: "11000",
     initialFlightPathAngleDegrees: "",
-    initialVelocityMetersPerSecond: "150",
+    initialVelocityMetersPerSecond: "400",
     safetyFactor: "1.5",
     timestepSeconds: "",
     vehicles: [
@@ -133,11 +136,6 @@ function createInitialFormValues(): ComparisonFormValues {
 const standardFormatter = new Intl.NumberFormat("en-US", {
   maximumFractionDigits: 3,
   minimumFractionDigits: 2,
-});
-
-const preciseFormatter = new Intl.NumberFormat("en-US", {
-  maximumFractionDigits: 6,
-  minimumFractionDigits: 3,
 });
 
 const heatFluxFormatter = new Intl.NumberFormat("en-US", {
@@ -371,7 +369,7 @@ function OptionalNumberField({
           type="number"
           value={value}
         />
-        <span aria-hidden="true" className="orbix-field__unit">
+        <span aria-hidden="true" className="orbix-field__unit lab-field__unit">
           {unit}
         </span>
       </div>
@@ -393,17 +391,30 @@ const toolEquation = (
     equation={
       <>
         <span className={EQ_LINE}>
-          <span className={EQ_TERM}>β = m</span>
-          <wbr />
           <span className={EQ_TERM}>
-            /(C<sub>D</sub>
-            <EqDot />
-            A)
+            β ={" "}
+            <EqFrac
+              den={
+                <>
+                  C<sub>D</sub>
+                  <EqDot />A
+                </>
+              }
+              num="m"
+            />
           </span>
         </span>
         <span className={EQ_LINE}>
           <span className={EQ_TERM}>
-            a = ½ρV<sup className={EQ_SUP}>2</sup>/β
+            a ={" "}
+            <EqFrac
+              den="β"
+              num={
+                <>
+                  ½ρV<sup className={EQ_SUP}>2</sup>
+                </>
+              }
+            />
           </span>
         </span>
         <span className={EQ_LINE}>
@@ -466,6 +477,16 @@ export function VehicleReentryComparisonAnalyzer() {
   );
   const nextVehicleId = useRef(3);
   const { errors, result } = useMemo(() => deriveViewState(values), [values]);
+  const massColumn = tpsColumn(
+    result?.ranking.map((entry) => entry.tpsMassKilograms) ?? [],
+    "kg",
+    "g",
+  );
+  const thicknessColumn = tpsColumn(
+    result?.ranking.map((entry) => entry.tpsThickness.millimetres) ?? [],
+    "mm",
+    "µm",
+  );
   const hasReachedVehicleLimit = values.vehicles.length >= MAXIMUM_VEHICLES;
   const sharedOutputIds =
     "vehicle-reentry-comparison-initialAltitudeMeters vehicle-reentry-comparison-initialVelocityMetersPerSecond vehicle-reentry-comparison-safetyFactor vehicle-reentry-comparison-timestepSeconds vehicle-reentry-comparison-initialFlightPathAngleDegrees vehicle-reentry-comparison-heatingCoefficient";
@@ -570,7 +591,7 @@ export function VehicleReentryComparisonAnalyzer() {
                 <CalculatorNumberField
                   error={errors.shared.safetyFactor}
                   field="safetyFactor"
-                  hint="Common positive TPS heat-load multiplier for every evaluation."
+                  hint="Multiplies the heat load used to size the TPS for every vehicle."
                   idPrefix="vehicle-reentry-comparison"
                   label="Safety factor"
                   onChange={updateSharedValue}
@@ -580,7 +601,7 @@ export function VehicleReentryComparisonAnalyzer() {
                 <OptionalNumberField
                   error={errors.shared.timestepSeconds}
                   field="timestepSeconds"
-                  hint="Leave blank to preserve the trajectory analysis default."
+                  hint="Leave blank to use the 1 s default."
                   label="Time step (optional)"
                   min={0}
                   onChange={updateSharedValue}
@@ -590,7 +611,7 @@ export function VehicleReentryComparisonAnalyzer() {
                 <OptionalNumberField
                   error={errors.shared.initialFlightPathAngleDegrees}
                   field="initialFlightPathAngleDegrees"
-                  hint="Leave blank to preserve the default vertical descent."
+                  hint="Leave blank for a vertical descent (−90°)."
                   label="Flight-path angle (optional)"
                   max={0}
                   min={-90}
@@ -601,11 +622,11 @@ export function VehicleReentryComparisonAnalyzer() {
                 <OptionalNumberField
                   error={errors.shared.heatingCoefficient}
                   field="heatingCoefficient"
-                  hint="Leave blank to use the heating calculator's educational default."
+                  hint="Leave blank to use the default of 1.83 × 10⁻⁴ for Earth air."
                   label="Heating coefficient k (optional)"
                   min={0}
                   onChange={updateSharedValue}
-                  unit="kg½/m"
+                  unit="√kg/m"
                   value={values.heatingCoefficient}
                 />
               </div>
@@ -731,8 +752,7 @@ export function VehicleReentryComparisonAnalyzer() {
                               className="orbix-field__help mt-2"
                               id={nameHintId}
                             >
-                              Identifies this configuration in result cards and
-                              ranking output.
+                              Shown in the results and the ranking.
                             </p>
                             {vehicleErrors?.vehicleName ? (
                               <p
@@ -752,7 +772,7 @@ export function VehicleReentryComparisonAnalyzer() {
                           <CalculatorNumberField
                             error={vehicleErrors?.massKilograms}
                             field="massKilograms"
-                            hint="Positive vehicle mass held constant during evaluation."
+                            hint="Vehicle mass, held constant along the trajectory."
                             idPrefix={prefix}
                             label="Mass"
                             onChange={(_field, value) =>
@@ -784,7 +804,7 @@ export function VehicleReentryComparisonAnalyzer() {
                           <CalculatorNumberField
                             error={vehicleErrors?.referenceAreaSquareMetres}
                             field="referenceAreaSquareMetres"
-                            hint="Aerodynamic reference area and TPS coverage area."
+                            hint="Aerodynamic reference area, also taken as the area the TPS covers."
                             idPrefix={prefix}
                             label="Reference area"
                             onChange={(_field, value) =>
@@ -800,7 +820,7 @@ export function VehicleReentryComparisonAnalyzer() {
                           <CalculatorNumberField
                             error={vehicleErrors?.noseRadiusMetres}
                             field="noseRadiusMetres"
-                            hint="Effective stagnation-point radius used by heating analysis."
+                            hint="Effective stagnation-point nose radius."
                             idPrefix={prefix}
                             label="Nose radius"
                             onChange={(_field, value) =>
@@ -858,11 +878,7 @@ export function VehicleReentryComparisonAnalyzer() {
 
             <ValidationErrorSummary errors={validationMessages} />
 
-            <div className="mt-7 flex flex-wrap items-center gap-x-5 gap-y-3">
-              <p className="min-w-0 flex-[1_1_16rem] text-sm leading-6 text-muted">
-                Valid changes rerun every vehicle under the same scenario and
-                refresh the ranking immediately.
-              </p>
+            <div className="mt-7 flex flex-wrap items-center gap-x-4 gap-y-2">
               <Button
                 className="shrink-0 whitespace-nowrap"
                 variant="secondary"
@@ -870,6 +886,10 @@ export function VehicleReentryComparisonAnalyzer() {
               >
                 Reset inputs
               </Button>
+              <p className="min-w-0 flex-[1_1_14rem] text-[0.8125rem] leading-5 text-muted">
+                Valid changes rerun every vehicle under the same scenario and
+                refresh the ranking immediately.
+              </p>
             </div>
           </form>
         </div>
@@ -889,9 +909,9 @@ export function VehicleReentryComparisonAnalyzer() {
                         {result.recommendedVehicle.vehicleName}
                       </output>
                       <p className="mt-2 text-sm leading-6 text-muted">
-                        Selected from the configured vehicles using the analysis
-                        ranking order: lowest TPS mass, lowest required
-                        thickness, then lowest peak deceleration.
+                        Chosen from the vehicles above by lowest TPS mass, then
+                        lowest required thickness, then lowest peak
+                        deceleration.
                       </p>
                     </dd>
                   </div>
@@ -920,9 +940,11 @@ export function VehicleReentryComparisonAnalyzer() {
                             className="orbix-readout-lg"
                             htmlFor={outputIds}
                           >
-                            <LabFigure unit="kg">
-                              {preciseFormatter.format(entry.tpsMassKilograms)}
-                            </LabFigure>
+                            <TpsFigure
+                              smallUnit="g"
+                              unit="kg"
+                              value={entry.tpsMassKilograms}
+                            />
                           </output>
                         </dd>
                       </div>
@@ -966,7 +988,7 @@ export function VehicleReentryComparisonAnalyzer() {
                             className="lab-figure-note"
                             htmlFor={outputIds}
                           >
-                            <LabFigure unit="g">
+                            <LabFigure unit="g₀">
                               {standardFormatter.format(
                                 entry.peakDeceleration.decelerationGs,
                               )}
@@ -990,12 +1012,14 @@ export function VehicleReentryComparisonAnalyzer() {
                         <dt className="orbix-label">Total heat load</dt>
                         <dd className="mt-1">
                           <output className="orbix-data" htmlFor={outputIds}>
-                            <LabFigure unit="MJ/m²">
-                              {preciseFormatter.format(
+                            <TpsFigure
+                              smallUnit="kJ/m²"
+                              unit="MJ/m²"
+                              value={
                                 entry.totalHeatLoad
-                                  .heatLoadMegajoulesPerSquareMetre,
-                              )}
-                            </LabFigure>
+                                  .heatLoadMegajoulesPerSquareMetre
+                              }
+                            />
                           </output>
                         </dd>
                       </div>
@@ -1016,11 +1040,11 @@ export function VehicleReentryComparisonAnalyzer() {
                         <dt className="orbix-label">TPS thickness</dt>
                         <dd className="mt-1">
                           <output className="orbix-data" htmlFor={outputIds}>
-                            <LabFigure unit="mm">
-                              {preciseFormatter.format(
-                                entry.tpsThickness.millimetres,
-                              )}
-                            </LabFigure>
+                            <TpsFigure
+                              smallUnit="µm"
+                              unit="mm"
+                              value={entry.tpsThickness.millimetres}
+                            />
                           </output>
                         </dd>
                       </div>
@@ -1038,12 +1062,14 @@ export function VehicleReentryComparisonAnalyzer() {
                             className="lab-figure-note"
                             htmlFor={outputIds}
                           >
-                            <LabFigure unit="MJ/m²">
-                              {preciseFormatter.format(
+                            <TpsFigure
+                              smallUnit="kJ/m²"
+                              unit="MJ/m²"
+                              value={
                                 entry.thermalMargin
-                                  .heatLoadMarginMegajoulesPerSquareMetre,
-                              )}
-                            </LabFigure>
+                                  .heatLoadMarginMegajoulesPerSquareMetre
+                              }
+                            />
                           </output>
                         </dd>
                       </div>
@@ -1069,7 +1095,9 @@ export function VehicleReentryComparisonAnalyzer() {
               </NotCalculated>
             )}
           </CalculatorResultSection>
+        </div>
 
+        <div className="@container/col min-w-0">
           {result ? (
             <DataTable
               caption="Vehicles ranked under the shared reentry scenario"
@@ -1084,7 +1112,7 @@ export function VehicleReentryComparisonAnalyzer() {
                   key: "vehicle",
                   header: "Vehicle",
                   cell: ({ entry, outputIds, recommended }) => (
-                    <span className="block min-w-[16ch]">
+                    <span className="block min-w-[12ch]">
                       <output htmlFor={outputIds}>{entry.vehicleName}</output>
                       {recommended ? (
                         <span className="block text-sm text-muted">
@@ -1096,29 +1124,29 @@ export function VehicleReentryComparisonAnalyzer() {
                 },
                 {
                   key: "tps-mass",
-                  header: "TPS mass",
-                  unit: "kg",
+                  header: <span className="block">TPS mass</span>,
+                  unit: massColumn.unit,
                   numeric: true,
                   cell: ({ entry, outputIds }) => (
                     <output htmlFor={outputIds}>
-                      {preciseFormatter.format(entry.tpsMassKilograms)}
+                      {massColumn.format(entry.tpsMassKilograms)}
                     </output>
                   ),
                 },
                 {
                   key: "tps-thickness",
-                  header: "TPS thickness",
-                  unit: "mm",
+                  header: <span className="block">TPS thickness</span>,
+                  unit: thicknessColumn.unit,
                   numeric: true,
                   cell: ({ entry, outputIds }) => (
                     <output htmlFor={outputIds}>
-                      {preciseFormatter.format(entry.tpsThickness.millimetres)}
+                      {thicknessColumn.format(entry.tpsThickness.millimetres)}
                     </output>
                   ),
                 },
                 {
                   key: "peak-deceleration",
-                  header: "Peak deceleration",
+                  header: <span className="block">Peak decel.</span>,
                   unit: "m/s²",
                   numeric: true,
                   cell: ({ entry, outputIds }) => (
@@ -1132,7 +1160,7 @@ export function VehicleReentryComparisonAnalyzer() {
                 },
                 {
                   key: "peak-heat-flux",
-                  header: "Peak heat flux",
+                  header: <span className="block">Peak heat flux</span>,
                   unit: "W/m²",
                   numeric: true,
                   cell: ({ entry, outputIds }) => (
@@ -1140,24 +1168,6 @@ export function VehicleReentryComparisonAnalyzer() {
                       {heatFluxFormatter.format(
                         entry.peakHeating.heatFluxWattsPerSquareMetre,
                       )}
-                    </output>
-                  ),
-                },
-                {
-                  key: "material",
-                  header: "Recommended TPS material",
-                  cell: ({ entry, outputIds }) => (
-                    <output htmlFor={outputIds}>
-                      {entry.recommendedTPSMaterial.name}
-                    </output>
-                  ),
-                },
-                {
-                  key: "margin",
-                  header: "Margin classification",
-                  cell: ({ entry, outputIds }) => (
-                    <output htmlFor={outputIds}>
-                      {entry.thermalClassification}
                     </output>
                   ),
                 },
@@ -1206,8 +1216,8 @@ export function VehicleReentryComparisonAnalyzer() {
                   Ranking order
                 </h4>
                 <p className="mt-2 text-sm leading-6 text-muted">
-                  The existing comparison ranks lowest TPS mass first, then
-                  lower thickness, and finally lower peak deceleration.
+                  Vehicles are ranked by lowest TPS mass first, then lower
+                  thickness, and finally lower peak deceleration.
                 </p>
               </article>
               <article className="border-b border-border py-4">

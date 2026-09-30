@@ -380,11 +380,13 @@ test.describe("Mission Replay 3D scene", () => {
     // frozen at whatever the first phase set, and the round trip below fails.
     await openReplayWorkspace(page);
 
-    // Phase 1 (Mission preparation) is an orbital-scene phase.
+    // Phase 1 (Launch) is an orbital-scene phase.
     await expect(selectedSceneMode(page)).toHaveText(/Orbital/);
 
-    // Index 5 = Reentry preparation, a reentry-scene phase.
-    await selectPhase(page, 5, "Reentry preparation");
+    // Index 4 = Reentry, a reentry-scene phase. The replay follows the
+    // shared mission stage sequence (Launch, Orbit insertion, Transfer,
+    // Arrival, Reentry) and ends with a separate Complete step.
+    await selectPhase(page, 4, "Reentry");
     await expect(
       selectedSceneMode(page),
       "moving to a reentry phase must switch the scene to reentry",
@@ -392,7 +394,7 @@ test.describe("Mission Replay 3D scene", () => {
 
     // ...and back, so this cannot pass by the mode merely being stuck on
     // whichever value it drifted to.
-    await selectPhase(page, 2, "Orbital operations");
+    await selectPhase(page, 2, "Transfer");
     await expect(
       selectedSceneMode(page),
       "returning to an orbital phase must switch the scene back",
@@ -416,7 +418,7 @@ test.describe("Mission Replay 3D scene", () => {
     await expect(reentryTab).toBeDisabled();
 
     // On a reentry phase the availability inverts.
-    await selectPhase(page, 5, "Reentry preparation");
+    await selectPhase(page, 4, "Reentry");
     await expect(reentryTab).toBeEnabled();
     await expect(orbitalTab).toBeDisabled();
   });

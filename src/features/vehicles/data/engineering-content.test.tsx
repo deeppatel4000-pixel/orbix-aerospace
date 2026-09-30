@@ -98,9 +98,8 @@ describe.each(PANELS)("engineering notes presentation ($name)", ({ Panel }) => {
     expect(markup).not.toContain("reserved for future sourced");
     expect(markup).not.toContain("Analysis queue");
     expect(markup).toContain("Engineering analysis");
-    expect(markup).toContain(
-      "Concise engineering observations based on public aerospace specifications",
-    );
+    // No filler blurb under the heading: the notes speak for themselves.
+    expect(markup).not.toContain("Concise engineering observations");
   });
 
   it("still renders every note it is given", () => {

@@ -20,6 +20,17 @@ export interface VehicleSpec {
   /** Formatted, already-qualified value. Never fabricated or defaulted. */
   readonly value: ReactNode;
   readonly label: string;
+  /**
+   * Unit set after the value in muted text, for a readout split into value
+   * and unit. Leave it out when `value` already carries its unit.
+   */
+  readonly unit?: string;
+  /**
+   * The figure in the other unit system and the source's qualifier, under
+   * the value. Shown only in the feature layouts from 48rem and in a
+   * `leadRow` card from 64rem.
+   */
+  readonly secondary?: ReactNode;
 }
 
 /**
@@ -33,22 +44,19 @@ export type VehicleRecordCardVariant = "compact" | "default";
  *
  * - `stacked`: the photograph above the text.
  * - `feature`: the wide first card of the aircraft registry, spanning two
- *   grid columns from 40rem: the photograph on the left half of the card,
- *   cropped to the height of the card (from 64rem the standard cards in
- *   its row set it), and the text on the right. From 64rem the text adds
- *   the description and up to four figures.
+ *   grid columns from 40rem: the photograph across the whole card at 2:1
+ *   (an airframe is wide, so it stays whole), then from 48rem the text in
+ *   two columns: the classification, name and description on the left and
+ *   a 2x2 block of four figures on the right, on the card's bottom edge.
  * - `feature-portrait`: the wide first card of the launch vehicle registry,
  *   split in half from 40rem: the photograph on the left, at least 28rem
  *   tall (narrower than 3:4, so the crop only trims the sides and the
- *   whole vehicle stays in view), and the text on the right. From 48rem the
- *   text adds the description and up to six figures.
+ *   whole vehicle stays in view), and the text on the right. From 48rem
+ *   the text adds the description, and the four figures sit as a 2x2 block
+ *   on the card's bottom edge; the description takes the spare height.
  *
- * In both feature layouts the figures sit on the card's bottom edge as a
- * two-column hairline compartment (three rows of two for six figures),
- * level with the figure row of the stacked card beside them from 64rem.
- * Values are 1.25rem in the aircraft feature (at 1.5rem "50,000+ ft"
- * overflows its right compartment at 1440px) and 1.375rem in the launch
- * vehicle feature, whose taller card has room for larger figures.
+ * The 2x2 block is a hairline compartment: a rule between the columns that
+ * runs the full height of each row and a full-width rule between the rows.
  */
 export type VehicleRecordCardLayout =
   "feature" | "feature-portrait" | "stacked";
@@ -67,6 +75,20 @@ interface VehicleRecordCardProps {
    * `feature` and `feature-portrait` layouts from 64rem.
    */
   description?: string;
+  /**
+   * A stacked registry card in the feature card's row. From 64rem it shows
+   * four figures as a 2x2 block, like the feature card beside it, so both
+   * cards end on the same baseline with their figures on the bottom edge.
+   */
+  leadRow?: boolean;
+  /**
+   * A stacked card whose photograph may take the spare height when its row
+   * is taller (cropped at the sides only). For portrait launch vehicle
+   * photographs, where a narrower crop keeps the whole vehicle in view. A
+   * landscape airframe keeps its 16:10 frame and the card body takes the
+   * spare height instead.
+   */
+  mediaStretch?: boolean;
   /** Heading level for the name. Registries use 3; a list under an h3 uses 4. */
   headingLevel?: 3 | 4;
   href: string;
@@ -82,8 +104,8 @@ interface VehicleRecordCardProps {
   shortName?: string;
   /**
    * Key values. Stacked and compact cards show the first two; the feature
-   * layouts up to six from 64rem, two to a row (spec 8 asks for a two-spec
-   * row; the wide first card has room for more of the record).
+   * layouts up to four from 48rem, as a 2x2 block (spec 8 asks for a
+   * two-spec row; the wide first card has room for more of the record).
    * Keep full dates out of this row: it is set in B612 Mono.
    */
   specs: readonly VehicleSpec[];
@@ -112,7 +134,9 @@ export function VehicleRecordCard({
   headingLevel = 3,
   href,
   layout = "stacked",
+  leadRow = false,
   media,
+  mediaStretch = false,
   name,
   shortName,
   specs,
@@ -123,7 +147,11 @@ export function VehicleRecordCard({
   const isPortraitFeature = layout === "feature-portrait";
   const isLandscapeFeature = layout === "feature";
   const isFeature = isLandscapeFeature || isPortraitFeature;
-  const maxSpecs = isFeature ? 6 : 2;
+  const isLeadRow = leadRow && layout === "stacked" && !isCompact;
+  // The launch vehicle feature card sets up to six figures as readouts,
+  // three rows of two, so its text column reaches the height of the
+  // portrait cards in its row with no empty band.
+  const maxSpecs = isPortraitFeature ? 6 : isFeature || isLeadRow ? 4 : 2;
   const visibleSpecs = specs.slice(0, maxSpecs);
   const Heading = headingLevel === 4 ? "h4" : "h3";
   const nameRest =
@@ -163,8 +191,7 @@ export function VehicleRecordCard({
         <p
           className={cn(
             "mt-3 text-sm leading-normal text-text-secondary",
-            isLandscapeFeature && description && "lg:hidden",
-            isPortraitFeature && description && "md:hidden",
+            isFeature && description && "md:hidden",
           )}
         >
           {summary}
@@ -173,8 +200,7 @@ export function VehicleRecordCard({
       {summary && description && isFeature ? (
         <p
           className={cn(
-            "mt-4 hidden max-w-[44ch] leading-7 text-pretty text-text-secondary lg:text-lg",
-            isLandscapeFeature ? "lg:block" : "md:block",
+            "mt-4 hidden max-w-[44ch] leading-7 text-pretty text-text-secondary md:block xl:text-lg",
           )}
         >
           {description}
@@ -190,8 +216,10 @@ export function VehicleRecordCard({
    * Two tracks per figure (label, value) through a subgrid, so the values
    * in a row share one baseline even when a label wraps: the labels sit on
    * the bottom of their track and the values start at the top of theirs.
-   * Figures past the first two show only from 64rem, in the feature
-   * layouts, as a 2x2 compartment.
+   * Cells carry no margins, so the rule between the columns runs the full
+   * height of its row and the rule between the rows the full width.
+   * Figures past the first two show only in the feature layouts, from
+   * 48rem.
    */
   const specList = (
     <dl
@@ -206,10 +234,13 @@ export function VehicleRecordCard({
             "row-span-2 grid min-w-0 grid-rows-subgrid gap-y-1 pt-4",
             index % 2 === 1 && "border-l border-border-subtle pl-4",
             index % 2 === 0 && visibleSpecs.length > 1 && "pr-4",
-            index >= 2 && "mt-4 hidden border-t border-border-subtle",
-            index >= 2 && (isPortraitFeature ? "md:grid" : "lg:grid"),
-            isLandscapeFeature && "lg:pt-5",
-            isPortraitFeature && "md:pt-5 xl:mt-5 xl:pt-6",
+            isFeature &&
+              index < visibleSpecs.length - 2 &&
+              visibleSpecs.length > 2 &&
+              "md:pb-4",
+            isLeadRow && index < 2 && visibleSpecs.length > 2 && "lg:pb-4",
+            index >= 2 && "hidden border-t border-border-subtle",
+            index >= 2 && (isLeadRow ? "lg:grid" : "md:grid"),
           )}
           key={spec.label}
         >
@@ -221,12 +252,31 @@ export function VehicleRecordCard({
           <dd
             className={cn(
               "orbix-vehicle-card__spec-value mt-0 whitespace-nowrap",
-              isLandscapeFeature && "lg:text-[1.25rem] lg:leading-[1.1]",
-              isPortraitFeature &&
-                "md:text-[1.25rem] md:leading-[1.1] xl:text-[1.375rem]",
+              isLandscapeFeature && "md:text-[1.25rem] md:leading-[1.1]",
+              // The aircraft figure column is about 17rem at 1024px, too
+              // narrow for "50,000+ ft" at 1.25rem.
+              isLandscapeFeature && "lg:max-xl:text-[1.125rem]",
+              // Readouts in the launch vehicle feature card: the largest
+              // size at which "549,054 kg" still fits a half column.
+              isPortraitFeature && "md:text-[1.5rem] md:leading-[1.05]",
             )}
           >
             {formatFigure(spec.value)}
+            {spec.unit ? (
+              <span className="ml-[0.3em] text-[0.7em] text-muted">
+                {spec.unit}
+              </span>
+            ) : null}
+            {spec.secondary && (isFeature || isLeadRow) ? (
+              <span
+                className={cn(
+                  "mt-2 hidden font-mono text-xs leading-snug font-normal tracking-normal whitespace-normal text-muted",
+                  isLeadRow ? "lg:block" : "md:block",
+                )}
+              >
+                {formatFigure(spec.secondary)}
+              </span>
+            ) : null}
           </dd>
         </div>
       ))}
@@ -236,7 +286,13 @@ export function VehicleRecordCard({
   return (
     <article className={cn("h-full", className)}>
       <Link
-        className={cn("orbix-vehicle-card", isFeature && "sm:flex-row")}
+        className={cn(
+          // Positioned, so the visually hidden rest of a short name stays
+          // inside the card (and inside a scrolling row of related cards)
+          // instead of widening the page.
+          "orbix-vehicle-card relative",
+          isPortraitFeature && "sm:flex-row",
+        )}
         data-layout={layout}
         data-variant={variant}
         href={href}
@@ -251,14 +307,16 @@ export function VehicleRecordCard({
             // at the sides) rather than to an empty band in the text.
             layout === "stacked" &&
               !isCompact &&
+              mediaStretch &&
               "lg:flex-auto lg:[&>*]:h-full lg:[&>*]:max-w-full",
-            // A feature photograph fills the left half of the card at the
-            // card's height (58 percent left the aircraft figures too
-            // narrow for "50,000+ ft"), at least 28rem tall for a rocket
-            // (32rem from 64rem).
-            isFeature &&
-              "sm:w-1/2 sm:border-r sm:border-b-0 sm:[&>*]:aspect-auto sm:[&>*]:h-full",
-            isPortraitFeature && "sm:min-h-[28rem] lg:min-h-[32rem]",
+            // The aircraft feature photograph runs across the whole card
+            // at 2:1, cropped only a little from the top and bottom.
+            isLandscapeFeature && "sm:[&>*]:aspect-[2/1]",
+            // The launch vehicle feature photograph fills the left half of
+            // the card at the card's height, at least 28rem tall (32rem
+            // from 64rem).
+            isPortraitFeature &&
+              "sm:min-h-[28rem] sm:w-1/2 sm:border-r sm:border-b-0 lg:min-h-[32rem] sm:[&>*]:aspect-auto sm:[&>*]:h-full",
           )}
         >
           {media}
@@ -268,9 +326,11 @@ export function VehicleRecordCard({
           className={cn(
             "flex flex-1 flex-col gap-6 [&>dl]:mt-auto",
             isCompact ? "p-4" : "p-6",
-            // In a feature card the figures also sit on the bottom edge,
-            // level with the neighbouring card's figure row.
-            isFeature && "sm:min-w-0 lg:gap-8 xl:px-8 xl:pt-8",
+            isFeature && "sm:min-w-0 xl:px-8 xl:pt-8",
+            // Aircraft feature from 48rem: the heading and description on
+            // the left, the 2x2 figures on the right, on the bottom edge.
+            isLandscapeFeature &&
+              "md:grid md:grid-cols-2 md:gap-8 md:[&>dl]:mt-0 md:[&>dl]:self-end",
           )}
         >
           {heading}

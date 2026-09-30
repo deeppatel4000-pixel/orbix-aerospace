@@ -9,12 +9,12 @@ import {
   maxPayloadTo,
   payloadConfiguration,
   payloadLabel,
+  rocketClassification,
   thrustParts,
 } from "@/features/rockets/components/rocket-figures";
 import { getRocketVisual, listRockets } from "@/features/rockets/data";
 import {
   countRocketStages,
-  formatRocketClassification,
   formatRocketFirstFlight,
 } from "@/features/rockets/utils";
 import {
@@ -117,11 +117,11 @@ export function RocketProfile({ rocket }: RocketProfileProps) {
               variant="secondary"
               className="max-sm:w-full max-sm:justify-between"
             >
-              {/* Shortened below 40rem so the button stays on one line; the
+              {/* Shortened below 64rem so the button stays on one line; the
                   hidden words leave the accessible name with it. */}
               <span>
                 Compare {rocket.name}
-                <span className="max-sm:hidden">
+                <span className="max-lg:hidden">
                   {" "}
                   with other launch vehicles
                 </span>
@@ -133,7 +133,7 @@ export function RocketProfile({ rocket }: RocketProfileProps) {
             { href: "/rockets", label: "Launch vehicles" },
             { label: rocket.name },
           ]}
-          classification={formatRocketClassification(rocket.stages)}
+          classification={rocketClassification(rocket)}
           lead={rocket.description}
           name={rocket.name}
           photoPlacement="right"
@@ -182,7 +182,7 @@ export function RocketProfile({ rocket }: RocketProfileProps) {
       </VehicleProfileSection>
 
       <VehicleProfileSection
-        description="Size, mass and thrust at liftoff as published, with the basis of each figure under it."
+        description="Size, mass and thrust at liftoff as published, with the basis of each figure."
         id="specifications"
         index={2}
         title="Specifications"

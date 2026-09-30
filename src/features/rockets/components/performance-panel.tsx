@@ -4,7 +4,8 @@ import {
   formatOrbitType,
 } from "@/features/rockets/utils";
 import {
-  minimumNote,
+  basisNote,
+  joinTableNotes,
   renderDualMeasurement,
 } from "@/features/vehicles/components/measurement-display";
 import { VehicleProfileSection } from "@/features/vehicles/components/vehicle-profile-section";
@@ -38,8 +39,8 @@ function formatList(items: readonly string[]) {
 /**
  * Performance (spec 9): payload to each published destination as a spec
  * sheet (destination, payload, configuration, so the figure is the second
- * column and in view on a phone), then, in one sentence, any supported
- * destination the record gives no payload figure for.
+ * column and in view on a phone), with any supported destination the
+ * record gives no payload figure for named in the table's note.
  */
 export function PerformancePanel({
   index,
@@ -51,6 +52,18 @@ export function PerformancePanel({
   const otherOrbits = supportedOrbits
     .filter((orbit) => !withPayload.has(orbit))
     .map((orbit) => orbitName(orbit));
+  const destinations =
+    otherOrbits.length === 1
+      ? "a supported destination"
+      : "supported destinations";
+  // Set in the table-note style, under the table when there is one, like
+  // the basis note it follows.
+  const otherNote =
+    otherOrbits.length > 0
+      ? payloadCapabilities.length > 0
+        ? `The record also lists ${formatList(otherOrbits)} as ${destinations}, with no published payload figure.`
+        : `The record lists ${formatList(otherOrbits)} as ${destinations}.`
+      : undefined;
 
   return (
     <VehicleProfileSection
@@ -85,20 +98,20 @@ export function PerformancePanel({
           getRowKey={(capability) =>
             `${capability.orbit}-${capability.configuration}`
           }
-          note={minimumNote(payloadCapabilities.map((row) => row.mass))}
+          note={joinTableNotes(
+            basisNote(payloadCapabilities.map((row) => row.mass)),
+            otherNote,
+          )}
           rows={payloadCapabilities}
         />
       ) : (
-        <p className="text-muted">No payload figures are published.</p>
+        <>
+          <p className="text-muted">No payload figures are published.</p>
+          {otherNote ? (
+            <p className="orbix-data-table__note max-w-[68ch]">{otherNote}</p>
+          ) : null}
+        </>
       )}
-
-      {otherOrbits.length > 0 ? (
-        <p className="mt-8 max-w-[68ch] text-pretty text-text-secondary">
-          {payloadCapabilities.length > 0
-            ? `The record also lists ${formatList(otherOrbits)} as ${otherOrbits.length === 1 ? "a supported destination" : "supported destinations"}, with no published payload figure.`
-            : `The record lists ${formatList(otherOrbits)} as ${otherOrbits.length === 1 ? "a supported destination" : "supported destinations"}.`}
-        </p>
-      ) : null}
     </VehicleProfileSection>
   );
 }

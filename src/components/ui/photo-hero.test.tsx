@@ -104,4 +104,9 @@ describe("PhotoHero", () => {
     expect(markup).toContain('class="orbix-reg-marks orbix-photo-hero__marks"');
     expect(markup).toMatch(/<span aria-hidden="true" class="orbix-reg-marks/);
   });
+
+  it("marks the right-hand placement only when asked", () => {
+    expect(render()).not.toContain("data-placement");
+    expect(render({ placement: "right" })).toContain('data-placement="right"');
+  });
 });

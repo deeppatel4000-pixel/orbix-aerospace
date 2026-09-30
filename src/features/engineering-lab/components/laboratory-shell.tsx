@@ -159,7 +159,7 @@ export function LaboratoryShell({ children, workflows }: LaboratoryShellProps) {
          * fade out, and the current row is kept in view. */}
         <div
           data-tool-rail=""
-          className="sticky top-[var(--header-height)] z-30 -mx-4 self-start border-b border-border bg-background px-4 py-2 sm:-mx-6 sm:px-6 lg:top-[calc(var(--header-height)+1.5rem)] lg:z-auto lg:mx-0 lg:max-h-[calc(100svh-var(--header-height)-3rem)] lg:[scrollbar-width:thin] lg:[scrollbar-color:var(--border-control)_transparent] lg:overflow-y-auto lg:border-b-0 lg:bg-transparent lg:[mask-image:linear-gradient(#000_calc(100%-2rem),transparent)] lg:px-0 lg:pt-0 lg:pb-8"
+          className="sticky top-[var(--header-height)] z-30 -mx-4 self-start border-b border-border bg-background px-4 py-2 sm:-mx-6 sm:px-6 lg:top-[calc(var(--header-height)+1.5rem)] lg:z-auto lg:mx-0 lg:max-h-[calc(100svh-var(--header-height)-3rem)] lg:[scrollbar-width:thin] lg:[scrollbar-color:var(--border-control)_transparent] lg:overflow-y-auto lg:border-b-0 lg:bg-transparent lg:[mask-image:linear-gradient(#000_calc(100%-2rem),transparent)] lg:px-0 lg:pt-0 lg:pb-8 max-lg:[html:has(&)]:scroll-pt-[calc(var(--header-height)+5rem)]"
           ref={indexRef}
         >
           <LaboratoryToolNavigation

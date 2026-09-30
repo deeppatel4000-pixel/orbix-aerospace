@@ -115,33 +115,17 @@ export function MissionDesignReview({
 
       <div className="space-y-6 pt-6">
         <ReviewCategory
-          description="Mission identity, supplied system coverage, and available review objects."
+          description="Mission category and the analyses it includes."
           id="architecture"
           title="Mission architecture"
         >
           <dl className="grid gap-x-8 sm:grid-cols-2">
             <DesignConstraintCard
-              description="Category supplied by the Mission control context."
+              description="Mission category."
               label="Mission category"
               value={
                 missionCategory ? categoryLabels[missionCategory] : undefined
               }
-            />
-            <DesignConstraintCard
-              description="Count reported by the completed mission profile."
-              label="Analysis systems"
-              unit="reported"
-              value={resolvedProfile?.missionSummaryState.analysesResolved}
-            />
-            <DesignConstraintCard
-              description="Completed report object available to this review."
-              label="Mission report"
-              value={report ? "Supplied" : undefined}
-            />
-            <DesignConstraintCard
-              description="Deterministic insight object available to this review."
-              label="Mission insights"
-              value={insights ? "Supplied" : undefined}
             />
           </dl>
 
@@ -167,7 +151,7 @@ export function MissionDesignReview({
         </ReviewCategory>
 
         <ReviewCategory
-          description="Existing orbital transfer and maneuver-budget outputs presented as mission parameters."
+          description="Transfer delta-v, orbit altitudes and the maneuver budget for this mission."
           id="orbital"
           title="Orbital considerations"
         >
@@ -260,7 +244,7 @@ export function MissionDesignReview({
         </ReviewCategory>
 
         <ReviewCategory
-          description="Assumptions preserved from the supplied mission report or insight object."
+          description="Assumptions stated in the mission report."
           id="assumptions"
           title="Modeling assumptions"
         >
@@ -283,7 +267,7 @@ export function MissionDesignReview({
       </div>
 
       <footer className="mt-6 border-t border-border-subtle pt-4 text-[0.8125rem] leading-5 text-muted">
-        This workspace organizes existing mission information for educational
+        This workspace restates the completed mission results for educational
         review. It does not evaluate feasibility or make design decisions.
       </footer>
     </article>

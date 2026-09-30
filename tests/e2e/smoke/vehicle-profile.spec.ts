@@ -12,9 +12,12 @@ import {
  * A profile is a documentation page: a breadcrumb, one h1, a credited
  * photograph, an "On this page" list, then one flat section per topic, each
  * an h2, ending with three related vehicles. Design v2 (spec 9) puts the
- * photograph behind the heading as a full-bleed hero with a credit line and
- * shows it large once more, credited, in the overview; the aircraft history
- * timeline section was removed. These tests pin that structure.
+ * photograph in the hero with a credit line: a framed plate beside the text
+ * on aircraft profiles and a feathered plate on the right on rocket profiles,
+ * above the text on a phone. The
+ * hero is where the photograph is shown large; no profile repeats it in the
+ * overview, which is a short spec sheet of the record's facts. The aircraft
+ * history timeline section was removed. These tests pin that structure.
  *
  * Deliberately NOT asserted: pixel geometry, class names or copy beyond
  * section names. The contracts here are structural: which sections exist in
@@ -152,32 +155,13 @@ test.describe("Vehicle profile structure", () => {
         heroCaption.getByRole("link", { name: "Source file" }),
       ).toHaveAttribute("href", /^https:\/\//);
 
-      // The overview photograph: the figure whose source link names the
-      // vehicle. Aircraft profiles show it at a crop of its own, because
-      // the hero overlay darkens the aircraft. Rocket profiles do not
-      // repeat it: the hero already shows the whole rocket (design v2).
-      const figure = page.locator("#main-content figure", {
+      // The hero is the only credited vehicle photograph: no profile
+      // repeats it in the overview (design v2), so no other figure links to
+      // a source file of the vehicle.
+      const repeated = page.locator("#main-content figure", {
         has: page.getByRole("link", { name: /^Source file of the / }),
       });
-      if (path.startsWith(ROUTES.rockets)) {
-        await expect(figure).toHaveCount(0);
-        continue;
-      }
-      await expect(figure).toHaveCount(1);
-      await expect(figure).toBeVisible();
-
-      const alt = (await figure.locator("img").getAttribute("alt")) ?? "";
-      expect(
-        alt.trim().length,
-        `${path} photograph needs alt text`,
-      ).toBeGreaterThan(10);
-
-      const caption = figure.locator("figcaption");
-      await expect(caption).toContainText(/public domain|CC BY/i);
-      await expect(caption).toContainText(/Photo: /);
-      await expect(
-        caption.getByRole("link", { name: /^Source file of the / }),
-      ).toHaveAttribute("href", /^https:\/\//);
+      await expect(repeated).toHaveCount(0);
     }
   });
 

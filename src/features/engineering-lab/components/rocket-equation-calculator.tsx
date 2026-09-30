@@ -63,8 +63,12 @@ function parseFormValues(
   };
 }
 
+// `lab-equation--one-line`: the rocket equation is the lab's signature
+// relation and stays on one line down to 320px, where 20px is about 20px
+// too wide for its block, so it may step down to 17px there.
 const toolEquation = (
   <EquationBlock
+    className="lab-equation--one-line"
     equation={
       <>
         <span className={EQ_LINE}>

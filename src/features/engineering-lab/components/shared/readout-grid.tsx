@@ -4,8 +4,8 @@ import { cn } from "@/lib/cn";
 
 export type ReadoutGridProps = ComponentPropsWithoutRef<"dl"> & {
   /**
-   * Most compartments per row: one below a 19rem container, two from
-   * 19rem, three (when asked for) from 40rem. `1` keeps a single column,
+   * Most compartments per row: one below a 20rem container, two from
+   * 20rem, three (when asked for) from 46rem. `1` keeps a single column,
    * for compound values. Default 2.
    */
   columns?: 1 | 2 | 3;

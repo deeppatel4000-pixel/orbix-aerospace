@@ -12,7 +12,7 @@ import {
   focusFirstInvalidField,
   focusFirstInvalidFieldOnEnter,
   CalculatorResultSection,
-  LAB_TOOL_SPLIT,
+  LAB_TOOL_SPLIT_STICKY,
   LabToolLayout,
   NotCalculated,
   ReadoutGrid,
@@ -23,6 +23,9 @@ import {
   EqSubSup,
   EqFrac,
   EQ_SUB_CLEAR,
+  LAB_CHOICE_INPUT,
+  LAB_CHOICE_LIST,
+  LAB_CHOICE_ROW,
 } from "@/features/engineering-lab/components/shared";
 import type {
   ShockPressureLossAnalysis,
@@ -146,18 +149,19 @@ const shockTypeOptions: readonly {
 }[] = [
   {
     description: "Flow meets a shock perpendicular to its direction.",
-    label: "Normal Shock",
+    label: "Normal shock",
     value: "normal",
   },
   {
     description: "Flow turns through an attached weak shock.",
-    label: "Oblique Shock",
+    label: "Oblique shock",
     value: "oblique",
   },
 ];
 
 const toolEquation = (
   <EquationBlock
+    className="lab-equation--long"
     equation={
       <>
         <span className={EQ_LINE}>
@@ -274,7 +278,7 @@ export function ShockPressureLossAnalyzer() {
 
   return (
     <LabToolLayout equation={toolEquation}>
-      <div className={LAB_TOOL_SPLIT}>
+      <div className={LAB_TOOL_SPLIT_STICKY}>
         <div className="@container/col min-w-0">
           <form
             noValidate
@@ -290,26 +294,21 @@ export function ShockPressureLossAnalyzer() {
                 Select the shock geometry used to evaluate stagnation-pressure
                 recovery.
               </p>
-              <div className="mt-3 grid gap-3 @min-[36rem]/col:grid-cols-2">
+              <div className={LAB_CHOICE_LIST + " mt-3"}>
                 {shockTypeOptions.map((option) => {
                   const isSelected = values.shockType === option.value;
                   const optionId = "shock-pressure-loss-mode-" + option.value;
 
                   return (
                     <label
-                      className={
-                        "flex min-h-20 cursor-pointer items-start gap-3 rounded border p-4 transition-colors " +
-                        (isSelected
-                          ? "border-accent bg-surface-raised"
-                          : "border-border-control bg-surface-input hover:border-muted")
-                      }
+                      className={LAB_CHOICE_ROW}
                       htmlFor={optionId}
                       key={option.value}
                     >
                       <input
                         aria-describedby="shock-pressure-loss-mode-hint"
                         checked={isSelected}
-                        className="mt-1 h-4 w-4 shrink-0 accent-accent"
+                        className={LAB_CHOICE_INPUT}
                         id={optionId}
                         name="shock-pressure-loss-mode"
                         onChange={() => updateShockType(option.value)}
@@ -317,10 +316,10 @@ export function ShockPressureLossAnalyzer() {
                         value={option.value}
                       />
                       <span>
-                        <span className="block text-sm font-semibold">
+                        <span className="block font-semibold">
                           {option.label}
                         </span>
-                        <span className="mt-1 block text-sm leading-6 text-muted">
+                        <span className="block font-normal text-muted">
                           {option.description}
                         </span>
                       </span>
@@ -381,10 +380,7 @@ export function ShockPressureLossAnalyzer() {
               idPrefix="shock-pressure-loss"
             />
 
-            <div className="mt-7 flex flex-wrap items-center gap-x-5 gap-y-3">
-              <p className="min-w-0 flex-[1_1_16rem] text-sm leading-6 text-muted">
-                Valid inputs update total-pressure recovery immediately.
-              </p>
+            <div className="mt-7 flex flex-wrap items-center gap-x-4 gap-y-2">
               <Button
                 className="shrink-0 whitespace-nowrap"
                 variant="secondary"
@@ -392,6 +388,9 @@ export function ShockPressureLossAnalyzer() {
               >
                 Reset inputs
               </Button>
+              <p className="min-w-0 flex-[1_1_14rem] text-[0.8125rem] leading-5 text-muted">
+                Valid inputs update total-pressure recovery immediately.
+              </p>
             </div>
           </form>
         </div>
@@ -403,7 +402,93 @@ export function ShockPressureLossAnalyzer() {
           >
             {result ? (
               <>
-                <ReadoutGrid columns={2} title="Shock summary">
+                <ReadoutGrid columns={2} title="Total pressure">
+                  <div>
+                    <dt className="orbix-label">Total pressure loss</dt>
+                    <dd className="mt-1">
+                      <output className="orbix-readout-lg" htmlFor={outputIds}>
+                        <LabFigure unit="%">
+                          {percentageFormatter.format(
+                            result.pressureLossPercentage,
+                          )}
+                        </LabFigure>
+                      </output>
+                    </dd>
+                  </div>
+                  <div>
+                    <dt className="orbix-label">
+                      Total pressure recovery ratio
+                    </dt>
+                    <dd className="mt-1">
+                      <output className="orbix-readout-lg" htmlFor={outputIds}>
+                        <LabFigure>
+                          {precisionFormatter.format(
+                            result.pressureRecoveryRatio,
+                          )}
+                        </LabFigure>
+                      </output>
+                    </dd>
+                  </div>
+                </ReadoutGrid>
+
+                {result.shockType === "normal" ? (
+                  <ReadoutGrid columns={2} title="Downstream flow">
+                    <div>
+                      <dt className="orbix-label">Downstream Mach</dt>
+                      <dd className="mt-1">
+                        <output className="orbix-data" htmlFor={outputIds}>
+                          <LabFigure>
+                            {precisionFormatter.format(result.downstreamMach)}
+                          </LabFigure>
+                        </output>
+                      </dd>
+                    </div>
+                  </ReadoutGrid>
+                ) : (
+                  <ReadoutGrid columns={2} title="Geometry and downstream flow">
+                    <div>
+                      <dt className="orbix-label">
+                        Shock angle <LabSymbol>β</LabSymbol>
+                      </dt>
+                      <dd className="mt-1">
+                        <output className="orbix-data" htmlFor={outputIds}>
+                          <LabFigure unit="°">
+                            {precisionFormatter.format(
+                              result.shockAngleDegrees,
+                            )}
+                          </LabFigure>
+                        </output>
+                      </dd>
+                    </div>
+                    <div>
+                      <dt className="orbix-label">Normal Mach component</dt>
+                      <dd className="mt-1">
+                        <output className="orbix-data" htmlFor={outputIds}>
+                          <LabFigure>
+                            {precisionFormatter.format(
+                              result.normalMachComponent,
+                            )}
+                          </LabFigure>
+                        </output>
+                      </dd>
+                    </div>
+                    <div>
+                      <dt className="orbix-label">Downstream Mach</dt>
+                      <dd className="mt-1">
+                        <output className="orbix-data" htmlFor={outputIds}>
+                          <LabFigure>
+                            {precisionFormatter.format(result.downstreamMach)}
+                          </LabFigure>
+                        </output>
+                      </dd>
+                    </div>
+                  </ReadoutGrid>
+                )}
+
+                <ReadoutGrid
+                  columns={result.shockType === "normal" ? 2 : 3}
+                  title="Shock summary"
+                >
                   <div>
                     <dt className="orbix-label">Shock type</dt>
                     <dd className="mt-1">
@@ -424,144 +509,23 @@ export function ShockPressureLossAnalyzer() {
                       </output>
                     </dd>
                   </div>
-                </ReadoutGrid>
-
-                {result.shockType === "normal" ? (
-                  <ReadoutGrid columns={2} title="Normal shock results">
-                    <div>
-                      <dt className="orbix-label">Downstream Mach</dt>
-                      <dd className="mt-1">
-                        <output
-                          className="orbix-readout-lg"
-                          htmlFor={outputIds}
-                        >
-                          <LabFigure>
-                            {precisionFormatter.format(result.downstreamMach)}
-                          </LabFigure>
-                        </output>
-                      </dd>
-                    </div>
+                  {result.shockType === "oblique" ? (
                     <div>
                       <dt className="orbix-label">
-                        Total pressure recovery ratio
+                        Deflection angle <LabSymbol>θ</LabSymbol>
                       </dt>
                       <dd className="mt-1">
-                        <output
-                          className="orbix-readout-lg"
-                          htmlFor={outputIds}
-                        >
-                          <LabFigure>
-                            {precisionFormatter.format(
-                              result.pressureRecoveryRatio,
-                            )}
-                          </LabFigure>
-                        </output>
-                      </dd>
-                    </div>
-                    <div>
-                      <dt className="orbix-label">Total pressure loss</dt>
-                      <dd className="mt-1">
                         <output className="orbix-data" htmlFor={outputIds}>
-                          <LabFigure unit="%">
-                            {percentageFormatter.format(
-                              result.pressureLossPercentage,
+                          <LabFigure unit="°">
+                            {precisionFormatter.format(
+                              Number(values.deflectionAngleDegrees),
                             )}
                           </LabFigure>
                         </output>
                       </dd>
                     </div>
-                  </ReadoutGrid>
-                ) : (
-                  <>
-                    <ReadoutGrid columns={3} title="Geometry">
-                      <div>
-                        <dt className="orbix-label">
-                          Shock angle <LabSymbol>β</LabSymbol>
-                        </dt>
-                        <dd className="mt-1">
-                          <output className="orbix-data" htmlFor={outputIds}>
-                            <LabFigure unit="°">
-                              {precisionFormatter.format(
-                                result.shockAngleDegrees,
-                              )}
-                            </LabFigure>
-                          </output>
-                        </dd>
-                      </div>
-                      <div>
-                        <dt className="orbix-label">
-                          Deflection angle <LabSymbol>θ</LabSymbol>
-                        </dt>
-                        <dd className="mt-1">
-                          <output className="orbix-data" htmlFor={outputIds}>
-                            <LabFigure unit="°">
-                              {precisionFormatter.format(
-                                Number(values.deflectionAngleDegrees),
-                              )}
-                            </LabFigure>
-                          </output>
-                        </dd>
-                      </div>
-                      <div>
-                        <dt className="orbix-label">Normal Mach component</dt>
-                        <dd className="mt-1">
-                          <output className="orbix-data" htmlFor={outputIds}>
-                            <LabFigure>
-                              {precisionFormatter.format(
-                                result.normalMachComponent,
-                              )}
-                            </LabFigure>
-                          </output>
-                        </dd>
-                      </div>
-                    </ReadoutGrid>
-
-                    <ReadoutGrid columns={2} title="Flow results">
-                      <div>
-                        <dt className="orbix-label">Downstream Mach</dt>
-                        <dd className="mt-1">
-                          <output
-                            className="orbix-readout-lg"
-                            htmlFor={outputIds}
-                          >
-                            <LabFigure>
-                              {precisionFormatter.format(result.downstreamMach)}
-                            </LabFigure>
-                          </output>
-                        </dd>
-                      </div>
-                      <div>
-                        <dt className="orbix-label">
-                          Total pressure recovery ratio
-                        </dt>
-                        <dd className="mt-1">
-                          <output
-                            className="orbix-readout-lg"
-                            htmlFor={outputIds}
-                          >
-                            <LabFigure>
-                              {precisionFormatter.format(
-                                result.pressureRecoveryRatio,
-                              )}
-                            </LabFigure>
-                          </output>
-                        </dd>
-                      </div>
-                      <div>
-                        <dt className="orbix-label">Total pressure loss</dt>
-                        <dd className="mt-1">
-                          <output className="orbix-data" htmlFor={outputIds}>
-                            <LabFigure unit="%">
-                              {percentageFormatter.format(
-                                result.pressureLossPercentage,
-                              )}
-                            </LabFigure>
-                          </output>
-                        </dd>
-                      </div>
-                    </ReadoutGrid>
-                  </>
-                )}
+                  ) : null}
+                </ReadoutGrid>
               </>
             ) : (
               <NotCalculated invalid={Object.values(errors).some(Boolean)}>
@@ -589,7 +553,7 @@ export function ShockPressureLossAnalyzer() {
             </p>
             <ul className="mt-4 grid list-disc gap-2 pl-5 text-sm leading-6 text-muted @min-[36rem]/col:grid-cols-2">
               <li>Perfect gas approximation</li>
-              <li>Constant gamma = 1.4</li>
+              <li>Constant γ = 1.4</li>
               <li>Inviscid flow</li>
               <li>Adiabatic flow</li>
               <li>No boundary-layer effects</li>

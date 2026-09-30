@@ -21,12 +21,20 @@ import {
 
 /**
  * Quantity label with the last word and the unit held together, so a unit
- * never starts a line by itself.
+ * never starts a line by itself. A label that ends in a parenthesis, such
+ * as "Speed at apogee (500 km)", keeps the whole parenthesis with the unit.
  */
 function QuantityLabel({ row }: { readonly row: VerificationRow }) {
-  const split = row.quantity.lastIndexOf(" ");
-  const head = split === -1 ? "" : row.quantity.slice(0, split + 1);
-  const tail = split === -1 ? row.quantity : row.quantity.slice(split + 1);
+  // No-break spaces keep a ratio ("p₀₂ / p₀₁") and a number with its unit
+  // ("200 km") on one line.
+  const quantity = row.quantity
+    .replace(/ \/ /g, " / ")
+    .replace(/(\d) (?=[a-z])/g, "$1 ");
+  const split = quantity.endsWith(")")
+    ? quantity.lastIndexOf(" (")
+    : quantity.lastIndexOf(" ");
+  const head = split === -1 ? "" : quantity.slice(0, split + 1);
+  const tail = split === -1 ? quantity : quantity.slice(split + 1);
 
   return (
     <span className="block max-w-[9.5rem] min-w-28 md:max-w-none md:min-w-0">
@@ -94,28 +102,30 @@ const resultColumns: readonly DataTableColumn<VerificationRow>[] = [
 /**
  * Column widths for the results tables. A fixed layout makes every table
  * fit the track from 48rem and lines the columns up down the page; cells
- * use 12px side padding there. From 64rem: Quantity 22.25%, ORBIX
- * 13.25%, Published 12.5%, Difference 13.5%, As printed 21%, Rounding
- * check 17.5%. At the 808px track that fits every header, every figure
- * and the longest As printed value on one line; only the longest
- * quantity labels wrap. From 48rem to 64rem the figures get more room
- * (19, 16, 14, 15, 17, 19), the header tracking tightens and headers may
- * wrap between words. Phones keep the natural widths and scroll sideways
- * with the quantity column held in place; there only the quantity
- * column wraps. Figures in a row share one baseline.
+ * use 12px side padding there. From 64rem: Quantity 11.5rem, ORBIX 13.5%,
+ * Published 12.5%, Difference 13.5%, As printed 10rem, and Rounding check
+ * takes the rest, its header on one line (it wrapped to two lines at
+ * 133px, doubling every header row). At the 808px
+ * track every figure and the longest As printed value fit their cell's
+ * content box on one line; the longest quantity labels wrap once, between
+ * words. From 48rem to 64rem the figures get
+ * more room (19, 16, 14, 15, 17, 19), the header tracking tightens and
+ * headers may wrap between words. Phones keep the natural widths and
+ * scroll sideways with the quantity column held in place; there only the
+ * quantity column wraps. Figures in a row share one baseline.
  */
 const resultTableClass = [
   "[&_tbody_:is(th,td)]:align-baseline",
   "max-md:[&_td:nth-child(n+2)]:whitespace-nowrap",
   "md:[&_table]:table-fixed md:[&_table]:w-full md:[&_:is(th,td)]:px-3",
   "md:[&_thead_th]:[overflow-wrap:normal] md:max-lg:[&_thead_th]:whitespace-normal md:max-lg:[&_thead_th]:tracking-[0.06em]",
-  "lg:[&_td:nth-child(5)]:whitespace-nowrap",
-  "md:[&_thead_th:nth-child(1)]:w-[19%] lg:[&_thead_th:nth-child(1)]:w-[22.25%]",
-  "md:[&_thead_th:nth-child(2)]:w-[16%] lg:[&_thead_th:nth-child(2)]:w-[13.25%]",
+  "lg:[&_td:nth-child(5)]:whitespace-nowrap lg:[&_thead_th:nth-child(6)]:whitespace-nowrap",
+  "md:[&_thead_th:nth-child(1)]:w-[19%] lg:[&_thead_th:nth-child(1)]:w-[11.5rem]",
+  "md:[&_thead_th:nth-child(2)]:w-[16%] lg:[&_thead_th:nth-child(2)]:w-[13.5%]",
   "md:[&_thead_th:nth-child(3)]:w-[14%] lg:[&_thead_th:nth-child(3)]:w-[12.5%]",
   "md:[&_thead_th:nth-child(4)]:w-[15%] lg:[&_thead_th:nth-child(4)]:w-[13.5%]",
-  "md:[&_thead_th:nth-child(5)]:w-[17%] lg:[&_thead_th:nth-child(5)]:w-[21%]",
-  "md:[&_thead_th:nth-child(6)]:w-[19%] lg:[&_thead_th:nth-child(6)]:w-[17.5%]",
+  "md:[&_thead_th:nth-child(5)]:w-[17%] lg:[&_thead_th:nth-child(5)]:w-[10rem]",
+  "md:[&_thead_th:nth-child(6)]:w-[19%] lg:[&_thead_th:nth-child(6)]:w-auto",
 ].join(" ");
 
 /**
@@ -253,7 +263,7 @@ export function VerificationPage() {
       eyebrow="Engineering Lab"
       intro={
         <>
-          <p className="mt-6 max-w-[60ch] text-sm leading-6 text-muted">
+          <p className="mt-6 max-w-[38.25rem] text-sm leading-6 text-muted">
             For education only. Agreement with a textbook case does not make a
             simplified model suitable for design, operational or safety
             decisions.

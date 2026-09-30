@@ -535,7 +535,7 @@ export function EngineeringDashboard() {
   return (
     <>
       <header className="orbix-blueprint-minor relative border-b border-border">
-        <Container className="grid gap-10 pt-10 pb-12 sm:pt-14 lg:grid-cols-[minmax(0,6fr)_minmax(0,5fr)] lg:items-start lg:gap-14 lg:pt-14">
+        <Container className="grid gap-10 pt-10 pb-12 sm:pt-14 lg:grid-cols-[minmax(0,6fr)_minmax(0,5fr)] lg:grid-rows-[auto_1fr] lg:items-start lg:gap-x-14 lg:gap-y-8 lg:pt-14">
           {/* Top-aligned, with the text dropped to meet the diagram frame's
            * top registration marks, so the H1 does not sink to mid-height. */}
           <div className="orbix-rise min-w-0 lg:pt-6">
@@ -567,17 +567,9 @@ export function EngineeringDashboard() {
                 See how ORBIX compares with published values
               </ButtonLink>
             </div>
-            <p className="mt-8 max-w-[60ch] text-sm leading-6 text-muted">
-              For education only. The models are simplified and must not be used
-              for operational, safety or certification decisions. See the{" "}
-              <ButtonLink href="/terms" variant="link">
-                terms of use
-              </ButtonLink>
-              .
-            </p>
           </div>
 
-          <div className="mx-auto w-full max-w-[26rem] min-w-0 sm:max-w-[30rem] lg:mr-0 lg:max-w-[28rem]">
+          <div className="mx-auto w-full max-w-[26rem] min-w-0 sm:max-w-[30rem] lg:col-start-2 lg:row-span-2 lg:row-start-1 lg:mr-0 lg:max-w-[28rem]">
             <OrbitDiagram
               caption={
                 <>
@@ -637,6 +629,18 @@ export function EngineeringDashboard() {
               ]}
             />
           </div>
+
+          {/* After the figure in the DOM, so a phone reads the one visual
+           * before the fine print; at lg it drops to the foot of the text
+           * column so its last line meets the readout row. */}
+          <p className="max-w-[60ch] text-sm leading-6 text-muted lg:col-start-1 lg:row-start-2 lg:self-end">
+            For education only. The models are simplified and must not be used
+            for operational, safety or certification decisions. See the{" "}
+            <ButtonLink href="/terms" variant="link">
+              terms of use
+            </ButtonLink>
+            .
+          </p>
         </Container>
       </header>
 

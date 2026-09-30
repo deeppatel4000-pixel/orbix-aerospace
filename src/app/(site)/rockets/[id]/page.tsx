@@ -3,10 +3,12 @@ import { notFound } from "next/navigation";
 
 import {
   RocketProfile,
+  formatRocketClassification,
   formatRocketMetaDescription,
   getRocketById,
   listRocketIds,
 } from "@/features/rockets";
+import { rocketClassification } from "@/features/rockets/components/rocket-figures";
 import { socialOpenGraph } from "@/lib/social-image";
 
 interface RocketDetailPageProps {
@@ -35,7 +37,13 @@ export async function generateMetadata({
   }
 
   const title = `${rocket.name} specifications`;
-  const description = formatRocketMetaDescription(rocket);
+  // The meta line uses the page's own classification, so a design still in
+  // development ("designed for full reuse") is not described as fully
+  // reusable in search results.
+  const description = formatRocketMetaDescription(rocket).replace(
+    formatRocketClassification(rocket.stages).toLocaleLowerCase("en-US"),
+    rocketClassification(rocket).toLocaleLowerCase("en-US"),
+  );
   const url = `/rockets/${rocket.id}`;
 
   return {

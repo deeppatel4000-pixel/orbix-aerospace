@@ -42,13 +42,21 @@ function tableCaption(visible: string, mission: ShowcaseMission): ReactNode {
 const phoneCells = "max-md:[&_:is(th,td)]:px-2.5";
 
 /**
+ * Paired tables in the capture view, the vehicle table included: 10px
+ * cells from 1024px, so the preset fits one 1440x900 screen.
+ */
+const pairedCells = "lg:gap-x-6 lg:[&_:is(th,td)]:p-2.5";
+
+/**
  * One `DataTable` per input group, each captioned with the group title.
  * Two columns, Input and Value, with the unit set after the figure in the
  * value cell, so a quantity never shows without its unit and every table
- * fits a 320px screen. `pair` sets two groups side by side from 48rem;
- * `extra` (the vehicle table) then fills the first column under the first
- * group while the second group runs beside both, so the capture view of a
- * preset with a vehicle fits one laptop screen.
+ * fits a 320px screen. `pair` sets two groups side by side from 48rem.
+ * With two groups and `extra` (the vehicle table), the two groups stack
+ * in a first column as wide as the wider table needs with its labels on
+ * one line, and the vehicle table runs beside both at its natural height,
+ * top-aligned, so the capture view of a preset with a vehicle fits one
+ * laptop screen.
  */
 function PresetInputsTable({
   extra,
@@ -71,11 +79,12 @@ function PresetInputsTable({
     <div
       className={cn(
         "grid min-w-0 grid-cols-1 content-start",
-        paired ? "gap-5 md:grid-cols-2 md:gap-x-8" : "gap-8",
+        paired ? "gap-5 md:gap-x-8" : "gap-8",
+        paired && pairedCells,
         paired &&
-          extra != null &&
-          groups === 2 &&
-          "md:[&>:nth-child(2)]:row-span-2",
+          (extra != null && groups === 2
+            ? "md:grid-cols-[max-content_minmax(0,1fr)] md:items-start md:[&_tbody_th]:whitespace-nowrap md:[&>:last-child]:col-start-2 md:[&>:last-child]:row-span-2 md:[&>:last-child]:row-start-1"
+            : "md:grid-cols-2"),
       )}
     >
       {mission.inputGroups.map((group) => (
@@ -103,7 +112,7 @@ function PresetInputsTable({
           rows={group.rows}
         />
       ))}
-      {extra}
+      {extra != null ? <div className="min-w-0">{extra}</div> : null}
     </div>
   );
 }
@@ -201,7 +210,7 @@ function VehicleInputsTable({ mission }: { mission: ShowcaseMission }) {
       <div className="max-md:hidden">
         <DataTable<VehicleQuantity>
           caption={tableCaption("Vehicle inputs", mission)}
-          className="[&_thead_th]:align-bottom [&_thead_th]:whitespace-normal"
+          className="[&_tbody_th]:whitespace-nowrap [&_thead_th]:align-bottom [&_thead_th]:whitespace-normal"
           columns={[
             { cell: (row) => row.label, header: "Quantity", key: "quantity" },
             ...vehicles.map((vehicle) => ({
@@ -229,9 +238,12 @@ function VehicleInputsTable({ mission }: { mission: ShowcaseMission }) {
 }
 
 function MissionDiagramView({
+  fill = false,
   mission,
   size,
 }: {
+  /** Let a plate that can grow fill the height of its column. */
+  fill?: boolean;
   mission: ShowcaseMission;
   size?: TransferDiagramSize;
 }) {
@@ -248,7 +260,13 @@ function MissionDiagramView({
   }
 
   if (diagram.kind === "allowances") {
-    return <AllowanceBars diagram={diagram} missionId={mission.preset.id} />;
+    return (
+      <AllowanceBars
+        diagram={diagram}
+        fill={fill}
+        missionId={mission.preset.id}
+      />
+    );
   }
 
   return null;
@@ -277,12 +295,12 @@ interface MissionBodyProps {
  * in that order. Below 1024px the title comes first, then the figure, then
  * the tables and `after`. `footer` closes it.
  *
- * A preset without orbital geometry (reentry only) has no drawing. Its
- * parts are set in one flat grid in reading order (title, entry
- * conditions, vehicles, `after`), so the DOM, focus and visual order agree
- * at every width. From 1024px the tables take the figure's column, so
- * every title sits on the same vertical line; in the capture view the
- * vehicle table stays in the wider second column.
+ * A preset without orbital geometry (reentry only) has no drawing. On the
+ * page its tables take the figure's column from 1024px, so every title
+ * sits on the same vertical line. In the capture view the title and the
+ * vehicle table hold the second column and the entry conditions the
+ * first; there, as with the drawn presets, the DOM sets the title before
+ * the first column, so focus reaches the left table last.
  */
 export function MissionBody({
   after,
@@ -306,13 +324,47 @@ export function MissionBody({
       <VehicleInputsTable mission={mission} />
     ) : null;
   const gap = capture ? "gap-5" : "gap-10";
+  // The capture body is a column that fills the screen, so a footer with
+  // `mt-auto` sits on the same bottom line in every capture.
+  const root = capture ? "flex flex-col" : "grid grid-cols-1";
+  // In the capture view the columns take the height the footer leaves, so
+  // a plate that can grow (the allowances) ends on the columns' bottom line.
   const columns = cn(
     "grid grid-cols-1",
+    capture && "flex-1",
     gap,
     capture
-      ? "lg:grid-cols-[21rem_minmax(0,1fr)] lg:gap-x-10 xl:grid-cols-[25rem_minmax(0,1fr)] xl:gap-x-14"
+      ? "lg:grid-cols-[21rem_minmax(0,1fr)] lg:gap-x-10 xl:grid-cols-[27rem_minmax(0,1fr)] xl:gap-x-12"
       : "lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)] lg:gap-x-12 xl:gap-x-16",
   );
+
+  if (!drawn && capture) {
+    // In the capture view the title and the vehicle table share the second
+    // column, as the title and tables do on every other capture, and the
+    // entry conditions take the first column in place of the drawing. Each
+    // table then has the width its labels need on one line.
+    return (
+      <div className={cn(root, gap, className)}>
+        <div className={columns}>
+          <div
+            className={cn(
+              "grid min-w-0 content-start lg:col-start-2 lg:row-start-1",
+              gap,
+            )}
+          >
+            <div className="min-w-0">{header}</div>
+            {vehicles}
+          </div>
+          {hasInputs ? (
+            <div className="min-w-0 lg:col-start-1 lg:row-start-1 lg:self-start">
+              <PresetInputsTable mission={mission} />
+            </div>
+          ) : null}
+        </div>
+        {footer}
+      </div>
+    );
+  }
 
   if (!drawn) {
     // The second row takes the spare height, so `after` sits right under
@@ -323,19 +375,13 @@ export function MissionBody({
           <div className="min-w-0 lg:col-start-2 lg:row-start-1">{header}</div>
           <div
             className={cn(
-              "grid min-w-0 content-start lg:col-start-1 lg:row-start-1",
+              "grid min-w-0 content-start lg:col-start-1 lg:row-span-2 lg:row-start-1",
               gap,
-              capture ? "lg:row-span-1" : "lg:row-span-2",
             )}
           >
             {hasInputs ? <PresetInputsTable mission={mission} /> : null}
-            {!capture ? vehicles : null}
+            {vehicles}
           </div>
-          {capture && vehicles ? (
-            <div className="min-w-0 lg:col-start-2 lg:row-start-2 lg:self-start">
-              {vehicles}
-            </div>
-          ) : null}
           {after ? (
             <div className="min-w-0 lg:col-start-2 lg:row-start-2 lg:self-start">
               {after}
@@ -351,11 +397,12 @@ export function MissionBody({
   // other while it scrolls: the text column, or the plate when a vehicle
   // table makes the text column the longer one.
   const stickFigure = !capture && mission.vehicles.length > 0;
+  const fillFigure = capture && diagram.kind === "allowances";
   const sticky = "lg:sticky lg:top-24 lg:self-start";
   const column = cn("grid min-w-0 content-start max-lg:contents", gap);
 
   return (
-    <div className={cn("grid grid-cols-1", gap, className)}>
+    <div className={cn(root, gap, className)}>
       <div className={columns}>
         <div
           className={cn(
@@ -372,7 +419,7 @@ export function MissionBody({
               <PresetInputsTable
                 extra={capture ? vehicles : undefined}
                 mission={mission}
-                pair={capture}
+                pair={capture && vehicles != null}
               />
             </div>
           ) : null}
@@ -386,10 +433,20 @@ export function MissionBody({
             column,
             "lg:col-start-1 lg:row-start-1",
             stickFigure && sticky,
+            fillFigure && "lg:flex lg:flex-col",
           )}
         >
-          <div className="min-w-0 max-lg:order-2">
-            <MissionDiagramView mission={mission} size={size} />
+          <div
+            className={cn(
+              "min-w-0 max-lg:order-2",
+              fillFigure && "lg:flex lg:flex-1 lg:flex-col",
+            )}
+          >
+            <MissionDiagramView
+              fill={fillFigure}
+              mission={mission}
+              size={size}
+            />
           </div>
         </div>
       </div>

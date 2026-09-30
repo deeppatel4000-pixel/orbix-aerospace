@@ -17,7 +17,7 @@ interface ShowcaseSectionProps {
 
 /**
  * One section of the showcase (spec 9, editorial pages): a hairline, the
- * section number in B612 Mono beside the H2, and a lead held to the 68ch
+ * section number above the H2 on the text edge, and a lead held to the 68ch
  * reading measure. The children decide their own track: running text stays
  * in `ShowcaseText`; figures and tables use the full container width.
  */
@@ -39,18 +39,16 @@ export function ShowcaseSection({
     >
       <Container>
         <div className="border-t border-border pt-6 sm:pt-8">
-          {/* From 40rem the number sits on the heading's first baseline,
-              like a drawing reference on the title line. */}
-          <div className="grid gap-3 sm:grid-cols-[4rem_minmax(0,1fr)] sm:items-baseline sm:gap-x-4">
-            <p aria-hidden="true" className="orbix-data text-accent">
+          {/* The number sits above the heading on the text edge, as on the
+              profiles, /verification, /about and /build-log. */}
+          <div className="max-w-[68ch]">
+            <span aria-hidden="true" className="orbix-caps block text-accent">
               {formatIndexNumber(number)}
-            </p>
-            <div className="max-w-[68ch]">
-              <h2 className="orbix-h2 text-text-primary" id={titleId}>
-                {title}
-              </h2>
-              {lead ? <p className="orbix-prose mt-5">{lead}</p> : null}
-            </div>
+            </span>
+            <h2 className="orbix-h2 mt-3 text-text-primary" id={titleId}>
+              {title}
+            </h2>
+            {lead ? <p className="orbix-prose mt-5">{lead}</p> : null}
           </div>
           <div className="mt-10 sm:mt-12">{children}</div>
         </div>
@@ -60,8 +58,8 @@ export function ShowcaseSection({
 }
 
 /**
- * Running text inside a section: indented to line up with the heading from
- * 40rem, and held to the 68ch measure.
+ * Running text inside a section, on the heading's text edge and held to the
+ * 68ch measure.
  */
 export function ShowcaseText({
   children,
@@ -70,7 +68,5 @@ export function ShowcaseText({
   children: ReactNode;
   className?: string;
 }) {
-  return (
-    <div className={cn("max-w-[68ch] sm:ml-20", className)}>{children}</div>
-  );
+  return <div className={cn("max-w-[68ch]", className)}>{children}</div>;
 }

@@ -128,14 +128,12 @@ describe("MissionReplay", () => {
     });
 
     expect(phases.map((phase) => phase.label)).toEqual([
-      "Mission preparation",
-      "Launch and departure",
-      "Orbital operations",
-      "Transfer maneuver",
-      "Arrival and cruise",
-      "Reentry preparation",
-      "Atmospheric entry",
-      "Mission complete",
+      "Launch",
+      "Orbit insertion",
+      "Transfer",
+      "Arrival",
+      "Reentry",
+      "Complete",
     ]);
     expect(advanced.currentPhaseIndex).toBe(1);
     expect(selected.currentPhaseIndex).toBe(phases.length - 1);

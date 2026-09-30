@@ -22,7 +22,9 @@ export {
 } from "./geopotential-altitude";
 export {
   EQ_CONT,
+  EQ_JOIN,
   EQ_LINE,
+  EQ_PAREN,
   EQ_SUB_CLEAR,
   EQ_SUP,
   EQ_TERM,
@@ -34,4 +36,14 @@ export {
   LabFigure,
   LabSymbol,
   LabValueText,
+  TpsFigure,
+  tpsColumn,
+  tpsFigure,
+  withMinusSign,
 } from "./lab-figure";
+export {
+  LAB_CHOICE_INPUT,
+  LAB_CHOICE_LIST,
+  LAB_CHOICE_ROW,
+  LabSegmented,
+} from "./lab-choice";

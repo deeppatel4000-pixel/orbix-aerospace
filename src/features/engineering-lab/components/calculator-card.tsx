@@ -34,7 +34,16 @@ export function CalculatorCard({
   const Heading = headingLevel === 3 ? "h3" : "h2";
 
   return (
-    <article aria-labelledby={titleId} className={styles.card} id={id}>
+    <article
+      aria-labelledby={titleId}
+      // Below 1024px the sticky tool bar's rule already sits above the
+      // open tool, so a top-level card drops its own rule there instead
+      // of drawing a second one 26px below it.
+      className={
+        headingLevel === 2 ? `${styles.card} max-lg:border-t-0!` : styles.card
+      }
+      id={id}
+    >
       <header className={styles.header}>
         {number ? (
           <p

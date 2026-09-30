@@ -10,9 +10,10 @@ import { cn } from "@/lib/cn";
 import {
   responsiveHeroPosition,
   STOPGAP_PHOTO_HERO_PHONE_TALL,
-  STOPGAP_PHOTO_HERO_RIGHT,
   STOPGAP_PHOTO_HERO_SIDE,
   STOPGAP_RECORD_ROW,
+  STOPGAP_RECORD_ROW_SIDE,
+  STOPGAP_RECORD_ROW_WIDE,
   type ResponsiveObjectPosition,
 } from "./primitive-stopgaps";
 
@@ -83,8 +84,9 @@ export function VehicleProfileHero({
       </h1>
       {/*
        * Beside a portrait photograph the lead and the record row stop at
-       * 38rem, clear of the plate. Beside an aircraft photograph the whole
-       * column is 32 to 34rem, and the record row stays a 2x2 grid.
+       * 38rem, clear of the plate, and the record row is one row from 64rem.
+       * Beside an aircraft photograph the whole column is 31 to 32rem, and
+       * the record row is 2x2, one row of four from 64rem.
        */}
       <p className={cn("orbix-lead mt-6", !isSide && "lg:max-w-[38rem]")}>
         {lead}
@@ -94,7 +96,7 @@ export function VehicleProfileHero({
           "mt-8",
           !isSide && "lg:max-w-[38rem]",
           STOPGAP_RECORD_ROW,
-          isSide && String.raw`lg:[&_.orbix-record-row\_\_list]:grid-cols-2`,
+          isSide ? STOPGAP_RECORD_ROW_SIDE : STOPGAP_RECORD_ROW_WIDE,
         )}
         items={record}
       />
@@ -112,10 +114,16 @@ export function VehicleProfileHero({
     <PhotoHero
       className={cn(
         position.className,
-        isSide
-          ? STOPGAP_PHOTO_HERO_SIDE
-          : cn(STOPGAP_PHOTO_HERO_RIGHT, STOPGAP_PHOTO_HERO_PHONE_TALL),
+        // Top-aligned on every profile, so the breadcrumb and the name sit
+        // at the same height (6rem into the hero from 48rem) from one
+        // profile to the next; the photograph still fills the hero.
+        "md:justify-start",
+        isSide ? STOPGAP_PHOTO_HERO_SIDE : STOPGAP_PHOTO_HERO_PHONE_TALL,
+        // Rocket profiles (placement="right") are top-aligned, so the full
+        // min(88svh, 60rem) hero left a tall empty band under the actions.
+        !isSide && "md:min-h-[min(76svh,52rem)]",
       )}
+      placement={isSide ? "behind" : "right"}
       plate={isSide ? "landscape" : "portrait"}
       style={
         {

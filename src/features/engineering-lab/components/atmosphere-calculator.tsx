@@ -14,7 +14,6 @@ import {
 } from "@/features/engineering-lab/calculators";
 import {
   EQ_LINE,
-  EQ_SUP,
   EQ_TERM,
   CalculatorNumberField,
   focusFirstInvalidField,
@@ -29,6 +28,7 @@ import {
   LabFigure,
   EqDot,
   EQ_SUB_CLEAR,
+  EqFrac,
 } from "@/features/engineering-lab/components/shared";
 import type {
   AtmosphereField,
@@ -86,19 +86,34 @@ const toolEquation = (
           <wbr />
           <span className={EQ_TERM}>
             <EqDot />
-            (T/T<sub>0</sub>)
-            <sup className={EQ_SUP}>
-              g<sub className={EQ_SUB_CLEAR}>0</sub>/(R
-              <EqDot />
-              L)
-            </sup>
+            <EqFrac
+              den={
+                <>
+                  T<sub>0</sub>
+                </>
+              }
+              num="T"
+              power={
+                <>
+                  g<sub className={EQ_SUB_CLEAR}>0</sub>/(R
+                  <EqDot />
+                  L)
+                </>
+              }
+            />
           </span>
         </span>
         <span className={EQ_LINE}>
           <span className={EQ_TERM}>
-            ρ = p/(R
-            <EqDot />
-            T)
+            ρ ={" "}
+            <EqFrac
+              den={
+                <>
+                  R<EqDot />T
+                </>
+              }
+              num="p"
+            />
           </span>
         </span>
         <span className={EQ_LINE}>

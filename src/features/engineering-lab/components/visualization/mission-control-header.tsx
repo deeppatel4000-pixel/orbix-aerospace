@@ -21,7 +21,7 @@ export interface MissionControlHeaderProps {
 
 /**
  * One header for the loaded mission: its name, the one-line description, a
- * category label, a hairline row of preset and analyses resolved, then the
+ * category label, a hairline row of preset and the named systems used, then the
  * checklist of supplied analyses. None of it is repeated further down.
  */
 export function MissionControlHeader({
@@ -38,8 +38,7 @@ export function MissionControlHeader({
   const missionDescription =
     missionReport?.missionSummary.description ??
     "Load a completed mission to fill this workspace.";
-  const analysesResolved =
-    missionProfileAnalysis?.missionSummaryState.analysesResolved;
+  const systemsUsed = missionReport?.missionSummary.systemsUsed;
 
   return (
     <MissionIdentity
@@ -75,15 +74,15 @@ export function MissionControlHeader({
         <div
           className={missionPreset ? "min-w-0 py-2 sm:pl-4" : "min-w-0 py-2"}
         >
-          <dt className="text-muted">Analyses resolved</dt>
+          <dt className="text-muted">Systems used</dt>
           <dd
             className={
-              analysesResolved === undefined
-                ? "mt-0.5 text-muted"
-                : "orbix-data mt-0.5 text-foreground"
+              systemsUsed?.length
+                ? "mt-0.5 break-words text-foreground"
+                : "mt-0.5 text-muted"
             }
           >
-            {analysesResolved ?? "Not reported"}
+            {systemsUsed?.length ? systemsUsed.join(", ") : "Not reported"}
           </dd>
         </div>
       </dl>

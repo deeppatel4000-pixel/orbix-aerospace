@@ -20,6 +20,11 @@ import {
 import { formatLabValue } from "./format-lab-value";
 import { formatFigure } from "@/components/ui/readout";
 import { LabUnit } from "./lab-unit";
+import {
+  MISSION_STAGE,
+  MISSION_STAGE_SEQUENCE,
+  type CoreMissionStage,
+} from "../mission-stages";
 
 export interface MissionReplayProps {
   readonly missionProfileAnalysis?: MissionProfileAnalysis | null;
@@ -106,86 +111,67 @@ export function buildReplayPhases({
   const deltaVBudget = missionProfileAnalysis?.sourceAnalyses.deltaVBudget;
   const transfer = deltaVBudget?.sourceAnalyses.hohmannTransfer;
   const planeChange = deltaVBudget?.sourceAnalyses.orbitalPlaneChange;
-  const hasOrbitalData = Boolean(deltaVBudget);
   const hasReentryData = Boolean(vehicleReentryEvaluation);
-  const preparationScene = hasOrbitalData ? "orbital" : "reentry";
-  const phases: ReplayPresentationPhase[] = [
-    {
-      description: "The completed mission results are loaded for review.",
-      id: "preparation",
-      label: "Mission preparation",
-      sceneMode: preparationScene,
-      statusLabel: "Mission results loaded",
-    },
-  ];
 
-  if (deltaVBudget?.maneuvers.length) {
-    phases.push({
-      description: "Departure, shown from the mission's maneuver sequence.",
-      id: "departure",
-      label: "Launch and departure",
-      sceneMode: "orbital",
-      statusLabel: "Showing departure maneuvers",
-    });
-  }
-
-  if (hasOrbitalData) {
-    phases.push({
+  // The same stages, in the same order, as the mission phase timeline,
+  // plus one trailing step that marks the end of the replay.
+  const stagePhases: Readonly<
+    Record<CoreMissionStage, Omit<ReplayPresentationPhase, "label">>
+  > = {
+    [MISSION_STAGE.launch]: {
       description:
-        "The computed orbital results. No new trajectory is propagated.",
-      id: "orbital-operations",
-      label: "Orbital operations",
+        "Launch is not modelled; the mission starts from the reported starting orbit.",
+      id: "launch",
       sceneMode: "orbital",
-      statusLabel: "Showing orbital results",
-    });
-  }
-
-  if (transfer) {
-    phases.push({
-      description: "The Hohmann transfer between the two circular orbits.",
+      statusLabel: "Launch is not modelled",
+    },
+    [MISSION_STAGE.orbitInsertion]: {
+      description: transfer
+        ? "The reported starting orbit."
+        : "No starting orbit was reported.",
+      id: "orbit-insertion",
+      sceneMode: "orbital",
+      statusLabel: "Showing the starting orbit",
+    },
+    [MISSION_STAGE.transfer]: {
+      description: transfer
+        ? planeChange
+          ? "The Hohmann transfer between the two circular orbits, with the reported plane change."
+          : "The Hohmann transfer between the two circular orbits."
+        : planeChange
+          ? "The reported plane change; no orbit transfer was reported."
+          : "No orbit transfer was reported.",
       id: "transfer",
-      label: "Transfer maneuver",
       sceneMode: "orbital",
       statusLabel: "Showing the transfer",
-    });
-  }
-
-  if (transfer || planeChange) {
-    phases.push({
-      description:
-        "Arrival at the target orbit. A label for the computed orbital results, not a separate calculation.",
+    },
+    [MISSION_STAGE.arrival]: {
+      description: transfer
+        ? "The reported arrival orbit at the end of the transfer."
+        : "No arrival orbit was reported.",
       id: "arrival",
-      label: "Arrival and cruise",
       sceneMode: "orbital",
-      statusLabel: "Showing arrival",
-    });
-  }
+      statusLabel: "Showing the arrival orbit",
+    },
+    [MISSION_STAGE.reentry]: {
+      description: hasReentryData
+        ? "The computed reentry trajectory and heating results."
+        : "No vehicle reentry evaluation was reported.",
+      id: "reentry",
+      sceneMode: "reentry",
+      statusLabel: "Showing reentry results",
+    },
+  };
 
-  if (hasReentryData) {
-    phases.push(
-      {
-        description:
-          "The vehicle and its entry conditions from the reentry evaluation.",
-        id: "reentry-preparation",
-        label: "Reentry preparation",
-        sceneMode: "reentry",
-        statusLabel: "Showing entry conditions",
-      },
-      {
-        description: "The computed reentry trajectory and heating results.",
-        id: "atmospheric-entry",
-        label: "Atmospheric entry",
-        sceneMode: "reentry",
-        statusLabel: "Showing entry results",
-      },
-    );
-  }
+  const phases: ReplayPresentationPhase[] = MISSION_STAGE_SEQUENCE.map(
+    (stage) => ({ ...stagePhases[stage], label: stage }),
+  );
 
   phases.push({
     description: "The end of the replay.",
     id: "complete",
-    label: "Mission complete",
-    sceneMode: hasReentryData ? "reentry" : preparationScene,
+    label: "Complete",
+    sceneMode: hasReentryData ? "reentry" : "orbital",
     statusLabel: "End of replay",
   });
 
@@ -320,7 +306,7 @@ export function MissionReplay({
           totalPhases={phases.length}
         />
 
-        {/* The step row reflows to its column (2, 4 or 8 across). */}
+        {/* The step row reflows to its column (2, 3 or 6 across). */}
         <div className="@container border-t border-border-subtle pt-6">
           <ReplayPhaseIndicator
             currentPhaseIndex={state.currentPhaseIndex}

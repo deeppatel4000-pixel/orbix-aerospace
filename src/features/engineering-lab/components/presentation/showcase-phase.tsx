@@ -1,3 +1,9 @@
+import {
+  MISSION_STAGE,
+  MISSION_STAGE_SEQUENCE,
+  type CoreMissionStage,
+} from "../mission-stages";
+
 export type ShowcaseScene =
   "arrival" | "entry" | "launch" | "orbit" | "review" | "transfer";
 
@@ -9,56 +15,66 @@ export interface ShowcasePresentationPhase {
   readonly shortLabel: string;
 }
 
-export const SHOWCASE_PHASES: readonly [
-  ShowcasePresentationPhase,
-  ...ShowcasePresentationPhase[],
-] = [
-  {
+const CORE_SHOWCASE_PHASES: Readonly<
+  Record<CoreMissionStage, Omit<ShowcasePresentationPhase, "shortLabel">>
+> = {
+  [MISSION_STAGE.launch]: {
     description:
       "The mission inputs and the completed results that the rest of the walkthrough draws on.",
     id: "launch-preparation",
     label: "Launch preparation",
     scene: "launch",
-    shortLabel: "Launch",
   },
-  {
+  [MISSION_STAGE.orbitInsertion]: {
     description:
       "The starting orbit from the completed orbital analysis. No new orbit is propagated.",
     id: "orbit-insertion",
     label: "Orbit insertion",
     scene: "orbit",
-    shortLabel: "Orbit insertion",
   },
-  {
+  [MISSION_STAGE.transfer]: {
     description:
       "The transfer between orbits, with the delta-v and transfer time already calculated.",
     id: "orbital-transfer",
     label: "Orbital transfer",
     scene: "transfer",
-    shortLabel: "Transfer",
   },
-  {
+  [MISSION_STAGE.arrival]: {
     description:
       "Arrival at the target orbit. This phase is a label for the supplied results, not a separate calculation.",
     id: "arrival-mission-phase",
     label: "Arrival and mission phase",
     scene: "arrival",
-    shortLabel: "Arrival",
   },
-  {
+  [MISSION_STAGE.reentry]: {
     description:
       "The vehicle and heating results from the completed reentry evaluation.",
     id: "atmospheric-entry",
     label: "Reentry",
     scene: "entry",
-    shortLabel: "Reentry",
   },
+};
+
+function toShowcasePhase(stage: CoreMissionStage): ShowcasePresentationPhase {
+  return { ...CORE_SHOWCASE_PHASES[stage], shortLabel: stage };
+}
+
+/**
+ * The shared mission sequence, then one separate trailing step that
+ * reviews the whole mission.
+ */
+export const SHOWCASE_PHASES: readonly [
+  ShowcasePresentationPhase,
+  ...ShowcasePresentationPhase[],
+] = [
+  toShowcasePhase(MISSION_STAGE_SEQUENCE[0]),
+  ...MISSION_STAGE_SEQUENCE.slice(1).map(toShowcasePhase),
   {
     description: "A summary of the completed results for the whole mission.",
     id: "mission-review",
     label: "Mission review",
     scene: "review",
-    shortLabel: "Review",
+    shortLabel: MISSION_STAGE.review,
   },
 ];
 

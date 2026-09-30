@@ -5,7 +5,6 @@ import { useMemo, useState, type FormEvent } from "react";
 
 import { analyzeObliqueShockCondition } from "@/features/engineering-lab/analysis";
 import {
-  EQ_CONT,
   EQ_LINE,
   EQ_TERM,
   CalculatorNumberField,
@@ -23,7 +22,10 @@ import {
   LabSymbol,
   EqDot,
   EqSubSup,
+  EqFrac,
   EQ_SUP,
+  EQ_CONT,
+  EQ_JOIN,
 } from "@/features/engineering-lab/components/shared";
 import type {
   ObliqueShockConditionAnalysis,
@@ -125,30 +127,36 @@ const toolEquation = (
   <EquationBlock
     equation={
       <>
-        <span className={EQ_LINE}>
+        <span className={EQ_JOIN}>
           <span className={EQ_TERM}>tan θ</span>
-        </span>
-        <span className={EQ_CONT}>
-          <span className={EQ_TERM}>= 2 cot β</span>
-          <wbr />
-          <span className={EQ_TERM}>
-            <EqDot />
-            (M
-            <EqSubSup sub="1" sup="2" /> sin<sup className={EQ_SUP}>2</sup>β
-          </span>{" "}
-          <span className={EQ_TERM}>− 1)</span>
-        </span>
+        </span>{" "}
         <span className={EQ_CONT}>
           <span className={EQ_TERM}>
-            /(M
-            <EqSubSup sub="1" sup="2" />
+            ={" "}
+            <EqFrac
+              den={
+                <>
+                  M
+                  <EqSubSup sub="1" sup="2" />
+                  (γ+cos 2β) + 2
+                </>
+              }
+              num={
+                <>
+                  <span className={EQ_TERM}>
+                    2 cot β<EqDot />
+                  </span>
+                  <wbr />
+                  <span className={EQ_TERM}>
+                    (M
+                    <EqSubSup sub="1" sup="2" /> sin
+                    <sup className={EQ_SUP}>2</sup>β−1)
+                  </span>
+                </>
+              }
+              wrap
+            />
           </span>
-          <wbr />
-          <span className={EQ_TERM}>
-            <EqDot />
-            (γ+cos 2β)
-          </span>{" "}
-          <span className={EQ_TERM}>+ 2)</span>
         </span>
         <span className={EQ_LINE}>
           <span className={EQ_TERM}>
@@ -157,10 +165,16 @@ const toolEquation = (
         </span>
         <span className={EQ_LINE}>
           <span className={EQ_TERM}>
-            M<sub>2</sub> = M<sub>n2</sub>
+            M<sub>2</sub> ={" "}
+            <EqFrac
+              den="sin(β−θ)"
+              num={
+                <>
+                  M<sub>n2</sub>
+                </>
+              }
+            />
           </span>
-          <wbr />
-          <span className={EQ_TERM}>/sin(β−θ)</span>
         </span>
       </>
     }
@@ -267,10 +281,7 @@ export function ObliqueShockConditionAnalyzer() {
               idPrefix="oblique-shock-condition"
             />
 
-            <div className="mt-7 flex flex-wrap items-center gap-x-5 gap-y-3">
-              <p className="min-w-0 flex-[1_1_16rem] text-sm leading-6 text-muted">
-                Valid attached-shock inputs update the flow state immediately.
-              </p>
+            <div className="mt-7 flex flex-wrap items-center gap-x-4 gap-y-2">
               <Button
                 className="shrink-0 whitespace-nowrap"
                 variant="secondary"
@@ -278,6 +289,9 @@ export function ObliqueShockConditionAnalyzer() {
               >
                 Reset inputs
               </Button>
+              <p className="min-w-0 flex-[1_1_14rem] text-[0.8125rem] leading-5 text-muted">
+                Valid attached-shock inputs update the flow state immediately.
+              </p>
             </div>
           </form>
         </div>
@@ -483,7 +497,7 @@ export function ObliqueShockConditionAnalyzer() {
             </p>
             <ul className="mt-4 grid list-disc gap-2 pl-5 text-sm leading-6 text-muted @min-[36rem]/col:grid-cols-2">
               <li>Perfect gas approximation</li>
-              <li>Constant γ = 1.4 unless changed internally</li>
+              <li>Constant γ = 1.4</li>
               <li>Inviscid flow</li>
               <li>Attached weak oblique shock solution</li>
               <li>No boundary layer effects</li>

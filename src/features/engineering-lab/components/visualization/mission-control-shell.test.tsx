@@ -90,7 +90,7 @@ describe("MissionControlShell", () => {
     expect(markup).toContain("Orbital logistics");
     // No preset was supplied, so no preset cell reads as a missing value.
     expect(markup).not.toContain("Mission preset");
-    expect(markup).toContain("Analyses resolved");
+    expect(markup).toContain("Systems used");
   });
 
   it("renders all twelve workspace navigation entries with selected state", () => {

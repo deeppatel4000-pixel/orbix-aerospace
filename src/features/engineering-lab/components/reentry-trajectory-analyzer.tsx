@@ -20,6 +20,7 @@ import {
   ValidationErrorSummary,
   LabFigure,
   EqDot,
+  EqFrac,
   EQ_SUP,
   LAB_GROUP,
   LAB_GROUP_LEGEND,
@@ -68,9 +69,9 @@ interface SampledTrajectoryPoint {
 
 const initialFormValues: ReentryTrajectoryFormValues = {
   dragCoefficient: "1.5",
-  initialAltitudeMeters: "1000",
+  initialAltitudeMeters: "11000",
   initialFlightPathAngleDegrees: "",
-  initialVelocityMetersPerSecond: "150",
+  initialVelocityMetersPerSecond: "400",
   referenceAreaSquareMetres: "12",
   timeStepSeconds: "",
   vehicleMassKilograms: "5000",
@@ -215,17 +216,30 @@ const toolEquation = (
     equation={
       <>
         <span className={EQ_LINE}>
-          <span className={EQ_TERM}>β = m</span>
-          <wbr />
           <span className={EQ_TERM}>
-            /(C<sub>D</sub>
-            <EqDot />
-            A)
+            β ={" "}
+            <EqFrac
+              den={
+                <>
+                  C<sub>D</sub>
+                  <EqDot />A
+                </>
+              }
+              num="m"
+            />
           </span>
         </span>
         <span className={EQ_LINE}>
           <span className={EQ_TERM}>
-            a = ½ρV<sup className={EQ_SUP}>2</sup>/β
+            a ={" "}
+            <EqFrac
+              den="2β"
+              num={
+                <>
+                  ρV<sup className={EQ_SUP}>2</sup>
+                </>
+              }
+            />
           </span>
         </span>
         <span className={EQ_LINE}>
@@ -233,10 +247,12 @@ const toolEquation = (
             V<sub>n+1</sub> = V<sub>n</sub>
           </span>{" "}
           <span className={EQ_TERM}>
-            + (g<sub className={EQ_SUB_CLEAR}>0</sub> sin|γ|
-          </span>{" "}
+            + Δt
+            <EqDot />
+          </span>
+          <wbr />
           <span className={EQ_TERM}>
-            − a<sub>n</sub>) Δt
+            (g<sub className={EQ_SUB_CLEAR}>0</sub> sin|γ| − a<sub>n</sub>)
           </span>
         </span>
         <span className={EQ_LINE}>
@@ -250,7 +266,7 @@ const toolEquation = (
       </>
     }
     label="Entry trajectory, explicit time steps"
-    spokenAs="Ballistic coefficient beta equals m over C D times A, and deceleration a equals one half rho V squared over beta. Each step, the next velocity equals V plus g zero times the sine of the flight path angle minus a, times delta t, and the next altitude equals h minus V times the sine of the flight path angle times delta t."
+    spokenAs="Ballistic coefficient beta equals m over C D times A, and deceleration a equals rho V squared over 2 beta. Each step, the next velocity equals V plus delta t times the quantity g zero times the sine of the flight path angle minus a, and the next altitude equals h minus V times the sine of the flight path angle times delta t."
     variables={[
       { symbol: "β", meaning: "Ballistic coefficient", unit: "kg/m²" },
       { symbol: "a", meaning: "Drag deceleration", unit: "m/s²" },
@@ -385,7 +401,7 @@ export function ReentryTrajectoryAnalyzer() {
                 <CalculatorNumberField
                   error={errors.initialFlightPathAngleDegrees}
                   field="initialFlightPathAngleDegrees"
-                  hint="Fixed descent angle from -90 to 0 degrees. Leave blank for vertical descent."
+                  hint="Fixed descent angle from −90° to 0°. Leave blank for vertical descent."
                   idPrefix="reentry-trajectory"
                   label="Flight path angle (optional)"
                   optional
@@ -409,10 +425,7 @@ export function ReentryTrajectoryAnalyzer() {
               ]}
             />
 
-            <div className="mt-7 flex flex-wrap items-center gap-x-5 gap-y-3">
-              <p className="min-w-0 flex-[1_1_16rem] text-sm leading-6 text-muted">
-                Valid changes rerun the complete trajectory immediately.
-              </p>
+            <div className="mt-7 flex flex-wrap items-center gap-x-4 gap-y-2">
               <Button
                 className="shrink-0 whitespace-nowrap"
                 variant="secondary"
@@ -420,6 +433,9 @@ export function ReentryTrajectoryAnalyzer() {
               >
                 Reset inputs
               </Button>
+              <p className="min-w-0 flex-[1_1_14rem] text-[0.8125rem] leading-5 text-muted">
+                Valid changes rerun the complete trajectory immediately.
+              </p>
             </div>
           </form>
         </div>
@@ -450,7 +466,7 @@ export function ReentryTrajectoryAnalyzer() {
                         className="lab-figure-note"
                         htmlFor={allOutputIds}
                       >
-                        <LabFigure unit="g">
+                        <LabFigure unit="g₀">
                           {loadFormatter.format(
                             result.peakDeceleration.decelerationGs,
                           )}
@@ -530,45 +546,52 @@ export function ReentryTrajectoryAnalyzer() {
                   </div>
                 </ReadoutGrid>
 
-                <ReadoutGrid columns={3} title="Peak velocity state">
-                  <div>
-                    <dt className="orbix-label">Velocity</dt>
-                    <dd>
-                      <output className="orbix-data" htmlFor={allOutputIds}>
-                        <LabFigure unit="m/s">
-                          {stateFormatter.format(
-                            result.peakHeatingVelocityState
-                              .velocityMetersPerSecond,
-                          )}
-                        </LabFigure>
-                      </output>
-                    </dd>
-                  </div>
-                  <div>
-                    <dt className="orbix-label">Altitude</dt>
-                    <dd>
-                      <output className="orbix-data" htmlFor={allOutputIds}>
-                        <LabFigure unit="m">
-                          {stateFormatter.format(
-                            result.peakHeatingVelocityState.altitudeMeters,
-                          )}
-                        </LabFigure>
-                      </output>
-                    </dd>
-                  </div>
-                  <div>
-                    <dt className="orbix-label">Time</dt>
-                    <dd>
-                      <output className="orbix-data" htmlFor={allOutputIds}>
-                        <LabFigure unit="s">
-                          {stateFormatter.format(
-                            result.peakHeatingVelocityState.timeSeconds,
-                          )}
-                        </LabFigure>
-                      </output>
-                    </dd>
-                  </div>
-                </ReadoutGrid>
+                {result.peakHeatingVelocityState.timeSeconds === 0 ? (
+                  <p className="text-sm leading-6 text-muted">
+                    Velocity is highest at the initial state (t = 0 s), so the
+                    peak velocity state is the initial state above.
+                  </p>
+                ) : (
+                  <ReadoutGrid columns={3} title="Peak velocity state">
+                    <div>
+                      <dt className="orbix-label">Velocity</dt>
+                      <dd>
+                        <output className="orbix-data" htmlFor={allOutputIds}>
+                          <LabFigure unit="m/s">
+                            {stateFormatter.format(
+                              result.peakHeatingVelocityState
+                                .velocityMetersPerSecond,
+                            )}
+                          </LabFigure>
+                        </output>
+                      </dd>
+                    </div>
+                    <div>
+                      <dt className="orbix-label">Altitude</dt>
+                      <dd>
+                        <output className="orbix-data" htmlFor={allOutputIds}>
+                          <LabFigure unit="m">
+                            {stateFormatter.format(
+                              result.peakHeatingVelocityState.altitudeMeters,
+                            )}
+                          </LabFigure>
+                        </output>
+                      </dd>
+                    </div>
+                    <div>
+                      <dt className="orbix-label">Time</dt>
+                      <dd>
+                        <output className="orbix-data" htmlFor={allOutputIds}>
+                          <LabFigure unit="s">
+                            {stateFormatter.format(
+                              result.peakHeatingVelocityState.timeSeconds,
+                            )}
+                          </LabFigure>
+                        </output>
+                      </dd>
+                    </div>
+                  </ReadoutGrid>
+                )}
               </>
             ) : (
               <NotCalculated invalid={Object.values(errors).some(Boolean)}>
@@ -581,11 +604,16 @@ export function ReentryTrajectoryAnalyzer() {
           {result ? (
             <DataTable
               caption={
-                "Trajectory, " +
-                visibleTrajectoryPoints.length +
-                " evenly sampled points of " +
-                result.trajectoryPoints.length +
-                " simulated"
+                visibleTrajectoryPoints.length ===
+                result.trajectoryPoints.length
+                  ? "Trajectory, all " +
+                    result.trajectoryPoints.length +
+                    " simulated points"
+                  : "Trajectory, " +
+                    visibleTrajectoryPoints.length +
+                    " evenly sampled points of " +
+                    result.trajectoryPoints.length +
+                    " simulated"
               }
               columns={[
                 {
@@ -662,6 +690,7 @@ export function ReentryTrajectoryAnalyzer() {
                   key: "g-load",
                   header: "G-load",
                   numeric: true,
+                  unit: "g₀",
                   cell: ({ point }) => (
                     <output htmlFor={allOutputIds}>
                       {loadFormatter.format(point.decelerationGs)}

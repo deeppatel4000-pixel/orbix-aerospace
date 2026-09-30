@@ -52,15 +52,11 @@ describe("MissionScenarioBuilder", () => {
     expect(markup).toContain("Reset scenario");
   });
 
-  it("explains that engineering calculations remain in the existing analyzer", () => {
+  it("leaves engineering calculations to the existing analyzer", () => {
     const markup = renderToStaticMarkup(<MissionScenarioBuilder />);
 
-    expect(markup).toContain(
-      "This builder creates the existing mission-profile input object.",
-    );
-    expect(markup).toContain(
-      "Engineering calculations begin only inside the Mission Profile Analyzer",
-    );
+    // The tool's lead states this; the builder repeats no dev jargon.
+    expect(markup).not.toContain("mission-profile input object");
     expect(markup).not.toContain("Total delta-v");
     expect(markup).not.toContain("Recommended TPS");
   });

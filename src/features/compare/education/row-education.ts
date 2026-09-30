@@ -31,7 +31,7 @@ export const educationCategoryMeta: Readonly<
 > = {
   heritage: {
     id: "heritage",
-    label: "Heritage and programme",
+    label: "Heritage and program",
     summary: "Who built the vehicle, and when its design was first flown.",
   },
   geometry: {
@@ -143,12 +143,12 @@ const rocketRowEducation: Readonly<Record<string, RowEducationEntry>> = {
   manufacturer: {
     categoryId: "heritage",
     explanation:
-      "Identifies the organization responsible for the vehicle's design and production, providing engineering lineage and programme context.",
+      "Identifies the organization responsible for the vehicle's design and production, providing engineering lineage and program context.",
   },
   "first-flight": {
     categoryId: "heritage",
     explanation:
-      "Marks when the vehicle was first validated in flight, anchoring it in the historical development timeline of the programme.",
+      "Marks when the vehicle was first validated in flight, anchoring it in the historical development timeline of the program.",
   },
   height: {
     categoryId: "geometry",

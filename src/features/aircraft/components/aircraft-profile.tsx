@@ -161,7 +161,7 @@ export function AircraftProfile({ aircraft }: AircraftProfileProps) {
       </VehicleProfileSection>
 
       <VehicleProfileSection
-        description="Dimensions and weights as published, with the basis of each figure under it."
+        description="Dimensions and weights as published, with the basis of each figure."
         id="specifications"
         index={2}
         title="Specifications"

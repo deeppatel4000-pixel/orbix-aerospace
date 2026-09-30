@@ -149,11 +149,20 @@ test.describe("Vehicle discovery", () => {
       expect(card.mediaRatio).toBeLessThanOrEqual(16 / 10 + 0.01);
     }
 
-    // The two-column feature sets its photo beside the text, filling the
-    // card's height (less its 1px outline), like the launch vehicle feature.
-    expect(feature?.mediaHeight ?? 0).toBeGreaterThanOrEqual(
-      (feature?.height ?? 0) - 2,
-    );
+    // The two-column feature runs its photo across the whole card (less
+    // its 1px outline) at 2:1, with the text in two columns under it: a
+    // landscape airframe reads best wide, unlike the portrait rockets.
+    const featureMedia = await page
+      .locator(CARD)
+      .first()
+      .evaluate(
+        (card) =>
+          card.firstElementChild?.firstElementChild?.getBoundingClientRect()
+            .width ?? 0,
+      );
+    expect(featureMedia).toBeGreaterThanOrEqual((feature?.width ?? 0) - 2);
+    expect(feature?.mediaRatio ?? 0).toBeCloseTo(2, 1);
+    expect(feature?.mediaHeight ?? 0).toBeLessThan(feature?.height ?? 0);
     expectFeatureFirst(geometry);
   });
 
@@ -209,7 +218,10 @@ test.describe("Vehicle discovery", () => {
   }) => {
     // A shared schema is deliberately NOT imposed: an aircraft's ceiling and
     // a rocket's thrust are not interchangeable rows. Spec 8: two per card;
-    // the feature card adds two more after the same two.
+    // the feature card adds more after the same two. On /aircraft the card
+    // beside the feature also shows range and first flight, so the feature
+    // row ends on one baseline. ("Ceiling" is short for service ceiling,
+    // which wraps in a 1024px card; the profiles give the full term.)
     const labelsPerCard = (page: Page) =>
       page
         .locator(CARD)
@@ -222,23 +234,31 @@ test.describe("Vehicle discovery", () => {
         );
 
     await page.goto(ROUTES.aircraft, { waitUntil: "domcontentloaded" });
-    const [aircraftFeature, ...aircraftCards] = await labelsPerCard(page);
-    expect(aircraftFeature).toEqual([
+    const [aircraftFeature, aircraftBeside, ...aircraftCards] =
+      await labelsPerCard(page);
+    const fourAircraftFigures = [
       "Maximum speed",
-      "Service ceiling",
+      "Ceiling",
       "Range",
       "First flight",
-    ]);
+    ];
+    expect(aircraftFeature).toEqual(fourAircraftFigures);
+    expect(aircraftBeside).toEqual(fourAircraftFigures);
+    expect(aircraftCards.length).toBeGreaterThan(0);
     for (const labels of aircraftCards) {
-      expect(labels).toEqual(["Maximum speed", "Service ceiling"]);
+      expect(labels).toEqual(["Maximum speed", "Ceiling"]);
     }
 
     await page.goto(ROUTES.rockets, { waitUntil: "domcontentloaded" });
     const [rocketFeature, ...rocketCards] = await labelsPerCard(page);
+    // The Falcon 9 feature: thrust, height, payload to LEO and GTO,
+    // liftoff mass and first flight (an even count, so no empty cell).
     expect(rocketFeature).toEqual([
       "Liftoff thrust",
       "Height",
       "Payload to LEO",
+      "Payload to GTO",
+      "Liftoff mass",
       "First flight",
     ]);
     for (const labels of rocketCards) {

@@ -17,9 +17,8 @@ import { cn } from "@/lib/cn";
  *
  * Framing within the box comes from `objectPosition` in the visuals files.
  * By default the photograph is shown as taken. With `settle` (the
- * registry and related-vehicle cards) it is dimmed slightly and its last
- * quarter fades into the card ground, so a bright daylight sky sits with
- * the dark card body instead of above it.
+ * registry and related-vehicle cards) its saturation is eased and its
+ * contrast lifted slightly, like the other card photographs.
  */
 export type VehicleMediaAspect = "landscape" | "portrait" | "tall" | "wide";
 
@@ -34,7 +33,7 @@ interface VehicleMediaFrameProps {
   aspect: VehicleMediaAspect;
   children: ReactNode;
   className?: string;
-  /** Dim the photograph slightly and fade its bottom quarter to the card. */
+  /** Ease the saturation and lift the contrast slightly. */
   settle?: boolean;
 }
 
@@ -49,20 +48,14 @@ export function VehicleMediaFrame({
       className={cn(
         "relative overflow-hidden bg-surface-raised",
         aspectClasses[aspect],
-        // Replaces the card photo filter with the same saturation and
-        // contrast plus brightness 0.92.
-        settle &&
-          "[&_img]:[filter:saturate(0.85)_contrast(1.05)_brightness(0.92)]",
+        // The card photo filter's saturation and contrast only: the text
+        // sits below the photograph, so a dimming scrim would only muddy
+        // the sky.
+        settle && "[&_img]:[filter:saturate(0.85)_contrast(1.05)]",
         className,
       )}
     >
       {children}
-      {settle ? (
-        <span
-          aria-hidden="true"
-          className="pointer-events-none absolute inset-x-0 bottom-0 h-1/4 bg-[linear-gradient(to_bottom,transparent,color-mix(in_srgb,var(--orbix-surface)_70%,transparent))]"
-        />
-      ) : null}
     </div>
   );
 }

@@ -40,7 +40,6 @@ function buildPresentationObjectives(
     objectives.push("Review thermal loading and TPS selection outputs.");
   }
 
-  objectives.push("Review the integrated educational mission architecture.");
   return objectives;
 }
 
@@ -58,11 +57,17 @@ export function BriefingObjectives({
       <p className="mt-1 text-sm leading-6 text-muted">
         What this briefing reviews, based on the analyses the mission includes.
       </p>
-      <ul className="mt-3 list-disc space-y-1 pl-5 text-sm leading-6 text-text-secondary">
-        {objectives.map((objective) => (
-          <li key={objective}>{objective}</li>
-        ))}
-      </ul>
+      {objectives.length > 0 ? (
+        <ul className="mt-3 list-disc space-y-1 pl-5 text-sm leading-6 text-text-secondary">
+          {objectives.map((objective) => (
+            <li key={objective}>{objective}</li>
+          ))}
+        </ul>
+      ) : (
+        <p className="mt-3 text-sm leading-6 text-muted">
+          The mission includes no optional analyses to review.
+        </p>
+      )}
     </section>
   );
 }

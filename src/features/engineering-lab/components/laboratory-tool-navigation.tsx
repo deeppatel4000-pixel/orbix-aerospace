@@ -216,8 +216,10 @@ function DesktopIndex({
     }
   }, [activeToolId]);
 
+  // The top rule and padding match the open tool's card (a 1px rule, then
+  // 1.5rem), so the index and the workspace start on one line.
   return (
-    <div ref={listRef}>
+    <div className="border-t border-border pt-6" ref={listRef}>
       {groups.map((group, groupIndex) => {
         const headingId = `laboratory-tools-${group.id}`;
         const start = starts[groupIndex] ?? 1;

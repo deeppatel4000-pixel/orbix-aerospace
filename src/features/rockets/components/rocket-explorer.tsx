@@ -31,7 +31,6 @@ import {
   STOPGAP_HERO_SPEC_PANEL_STRIP,
   STOPGAP_PHOTO_HERO_ASIDE_BELOW,
   STOPGAP_PHOTO_HERO_PHONE_TALL,
-  STOPGAP_PHOTO_HERO_RIGHT,
   responsiveHeroPosition,
 } from "@/features/vehicles/components/primitive-stopgaps";
 import { VehicleRegistry } from "@/features/vehicles/components/vehicle-registry";
@@ -44,6 +43,13 @@ interface RocketExplorerProps {
 
 /** The launch vehicle shown in the hero and its spec panel. */
 const FEATURED_ROCKET_ID = "saturn-v";
+
+/**
+ * The registry's wide first card. Not the hero vehicle: on a phone the
+ * same photograph came round again within one screen of the hero. The
+ * hero spec panel stays the page's one featured launch vehicle.
+ */
+const REGISTRY_LEAD_ID = "falcon-9";
 
 /** Words the registry search matches for one launch vehicle. */
 function rocketKeywords(rocket: Rocket) {
@@ -63,6 +69,14 @@ function rocketKeywords(rocket: Rocket) {
       ]),
     ),
   ].join(" ");
+}
+
+/** The record order with the registry's lead launch vehicle first. */
+function registryOrder(rockets: readonly Rocket[], leadId: string) {
+  const lead = rockets.find((rocket) => rocket.id === leadId);
+  return lead
+    ? [lead, ...rockets.filter((rocket) => rocket !== lead)]
+    : [...rockets];
 }
 
 function capitalise(text: string) {
@@ -161,7 +175,8 @@ export function RocketExplorer({ rockets }: RocketExplorerProps) {
           aside={<FeaturedPanel rocket={featured} />}
           // Saturn V on the right, as on the launch vehicle profiles, so the
           // lead never runs into the rocket.
-          className={`${heroPosition.className} ${STOPGAP_PHOTO_HERO_RIGHT} ${STOPGAP_PHOTO_HERO_ASIDE_BELOW} ${STOPGAP_PHOTO_HERO_PHONE_TALL}`}
+          className={`${heroPosition.className} ${STOPGAP_PHOTO_HERO_ASIDE_BELOW} ${STOPGAP_PHOTO_HERO_PHONE_TALL}`}
+          placement="right"
           plate="portrait"
           style={heroPosition.style}
           visual={{
@@ -183,18 +198,20 @@ export function RocketExplorer({ rockets }: RocketExplorerProps) {
           />
         ) : (
           <VehicleRegistry
-            description="Each card opens a full profile. Liftoff thrust and height are the published figures for the configuration each record describes."
-            entries={rockets.map((rocket, index) => ({
-              card: (
-                <RocketCard
-                  layout={index === 0 ? "feature" : "stacked"}
-                  rocket={rocket}
-                />
-              ),
-              featured: index === 0,
-              id: rocket.id,
-              keywords: rocketKeywords(rocket),
-            }))}
+            description="Each card opens a full profile. Height is the published figure; liftoff thrust is the published figure converted to meganewtons, for the configuration each record describes."
+            entries={registryOrder(rockets, REGISTRY_LEAD_ID).map(
+              (rocket, index) => ({
+                card: (
+                  <RocketCard
+                    layout={index === 0 ? "feature" : "stacked"}
+                    rocket={rocket}
+                  />
+                ),
+                featured: index === 0,
+                id: rocket.id,
+                keywords: rocketKeywords(rocket),
+              }),
+            )}
             eyebrow="The registry"
             id="launch-vehicle-registry"
             noun={{ plural: "launch vehicles", singular: "launch vehicle" }}
@@ -218,8 +235,10 @@ export function RocketExplorer({ rockets }: RocketExplorerProps) {
             Figures are publicly released specifications. Payload figures are
             tied to a destination orbit and to whether boosters are recovered,
             and a qualifier such as approximate or maximum stays beside the
-            number. {MINIMUM_NOTE} {CONVERSION_NOTE} Photographs are credited on
-            each profile and on the{" "}
+            number. {MINIMUM_NOTE} {CONVERSION_NOTE} On the cards, liftoff
+            thrust is converted to meganewtons and rounded to one decimal place
+            so the cards read in one unit; each profile gives it as published.
+            Photographs are credited on each profile and on the{" "}
             <Link className="orbix-link" href="/credits">
               image credits page
             </Link>

@@ -148,7 +148,7 @@ describe("MissionShowcase", () => {
     expect(markup).toContain('aria-label="Next showcase phase"');
     expect(markup).toContain('aria-label="Restart mission showcase"');
     expect(markup).toContain('aria-live="polite"');
-    expect(markup).toContain("the left and right arrow");
+    expect(markup).toContain("Left and right arrow keys change phase");
   });
 
   it("starts paused and uses no decorative motion", () => {
@@ -169,6 +169,6 @@ describe("MissionShowcase", () => {
 
     expect(markup).toContain("Showcase Shell");
     expect(markup).toContain("Not reported");
-    expect(markup).toContain("No values recalculated");
+    expect(markup).toContain("this is not a flight simulation");
   });
 });

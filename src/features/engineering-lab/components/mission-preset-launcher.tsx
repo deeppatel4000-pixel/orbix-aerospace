@@ -8,7 +8,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { Check, CircleCheck, Upload } from "lucide-react";
+import { Check, CircleCheck } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { ButtonArrowIcon } from "@/components/ui/button-arrow";
@@ -262,7 +262,6 @@ export function MissionPresetLauncher() {
 
         <div className="mt-6 flex flex-wrap items-center gap-3 border-t border-border-subtle pt-4">
           <Button disabled={!selectedPreset} onClick={loadSelectedPreset}>
-            <Upload aria-hidden="true" size={16} />
             Load into Mission Profile Analyzer
           </Button>
           {loadedPreset ? (

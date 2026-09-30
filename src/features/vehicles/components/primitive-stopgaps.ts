@@ -11,8 +11,7 @@ import type { CSSProperties } from "react";
  *   baseline across a row when a label wraps (a per-cell subgrid).
  * - RecordRow: a column count (2 below 64rem, auto-fit from 64rem) and a
  *   no-wrap value, plus a `secondary` line under the value.
- * - PhotoHero: `placement="right"` (the photo on the right with a feathered
- *   left edge and a matching overlay), `placement="banner"` (the photo
+ * - PhotoHero: `placement="banner"` (the photo
  *   across the top with the text starting on its bottom fade), a phone
  *   plate at the photo's own aspect, and separate mobile and desktop
  *   `objectPosition`.
@@ -46,7 +45,7 @@ export const STOPGAP_HERO_SPEC_PANEL = [
 
 /**
  * The hero spec panel as one 44rem strip from 64rem, for a hero whose
- * portrait photograph stands on the right (`STOPGAP_PHOTO_HERO_RIGHT`):
+ * portrait photograph stands on the right (PhotoHero `placement="right"`):
  * the kicker and title on the left of a top row with the profile link on
  * its right, then the four figures in one row. It sits under the text,
  * left-aligned with the H1, and ends where the photo plate begins, so it
@@ -85,41 +84,33 @@ export const STOPGAP_PHOTO_HERO_ASIDE_BELOW = [
 ].join(" ");
 
 /**
- * RecordRow in a profile hero: a 2x2 grid below 64rem (instead of wrapping
- * three and one), four across from 64rem, and values that never break
- * between the number and its unit.
+ * RecordRow in a profile hero: a 2x2 grid (instead of wrapping three and
+ * one) and values that never break between the number and its unit. Beside
+ * an aircraft photograph the column is 31 to 32rem, so the row stays 2x2 at
+ * every width; a 133px column wrapped "Maximum speed" and dropped its value
+ * below the others.
  */
 export const STOPGAP_RECORD_ROW = [
   String.raw`[&_.orbix-record-row\_\_item_dd]:whitespace-nowrap`,
   String.raw`[&_.orbix-record-row\_\_list]:grid-cols-2`,
-  String.raw`lg:[&_.orbix-record-row\_\_list]:grid-cols-[repeat(auto-fit,minmax(8rem,1fr))]`,
 ].join(" ");
 
 /**
- * PhotoHero with a portrait photograph on the right, from 48rem. From
- * 64rem the photo plate starts at the larger of 50% + 10rem and 46rem.
- * That is the content edge (the 72rem container's left edge plus its 2rem
- * gutter) plus 44rem at every width from 64rem, so the 44rem strip panel
- * ends where the plate begins and the 38rem lead and record row stay clear
- * of it. From 48rem to 64rem (a portrait tablet) the plate starts at 56vw
- * and the text column and aside stop 2rem short of it, so the vehicle
- * never stands behind the heading. The plate's left edge is feathered into
- * the page with an eased mask over its left 48 percent (a straight or a
- * shorter ramp read as a soft vertical wall on bright skies such as
- * Starship's), and the overlay on it keeps only the bottom fade. A launch
- * vehicle stands near the middle of its photograph, clear of the ramp. The
- * spec's horizontal overlay is not applied to the plate: it was drawn for a
- * photo spanning the whole hero and, squeezed onto the right, it darkened
- * the vehicle a second time. No text sits on the photograph.
+ * With `STOPGAP_RECORD_ROW`, beside an aircraft photograph (a 31 to 32rem
+ * column): the four figures in one row from 64rem, as on the launch
+ * vehicle profiles, with a 0.75rem inset so "Service ceiling" and
+ * "50,000+ ft" fit a quarter of the column. Two by two below.
  */
-export const STOPGAP_PHOTO_HERO_RIGHT = [
-  String.raw`md:[&_.orbix-photo-hero\_\_plate]:left-[56vw]`,
-  String.raw`lg:[&_.orbix-photo-hero\_\_plate]:left-[max(calc(50%+10rem),46rem)]`,
-  String.raw`md:[&_.orbix-photo-hero\_\_plate]:[mask-image:linear-gradient(90deg,transparent_0,color-mix(in_srgb,black_20%,transparent)_14%,color-mix(in_srgb,black_60%,transparent)_30%,black_48%)]`,
-  String.raw`md:[&_.orbix-photo-hero\_\_scrim]:[background:linear-gradient(to_bottom,transparent_62%,color-mix(in_srgb,var(--bg-page)_80%,transparent)_90%,var(--bg-page)_100%)]`,
-  String.raw`md:max-lg:[&_.orbix-photo-hero\_\_content]:max-w-[calc(56vw-3.5rem)]`,
-  String.raw`md:max-lg:[&_.orbix-photo-hero\_\_aside]:max-w-[calc(56vw-3.5rem)]`,
+export const STOPGAP_RECORD_ROW_SIDE = [
+  "lg:[--record-inset:0.75rem]",
+  String.raw`lg:[&_.orbix-record-row\_\_list]:grid-cols-4`,
 ].join(" ");
+
+/**
+ * With `STOPGAP_RECORD_ROW`, beside a portrait photograph (a 38rem column):
+ * the figures in one row from 64rem.
+ */
+export const STOPGAP_RECORD_ROW_WIDE = String.raw`lg:[&_.orbix-record-row\_\_list]:grid-cols-[repeat(auto-fit,minmax(8rem,1fr))]`;
 
 /**
  * The aircraft profile hero, for a landscape photograph whose airframe
@@ -131,15 +122,21 @@ export const STOPGAP_PHOTO_HERO_RIGHT = [
  *   at the window's width, so it is not cropped at the sides; only a
  *   bottom fade (no horizontal overlay), and the text starting on the fade
  *   over the photograph's last 6rem.
- * - From 64rem, beside the text: the photograph on the right at its own
- *   aspect, never cropped, vertically centred in the hero, from the larger
- *   of 50% + 2rem, 36rem and 100% - 56rem to the window's right edge. Its
- *   left edge is feathered over 12 percent of its width (the rocket ramp
- *   of 48 percent would fade a nose or a wingtip). The text column is
- *   32rem (34rem from 80rem) and ends 2rem short of the plate at every
- *   width, so no text is set on the photograph and there is no overlay.
- *   A full-width banner cropped the airframe harder the wider the window:
- *   at 1440x900 the SR-71 lost its nose and tail.
+ * - From 64rem, beside the text: the photograph as a hard framed plate at
+ *   its own aspect, never cropped, with a 6px radius and the registration
+ *   marks outside the trim, as on a phone. Its top is level with the
+ *   breadcrumb (6rem into the hero), its right edge on the container's
+ *   content edge and its left edge 34rem into the content, so the 31rem
+ *   (32rem from 80rem) text column stays clear of it. No overlay: no text
+ *   is set on the photograph. A feathered four-edge mask read as a soft
+ *   vignette box and faded wingtips and noses.
+ * - From 64rem the hero is as tall as its text (no 88svh minimum, the
+ *   body's own 6rem padding), at least tall enough for the plate and its
+ *   credit, and the credit sits 1rem under the plate, right-aligned to its
+ *   edge, instead of at the foot of the hero far below the photograph.
+ *   The plate's height is its width over the aspect, and its width is a
+ *   share of the hero's width, so the hero is a size container and the
+ *   offsets use `cqw`.
  */
 export const STOPGAP_PHOTO_HERO_SIDE = [
   "[--orbix-hero-banner-h:min(70svh,44rem,calc(100vw/var(--orbix-hero-aspect,1.5)))]",
@@ -148,16 +145,26 @@ export const STOPGAP_PHOTO_HERO_SIDE = [
   String.raw`md:max-lg:[&_.orbix-photo-hero\_\_plate]:h-(--orbix-hero-banner-h)`,
   String.raw`md:max-lg:[&_.orbix-photo-hero\_\_scrim]:[background:linear-gradient(to_bottom,transparent_55%,color-mix(in_srgb,var(--bg-page)_55%,transparent)_72%,color-mix(in_srgb,var(--bg-page)_92%,transparent)_84%,var(--bg-page)_92%)]`,
   String.raw`md:max-lg:[&_.orbix-photo-hero\_\_body]:pt-[calc(var(--orbix-hero-banner-h)-6rem)]`,
+  "[--orbix-hero-edge:max(2rem,calc((100%-72rem)/2+2rem))]",
+  "[--orbix-hero-plate-bottom:calc(var(--space-9)+(100cqw-2*max(2rem,calc((100cqw-72rem)/2+2rem))-34rem)/var(--orbix-hero-aspect,1.5))]",
+  "lg:[container-type:inline-size]",
+  "lg:min-h-0",
+  String.raw`lg:[&_.orbix-photo-hero\_\_body]:min-h-[calc(var(--orbix-hero-plate-bottom)+4.5rem)]`,
+  String.raw`lg:[&_.orbix-photo-hero\_\_credit]:bottom-auto`,
+  String.raw`lg:[&_.orbix-photo-hero\_\_credit]:top-[calc(var(--orbix-hero-plate-bottom)+1rem)]`,
+  // The credit runs only under the plate (its 2rem gutter plus the 34rem
+  // text column), wrapping there rather than reaching into the text.
+  String.raw`lg:[&_.orbix-photo-hero\_\_credit-inner]:pl-[36rem]`,
   String.raw`lg:[&_.orbix-photo-hero\_\_plate]:inset-auto`,
-  String.raw`lg:[&_.orbix-photo-hero\_\_plate]:top-1/2`,
-  String.raw`lg:[&_.orbix-photo-hero\_\_plate]:right-0`,
-  String.raw`lg:[&_.orbix-photo-hero\_\_plate]:left-[max(calc(50%+2rem),36rem,calc(100%-56rem))]`,
-  String.raw`lg:[&_.orbix-photo-hero\_\_plate]:-translate-y-1/2`,
+  String.raw`lg:[&_.orbix-photo-hero\_\_plate]:top-(--space-9)`,
+  String.raw`lg:[&_.orbix-photo-hero\_\_plate]:right-(--orbix-hero-edge)`,
+  String.raw`lg:[&_.orbix-photo-hero\_\_plate]:left-[calc(var(--orbix-hero-edge)+34rem)]`,
   String.raw`lg:[&_.orbix-photo-hero\_\_plate]:aspect-(--orbix-hero-aspect)`,
-  String.raw`lg:[&_.orbix-photo-hero\_\_plate]:[mask-image:linear-gradient(90deg,transparent_0,color-mix(in_srgb,black_45%,transparent)_5%,black_12%)]`,
+  String.raw`lg:[&_.orbix-photo-hero\_\_frame]:rounded-(--radius-photo)`,
+  String.raw`lg:[&_.orbix-photo-hero\_\_marks]:block`,
   String.raw`lg:[&_.orbix-photo-hero\_\_scrim]:[background:none]`,
-  String.raw`lg:[&_.orbix-photo-hero\_\_content]:max-w-[32rem]`,
-  String.raw`xl:[&_.orbix-photo-hero\_\_content]:max-w-[34rem]`,
+  String.raw`lg:[&_.orbix-photo-hero\_\_content]:max-w-[31rem]`,
+  String.raw`xl:[&_.orbix-photo-hero\_\_content]:max-w-[32rem]`,
 ].join(" ");
 
 /**

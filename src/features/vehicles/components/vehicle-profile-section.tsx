@@ -73,9 +73,9 @@ export function VehicleProfileSection({
           // size utilities, so a `text-[...]` class would lose to it): six
           // or seven sections, some holding a one-row table, should not
           // read as a stack of equal headlines under an 80px hero name.
-          // A closing section keeps the full page h2.
-          "orbix-h2 text-foreground",
-          index !== undefined && "[--text-h2:clamp(2rem,2.8vw,2.5rem)]",
+          // An unnumbered closing section such as related vehicles uses
+          // the same size, so it never outranks the content above it.
+          "orbix-h2 text-foreground [--text-h2:clamp(2rem,2.8vw,2.5rem)]",
           index !== undefined && "mt-3",
           isSheet && "lg:col-span-4 lg:row-start-2",
         )}

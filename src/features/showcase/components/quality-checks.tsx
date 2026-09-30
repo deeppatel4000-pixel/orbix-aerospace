@@ -133,8 +133,9 @@ const columns: readonly DataTableColumn<QualityCheck>[] = [
 /**
  * From 48rem both tables share fixed column widths, so the two workflows
  * line up as one list; the Command column takes the largest share, so
- * long commands break as rarely as possible. Below that the third (Tool) column is hidden, and
- * below 40rem the cells take 12px side padding instead of 16px.
+ * long commands break as rarely as possible. Below that the third (Tool)
+ * column is hidden, and below 40rem the cells take 12px side padding
+ * instead of 16px.
  */
 const alignedColumns = cn(
   "max-md:[&_tr>:nth-child(3)]:hidden max-sm:[&_:is(th,td)]:px-3",
