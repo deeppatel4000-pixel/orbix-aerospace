@@ -132,10 +132,8 @@ export function GroundTrackVisualization({
       onKeyDown={handleKeyboard}
     >
       <header className="border-b border-border-subtle pb-4">
+        {/* The one disclaimer is the foot line. */}
         <LabHeading id="ground-track-title">Orbital ground track</LabHeading>
-        <p className="mt-1 text-sm text-muted">
-          Illustrative orbital ground track, not a flight prediction.
-        </p>
 
         <div className="mt-4">
           <GroundTrackControls
@@ -218,18 +216,15 @@ export function GroundTrackVisualization({
             </dd>
           </div>
         </dl>
-        <p className="mt-2 border-t border-border-subtle pt-3 text-sm leading-6 text-muted">
-          Continent outlines, the path and the marker are drawn by hand to
-          explain the idea. They are not propagated orbital coordinates.
-        </p>
       </div>
 
       <footer
-        className="mt-3 border-t border-border-subtle pt-3 text-sm leading-6 text-muted"
+        className="mt-3 border-t border-border-subtle pt-3 text-[0.8125rem] leading-5 text-muted"
         id="ground-track-disclaimer"
       >
-        This visualization illustrates orbital concepts and does not represent
-        real spacecraft navigation data.
+        Continent outlines, the path and the marker are drawn by hand to explain
+        the idea. They are not propagated orbital coordinates or spacecraft
+        navigation data.
       </footer>
 
       <p className="sr-only" id="ground-track-keyboard-help">

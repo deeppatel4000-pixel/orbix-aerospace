@@ -18,6 +18,8 @@ import {
   ValidationErrorSummary,
   LabFigure,
   EqDot,
+  LAB_GROUP,
+  LAB_GROUP_LEGEND,
 } from "@/features/engineering-lab/components/shared";
 import type {
   OrbitalPlaneChangeAnalysisInputs,
@@ -242,10 +244,8 @@ export function OrbitalPlaneChangeAnalyzer() {
             onKeyDown={focusFirstInvalidFieldOnEnter}
             onSubmit={preventSubmission}
           >
-            <fieldset>
-              <legend className="text-base font-semibold text-foreground">
-                Orbital maneuver
-              </legend>
+            <fieldset className={LAB_GROUP}>
+              <legend className={LAB_GROUP_LEGEND}>Orbital maneuver</legend>
               <div className="mt-4 grid gap-5 @min-[36rem]/col:grid-cols-2">
                 <CalculatorNumberField
                   error={errors.orbitalAltitudeMetres}
@@ -270,8 +270,8 @@ export function OrbitalPlaneChangeAnalyzer() {
               </div>
             </fieldset>
 
-            <fieldset className="mt-10">
-              <legend className="text-base font-semibold text-foreground">
+            <fieldset className={LAB_GROUP}>
+              <legend className={LAB_GROUP_LEGEND}>
                 Central-body constants
               </legend>
               <div className="mt-4 grid gap-5 @min-[36rem]/col:grid-cols-2">

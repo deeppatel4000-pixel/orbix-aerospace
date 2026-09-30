@@ -9,17 +9,24 @@ interface ComparisonRowEducationProps {
   category: ComparisonCategory;
   className?: string;
   /**
-   * The row description. Below 48rem the sticky column hides it, so it is
-   * shown first inside the disclosure there.
+   * The row description, shown first inside the disclosure in the `list`
+   * variant, where the row header does not show it.
    */
   description?: string;
   /** The row label, added to the summary's accessible name. */
   label: string;
   rowId: string;
+  /**
+   * `cell` (default) sits in the row header from 48rem, under the label.
+   * `list` is one entry of the full-width list under each group below
+   * 48rem, where the 6.25rem row header column is too narrow for a
+   * paragraph: its summary names the row ("About Manufacturer").
+   */
+  variant?: "cell" | "list";
 }
 
 /**
- * Collapsed "What this measures" note for a comparison row. The explanation
+ * Collapsed "About" (what this measures) note for a comparison row. The explanation
  * is general aerospace context, never an ORBIX-computed result, and stays
  * collapsed by default so it never buries the published values.
  */
@@ -29,10 +36,13 @@ export function ComparisonRowEducation({
   description,
   label,
   rowId,
+  variant = "cell",
 }: ComparisonRowEducationProps) {
   const education = getRowEducation(category, rowId);
 
   if (!education) return null;
+
+  const isList = variant === "list";
 
   return (
     <details
@@ -41,25 +51,38 @@ export function ComparisonRowEducation({
         className,
       )}
     >
-      <summary className="inline-flex min-h-6 cursor-pointer list-none items-center gap-0.5 rounded-sm text-xs text-muted decoration-1 underline-offset-4 group-open:underline hover:text-text-secondary hover:underline focus-visible:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--orbix-focus)] [&::-webkit-details-marker]:hidden">
+      <summary
+        className={cn(
+          "inline-flex cursor-pointer list-none items-center gap-0.5 rounded-sm text-muted decoration-1 underline-offset-4 group-open:underline hover:text-text-secondary hover:underline focus-visible:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--orbix-focus)] [&::-webkit-details-marker]:hidden",
+          isList ? "min-h-11 text-sm" : "min-h-6 text-xs",
+        )}
+      >
         <ChevronRight
           aria-hidden="true"
           className="shrink-0 text-accent transition-transform duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] group-open:rotate-90 motion-reduce:transition-none"
-          size={12}
+          size={isList ? 14 : 12}
         />
-        {/* Short in the 6rem phone column so it keeps to one line. Each
-            accessible name starts with its visible words (WCAG 2.5.3) and
-            names the row, since the summary repeats on every row. */}
-        <span className="md:hidden">
-          About<span className="sr-only"> {label}</span>
-        </span>
-        <span className="max-md:hidden">
-          What this measures<span className="sr-only">: {label}</span>
-        </span>
+        {/* Each accessible name starts with its visible words (WCAG 2.5.3)
+            and names the row, since the summary repeats on every row. */}
+        {isList ? (
+          "About " + label
+        ) : (
+          /* A short, quiet label, since it repeats under every row label
+             in the column; the hidden words keep the row and the purpose
+             in the accessible name, which still starts with "About". */
+          <span className="font-mono text-xs tracking-normal">
+            About<span className="sr-only"> {label}: what this measures</span>
+          </span>
+        )}
       </summary>
-      <div className="mt-2 max-w-[34ch] space-y-2 border-t border-border-subtle pt-2">
-        {description ? (
-          <p className="leading-5 text-foreground md:hidden">{description}</p>
+      <div
+        className={cn(
+          "space-y-2 border-t border-border-subtle",
+          isList ? "mt-1 mb-3 max-w-[60ch] pt-3" : "mt-2 max-w-[34ch] pt-2",
+        )}
+      >
+        {isList && description ? (
+          <p className="leading-5 text-foreground">{description}</p>
         ) : null}
         <p className="leading-5 text-text-secondary">{education.explanation}</p>
         <p className="leading-5 text-muted">

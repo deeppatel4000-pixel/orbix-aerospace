@@ -7,56 +7,71 @@ import { VariantsPanel } from "@/features/aircraft/components/variants-panel";
 import { getAircraftVisual, listAircraft } from "@/features/aircraft/data";
 import {
   formatAircraftFleetStatus,
-  formatAircraftRole,
   formatAircraftRoles,
   formatFirstFlight,
 } from "@/features/aircraft/utils";
 import {
   CONVERSION_NOTE,
-  MINIMUM_NOTE,
   measurementParts,
 } from "@/features/vehicles/components/measurement-display";
 import { MeasurementTable } from "@/features/vehicles/components/measurement-table";
-import { VehiclePhotograph } from "@/features/vehicles/components/vehicle-photograph";
+import {
+  VehicleFactsTable,
+  type VehicleFact,
+} from "@/features/vehicles/components/vehicle-facts-table";
 import { VehicleProfileHero } from "@/features/vehicles/components/vehicle-profile-hero";
 import { VehicleProfileLayout } from "@/features/vehicles/components/vehicle-profile-layout";
 import { VehicleProfileSection } from "@/features/vehicles/components/vehicle-profile-section";
 import type { Aircraft } from "@/features/vehicles/types";
-import { formatCountWord } from "@/features/vehicles/utils/format-measurement";
 
 interface AircraftProfileProps {
   aircraft: Aircraft;
 }
 
-/** "an air superiority and multirole", with the right article. */
-function formatRoleSentence(roles: Aircraft["roles"]) {
-  const words = roles.map((role) =>
-    formatAircraftRole(role).toLocaleLowerCase("en-US"),
-  );
-  const phrase =
-    words.length > 1
-      ? `${words.slice(0, -1).join(", ")} and ${words.at(-1)}`
-      : (words[0] ?? "a military");
-  return /^[aeiou]/.test(phrase) ? `an ${phrase}` : `a ${phrase}`;
-}
-
-function formatVariantSentence(variants: Aircraft["variants"]) {
-  if (variants.length === 0) return "No variants are recorded.";
-  if (variants.length === 1) {
-    return `The record covers one variant, the ${variants[0]?.name}.`;
-  }
-  const designations = variants.map((variant) => variant.designation);
-  return `The record covers ${formatCountWord(variants.length)} variants: ${designations.slice(0, -1).join(", ")} and ${designations.at(-1)}.`;
-}
-
-/** "In service" or "Retired", only when the variant records say so. */
-function formatStatusSentence(variants: Aircraft["variants"]) {
+/**
+ * "In service" or "Retired", only when the variant records say so. With
+ * several variants and only some in service, it says so.
+ */
+function formatStatus(variants: Aircraft["variants"]) {
   const status = formatAircraftFleetStatus(variants);
-  if (status === "In service") {
-    return "At least one variant is in service.";
+  if (
+    status === "In service" &&
+    variants.some((variant) => variant.status !== "in-service")
+  ) {
+    return "At least one variant in service";
   }
-  if (status === "Retired") return "Every recorded variant is retired.";
-  return undefined;
+  return status;
+}
+
+/** The Overview facts, each taken from the record. */
+function overviewFacts(aircraft: Aircraft): VehicleFact[] {
+  const status = formatStatus(aircraft.variants);
+  return [
+    { label: "Manufacturer", value: aircraft.manufacturer },
+    { label: "Country", value: aircraft.country.name },
+    {
+      label: "First flight",
+      value: (
+        <time dateTime={aircraft.firstFlight}>
+          {formatFirstFlight(aircraft.firstFlight)}
+        </time>
+      ),
+    },
+    ...(aircraft.variants.length > 0
+      ? [
+          {
+            label:
+              aircraft.variants.length === 1
+                ? "Variant recorded"
+                : "Variants recorded",
+            value: aircraft.variants
+              .map((variant) => variant.designation)
+              .join(", "),
+          },
+        ]
+      : []),
+    ...(status ? [{ label: "Status", value: status }] : []),
+  ];
 }
 
 const navigation = [
@@ -75,7 +90,6 @@ export function AircraftProfile({ aircraft }: AircraftProfileProps) {
     .filter((candidate) => candidate.id !== aircraft.id)
     .slice(0, 3);
   const { maxSpeed, range, serviceCeiling } = aircraft.performance;
-  const statusSentence = formatStatusSentence(aircraft.variants);
 
   return (
     <VehicleProfileLayout
@@ -115,7 +129,17 @@ export function AircraftProfile({ aircraft }: AircraftProfileProps) {
           ]}
           visual={
             visual
-              ? { ...visual, objectPosition: visual.heroObjectPosition }
+              ? {
+                  ...visual,
+                  // From 64rem the photograph is shown whole beside the
+                  // text, so only the phone plate and the tablet banner
+                  // crop it.
+                  position: {
+                    base: visual.heroObjectPosition,
+                    lg: "50% 50%",
+                    md: visual.heroObjectPosition,
+                  },
+                }
               : undefined
           }
         />
@@ -124,62 +148,27 @@ export function AircraftProfile({ aircraft }: AircraftProfileProps) {
       related={<RelatedAircraft aircraft={related} />}
     >
       {/*
-       * Overview and the photograph share one row from 64rem: the overview
-       * in the left five columns and the photograph, shown large once, in
-       * the right seven at a 3:2 crop, as a figure on the sheet
-       * rather than a second hero. Below 48rem the hero shows the
-       * photograph one scroll earlier, so it is not repeated.
+       * The hero shows the photograph large, the airframe clear of the
+       * text, so it is not repeated here (as on the launch vehicle
+       * profiles). The Overview is a short spec sheet of the record's
+       * facts, in the same 4/8 split as every section after it.
        */}
-      <div className="lg:grid lg:grid-cols-12 lg:gap-x-6">
-        <div className="min-w-0 lg:col-span-5">
-          <VehicleProfileSection
-            className="border-t-0"
-            id="overview"
-            index={1}
-            layout="wide"
-            title="Overview"
-          >
-            <div className="orbix-prose max-w-[68ch]">
-              <p>
-                The {aircraft.name} was developed by {aircraft.manufacturer} (
-                {aircraft.country.name}) and first flew on{" "}
-                <time dateTime={aircraft.firstFlight}>
-                  {formatFirstFlight(aircraft.firstFlight)}
-                </time>
-                . It is classed as {formatRoleSentence(aircraft.roles)}{" "}
-                aircraft.
-              </p>
-              <p>
-                {formatVariantSentence(aircraft.variants)}
-                {statusSentence ? ` ${statusSentence}` : null}
-              </p>
-            </div>
-          </VehicleProfileSection>
-        </div>
-
-        {visual ? (
-          <VehiclePhotograph
-            className="pb-12 max-md:hidden md:max-w-[40rem] lg:col-span-7 lg:max-w-none lg:self-start lg:pt-12"
-            // The hero darkens the aircraft under its overlay, so the
-            // figure stays, at a tighter 3:2 crop of its own so it does not
-            // read as the hero repeated.
-            crop={{ aspectRatio: "3 / 2", objectPosition: "30% 50%" }}
-            name={aircraft.name}
-            sizes="(max-width: 1023px) 40rem, 42rem"
-            visual={visual}
-          />
-        ) : null}
-      </div>
+      <VehicleProfileSection id="overview" index={1} title="Overview">
+        <VehicleFactsTable
+          caption={`${aircraft.name} record`}
+          facts={overviewFacts(aircraft)}
+        />
+      </VehicleProfileSection>
 
       <VehicleProfileSection
-        description="Dimensions and weights as published, with the basis of each figure."
+        description="Dimensions and weights as published, with the basis of each figure under it."
         id="specifications"
         index={2}
         title="Specifications"
       >
         <MeasurementTable
           caption={`${aircraft.name} dimensions and weights`}
-          note={`${CONVERSION_NOTE} ${MINIMUM_NOTE}`}
+          note={CONVERSION_NOTE}
           rows={[
             { label: "Length", measurement: aircraft.dimensions.length },
             { label: "Wingspan", measurement: aircraft.dimensions.wingspan },

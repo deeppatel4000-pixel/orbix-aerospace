@@ -28,6 +28,7 @@ import {
   ValidationErrorSummary,
   LabFigure,
   EqDot,
+  EQ_SUB_CLEAR,
 } from "@/features/engineering-lab/components/shared";
 import type {
   AtmosphereField,
@@ -80,14 +81,14 @@ const toolEquation = (
         </span>
         <span className={EQ_LINE}>
           <span className={EQ_TERM}>
-            p = p<sub>0</sub>
+            p = p<sub className={EQ_SUB_CLEAR}>0</sub>
           </span>
           <wbr />
           <span className={EQ_TERM}>
             <EqDot />
             (T/T<sub>0</sub>)
             <sup className={EQ_SUP}>
-              g<sub>0</sub>/(R
+              g<sub className={EQ_SUB_CLEAR}>0</sub>/(R
               <EqDot />
               L)
             </sup>
@@ -127,7 +128,7 @@ const toolEquation = (
       {
         symbol: (
           <>
-            p<sub>0</sub>
+            p<sub className={EQ_SUB_CLEAR}>0</sub>
           </>
         ),
         meaning: (
@@ -150,7 +151,7 @@ const toolEquation = (
       {
         symbol: (
           <>
-            g<sub>0</sub>
+            g<sub className={EQ_SUB_CLEAR}>0</sub>
           </>
         ),
         meaning: (

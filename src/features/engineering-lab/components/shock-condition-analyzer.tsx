@@ -22,6 +22,8 @@ import {
   LabSymbol,
   EqDot,
   EqSubSup,
+  EqFrac,
+  EQ_SUB_CLEAR,
 } from "@/features/engineering-lab/components/shared";
 import type {
   ShockConditionAnalysis,
@@ -105,25 +107,32 @@ const toolEquation = (
   <EquationBlock
     equation={
       <>
+        {/* A stacked fraction, so the only outer grouping is the bar:
+            B612 Mono draws "(" and "[" almost alike. Numerator and
+            denominator are the textbook form scaled by 2. */}
         <span className={EQ_LINE}>
           <span className={EQ_TERM}>
-            M<EqSubSup sub="2" sup="2" /> = [1
-          </span>{" "}
-          <span className={EQ_TERM}>+ ((γ−1)/2)</span>
-          <wbr />
-          <span className={EQ_TERM}>
-            <EqDot />M<EqSubSup sub="1" sup="2" />]
+            M<EqSubSup sub="2" sup="2" /> ={" "}
+            <EqFrac
+              den={
+                <>
+                  2γM
+                  <EqSubSup sub="1" sup="2" /> − (γ−1)
+                </>
+              }
+              num={
+                <>
+                  (γ−1)M
+                  <EqSubSup sub="1" sup="2" /> + 2
+                </>
+              }
+            />
           </span>
-          <wbr />
-          <span className={EQ_TERM}>
-            /[γM
-            <EqSubSup sub="1" sup="2" />
-          </span>{" "}
-          <span className={EQ_TERM}>− (γ−1)/2]</span>
         </span>
         <span className={EQ_LINE}>
           <span className={EQ_TERM}>
-            p<sub>2</sub>/p<sub>1</sub> = 1
+            p<sub className={EQ_SUB_CLEAR}>2</sub>/p
+            <sub className={EQ_SUB_CLEAR}>1</sub> = 1
           </span>{" "}
           <span className={EQ_TERM}>+ (2γ/(γ+1))</span>
           <wbr />
@@ -148,7 +157,9 @@ const toolEquation = (
         </span>
         <span className={EQ_LINE}>
           <span className={EQ_TERM}>
-            T<sub>2</sub>/T<sub>1</sub> = (p<sub>2</sub>/p<sub>1</sub>)
+            T<sub>2</sub>/T<sub>1</sub> = (p
+            <sub className={EQ_SUB_CLEAR}>2</sub>/p
+            <sub className={EQ_SUB_CLEAR}>1</sub>)
           </span>
           <wbr />
           <span className={EQ_TERM}>
@@ -158,7 +169,7 @@ const toolEquation = (
       </>
     }
     label="Normal shock relations"
-    spokenAs="M 2 squared equals 1 plus gamma minus 1 over 2 times M 1 squared, over gamma M 1 squared minus gamma minus 1 over 2. The pressure ratio equals 1 plus 2 gamma over gamma plus 1, times M 1 squared minus 1. The density ratio equals gamma plus 1 times M 1 squared over gamma minus 1 times M 1 squared plus 2. The temperature ratio equals the pressure ratio over the density ratio."
+    spokenAs="M 2 squared equals gamma minus 1 times M 1 squared, plus 2, all over 2 gamma M 1 squared minus the quantity gamma minus 1. The pressure ratio equals 1 plus 2 gamma over gamma plus 1, times M 1 squared minus 1. The density ratio equals gamma plus 1 times M 1 squared over gamma minus 1 times M 1 squared plus 2. The temperature ratio equals the pressure ratio over the density ratio."
     variables={[
       {
         symbol: (

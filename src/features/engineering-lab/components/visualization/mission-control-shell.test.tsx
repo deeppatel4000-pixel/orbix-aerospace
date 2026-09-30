@@ -88,7 +88,8 @@ describe("MissionControlShell", () => {
 
     expect(markup).toContain("ORBIX Command Shell Mission");
     expect(markup).toContain("Orbital logistics");
-    expect(markup).toContain("educational simulation");
+    // No preset was supplied, so no preset cell reads as a missing value.
+    expect(markup).not.toContain("Mission preset");
     expect(markup).toContain("Analyses resolved");
   });
 

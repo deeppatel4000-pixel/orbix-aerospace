@@ -52,9 +52,18 @@ export function ComparisonEmptyState({ result }: ComparisonEmptyStateProps) {
             <p className="text-sm leading-5 text-muted max-md:hidden">
               {group.summary}
             </p>
-            <p className="orbix-caps mt-1.5 text-muted">
-              {group.rows.map((row) => row.label).join(", ")}
-            </p>
+            {/* Row names as instrument labels: spaced apart, no commas,
+                which read as typos inside tracked capitals. The 24px gap
+                is well over the tracked word space (about 9px), so a
+                two-word name never runs into the next one. */}
+            <ul
+              aria-label={group.label + " rows"}
+              className="orbix-caps mt-1.5 flex flex-wrap gap-x-6 gap-y-1 text-muted"
+            >
+              {group.rows.map((row) => (
+                <li key={row.id}>{row.label}</li>
+              ))}
+            </ul>
           </li>
         ))}
       </ul>

@@ -22,6 +22,8 @@ interface MissionPhase {
   readonly detail: string;
   readonly id: string;
   readonly label: string;
+  /** The tab's text, 16 characters or fewer. */
+  readonly shortLabel: string;
   /** Descriptive timing text, set in the sans face. */
   readonly timingLabel: string;
   /** Optional machine value (number and unit) shown in mono before the label. */
@@ -47,6 +49,7 @@ function buildMissionPhases({
         "Departure is an educational sequence label; no departure maneuver output was reported.",
       id: "departure",
       label: "Launch and departure",
+      shortLabel: "Launch",
       timingLabel: "Mission start",
     },
     {
@@ -56,6 +59,7 @@ function buildMissionPhases({
         : "No resolved orbit-transfer output is present.",
       id: "orbit-transfer",
       label: "Orbit transfer",
+      shortLabel: "Transfer",
       timingLabel: transfer ? "reported duration" : "Timing not reported",
       timingValue: transfer
         ? `${formatLabValue(transfer.transfer.transferTimeHours)} h`
@@ -64,10 +68,11 @@ function buildMissionPhases({
     {
       available: planeChange !== undefined || Boolean(firstManeuver),
       detail: planeChange
-        ? `${formatLabValue(planeChange.inclinationChangeDegrees)} deg reported inclination change.`
+        ? `${formatLabValue(planeChange.inclinationChangeDegrees)}° reported inclination change.`
         : (firstManeuver?.name ?? "No resolved maneuver output is present."),
       id: "maneuver",
       label: "Maneuver",
+      shortLabel: "Maneuver",
       timingLabel: "Timing not reported",
     },
     {
@@ -77,6 +82,7 @@ function buildMissionPhases({
         : "Arrival orbit is an educational sequence label without a resolved target orbit.",
       id: "arrival-orbit",
       label: "Arrival orbit",
+      shortLabel: "Arrival",
       timingLabel: "Timing not reported",
     },
     {
@@ -88,6 +94,7 @@ function buildMissionPhases({
         : "No completed vehicle reentry evaluation is present.",
       id: "reentry",
       label: "Reentry",
+      shortLabel: "Reentry",
       timingLabel: vehicleReentryEvaluation
         ? "reported duration"
         : "Timing not reported",
@@ -102,6 +109,7 @@ function buildMissionPhases({
         : "No TPS recommendation is present.",
       id: "thermal-protection",
       label: "Thermal protection",
+      shortLabel: "TPS",
       timingLabel: "Post-reentry assessment",
     },
   ];
@@ -200,7 +208,9 @@ export function MissionTimeline(props: MissionTimelineProps) {
                   <span aria-hidden="true" className="orbix-data mr-2">
                     {index + 1}
                   </span>
-                  {phase.label}
+                  {/* Short, so every label sits on one line over the
+                   * shared rule; the panel below gives the full name. */}
+                  {phase.shortLabel}
                 </span>
               </button>
             );

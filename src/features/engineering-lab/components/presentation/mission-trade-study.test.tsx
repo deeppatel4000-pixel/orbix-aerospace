@@ -89,8 +89,8 @@ describe("MissionTradeStudy", () => {
       <MissionTradeStudy scenarios={scenarios} />,
     );
 
-    expect(markup).toContain("Mission trade study");
-    expect(markup).toContain("Architecture comparison review");
+    expect(markup).toContain("Mission architecture trade study");
+    expect(markup).toContain("Mission architectures");
     expect(markup).toContain("LEO Deployment Baseline");
     expect(markup).toContain("LEO Deployment Extended");
     expect(markup).toContain("Deep Space Shell");
@@ -98,7 +98,7 @@ describe("MissionTradeStudy", () => {
     expect(markup).toContain("Deep space concept");
   });
 
-  it("renders orbital, vehicle, and thermal comparison metrics", () => {
+  it("compares orbital metrics and names vehicle and thermal rows", () => {
     const markup = renderToStaticMarkup(
       <MissionTradeStudy
         analyses={[baselineAnalysis, extendedAnalysis]}
@@ -111,23 +111,39 @@ describe("MissionTradeStudy", () => {
     expect(markup).toContain("Delta-v");
     expect(markup).toContain("Transfer duration");
     expect(markup).toContain("Maneuvers");
-    expect(markup).toContain("Trade Study Capsule");
-    expect(markup).toContain("Peak deceleration");
-    expect(markup).toContain("Reentry duration");
-    expect(markup).toContain(
-      baselineReport.thermalAnalysis?.tpsRecommendation?.material.name ??
-        "missing TPS material",
-    );
-    expect(markup).toContain("Thermal margin");
+    // Only the baseline reports vehicle and thermal values, so those rows
+    // are named under the table rather than compared.
+    expect(markup).toContain("peak deceleration");
+    expect(markup).toContain("reentry duration");
+    expect(markup).toContain("TPS material");
+    expect(markup).toContain("thermal margin");
   });
 
   it("handles missing reports without running report generation", () => {
     const markup = renderToStaticMarkup(
-      <MissionTradeStudy analyses={[baselineAnalysis]} scenarios={scenarios} />,
+      <MissionTradeStudy
+        analyses={[baselineAnalysis, extendedAnalysis]}
+        scenarios={scenarios}
+      />,
     );
 
     expect(markup).toContain("LEO Deployment Baseline");
+    // Rows two missions report stay; the third mission's cells are muted.
     expect(markup).toContain("Not reported");
+  });
+
+  it("names rows only one mission reports instead of filling them with gaps", () => {
+    const markup = renderToStaticMarkup(
+      <MissionTradeStudy
+        analyses={[baselineAnalysis, extendedAnalysis]}
+        reports={[baselineReport, extendedReport]}
+        scenarios={scenarios.slice(0, 2)}
+      />,
+    );
+
+    expect(markup).toContain("Reported by one mission only, so not compared:");
+    expect(markup).toContain("peak deceleration");
+    expect(markup).not.toContain("Trade Study Capsule");
   });
 
   it("handles missing analyses while preserving supplied report values", () => {
@@ -143,7 +159,7 @@ describe("MissionTradeStudy", () => {
     expect(markup).toContain("Thermal margin");
   });
 
-  it("displays factual trade explanations without choosing a winner", () => {
+  it("adds no restating notes and chooses no winner", () => {
     const markup = renderToStaticMarkup(
       <MissionTradeStudy
         analyses={[baselineAnalysis, extendedAnalysis]}
@@ -152,18 +168,18 @@ describe("MissionTradeStudy", () => {
       />,
     );
 
-    expect(markup).toContain("Trade study notes");
-    expect(markup).toContain(
-      "LEO Deployment Extended has a larger reported total delta-v than LEO Deployment Baseline.",
-    );
-    expect(markup).toContain("No recommendation");
+    expect(markup).not.toContain("Trade study notes");
+    expect(markup).toContain("winner selection");
     expect(markup).toContain("no feasibility assessment");
     expect(markup).not.toContain("Winner");
   });
 
   it("provides semantic table and accessible live-update behavior", () => {
     const markup = renderToStaticMarkup(
-      <MissionTradeStudy scenarios={scenarios} />,
+      <MissionTradeStudy
+        analyses={[baselineAnalysis, extendedAnalysis]}
+        scenarios={scenarios}
+      />,
     );
 
     expect(markup).toContain('aria-label="Mission architecture trade study"');

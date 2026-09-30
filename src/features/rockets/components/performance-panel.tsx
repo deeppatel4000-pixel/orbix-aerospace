@@ -1,13 +1,14 @@
 import { DataTable } from "@/components/ui/data-table";
-import { Tag } from "@/components/ui/tag";
 import {
   formatLaunchConfiguration,
   formatOrbitType,
 } from "@/features/rockets/utils";
-import { renderDualMeasurement } from "@/features/vehicles/components/measurement-display";
+import {
+  minimumNote,
+  renderDualMeasurement,
+} from "@/features/vehicles/components/measurement-display";
 import { VehicleProfileSection } from "@/features/vehicles/components/vehicle-profile-section";
 import type { OrbitType, RocketPerformance } from "@/features/vehicles/types";
-import { formatQualifierLabel } from "@/features/vehicles/utils/format-measurement";
 
 interface PerformancePanelProps {
   index?: number;
@@ -27,15 +28,30 @@ function orbitName(orbit: OrbitType) {
     : `${name} (${orbit})`;
 }
 
+/** "A, B and C". */
+function formatList(items: readonly string[]) {
+  return items.length > 1
+    ? `${items.slice(0, -1).join(", ")} and ${items.at(-1)}`
+    : (items[0] ?? "");
+}
+
 /**
  * Performance (spec 9): payload to each published destination as a spec
- * sheet, then the orbit classes the record lists as supported.
+ * sheet (destination, payload, configuration, so the figure is the second
+ * column and in view on a phone), then, in one sentence, any supported
+ * destination the record gives no payload figure for.
  */
 export function PerformancePanel({
   index,
   name,
   performance,
 }: PerformancePanelProps) {
+  const { payloadCapabilities, supportedOrbits } = performance;
+  const withPayload = new Set(payloadCapabilities.map((row) => row.orbit));
+  const otherOrbits = supportedOrbits
+    .filter((orbit) => !withPayload.has(orbit))
+    .map((orbit) => orbitName(orbit));
+
   return (
     <VehicleProfileSection
       description="Payload mass depends on the destination orbit and on whether boosters are recovered, so each figure is tied to both."
@@ -43,24 +59,15 @@ export function PerformancePanel({
       index={index}
       title="Performance"
     >
-      {performance.payloadCapabilities.length > 0 ? (
+      {payloadCapabilities.length > 0 ? (
         <DataTable
+          singleLineCells
           caption={`${name} payload capability`}
           columns={[
             {
-              cell: (capability) => (
-                <span className="whitespace-nowrap">
-                  {orbitName(capability.orbit)}
-                </span>
-              ),
+              cell: (capability) => orbitName(capability.orbit),
               header: "Destination",
               key: "destination",
-            },
-            {
-              cell: (capability) =>
-                formatLaunchConfiguration(capability.configuration),
-              header: "Configuration",
-              key: "configuration",
             },
             {
               cell: (capability) => renderDualMeasurement(capability.mass),
@@ -69,38 +76,29 @@ export function PerformancePanel({
               numeric: true,
             },
             {
-              cell: (capability) => (
-                <span className="text-muted">
-                  {formatQualifierLabel(capability.mass.qualifier)}
-                </span>
-              ),
-              header: "Basis",
-              key: "basis",
+              cell: (capability) =>
+                formatLaunchConfiguration(capability.configuration),
+              header: "Configuration",
+              key: "configuration",
             },
           ]}
           getRowKey={(capability) =>
             `${capability.orbit}-${capability.configuration}`
           }
-          rows={performance.payloadCapabilities}
+          note={minimumNote(payloadCapabilities.map((row) => row.mass))}
+          rows={payloadCapabilities}
         />
       ) : (
         <p className="text-muted">No payload figures are published.</p>
       )}
 
-      {/* Set like the table caption above: a label for the list, not a
-          heading larger than the tables' own. */}
-      <h3 className="mt-10 text-sm leading-[1.4] font-medium text-foreground">
-        Supported destinations
-      </h3>
-      <ul className="mt-4 flex flex-wrap gap-2">
-        {performance.supportedOrbits.map((orbit) => (
-          <li key={orbit}>
-            {/* Allowed to wrap: "Geostationary transfer orbit (GTO)" is wider
-                than a 320px screen's column. */}
-            <Tag className="whitespace-normal">{orbitName(orbit)}</Tag>
-          </li>
-        ))}
-      </ul>
+      {otherOrbits.length > 0 ? (
+        <p className="mt-8 max-w-[68ch] text-pretty text-text-secondary">
+          {payloadCapabilities.length > 0
+            ? `The record also lists ${formatList(otherOrbits)} as ${otherOrbits.length === 1 ? "a supported destination" : "supported destinations"}, with no published payload figure.`
+            : `The record lists ${formatList(otherOrbits)} as ${otherOrbits.length === 1 ? "a supported destination" : "supported destinations"}.`}
+        </p>
+      ) : null}
     </VehicleProfileSection>
   );
 }

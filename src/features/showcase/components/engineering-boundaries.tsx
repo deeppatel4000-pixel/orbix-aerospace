@@ -47,7 +47,9 @@ export function EngineeringBoundaries() {
             className="grid gap-2 border-b border-border-subtle py-6 last:border-b-0 last:pb-0 md:grid-cols-[minmax(0,20rem)_minmax(0,40rem)] md:gap-10"
             key={boundary.title}
           >
-            <dt className="orbix-h3 text-text-primary">{boundary.title}</dt>
+            <dt className="text-[1.0625rem] leading-snug font-medium text-text-primary">
+              {boundary.title}
+            </dt>
             <dd className="orbix-prose">{boundary.detail}</dd>
           </div>
         ))}

@@ -1,6 +1,9 @@
 import { DataTable } from "@/components/ui/data-table";
 import { formatRocketEngineCycle } from "@/features/rockets/utils";
-import { renderDualMeasurement } from "@/features/vehicles/components/measurement-display";
+import {
+  minimumNote,
+  renderDualMeasurement,
+} from "@/features/vehicles/components/measurement-display";
 import { VehicleProfileSection } from "@/features/vehicles/components/vehicle-profile-section";
 import type {
   ForceMeasurement,
@@ -22,7 +25,7 @@ interface EngineRow {
 /** A plain function, not a component, so the table formats the digits. */
 function thrustCell(measurement: ForceMeasurement | undefined) {
   return measurement ? (
-    renderDualMeasurement(measurement, { qualifier: true })
+    renderDualMeasurement(measurement)
   ) : (
     <span className="font-sans text-muted">Not published</span>
   );
@@ -30,8 +33,10 @@ function thrustCell(measurement: ForceMeasurement | undefined) {
 
 /**
  * Propulsion (spec 9): one row per engine type on each stage element. The
- * engine count and manufacturer sit under the engine name. Each thrust cell
- * gives the published figure, its conversion and the source's qualifier.
+ * engine count and manufacturer sit under the engine name, and the thrust
+ * columns come straight after it, so on a phone the figures are in view
+ * without scrolling; the stage and cycle follow. Each thrust cell gives the
+ * published figure, its conversion and the source's qualifier.
  */
 export function PropulsionPanel({ index, name, stages }: PropulsionPanelProps) {
   const ordered = [...stages].sort((a, b) => a.stageNumber - b.stageNumber);
@@ -47,6 +52,7 @@ export function PropulsionPanel({ index, name, stages }: PropulsionPanelProps) {
       title="Propulsion"
     >
       <DataTable
+        singleLineCells
         caption={`${name} engines by stage`}
         columns={[
           {
@@ -63,12 +69,6 @@ export function PropulsionPanel({ index, name, stages }: PropulsionPanelProps) {
             header: "Engine",
             key: "engine",
           },
-          { cell: ({ stage }) => stage.name, header: "Stage", key: "stage" },
-          {
-            cell: ({ engine }) => formatRocketEngineCycle(engine.cycle),
-            header: "Cycle",
-            key: "cycle",
-          },
           {
             cell: ({ engine }) => thrustCell(engine.thrust.seaLevel),
             header: "Sea level",
@@ -81,8 +81,20 @@ export function PropulsionPanel({ index, name, stages }: PropulsionPanelProps) {
             key: "vacuum",
             numeric: true,
           },
+          { cell: ({ stage }) => stage.name, header: "Stage", key: "stage" },
+          {
+            cell: ({ engine }) => formatRocketEngineCycle(engine.cycle),
+            header: "Cycle",
+            key: "cycle",
+          },
         ]}
         getRowKey={({ engine, stage }) => `${stage.id}-${engine.id}`}
+        note={minimumNote(
+          engineRows.flatMap(({ engine }) => [
+            engine.thrust.seaLevel,
+            engine.thrust.vacuum,
+          ]),
+        )}
         rows={engineRows}
       />
     </VehicleProfileSection>

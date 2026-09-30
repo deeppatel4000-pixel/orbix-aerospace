@@ -62,7 +62,7 @@ describe("MissionViewer", () => {
       />,
     );
 
-    expect(markup).toContain("Mission control viewer");
+    expect(markup).toContain("Custom educational mission");
     expect(markup).toContain("Unified Mission Viewer Test");
     expect(markup).toContain("Mission summary");
     expect(markup).toContain("Mission phases");
@@ -104,8 +104,8 @@ describe("MissionViewer", () => {
 
     expect(markup).toContain("Mission orbit diagram");
     expect(markup).toContain("Transfer path");
-    expect(markup).toContain("Orbit transfer");
-    expect(markup).toContain("Arrival orbit");
+    expect(markup).toContain("Transfer");
+    expect(markup).toContain("Arrival");
   });
 
   it("renders the existing reentry visualization when evaluation output is available", () => {
@@ -120,7 +120,7 @@ describe("MissionViewer", () => {
     expect(markup).toContain("Reentry profile");
     expect(markup).toContain("Unified Viewer Vehicle");
     expect(markup).toContain("Peak heating");
-    expect(markup).toContain("Thermal protection");
+    expect(markup).toContain("TPS");
   });
 
   it("provides keyboard-navigable phase controls", () => {
@@ -157,7 +157,7 @@ describe("MissionViewer", () => {
     expect(markup).toContain("No optional mission systems reported");
     expect(markup).toContain("Orbital visualization unavailable");
     expect(markup).toContain("Reentry visualization unavailable");
-    expect(markup).toContain("Orbit transfer");
+    expect(markup).toContain("Transfer");
     expect(markup).toContain("Label only");
     expect(markup).toContain("Not reported");
   });

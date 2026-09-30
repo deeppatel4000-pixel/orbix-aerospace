@@ -21,6 +21,9 @@ import {
   LabFigure,
   EqDot,
   EQ_SUP,
+  LAB_GROUP,
+  LAB_GROUP_LEGEND,
+  EQ_SUB_CLEAR,
 } from "@/features/engineering-lab/components/shared";
 import type {
   ReentryTrajectoryAnalysis,
@@ -78,9 +81,11 @@ const stateFormatter = new Intl.NumberFormat("en-US", {
   minimumFractionDigits: 2,
 });
 
+// Display only: the table shows density to 4 decimals so its seven
+// columns fit a desktop tool without scrolling. The analysis is unchanged.
 const densityFormatter = new Intl.NumberFormat("en-US", {
-  maximumFractionDigits: 6,
-  minimumFractionDigits: 6,
+  maximumFractionDigits: 4,
+  minimumFractionDigits: 4,
 });
 
 const loadFormatter = new Intl.NumberFormat("en-US", {
@@ -228,7 +233,7 @@ const toolEquation = (
             V<sub>n+1</sub> = V<sub>n</sub>
           </span>{" "}
           <span className={EQ_TERM}>
-            + (g<sub>0</sub> sin|γ|
+            + (g<sub className={EQ_SUB_CLEAR}>0</sub> sin|γ|
           </span>{" "}
           <span className={EQ_TERM}>
             − a<sub>n</sub>) Δt
@@ -260,7 +265,7 @@ const toolEquation = (
       {
         symbol: (
           <>
-            g<sub>0</sub>
+            g<sub className={EQ_SUB_CLEAR}>0</sub>
           </>
         ),
         meaning: "Standard gravity, 9.80665",
@@ -303,8 +308,8 @@ export function ReentryTrajectoryAnalyzer() {
             onKeyDown={focusFirstInvalidFieldOnEnter}
             onSubmit={preventSubmission}
           >
-            <fieldset>
-              <legend className="text-base font-semibold text-foreground">
+            <fieldset className={LAB_GROUP}>
+              <legend className={LAB_GROUP_LEGEND}>
                 Initial trajectory state
               </legend>
               <div className="mt-4 grid gap-5 @min-[36rem]/col:grid-cols-2">
@@ -361,8 +366,8 @@ export function ReentryTrajectoryAnalyzer() {
               </div>
             </fieldset>
 
-            <fieldset className="mt-10">
-              <legend className="text-base font-semibold text-foreground">
+            <fieldset className={LAB_GROUP}>
+              <legend className={LAB_GROUP_LEGEND}>
                 Integration controls (optional)
               </legend>
               <div className="mt-4 grid gap-5 @min-[36rem]/col:grid-cols-2">
@@ -585,7 +590,7 @@ export function ReentryTrajectoryAnalyzer() {
               columns={[
                 {
                   key: "time",
-                  header: "Time",
+                  header: <span className="block">Time</span>,
                   unit: "s",
                   numeric: true,
                   cell: ({ point }) => (
@@ -596,7 +601,7 @@ export function ReentryTrajectoryAnalyzer() {
                 },
                 {
                   key: "altitude",
-                  header: "Altitude",
+                  header: <span className="block">Altitude</span>,
                   unit: "m",
                   numeric: true,
                   cell: ({ point }) => (
@@ -607,7 +612,7 @@ export function ReentryTrajectoryAnalyzer() {
                 },
                 {
                   key: "velocity",
-                  header: "Velocity",
+                  header: <span className="block">Velocity</span>,
                   unit: "m/s",
                   numeric: true,
                   cell: ({ point }) => (
@@ -618,7 +623,7 @@ export function ReentryTrajectoryAnalyzer() {
                 },
                 {
                   key: "density",
-                  header: "Density",
+                  header: <span className="block">Density</span>,
                   unit: "kg/m³",
                   numeric: true,
                   cell: ({ point }) => (
@@ -631,7 +636,7 @@ export function ReentryTrajectoryAnalyzer() {
                 },
                 {
                   key: "dynamic-pressure",
-                  header: "Dynamic pressure",
+                  header: <span className="block">Dynamic pressure</span>,
                   unit: "Pa",
                   numeric: true,
                   cell: ({ point }) => (
@@ -642,7 +647,7 @@ export function ReentryTrajectoryAnalyzer() {
                 },
                 {
                   key: "deceleration",
-                  header: "Deceleration",
+                  header: <span className="block">Deceleration</span>,
                   unit: "m/s²",
                   numeric: true,
                   cell: ({ point }) => (

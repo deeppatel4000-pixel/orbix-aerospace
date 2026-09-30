@@ -1,6 +1,7 @@
 import { Container } from "@/components/layout/container";
 import { ButtonLink } from "@/components/ui/button-link";
 import { Eyebrow } from "@/components/ui/eyebrow";
+import { RegistrationMarks } from "@/components/ui/registration-marks";
 import { getAircraftVisual } from "@/features/aircraft/data/aircraft-visuals";
 import {
   ComparisonControls,
@@ -21,14 +22,29 @@ interface ComparePageProps {
   result: ComparisonResult;
 }
 
+/**
+ * `object-position` for the 4:5 launch vehicle tiles from 64rem only. The
+ * shared `objectPosition` frames the vehicles for the small side thumbnail;
+ * in the taller five-across tile it put the SLS nose tip about 5px under
+ * the photo edge. These keep at least 16px of sky above every nose.
+ */
+const rocketTilePositions: Readonly<Record<string, string>> = {
+  "space-launch-system": "55% 0%",
+};
+const ROCKET_TILE_POSITION = "50% 15%";
+
 function buildThumbnails(options: ComparisonOptions): ComparisonThumbnails {
-  const pick = (visual: ReturnType<typeof getAircraftVisual>) =>
+  const pick = (
+    visual: ReturnType<typeof getAircraftVisual>,
+    wideTilePosition?: string,
+  ) =>
     visual
       ? {
           credit: visual.credit,
           license: visual.license,
           objectPosition: visual.objectPosition,
           src: visual.src,
+          wideTilePosition,
         }
       : undefined;
 
@@ -42,7 +58,10 @@ function buildThumbnails(options: ComparisonOptions): ComparisonThumbnails {
     rockets: Object.fromEntries(
       options.rockets.map((option) => [
         option.id,
-        pick(getRocketVisual(option.id)),
+        pick(
+          getRocketVisual(option.id),
+          rocketTilePositions[option.id] ?? ROCKET_TILE_POSITION,
+        ),
       ]),
     ),
   };
@@ -60,9 +79,14 @@ export function ComparePage({ category, options, result }: ComparePageProps) {
 
   return (
     <>
-      <header className="pt-12 pb-8 lg:pt-12 lg:pb-10">
+      {/* The minor blueprint grid is for hero sections only (spec 6). The
+          registration marks frame the hero like a drawing sheet: their
+          ticks sit on the container's text edges, so the eyebrow, the H1
+          and the lead share the left edge of every section below. */}
+      <header className="orbix-blueprint-minor relative py-4 sm:py-6 lg:py-5">
         <Container>
-          <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_26rem] lg:items-end lg:gap-16">
+          <div className="relative grid gap-6 py-8 lg:grid-cols-[minmax(0,1fr)_26rem] lg:items-end lg:gap-16 lg:py-7">
+            <RegistrationMarks />
             <div>
               <Eyebrow>Published figures, side by side</Eyebrow>
               <h1 className="orbix-display mt-6 text-foreground">
@@ -110,9 +134,11 @@ export function ComparePage({ category, options, result }: ComparePageProps) {
             )}
           </div>
 
+          {/* Below 64rem the rules list above ends on its own hairline, so
+              the links follow it without a second rule. */}
           <nav
             aria-label="Related sections"
-            className="mt-14 flex flex-wrap gap-x-10 gap-y-2 border-t border-border-subtle pt-5"
+            className="mt-10 flex flex-wrap gap-x-10 gap-y-2 lg:mt-14 lg:border-t lg:border-border-subtle lg:pt-5"
           >
             <ButtonLink
               arrow="right"

@@ -24,7 +24,7 @@ interface RocketImageProps {
   /**
    * Which recorded crop to use: `default` (`objectPosition`), `card` (the
    * registry card frame) or `feature` (the card crop, then the wide first
-   * card's crop from 64rem).
+   * card's crop from 40rem).
    */
   framing?: ImageFraming;
   imageClassName?: string;
@@ -80,7 +80,7 @@ export function RocketImage({
         className={cn(
           "object-cover [filter:saturate(0.85)_contrast(1.05)]",
           framing === "feature" &&
-            "object-(--crop-card) lg:object-(--crop-feature)",
+            "object-(--crop-card) sm:object-(--crop-feature)",
           imageClassName,
         )}
         fill

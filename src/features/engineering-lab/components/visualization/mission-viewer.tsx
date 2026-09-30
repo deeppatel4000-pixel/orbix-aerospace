@@ -1,19 +1,24 @@
 "use client";
 
 import type {
+  MissionPresetCategory,
   MissionProfileAnalysis,
   MissionReport,
   VehicleReentryEvaluationAnalysis,
 } from "@/features/engineering-lab/types";
 
 import { HeadingLevel, LabHeading, useHeadingLevel } from "./lab-heading";
+import { MissionIdentity } from "./mission-identity";
 import { MissionOrbitVisualization } from "./mission-orbit-visualization";
 import { MissionTimeline } from "./mission-timeline";
 import { ReentryProfileVisualization } from "./reentry-profile-visualization";
 import { formatLabValue } from "./format-lab-value";
 import { formatFigure } from "@/components/ui/readout";
+import { LabUnit } from "./lab-unit";
+import { THERMAL_MODEL_NOTE } from "./thermal-model-note";
 
 export interface MissionViewerProps {
+  readonly category?: MissionPresetCategory;
   /**
    * Inside Mission control, which already shows the mission's name,
    * description, scope sentence and key values: drop those here and title
@@ -51,12 +56,7 @@ function TelemetryCard({ label, unit, value }: TelemetryCardProps) {
           {displayedValue === undefined
             ? "Not reported"
             : formatFigure(displayedValue)}
-          {/* "50%" with no space, as in every other mission tool. */}
-          {value !== undefined && unit
-            ? unit === "%"
-              ? unit
-              : ` ${unit}`
-            : ""}
+          {value !== undefined && unit ? <LabUnit unit={unit} /> : null}
         </output>
       </dd>
     </div>
@@ -64,6 +64,7 @@ function TelemetryCard({ label, unit, value }: TelemetryCardProps) {
 }
 
 export function MissionViewer({
+  category,
   embedded = false,
   missionProfileAnalysis,
   missionReport,
@@ -83,15 +84,15 @@ export function MissionViewer({
       className="min-w-0 text-foreground"
     >
       {embedded ? null : (
-        <header className="border-b border-border-subtle pb-4">
-          <p className="orbix-label">Mission control viewer</p>
-          <LabHeading className="mt-1" id="unified-mission-viewer-title">
-            {missionReport.missionSummary.missionName}
-          </LabHeading>
+        <MissionIdentity
+          category={category}
+          headingId="unified-mission-viewer-title"
+          missionName={missionReport.missionSummary.missionName}
+        >
           <p className="mt-2 max-w-[68ch] text-sm leading-6 text-muted">
             {missionReport.missionSummary.description}
           </p>
-        </header>
+        </MissionIdentity>
       )}
 
       <HeadingLevel level={sectionLevel}>
@@ -105,27 +106,10 @@ export function MissionViewer({
                 {missionReport.missionAssessment.educationalSummary}
               </p>
             )}
-            <dl className="mt-3 grid gap-x-8 sm:grid-cols-3">
-              {/* Mission control's header already gives this count. */}
-              {embedded ? null : (
-                <div className="border-t border-border-subtle py-2 text-sm sm:col-span-1">
-                  <dt className="text-muted">Analyses resolved</dt>
-                  <dd className="orbix-data mt-1 text-foreground">
-                    <output>
-                      {
-                        missionProfileAnalysis.missionSummaryState
-                          .analysesResolved
-                      }
-                    </output>
-                  </dd>
-                </div>
-              )}
-              <div
-                className={
-                  "border-t border-border-subtle py-2 text-sm " +
-                  (embedded ? "sm:col-span-3" : "sm:col-span-2")
-                }
-              >
+            <dl className="mt-3">
+              {/* The count of systems carries what an "Analyses resolved"
+               * cell beside it would repeat. */}
+              <div className="border-t border-border-subtle py-2 text-sm">
                 <dt className="text-muted">
                   Systems used (
                   {missionReport.missionSummary.systemsUsed.length})
@@ -197,10 +181,15 @@ export function MissionViewer({
                   value={tps?.thermalMargin.marginPercentage}
                 />
               </dl>
+              {thermal ? (
+                <p className="mt-2 max-w-[68ch] text-[0.8125rem] leading-5 text-muted">
+                  {THERMAL_MODEL_NOTE}
+                </p>
+              ) : null}
             </section>
           )}
 
-          <p className="border-t border-border-subtle pt-4 text-sm leading-6 text-muted">
+          <p className="border-t border-border-subtle pt-4 text-[0.8125rem] leading-5 text-muted">
             Educational mission viewer. Every value and recommendation shown
             here comes from the supplied report and completed analysis objects;
             this view performs no engineering calculations.

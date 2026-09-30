@@ -11,8 +11,10 @@ interface LabFigureProps {
 
 /**
  * A calculated figure and its unit inside a `ReadoutGrid` value (spec 5
- * and 8). The figure and its unit sit in one `nowrap` span, so
- * "1,836,922.53 Pa" never splits; a note after the figure wraps under it.
+ * and 8). The number is `nowrap` and never splits; its unit follows after
+ * a real space and wraps under the number only when the two do not fit
+ * the compartment, so a figure never overflows its grid column. A note
+ * after the figure wraps under it.
  * The unit is a smaller muted span after a narrow real space. A degree
  * sign is the exception: it is part of the number, so it follows the
  * figure at full size with no space ("39.3139°"). The text content stays
@@ -22,15 +24,19 @@ interface LabFigureProps {
 export function LabFigure({ children, unit }: LabFigureProps) {
   if (unit === "°") {
     return (
-      <span className="lab-figure whitespace-nowrap">
-        <span className="lab-figure__value">{formatFigure(children)}°</span>
+      <span className="lab-figure">
+        <span className="lab-figure__value whitespace-nowrap">
+          {formatFigure(children)}°
+        </span>
       </span>
     );
   }
 
   return (
-    <span className="lab-figure whitespace-nowrap">
-      <span className="lab-figure__value">{formatFigure(children)}</span>
+    <span className="lab-figure">
+      <span className="lab-figure__value whitespace-nowrap">
+        {formatFigure(children)}
+      </span>
       {unit ? (
         <>
           <span className="lab-figure__gap"> </span>
@@ -89,6 +95,60 @@ export const EQ_CONT = "lab-eq-line lab-eq-line--cont";
  * those take a whole cell and leave a false space after them.
  */
 export const EQ_SUP = "lab-eq-sup";
+
+/**
+ * A subscript after a letter with a descender (p₀, g₀): without a little
+ * room the lowered figure tucks under the descender and reads as "po".
+ * Use it as `<sub className={EQ_SUB_CLEAR}>0</sub>` after p, g, q or y.
+ */
+export const EQ_SUB_CLEAR = "lab-eq-sub-clear";
+
+/**
+ * A stacked fraction inside an equation: the numerator over a 1px rule
+ * over the denominator, so neither needs an outer bracket.
+ */
+export function EqFrac({
+  den,
+  num,
+  power,
+}: {
+  den: ReactNode;
+  num: ReactNode;
+  /**
+   * An exponent on the whole fraction: the fraction is then set in
+   * parentheses drawn tall enough to hold it, with the exponent after.
+   */
+  power?: ReactNode;
+}) {
+  const fraction = (
+    <span className="lab-eq-frac">
+      <span>{num}</span>
+      <span>{den}</span>
+    </span>
+  );
+
+  if (power === undefined) {
+    return fraction;
+  }
+
+  return (
+    <>
+      <span className="lab-eq-paren">(</span>
+      {fraction}
+      <span className="lab-eq-paren">)</span>
+      <sup className={EQ_SUP}>{power}</sup>
+    </>
+  );
+}
+
+/**
+ * Class names for a form group: put `LAB_GROUP` on each top-level
+ * `<fieldset>` of a tool's form and `LAB_GROUP_LEGEND` on its legend. The
+ * legend is a small B612 Mono caps label; every group after the first
+ * opens 32px down under a 1px rule (see `calculator-card.module.css`).
+ */
+export const LAB_GROUP = "lab-group";
+export const LAB_GROUP_LEGEND = "lab-group-legend";
 
 /**
  * A multiplication dot. B612 Mono draws "·" at the left of its cell, so a

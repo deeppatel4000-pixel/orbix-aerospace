@@ -21,6 +21,10 @@ export function useAnnotationFontSize(
 ) {
   const svgRef = useRef<SVGSVGElement>(null);
   const [fontSize, setFontSize] = useState(ANNOTATION_PX);
+  // False until the drawing has been measured on the client. Before that
+  // (server render, or while the page hydrates) a caller can hold the
+  // 11px floor with container-query CSS instead.
+  const [measured, setMeasured] = useState(false);
 
   useEffect(() => {
     const svg = svgRef.current;
@@ -30,6 +34,7 @@ export function useAnnotationFontSize(
       if (width <= 0) return;
       const exact = (ANNOTATION_PX * viewWidth) / width;
       setFontSize(mode === "exact" ? exact : Math.max(ANNOTATION_PX, exact));
+      setMeasured(true);
     }
 
     update(svg.getBoundingClientRect().width);
@@ -41,5 +46,5 @@ export function useAnnotationFontSize(
     return () => observer.disconnect();
   }, [enabled, mode, viewWidth]);
 
-  return { fontSize, svgRef };
+  return { fontSize, measured, svgRef };
 }

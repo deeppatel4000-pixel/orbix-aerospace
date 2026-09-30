@@ -21,6 +21,8 @@ import {
   EqDot,
   EqSubSup,
   EQ_SUP,
+  LAB_GROUP,
+  LAB_GROUP_LEGEND,
 } from "@/features/engineering-lab/components/shared";
 import type {
   HohmannTransferAnalysisInputs,
@@ -302,10 +304,8 @@ export function HohmannTransferAnalyzer() {
             onKeyDown={focusFirstInvalidFieldOnEnter}
             onSubmit={preventSubmission}
           >
-            <fieldset>
-              <legend className="text-base font-semibold text-foreground">
-                Initial orbit
-              </legend>
+            <fieldset className={LAB_GROUP}>
+              <legend className={LAB_GROUP_LEGEND}>Initial orbit</legend>
               <div className="mt-4">
                 <CalculatorNumberField
                   error={errors.initialAltitudeMetres}
@@ -320,10 +320,8 @@ export function HohmannTransferAnalyzer() {
               </div>
             </fieldset>
 
-            <fieldset className="mt-10">
-              <legend className="text-base font-semibold text-foreground">
-                Final orbit
-              </legend>
+            <fieldset className={LAB_GROUP}>
+              <legend className={LAB_GROUP_LEGEND}>Final orbit</legend>
               <div className="mt-4">
                 <CalculatorNumberField
                   error={errors.finalAltitudeMetres}
@@ -338,8 +336,8 @@ export function HohmannTransferAnalyzer() {
               </div>
             </fieldset>
 
-            <fieldset className="mt-10">
-              <legend className="text-base font-semibold text-foreground">
+            <fieldset className={LAB_GROUP}>
+              <legend className={LAB_GROUP_LEGEND}>
                 Central-body constants
               </legend>
               <div className="mt-4 grid gap-5">

@@ -56,24 +56,16 @@ export function payloadConfiguration(capability: PayloadCapability) {
 }
 
 /**
- * Liftoff thrust for cards, spec panels and record rows, always in MN so
- * figures published in kN and in MN compare at a glance. A kN figure is
- * divided by 1,000 by moving the decimal point only, with no rounding
- * ("7,686 kN" is shown as "7.686 MN"). A published minimum keeps its plus
- * sign, as in `measurementParts`.
+ * Liftoff thrust for cards, spec panels and record rows, in the unit the
+ * source published ("7,686 kN", "34.5 MN"), so the figure reads the same
+ * as in the profile's Specifications table. A published minimum keeps its
+ * plus sign, as in `measurementParts`.
  */
 export function thrustParts(thrust: Measurement<MeasurementUnit>) {
-  if (thrust.unit !== "kN") return measurementParts(thrust);
-  const floor = thrust.qualifier === "minimum" ? "+" : "";
-  return {
-    unit: "MN",
-    value: `${new Intl.NumberFormat("en-US", {
-      maximumFractionDigits: 6,
-    }).format(thrust.value / 1000)}${floor}`,
-  };
+  return measurementParts(thrust);
 }
 
-/** `thrustParts` as one string: "7.686 MN". */
+/** `thrustParts` as one string: "7,686 kN". */
 export function thrustText(thrust: Measurement<MeasurementUnit>) {
   const { unit, value } = thrustParts(thrust);
   return unit ? `${value} ${unit}` : value;

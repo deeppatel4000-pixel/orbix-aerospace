@@ -41,33 +41,34 @@ function getVisual(category: ComparisonCategory, id: string) {
 /**
  * Column geometry shared by the header band and every group table, so the
  * groups read as one sheet with one set of columns. The first column is
- * 6rem on a phone (sticky there), 10rem from 48rem and 16rem from 64rem;
- * vehicle columns share the rest. Below 48rem every vehicle column is at
- * least 8.125rem: 110px of content inside 10px padding, wide enough at
- * 14px for the longest figure with its unit and for single words such as
- * "Reconnaissance", so nothing is broken mid-word. Two vehicles fit side
- * by side from about 24rem; narrower than that, and for three vehicles,
- * the sheet scrolls sideways instead.
+ * 6.25rem on a phone (sticky there, wide enough for "Manufacturer"), 10rem
+ * from 48rem and 16rem from 64rem; vehicle columns share the rest. Below
+ * 48rem every vehicle column is at least 8rem: 112px of content inside 8px
+ * padding, measured to hold the widest unbroken designation
+ * ("2 × F119-PW-100", about 109px at 13px medium), the longest figure with
+ * its unit, and single words such as "Reconnaissance". Two vehicles fit
+ * side by side from 24.375rem (a 390px phone); narrower than that, and for
+ * three vehicles, the sheet scrolls sideways instead.
  */
 const sheetWidth: Record<number, string> = {
-  2: "min-w-[22rem] md:min-w-[32rem] lg:min-w-0",
-  3: "min-w-[30.5rem] md:min-w-[43.5rem] lg:min-w-0",
+  2: "min-w-[22.25rem] md:min-w-[32rem] lg:min-w-0",
+  3: "min-w-[30.25rem] md:min-w-[43.5rem] lg:min-w-0",
 };
 
 /**
- * Hides the sideways-scroll hint from the viewport width at which the
- * sheet fits: its minimum width plus the 1rem container gutters and the
- * 1px outline on each side (the hint is only shown below 40rem, where the
- * gutters are 1rem).
+ * Hides the sideways-scroll hint once the sheet fits: its minimum width
+ * plus the 1px outline on each side. Keyed to the width of the column the
+ * sheet sits in (a size container), not the viewport, so a browser that
+ * reserves a scrollbar gutter still shows the hint when the sheet overflows.
  */
 const hintVisibility: Record<number, string> = {
-  2: "min-[24.25rem]:hidden",
-  3: "min-[32.75rem]:hidden",
+  2: "@min-[22.375rem]/sheet:hidden",
+  3: "@min-[30.375rem]/sheet:hidden",
 };
 
 const bandColumns: Record<number, string> = {
-  2: "grid-cols-[6rem_repeat(2,minmax(0,1fr))] md:grid-cols-[10rem_repeat(2,minmax(0,1fr))] lg:grid-cols-[16rem_repeat(2,minmax(0,1fr))]",
-  3: "grid-cols-[6rem_repeat(3,minmax(0,1fr))] md:grid-cols-[10rem_repeat(3,minmax(0,1fr))] lg:grid-cols-[16rem_repeat(3,minmax(0,1fr))]",
+  2: "grid-cols-[6.25rem_repeat(2,minmax(0,1fr))] md:grid-cols-[10rem_repeat(2,minmax(0,1fr))] lg:grid-cols-[16rem_repeat(2,minmax(0,1fr))]",
+  3: "grid-cols-[6.25rem_repeat(3,minmax(0,1fr))] md:grid-cols-[10rem_repeat(3,minmax(0,1fr))] lg:grid-cols-[16rem_repeat(3,minmax(0,1fr))]",
 };
 
 const stripColumns: Record<number, string> = {
@@ -84,7 +85,7 @@ const stripColumns: Record<number, string> = {
  */
 const joinedTables = cn(
   "[&_table]:w-full [&_table]:table-fixed",
-  "[&_tr>:first-child]:w-24 md:[&_tr>:first-child]:w-40 lg:[&_tr>:first-child]:w-64",
+  "[&_tr>:first-child]:w-[6.25rem] md:[&_tr>:first-child]:w-40 lg:[&_tr>:first-child]:w-64",
   // Each table keeps its real header row for assistive technology, and the
   // fixed layout takes its column widths from it, so it stays in the table
   // at zero height instead of being taken out of flow (sr-only would drop
@@ -92,12 +93,12 @@ const joinedTables = cn(
   "[&_thead_th]:h-0 [&_thead_th]:border-0 [&_thead_th]:p-0 [&_thead_th]:text-[0px] [&_thead_th]:leading-[0]",
   // No hyphenation: the column widths above fit whole words, and
   // break-word only guards against an unforeseen long token.
-  "max-md:[&_:is(th,td)]:px-2.5 [&_tbody_:is(th,td)]:[overflow-wrap:break-word]",
+  "max-md:[&_th]:px-2.5 max-md:[&_td]:px-2 [&_tbody_:is(th,td)]:[overflow-wrap:break-word]",
   // The caption and the scroll-cue frame are the root's two children; the
   // scroll region sits in the frame.
   "[&>*>[role=region]]:overflow-visible [&>*>[role=region]]:rounded-none [&>*>[role=region]]:border-0",
   "[&>p:first-child]:mb-0 [&>p:first-child]:px-3 [&>p:first-child]:pt-6 [&>p:first-child]:pb-3 md:[&>p:first-child]:px-4",
-  "max-md:[&>p:first-child]:sticky max-md:[&>p:first-child]:left-0 max-md:[&>p:first-child]:max-w-[calc(100vw-2rem-2px)]",
+  "max-md:[&>p:first-child]:sticky max-md:[&>p:first-child]:left-0 max-md:[&>p:first-child]:max-w-[100cqw]",
 );
 
 /**
@@ -147,13 +148,14 @@ export function ComparisonTable({ result }: ComparisonTableProps) {
       key: "characteristic",
       header: "Characteristic",
       cell: (row) => {
-        // Below 48rem the 6rem sticky column is too narrow for the row
-        // description, so it moves into the "About" disclosure there. A row
-        // without a disclosure keeps its description in the cell.
+        // Below 48rem the 6.25rem sticky column is too narrow for a
+        // paragraph, so a row's description and its "About"
+        // note move to the full-width list under the group there. A row
+        // without a note keeps its description in the cell.
         const hasEducation =
           getRowEducation(result.category, row.id) !== undefined;
         return (
-          /* The label, its description, then the "What this measures"
+          /* The label, its description, then the "About"
              disclosure on its own line, so the labels in the column share
              one left edge and read as a list. */
           <span className="flex flex-col items-start">
@@ -172,8 +174,7 @@ export function ComparisonTable({ result }: ComparisonTableProps) {
             ) : null}
             <ComparisonRowEducation
               category={result.category}
-              className="mt-1"
-              description={row.description}
+              className="mt-1 max-md:hidden"
               label={row.label}
               rowId={row.id}
             />
@@ -218,12 +219,12 @@ export function ComparisonTable({ result }: ComparisonTableProps) {
           is centred like the names beside it, so the label and the names
           share one optical line. */}
       <span className="orbix-caps sticky left-0 z-10 flex items-center self-stretch border-r border-border bg-surface px-2.5 py-3 leading-5 text-muted md:static md:border-r-0 md:px-4">
-        {/* Too wide for the 6rem phone column. */}
+        {/* Too wide for the 6.25rem phone column. */}
         <span className="max-md:hidden">Characteristic</span>
       </span>
       {result.vehicles.map((vehicle) => (
         <span
-          className="font-display px-2.5 py-3 text-base leading-5 tracking-[-0.02em] text-foreground md:px-4"
+          className="font-display px-2 py-3 text-base leading-5 tracking-[-0.02em] text-foreground md:px-4"
           key={vehicle.id}
         >
           {vehicle.name}
@@ -353,14 +354,19 @@ export function ComparisonTable({ result }: ComparisonTableProps) {
       ) : null}
 
       {count > 1 ? (
-        <p className={cn("orbix-label mt-6 md:hidden", hintVisibility[count])}>
-          If the sheet is wider than the screen, scroll it sideways; the
-          characteristic column stays in view.
-        </p>
+        <div className="@container/sheet md:hidden">
+          <p className={cn("orbix-label mt-6", hintVisibility[count])}>
+            If the sheet is wider than the screen, scroll it sideways; the
+            characteristic column stays in view.
+          </p>
+        </div>
       ) : null}
 
       <div className="mt-6 rounded-lg border border-border bg-surface lg:mt-0">
-        <div className="overflow-x-auto rounded-[7px] lg:overflow-visible">
+        {/* A size container, so the caption and the notes list can match
+            the visible width of the sheet (100cqw) while it scrolls
+            sideways, whatever the scrollbar takes. */}
+        <div className="@container overflow-x-auto rounded-[7px] lg:overflow-visible">
           <div className={sheetWidth[count]}>
             {nameBand(
               "hidden lg:sticky lg:top-16 lg:z-20 lg:grid lg:rounded-t-[7px]",
@@ -401,6 +407,34 @@ export function ComparisonTable({ result }: ComparisonTableProps) {
                   rows={group.rows}
                 />
                 {nameBand("order-2 border-t lg:hidden")}
+                {/* Below 48rem the rows' notes follow the group at the
+                    visible width of the sheet, held in view like the
+                    caption while the sheet scrolls sideways. */}
+                {group.rows.some((row) =>
+                  getRowEducation(result.category, row.id),
+                ) ? (
+                  <ul
+                    aria-label={"About the rows in " + group.label}
+                    className="sticky left-0 order-4 max-w-[100cqw] border-t border-border px-3 py-1 md:hidden"
+                  >
+                    {group.rows
+                      .filter((row) => getRowEducation(result.category, row.id))
+                      .map((row) => (
+                        <li
+                          className="border-border-subtle not-first:border-t"
+                          key={row.id}
+                        >
+                          <ComparisonRowEducation
+                            category={result.category}
+                            description={row.description}
+                            label={row.label}
+                            rowId={row.id}
+                            variant="list"
+                          />
+                        </li>
+                      ))}
+                  </ul>
+                ) : null}
               </div>
             ))}
           </div>

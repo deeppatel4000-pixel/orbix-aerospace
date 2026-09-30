@@ -7,7 +7,6 @@ import { analyzeShockPressureLoss } from "@/features/engineering-lab/analysis";
 import {
   EQ_CONT,
   EQ_LINE,
-  EQ_SUP,
   EQ_TERM,
   CalculatorNumberField,
   focusFirstInvalidField,
@@ -22,6 +21,8 @@ import {
   LabSymbol,
   EqDot,
   EqSubSup,
+  EqFrac,
+  EQ_SUB_CLEAR,
 } from "@/features/engineering-lab/components/shared";
 import type {
   ShockPressureLossAnalysis,
@@ -161,43 +162,52 @@ const toolEquation = (
       <>
         <span className={EQ_LINE}>
           <span className={EQ_TERM}>
-            p<sub>t2</sub>/p<sub>t1</sub>
+            p<sub className={EQ_SUB_CLEAR}>t2</sub>/p
+            <sub className={EQ_SUB_CLEAR}>t1</sub>
           </span>
         </span>
+        {/* Stacked fractions in tall parentheses, so one bracket family
+            is used: B612 Mono draws "(" and "[" almost alike. */}
         <span className={EQ_CONT}>
           <span className={EQ_TERM}>
-            = [(γ+1)M
-            <EqSubSup sub="n" sup="2" />
-          </span>
-          <wbr />
-          <span className={EQ_TERM}>
-            /((γ−1)M
-            <EqSubSup sub="n" sup="2" />
-          </span>
-          <wbr />
-          <span className={EQ_TERM}>
-            +2)]<sup className={EQ_SUP}>γ/(γ−1)</sup>
+            ={" "}
+            <EqFrac
+              den={
+                <>
+                  (γ−1)M
+                  <EqSubSup sub="n" sup="2" /> + 2
+                </>
+              }
+              num={
+                <>
+                  (γ+1)M
+                  <EqSubSup sub="n" sup="2" />
+                </>
+              }
+              power="γ/(γ−1)"
+            />
           </span>
         </span>
         <span className={EQ_CONT}>
           <span className={EQ_TERM}>
             <EqDot />
-            [(γ+1)
-          </span>
-          <wbr />
-          <span className={EQ_TERM}>
-            /(2γM
-            <EqSubSup sub="n" sup="2" />
-          </span>
-          <wbr />
-          <span className={EQ_TERM}>
-            −(γ−1))]<sup className={EQ_SUP}>1/(γ−1)</sup>
+            <EqFrac
+              den={
+                <>
+                  2γM
+                  <EqSubSup sub="n" sup="2" /> − (γ−1)
+                </>
+              }
+              num="γ+1"
+              power="1/(γ−1)"
+            />
           </span>
         </span>
         <span className={EQ_LINE}>
           <span className={EQ_TERM}>Loss</span>{" "}
           <span className={EQ_TERM}>
-            = (1−p<sub>t2</sub>/p<sub>t1</sub>)
+            = (1−p<sub className={EQ_SUB_CLEAR}>t2</sub>/p
+            <sub className={EQ_SUB_CLEAR}>t1</sub>)
           </span>
           <wbr />
           <span className={EQ_TERM}>×100%</span>
@@ -223,7 +233,8 @@ const toolEquation = (
       {
         symbol: (
           <>
-            p<sub>t1</sub>, p<sub>t2</sub>
+            p<sub className={EQ_SUB_CLEAR}>t1</sub>, p
+            <sub className={EQ_SUB_CLEAR}>t2</sub>
           </>
         ),
         meaning: "Total pressure before and after the shock",

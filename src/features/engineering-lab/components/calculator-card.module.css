@@ -28,6 +28,12 @@
   padding: var(--space-5) 0 0;
 }
 
+/* The H2 is set tight (line-height about 0.95), so the lead needs 16px
+ * of air under its descenders, not the 8px the markup gives it. */
+.header > p:last-child {
+  margin-top: var(--space-4);
+}
+
 .workspace {
   padding: var(--space-6) 0 0;
 }
@@ -94,6 +100,37 @@
   width: 4.5rem;
 }
 
+/* A form group's legend (`LAB_GROUP_LEGEND`): a small label like the
+ * result-sheet heads, B612 Mono 11px caps, muted. Every group except the
+ * form's first opens 32px down with a 1px rule and 16px under it (a group
+ * nested in a wrapper, such as a vehicle, counts as a later group), so a group break is
+ * never mistaken for one more field label. The fieldsets have no border,
+ * so the legend is an ordinary full-width block. */
+.workspace :global(.lab-group-legend) {
+  color: var(--orbix-text-muted);
+  display: block;
+  font-family: var(--font-telemetry);
+  font-size: var(--text-micro);
+  font-weight: 400;
+  letter-spacing: var(--tracking-caps);
+  line-height: 1.35;
+  padding: 0;
+  text-transform: uppercase;
+  width: 100%;
+}
+
+.workspace :global(fieldset.lab-group:not(form > fieldset:first-of-type)) {
+  margin-top: var(--space-6);
+}
+
+.workspace
+  :global(
+    fieldset.lab-group:not(form > fieldset:first-of-type) > .lab-group-legend
+  ) {
+  border-top: 1px solid var(--orbix-border);
+  padding-top: var(--space-4);
+}
+
 /* ==================================================================== *
  * EQUATIONS: the lab's own spans inside `EquationBlock`'s expression.
  * The block keeps the primitive's size and panel. Terms are short
@@ -154,6 +191,55 @@
   grid-column: 1;
 }
 
+/* A subscript after a letter with a descender (p, g, q, y): the lowered
+ * figure tucks under the descender and "p₀" reads as "po", so it gets a
+ * little room of its own (`EQ_SUB_CLEAR`). */
+.workspace :global(.lab-eq-sub-clear) {
+  margin-inline-start: 0.08em;
+}
+
+/* A stacked fraction (`EqFrac`): numerator, a 1px rule, denominator, so
+ * the fraction bar is the only outer grouping. The fraction sits on the
+ * math axis of the line around it. */
+.workspace :global(.lab-eq-frac) {
+  display: inline-grid;
+  grid-template-rows: auto auto;
+  justify-items: center;
+  text-indent: 0;
+  vertical-align: middle;
+}
+
+.workspace :global(.lab-eq-frac > :first-child) {
+  border-bottom: 1px solid currentColor;
+  padding: 0 0.2em 0.1em;
+}
+
+.workspace :global(.lab-eq-frac > :last-child) {
+  padding: 0.15em 0.2em 0;
+}
+
+/* Parentheses around a stacked fraction (`EqFrac` with `power`), drawn
+ * tall enough to enclose both rows. The transform leaves the advance and
+ * the line box unchanged. */
+.workspace :global(.lab-eq-paren) {
+  display: inline-block;
+  line-height: 1;
+  transform: scaleY(2.2);
+  vertical-align: middle;
+}
+
+/* An expression of three or more lines is set smaller (spec 8 allows 1.5
+ * to 2rem), so a tall block of relations does not push the form below
+ * the fold or dwarf a short form. The primitive keeps its own size for
+ * one- and two-line equations. */
+.workspace
+  :global(
+    .orbix-equation__expr:has(.lab-eq-line ~ .lab-eq-line ~ .lab-eq-line)
+  ) {
+  font-size: clamp(1.0625rem, 4.5vw, 1.5rem);
+  line-height: 1.25;
+}
+
 /* ==================================================================== *
  * RESULT PANEL BODY: no padding of its own. A readout grid placed
  * directly in it runs edge to edge; every other child gets the inset.
@@ -168,24 +254,25 @@
 }
 
 /* Inputs edited since the last calculation: the figures stay in place,
- * muted, under a first compartment row saying so, until the next submit.
- * The row is edge to edge over a 1px rule, like a readout grid head, and
- * set in primary text so it leads the muted figures below it. */
-.workspace :global(.lab-result-body > .lab-result-stale) {
-  border-bottom: 1px solid var(--orbix-border);
+ * muted, until the next submit, and the head says so beside the title
+ * (sans 500, text-sm, primary text, so it leads the muted figures). Only
+ * tools that calculate on submit render the slot (`.lab-result-head`).
+ * The slot is always there for them and never wraps, so the head is one
+ * row empty or filled; a long title wraps instead. */
+.workspace :global(.lab-result-head) {
+  align-items: baseline;
+  column-gap: var(--space-4);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+
+.workspace :global(.lab-result-head > .lab-result-stale) {
   color: var(--orbix-text-primary);
   font-size: 0.875rem;
   font-weight: 500;
-  line-height: 1.4;
+  line-height: 1.25rem;
   margin: 0;
-  padding: 0.625rem var(--space-4);
-}
-
-.workspace
-  :global(
-    .lab-result-body > .lab-result-stale + .lab-readout-grid:not(:first-child)
-  ) {
-  border-top: 0;
+  white-space: nowrap;
 }
 
 .workspace :global(.lab-result-body[data-stale] dd),
@@ -196,11 +283,6 @@
 @container col (min-width: 30rem) {
   .workspace :global(.lab-result-body > :not(.lab-readout-grid)) {
     margin: var(--space-5);
-  }
-
-  .workspace :global(.lab-result-body > .lab-result-stale) {
-    margin: 0;
-    padding-inline: var(--space-5);
   }
 }
 
@@ -271,6 +353,7 @@
 
 .workspace :global(.lab-readout-grid dt) {
   color: var(--orbix-text-muted);
+  overflow-wrap: break-word;
   font-family: var(--font-telemetry);
   font-size: var(--text-micro);
   font-weight: 400;
@@ -319,11 +402,12 @@
  * compartments share rows, and the last one spans what is left of its
  * row, so no empty cell is left. The `of S` counts skip primaries. Each
  * rule in the 40rem block has the same specificity as the 19rem rule it
- * replaces, so source order decides. A column never shrinks below its
- * widest unbreakable figure. */
+ * replaces, so source order decides. Columns are `minmax(0, 1fr)`: the
+ * grid is never wider than the result panel. A figure that does not fit
+ * its column drops its unit to a second line; the number never breaks. */
 @container readout (min-width: 19rem) {
   .workspace :global(.lab-readout-grid:not([data-columns="1"]) > dl) {
-    grid-template-columns: repeat(2, minmax(min-content, 1fr));
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .workspace
@@ -349,7 +433,7 @@
 
 @container readout (min-width: 40rem) {
   .workspace :global(.lab-readout-grid[data-columns="3"] > dl) {
-    grid-template-columns: repeat(3, minmax(min-content, 1fr));
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
   .workspace
@@ -391,7 +475,7 @@
       .lab-readout-grid:not([data-columns="1"])
         > dl:not(:has(> div:not(:has(.orbix-readout-lg))))
     ) {
-    grid-template-columns: repeat(2, minmax(min-content, 1fr));
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .workspace
@@ -440,12 +524,12 @@
 }
 
 /* ==================================================================== *
- * FIGURES: the number never breaks; the unit is smaller and muted. A
- * second figure for the same quantity (the g load beside m/s²) is a
- * muted line under the first.
+ * FIGURES: the number never breaks; the unit is smaller and muted, and
+ * wraps under the number when the two do not fit one column. A second
+ * figure for the same quantity (the g load beside m/s²) is a muted line
+ * under the first.
  * ==================================================================== */
 
-.workspace :global(.lab-figure),
 .workspace :global(.lab-figure__value),
 .workspace :global(.lab-figure__unit) {
   white-space: nowrap;

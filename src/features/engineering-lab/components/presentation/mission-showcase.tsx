@@ -4,8 +4,10 @@ import { useEffect, useReducer, type KeyboardEvent } from "react";
 import { Pause, Play } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { TRANSPORT_ROW_CLASS } from "../visualization/transport-row";
 import type {
   MissionInsightsAnalysis,
+  MissionPresetCategory,
   MissionProfileAnalysis,
   MissionReport,
 } from "@/features/engineering-lab/types";
@@ -13,9 +15,10 @@ import type {
 import { SHOWCASE_PHASES, ShowcasePhase } from "./showcase-phase";
 import { ShowcaseStage } from "./showcase-stage";
 import { ShowcaseTelemetry } from "./showcase-telemetry";
-import { LabHeading } from "../visualization/lab-heading";
+import { MissionIdentity } from "../visualization/mission-identity";
 
 export interface MissionShowcaseProps {
+  readonly category?: MissionPresetCategory;
   readonly insights?: MissionInsightsAnalysis;
   readonly missionProfile: MissionProfileAnalysis;
   readonly report?: MissionReport;
@@ -80,6 +83,7 @@ export function missionShowcaseReducer(
 }
 
 export function MissionShowcase({
+  category,
   insights,
   missionProfile,
   report,
@@ -128,19 +132,15 @@ export function MissionShowcase({
       className="min-w-0 text-foreground"
       onKeyDown={handleKeyboard}
     >
-      <header className="border-b border-border-subtle pb-4">
-        <p className="orbix-label">Mission walkthrough</p>
-        <LabHeading className="mt-1">{missionProfile.missionName}</LabHeading>
-        <p className="mt-2 max-w-[68ch] text-sm leading-6 text-muted">
-          Steps through the completed results one phase at a time. It is a
-          presentation of existing values, not a flight simulation.
-        </p>
-      </header>
+      <MissionIdentity
+        category={category}
+        missionName={missionProfile.missionName}
+      />
 
       <div className="space-y-6 pt-6">
         <div
           aria-label="Walkthrough controls"
-          className="flex flex-wrap items-center gap-2"
+          className={TRANSPORT_ROW_CLASS}
           role="group"
         >
           {/* One primary toggle, as in the replay controls. It is never
@@ -189,7 +189,7 @@ export function MissionShowcase({
           <Button
             aria-label="Restart mission showcase"
             onClick={() => dispatch({ type: "restart" })}
-            variant="secondary"
+            variant="ghost"
           >
             Restart
           </Button>
@@ -230,10 +230,11 @@ export function MissionShowcase({
           className="text-sm leading-6 text-muted"
           id="mission-showcase-keyboard-help"
         >
-          Play advances one phase every few seconds and stops at the last phase,
-          where Play starts again from phase 1. With focus inside the
-          walkthrough, the left and right arrow keys change phase and Home
-          restarts.
+          The walkthrough presents values that were already calculated; it is
+          not a flight simulation. Play advances one phase every few seconds and
+          stops at the last phase, where Play starts again from phase 1. With
+          focus inside the walkthrough, the left and right arrow keys change
+          phase and Home restarts.
         </p>
         <p aria-live="polite" className="sr-only" role="status">
           Mission showcase phase {state.currentPhaseIndex + 1}:{" "}

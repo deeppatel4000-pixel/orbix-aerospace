@@ -52,7 +52,7 @@ export function LearnIntro({ areas }: LearnIntroProps) {
                 </ButtonLink>
               ) : null}
             </div>
-            <p className="mt-10 max-w-[48ch] text-sm leading-6 text-text-muted">
+            <p className="mt-10 max-w-[37rem] text-sm leading-6 text-pretty text-text-muted">
               This page explains general theory. Its two diagrams are drawn from
               preset inputs by the same components the Engineering Lab and
               Showcase use. The Engineering Lab uses simplified models intended

@@ -17,6 +17,12 @@ export interface DataTableColumn<Row> {
   readonly numeric?: boolean;
   /** Unit shown in the header after the label, for example "km/s". */
   readonly unit?: string;
+  /**
+   * Running text, such as notes, that may wrap below 48rem in a table with
+   * `singleLineCells`, where every other column stays on one line. A wrap
+   * column is set 18rem wide there so it reads as a short paragraph.
+   */
+  readonly wrap?: boolean;
 }
 
 export interface DataTableProps<Row> {
@@ -33,6 +39,13 @@ export interface DataTableProps<Row> {
   /** A note under the table, for example the source of the figures. */
   note?: ReactNode;
   rows: readonly Row[];
+  /**
+   * Below 48rem, keep every cell on one line (except `wrap` columns) with
+   * the first column 8.5rem wide (its text wraps), and let the table
+   * scroll sideways, for spec sheets whose figures and short labels should
+   * never break mid-phrase. Default false: cells wrap as usual.
+   */
+  singleLineCells?: boolean;
   /** Keep the first column in view while scrolling. Default true. */
   stickyFirstColumn?: boolean;
 }
@@ -49,6 +62,7 @@ export function DataTable<Row>({
   getRowKey,
   note,
   rows,
+  singleLineCells = false,
   stickyFirstColumn = true,
 }: DataTableProps<Row>) {
   const captionId = useId();
@@ -70,7 +84,13 @@ export function DataTable<Row>({
           role="region"
           tabIndex={0}
         >
-          <table aria-labelledby={captionId} className="orbix-table">
+          {/* With `singleLineCells`, below 48rem the table is at least as
+              wide as its content, so figures and labels never wrap
+              mid-phrase, and the box scrolls sideways instead. */}
+          <table
+            aria-labelledby={captionId}
+            className={cn("orbix-table", singleLineCells && "max-md:min-w-max")}
+          >
             <thead>
               <tr>
                 {columns.map((column) => (
@@ -91,7 +111,18 @@ export function DataTable<Row>({
               {rows.map((row, rowIndex) => (
                 <tr key={getRowKey(row, rowIndex)}>
                   {columns.map((column, columnIndex) => {
-                    const cellClass = column.numeric ? "orbix-num" : undefined;
+                    const cellClass =
+                      cn(
+                        column.numeric && "orbix-num",
+                        singleLineCells &&
+                          columnIndex === 0 &&
+                          "max-md:w-[8.5rem] max-md:min-w-[8.5rem]",
+                        singleLineCells &&
+                          columnIndex > 0 &&
+                          (column.wrap
+                            ? "max-md:w-[18rem] max-md:min-w-[18rem]"
+                            : "max-md:whitespace-nowrap"),
+                      ) || undefined;
                     const content = column.numeric
                       ? formatFigure(column.cell(row))
                       : column.cell(row);

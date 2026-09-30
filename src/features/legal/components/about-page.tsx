@@ -32,7 +32,8 @@ function Separator() {
 const PLATE_AIRCRAFT_ID = "f-15-eagle";
 
 /**
- * The page's one photograph: a framed 16:9 plate on the wide track with
+ * The page's one photograph: a framed plate at the photo's native
+ * 1920:1345 ratio, so the whole aircraft shows, on the wide track with
  * the credit, licence and source underneath in B612 Mono (spec 8). It has
  * no registration marks: those are for hero plates below 48rem and
  * showcase diagrams (spec 6). Renders nothing if the visual record is
@@ -48,7 +49,7 @@ function AboutPlate() {
   return (
     <figure className="mt-6! mb-0">
       <div className="relative">
-        <div className="aspect-video overflow-hidden rounded-md border border-border-subtle">
+        <div className="aspect-[1920/1345] overflow-hidden rounded-md border border-border-subtle">
           <Image
             alt={visual.alt}
             className="h-full w-full object-cover saturate-[0.85]"

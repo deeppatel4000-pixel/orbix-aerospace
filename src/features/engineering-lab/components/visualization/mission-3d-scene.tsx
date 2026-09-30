@@ -18,6 +18,7 @@ import {
 } from "./format-lab-value";
 import { formatFigure } from "@/components/ui/readout";
 import { LabHeading } from "./lab-heading";
+import { LabUnit } from "./lab-unit";
 
 export type Mission3DMode = "orbital" | "reentry";
 
@@ -58,7 +59,7 @@ function SceneValue({
           {typeof value === "number"
             ? formatFigure(formatLabValue(value))
             : (value ?? "Not reported")}
-          {value !== undefined && unit ? ` ${unit}` : ""}
+          {value !== undefined && unit ? <LabUnit unit={unit} /> : null}
         </output>
       </dd>
     </div>
@@ -209,7 +210,7 @@ export function Mission3DScene({
               />
               <SceneValue
                 label="Plane change"
-                unit="deg"
+                unit="°"
                 value={planeChange?.inclinationChangeDegrees}
               />
             </dl>

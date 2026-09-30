@@ -22,7 +22,7 @@ import type {
 /** One preset input value, already converted to its display unit. */
 export interface PresetInputRow {
   readonly label: string;
-  readonly unit: string;
+  readonly unit?: string;
   readonly value: number;
 }
 
@@ -68,7 +68,6 @@ export interface ShowcaseMission {
   readonly categoryLabel: string;
   readonly diagram: MissionDiagram;
   readonly engineeringFocus: readonly string[];
-  readonly includedSystems: readonly string[];
   readonly inputGroups: readonly PresetInputGroup[];
   readonly preset: MissionPreset;
   readonly vehicles: readonly VehicleReentryConfiguration[];
@@ -170,25 +169,6 @@ const showcaseMissionIds = [
   "mars-transfer-concept",
 ] as const;
 
-function getIncludedSystems(preset: MissionPreset): readonly string[] {
-  const systems: string[] = [];
-  const { missionProfileInputs } = preset;
-
-  if (missionProfileInputs.deltaVBudget) {
-    systems.push("Delta-v budget");
-  }
-
-  if (missionProfileInputs.vehicleReentryEvaluation) {
-    systems.push("Vehicle evaluation", "Thermal protection");
-  }
-
-  if (missionProfileInputs.vehicleComparison) {
-    systems.push("Vehicle comparison");
-  }
-
-  return systems;
-}
-
 function metresToKilometres(metres: number): number {
   return metres / 1_000;
 }
@@ -256,7 +236,6 @@ function getInputGroups(preset: MissionPreset): readonly PresetInputGroup[] {
         },
         {
           label: "Thermal protection safety factor",
-          unit: "ratio",
           value: entry.safetyFactor,
         },
       ],
@@ -336,7 +315,6 @@ function createShowcaseMission(
     ...showcaseMissionDetails[id],
     categoryLabel: categoryLabels[preset.category],
     diagram: getDiagram(preset),
-    includedSystems: getIncludedSystems(preset),
     inputGroups: getInputGroups(preset),
     preset,
     vehicles: getVehicles(preset),

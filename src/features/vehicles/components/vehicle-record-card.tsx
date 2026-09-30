@@ -29,25 +29,26 @@ export interface VehicleSpec {
 export type VehicleRecordCardVariant = "compact" | "default";
 
 /**
- * The card's arrangement from 64rem. Below 64rem every layout is `stacked`.
+ * The card's arrangement. Below 40rem every layout is `stacked`.
  *
  * - `stacked`: the photograph above the text.
  * - `feature`: the wide first card of the aircraft registry, spanning two
- *   grid columns: the photograph on the left half of the card, cropped
- *   to the height of the grid row (the standard cards set it), and the
- *   text with up to four figures in a 2x2 compartment on the right.
+ *   grid columns from 40rem: the photograph on the left half of the card,
+ *   cropped to the height of the card (from 64rem the standard cards in
+ *   its row set it), and the text on the right. From 64rem the text adds
+ *   the description and up to four figures.
  * - `feature-portrait`: the wide first card of the launch vehicle registry,
- *   split in half: the photograph on the left, as tall as the grid row
- *   (narrower than 3:4, so the crop only trims the sides and the whole
- *   vehicle stays in view), and the text with up to four figures in a 2x2
- *   compartment on the right.
+ *   split in half from 40rem: the photograph on the left, at least 28rem
+ *   tall (narrower than 3:4, so the crop only trims the sides and the
+ *   whole vehicle stays in view), and the text on the right. From 48rem the
+ *   text adds the description and up to six figures.
  *
- * In both feature layouts the figures follow the description 2rem below
- * it instead of sinking to the card's bottom edge, as the same 2x2
- * hairline compartment: values at 1.25rem (line height 1.1) under the
- * 11px mono caps labels, so no figure outweighs the vehicle's name. At
- * 1.5rem "50,000+ ft" overflows the right compartment of the aircraft
- * feature at 1440px.
+ * In both feature layouts the figures sit on the card's bottom edge as a
+ * two-column hairline compartment (three rows of two for six figures),
+ * level with the figure row of the stacked card beside them from 64rem.
+ * Values are 1.25rem in the aircraft feature (at 1.5rem "50,000+ ft"
+ * overflows its right compartment at 1440px) and 1.375rem in the launch
+ * vehicle feature, whose taller card has room for larger figures.
  */
 export type VehicleRecordCardLayout =
   "feature" | "feature-portrait" | "stacked";
@@ -81,15 +82,15 @@ interface VehicleRecordCardProps {
   shortName?: string;
   /**
    * Key values. Stacked and compact cards show the first two; the feature
-   * layouts up to four from 64rem (spec 8 asks for a two-spec row, so the
-   * extra emphasis stops at a 2x2).
+   * layouts up to six from 64rem, two to a row (spec 8 asks for a two-spec
+   * row; the wide first card has room for more of the record).
    * Keep full dates out of this row: it is set in B612 Mono.
    */
   specs: readonly VehicleSpec[];
   /**
-   * One factual line, shown whole. Keep it to 34 characters or fewer
+   * One factual line, shown whole. Keep it to 31 characters or fewer
    * (`CARD_SUMMARY_MAX_LENGTH`, enforced by the visuals tests) so it sets on
-   * one line in the narrowest card (about 240px of text at 320px).
+   * one line in the narrowest card (223px of text at 320px).
    * Takes the place of `description` below 64rem when both are given.
    */
   summary?: string;
@@ -120,8 +121,9 @@ export function VehicleRecordCard({
 }: VehicleRecordCardProps) {
   const isCompact = variant === "compact";
   const isPortraitFeature = layout === "feature-portrait";
-  const isFeature = layout === "feature" || isPortraitFeature;
-  const maxSpecs = isFeature ? 4 : 2;
+  const isLandscapeFeature = layout === "feature";
+  const isFeature = isLandscapeFeature || isPortraitFeature;
+  const maxSpecs = isFeature ? 6 : 2;
   const visibleSpecs = specs.slice(0, maxSpecs);
   const Heading = headingLevel === 4 ? "h4" : "h3";
   const nameRest =
@@ -134,7 +136,7 @@ export function VehicleRecordCard({
       <Heading
         className={cn(
           "orbix-vehicle-card__name",
-          isFeature && "lg:text-[3rem]",
+          isFeature && "md:text-[2.25rem] lg:text-[3rem]",
         )}
       >
         {nameRest !== undefined ? (
@@ -161,14 +163,20 @@ export function VehicleRecordCard({
         <p
           className={cn(
             "mt-3 text-sm leading-normal text-text-secondary",
-            isFeature && description && "lg:hidden",
+            isLandscapeFeature && description && "lg:hidden",
+            isPortraitFeature && description && "md:hidden",
           )}
         >
           {summary}
         </p>
       ) : null}
       {summary && description && isFeature ? (
-        <p className="mt-4 hidden max-w-[44ch] text-lg leading-7 text-pretty text-text-secondary lg:block">
+        <p
+          className={cn(
+            "mt-4 hidden max-w-[44ch] leading-7 text-pretty text-text-secondary lg:text-lg",
+            isLandscapeFeature ? "lg:block" : "md:block",
+          )}
+        >
           {description}
         </p>
       ) : null}
@@ -199,18 +207,23 @@ export function VehicleRecordCard({
             index % 2 === 1 && "border-l border-border-subtle pl-4",
             index % 2 === 0 && visibleSpecs.length > 1 && "pr-4",
             index >= 2 && "mt-4 hidden border-t border-border-subtle",
-            index >= 2 && "lg:grid",
-            isFeature && "lg:pt-5",
+            index >= 2 && (isPortraitFeature ? "md:grid" : "lg:grid"),
+            isLandscapeFeature && "lg:pt-5",
+            isPortraitFeature && "md:pt-5 xl:mt-5 xl:pt-6",
           )}
           key={spec.label}
         >
-          <dt className="orbix-vehicle-card__spec-label self-end">
+          {/* Tighter tracking below 80rem, where a 1024px three-column
+              card is too narrow for "Liftoff thrust" at 0.12em. */}
+          <dt className="orbix-vehicle-card__spec-label self-end max-xl:tracking-[0.08em]">
             {spec.label}
           </dt>
           <dd
             className={cn(
               "orbix-vehicle-card__spec-value mt-0 whitespace-nowrap",
-              isFeature && "lg:text-[1.25rem] lg:leading-[1.1]",
+              isLandscapeFeature && "lg:text-[1.25rem] lg:leading-[1.1]",
+              isPortraitFeature &&
+                "md:text-[1.25rem] md:leading-[1.1] xl:text-[1.375rem]",
             )}
           >
             {formatFigure(spec.value)}
@@ -223,7 +236,7 @@ export function VehicleRecordCard({
   return (
     <article className={cn("h-full", className)}>
       <Link
-        className={cn("orbix-vehicle-card", isFeature && "lg:flex-row")}
+        className={cn("orbix-vehicle-card", isFeature && "sm:flex-row")}
         data-layout={layout}
         data-variant={variant}
         href={href}
@@ -238,12 +251,14 @@ export function VehicleRecordCard({
             // at the sides) rather than to an empty band in the text.
             layout === "stacked" &&
               !isCompact &&
-              "lg:flex-auto lg:[&>*]:h-full",
+              "lg:flex-auto lg:[&>*]:h-full lg:[&>*]:max-w-full",
             // A feature photograph fills the left half of the card at the
-            // row's height (at least 32rem for the portrait launch vehicle).
+            // card's height (58 percent left the aircraft figures too
+            // narrow for "50,000+ ft"), at least 28rem tall for a rocket
+            // (32rem from 64rem).
             isFeature &&
-              "lg:w-1/2 lg:border-r lg:border-b-0 lg:[&>*]:aspect-auto lg:[&>*]:h-full",
-            isPortraitFeature && "lg:min-h-[32rem]",
+              "sm:w-1/2 sm:border-r sm:border-b-0 sm:[&>*]:aspect-auto sm:[&>*]:h-full",
+            isPortraitFeature && "sm:min-h-[28rem] lg:min-h-[32rem]",
           )}
         >
           {media}
@@ -253,10 +268,9 @@ export function VehicleRecordCard({
           className={cn(
             "flex flex-1 flex-col gap-6 [&>dl]:mt-auto",
             isCompact ? "p-4" : "p-6",
-            // In a feature card the figures follow the description instead
-            // of sinking to the bottom edge, so no gap opens between them.
-            isFeature &&
-              "lg:w-1/2 lg:min-w-0 lg:gap-8 lg:p-6 xl:p-8 lg:[&>dl]:mt-0",
+            // In a feature card the figures also sit on the bottom edge,
+            // level with the neighbouring card's figure row.
+            isFeature && "sm:min-w-0 lg:gap-8 xl:px-8 xl:pt-8",
           )}
         >
           {heading}

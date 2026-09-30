@@ -22,6 +22,8 @@ import {
   LabFigure,
   EqDot,
   EQ_SUP,
+  LAB_GROUP,
+  LAB_GROUP_LEGEND,
 } from "@/features/engineering-lab/components/shared";
 import type {
   VehicleReentryEvaluationAnalysis,
@@ -107,6 +109,42 @@ const preciseFormatter = new Intl.NumberFormat("en-US", {
 const heatFluxFormatter = new Intl.NumberFormat("en-US", {
   maximumFractionDigits: 2,
 });
+
+const smallFigureFormatter = new Intl.NumberFormat("en-US", {
+  maximumSignificantDigits: 3,
+});
+
+/**
+ * Display only: a TPS figure below 1 in its base unit (0.000172 mm) is
+ * shown in the unit a thousand times smaller, to 3 significant figures
+ * (172 µm), so it reads as a readout. The analysis value is unchanged.
+ */
+function tpsFigure(
+  value: number,
+  unit: string,
+  smallUnit: string,
+): { figure: string; unit: string } {
+  if (value !== 0 && Math.abs(value) < 1) {
+    return {
+      figure: smallFigureFormatter.format(value * 1000),
+      unit: smallUnit,
+    };
+  }
+  return { figure: preciseFormatter.format(value), unit };
+}
+
+function TpsFigure({
+  smallUnit,
+  unit,
+  value,
+}: {
+  smallUnit: string;
+  unit: string;
+  value: number;
+}) {
+  const shown = tpsFigure(value, unit, smallUnit);
+  return <LabFigure unit={shown.unit}>{shown.figure}</LabFigure>;
+}
 
 function parseRequiredNumber(value: string): number {
   return value.trim() === "" ? Number.NaN : Number(value);
@@ -379,8 +417,8 @@ export function VehicleReentryEvaluationAnalyzer() {
             onKeyDown={focusFirstInvalidFieldOnEnter}
             onSubmit={preventSubmission}
           >
-            <fieldset>
-              <legend className="text-base font-semibold text-foreground">
+            <fieldset className={LAB_GROUP}>
+              <legend className={LAB_GROUP_LEGEND}>
                 Vehicle configuration
               </legend>
               <div className="mt-4 grid gap-5 @min-[36rem]/col:grid-cols-2">
@@ -477,10 +515,8 @@ export function VehicleReentryEvaluationAnalyzer() {
               </div>
             </fieldset>
 
-            <fieldset className="mt-10">
-              <legend className="text-base font-semibold text-foreground">
-                Reentry conditions
-              </legend>
+            <fieldset className={LAB_GROUP}>
+              <legend className={LAB_GROUP_LEGEND}>Reentry conditions</legend>
               <div className="mt-4 grid gap-5 @min-[36rem]/col:grid-cols-2">
                 <CalculatorNumberField
                   error={errors.initialAltitudeMeters}
@@ -515,8 +551,8 @@ export function VehicleReentryEvaluationAnalyzer() {
               </div>
             </fieldset>
 
-            <fieldset className="mt-10">
-              <legend className="text-base font-semibold text-foreground">
+            <fieldset className={LAB_GROUP}>
+              <legend className={LAB_GROUP_LEGEND}>
                 Analysis controls (optional)
               </legend>
               <div className="mt-4 grid gap-5 @min-[36rem]/col:grid-cols-2">
@@ -823,12 +859,14 @@ export function VehicleReentryEvaluationAnalyzer() {
                     <dt className="orbix-label">Total heat load</dt>
                     <dd className="mt-1">
                       <output className="orbix-data" htmlFor={allOutputIds}>
-                        <LabFigure unit="MJ/m²">
-                          {preciseFormatter.format(
+                        <TpsFigure
+                          smallUnit="kJ/m²"
+                          unit="MJ/m²"
+                          value={
                             result.summary.thermal
-                              .totalHeatLoadMegajoulesPerSquareMetre,
-                          )}
-                        </LabFigure>
+                              .totalHeatLoadMegajoulesPerSquareMetre
+                          }
+                        />
                       </output>
                     </dd>
                   </div>
@@ -851,11 +889,13 @@ export function VehicleReentryEvaluationAnalyzer() {
                     <dt className="orbix-label">Required thickness</dt>
                     <dd className="mt-1">
                       <output className="orbix-data" htmlFor={allOutputIds}>
-                        <LabFigure unit="mm">
-                          {preciseFormatter.format(
-                            result.summary.tps.requiredThickness.millimetres,
-                          )}
-                        </LabFigure>
+                        <TpsFigure
+                          smallUnit="µm"
+                          unit="mm"
+                          value={
+                            result.summary.tps.requiredThickness.millimetres
+                          }
+                        />
                       </output>
                     </dd>
                   </div>
@@ -863,11 +903,11 @@ export function VehicleReentryEvaluationAnalyzer() {
                     <dt className="orbix-label">Estimated TPS mass</dt>
                     <dd className="mt-1">
                       <output className="orbix-data" htmlFor={allOutputIds}>
-                        <LabFigure unit="kg">
-                          {preciseFormatter.format(
-                            result.summary.tps.estimatedTPSMassKilograms,
-                          )}
-                        </LabFigure>
+                        <TpsFigure
+                          smallUnit="g"
+                          unit="kg"
+                          value={result.summary.tps.estimatedTPSMassKilograms}
+                        />
                       </output>
                     </dd>
                   </div>
@@ -885,12 +925,14 @@ export function VehicleReentryEvaluationAnalyzer() {
                         className="lab-figure-note"
                         htmlFor={allOutputIds}
                       >
-                        <LabFigure unit="MJ/m²">
-                          {preciseFormatter.format(
+                        <TpsFigure
+                          smallUnit="kJ/m²"
+                          unit="MJ/m²"
+                          value={
                             result.summary.tps.thermalMargin
-                              .heatLoadMarginMegajoulesPerSquareMetre,
-                          )}
-                        </LabFigure>{" "}
+                              .heatLoadMarginMegajoulesPerSquareMetre
+                          }
+                        />{" "}
                         heat-load margin
                       </output>
                     </dd>

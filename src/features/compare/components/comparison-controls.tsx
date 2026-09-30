@@ -1,6 +1,12 @@
 "use client";
 
-import { useEffect, useState, useTransition, type FormEvent } from "react";
+import {
+  useEffect,
+  useState,
+  useTransition,
+  type CSSProperties,
+  type FormEvent,
+} from "react";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { Check, CircleAlert } from "lucide-react";
@@ -20,6 +26,8 @@ export interface ComparisonThumbnail {
   readonly license: string;
   readonly objectPosition: string;
   readonly src: string;
+  /** `object-position` for the tile from 64rem, when it differs. */
+  readonly wideTilePosition?: string;
 }
 
 export type ComparisonThumbnails = Readonly<
@@ -268,22 +276,20 @@ export function ComparisonControls({
           {isAircraft ? "Aircraft" : "Launch vehicles"}
         </legend>
 
-        {/* Aircraft photos are wide, so from 40rem their tiles stand with
-            the photo on top, five across from 64rem. Launch vehicle photos
-            are tall (3:4, every vehicle whole), so their tiles keep the
-            photo on the left at every width and run three across from
-            64rem: the primary action stays above the fold. Aircraft tiles
-            between 40rem and 64rem use a six-column span grid, three tiles
-            over two half-width tiles; in two columns an odd last launch
-            vehicle tile takes the full row. From 64rem launch vehicle tiles keep
-            one fixed width in a three-column grid, so the second row leaves
-            its last cell empty instead of stretching two tiles. */}
+        {/* From 64rem both categories use one tile: the photo on top, five
+            across, so the launch vehicle row is as photo-led as the aircraft
+            row in the same slot. Below 64rem aircraft photos are wide, so
+            from 40rem their tiles stand with the photo on top in a
+            six-column span grid, three tiles over two half-width tiles.
+            Launch vehicle photos are tall (every vehicle whole), so below
+            64rem their tiles keep the photo on the left, two across from
+            40rem, and an odd last tile takes the full row. */}
         <ul
           className={cn(
             "grid grid-cols-1 gap-2 sm:gap-4",
             isAircraft
               ? "sm:max-lg:grid-cols-6 lg:grid-cols-5 sm:max-lg:[&>li]:col-span-2 sm:max-lg:[&>li:nth-child(n+4)]:col-span-3"
-              : "sm:max-lg:grid-cols-2 lg:grid-cols-3 sm:max-lg:[&>li:last-child:nth-child(odd)]:col-span-2",
+              : "sm:max-lg:grid-cols-2 lg:grid-cols-5 sm:max-lg:[&>li:last-child:nth-child(odd)]:col-span-2",
           )}
         >
           {vehicleOptions.map((option, index) => {
@@ -310,7 +316,8 @@ export function ComparisonControls({
                   className={cn(
                     "group relative grid h-full w-full cursor-pointer grid-cols-[auto_minmax(0,1fr)] gap-3 overflow-hidden rounded-lg border bg-surface p-3 text-left transition-colors duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] active:translate-y-px",
                     isAircraft && "sm:flex sm:flex-col sm:gap-0 sm:p-0",
-                    !isAircraft && "sm:gap-4",
+                    !isAircraft &&
+                      "sm:gap-4 lg:flex lg:flex-col lg:gap-0 lg:p-0",
                     isSelected
                       ? "border-accent shadow-[inset_0_0_0_1px_var(--accent)] max-sm:bg-surface-raised"
                       : "border-border hover:border-border-control hover:bg-surface-raised",
@@ -323,14 +330,14 @@ export function ComparisonControls({
                       "relative block self-start overflow-hidden rounded-md bg-background",
                       isAircraft
                         ? "aspect-[16/10] h-14 sm:h-auto sm:w-full sm:rounded-none"
-                        : "aspect-[3/4] h-[5.5rem] sm:h-auto sm:w-24 lg:w-[4.5rem]",
+                        : "aspect-[3/4] h-[5.5rem] sm:h-auto sm:w-24 lg:aspect-[4/5] lg:w-full lg:self-stretch lg:rounded-none",
                     )}
                   >
                     {thumbnail ? (
                       <Image
                         alt=""
                         className={cn(
-                          "object-cover contrast-[1.05] saturate-[0.85] transition-[transform,opacity] duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-[1.03] motion-reduce:transition-none motion-reduce:group-hover:scale-100",
+                          "object-cover [object-position:var(--tile-pos)] contrast-[1.05] saturate-[0.85] transition-[transform,opacity] duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-[1.03] motion-reduce:transition-none motion-reduce:group-hover:scale-100 lg:[object-position:var(--tile-pos-lg)]",
                           isBlocked && "opacity-50",
                         )}
                         fill
@@ -340,10 +347,17 @@ export function ComparisonControls({
                         sizes={
                           isAircraft
                             ? "(min-width: 64rem) 13rem, (min-width: 40rem) 30vw, 5.5rem"
-                            : "(min-width: 40rem) 6rem, 4.125rem"
+                            : "(min-width: 64rem) 13rem, (min-width: 40rem) 6rem, 4.125rem"
                         }
                         src={thumbnail.src}
-                        style={{ objectPosition: thumbnail.objectPosition }}
+                        style={
+                          {
+                            "--tile-pos": thumbnail.objectPosition,
+                            "--tile-pos-lg":
+                              thumbnail.wideTilePosition ??
+                              thumbnail.objectPosition,
+                          } as CSSProperties
+                        }
                       />
                     ) : null}
                   </span>
@@ -351,25 +365,30 @@ export function ComparisonControls({
                   <span
                     className={cn(
                       "flex min-w-0 flex-1 flex-col gap-1.5",
-                      isAircraft && "sm:gap-3 sm:p-4 lg:gap-2 lg:p-3",
+                      isAircraft && "sm:gap-3 sm:p-4",
                       isAircraft && isSelected && "sm:bg-surface-raised",
+                      "lg:gap-2 lg:p-3",
+                      !isAircraft && isSelected && "lg:bg-surface-raised",
                     )}
                   >
-                    <span className="flex flex-row-reverse items-start justify-between gap-2.5">
+                    <span className="flex flex-row-reverse items-start justify-between gap-2.5 lg:flex-row lg:justify-start">
                       {/* Check box at the top right of every tile: an empty
                           20px square at rest (3:1 outline), an accent square
                           with a check when chosen, the column number beside
                           it. The number keeps its slot when empty, so
                           choosing a tile moves nothing. Decorative:
-                          aria-pressed carries the state. */}
+                          aria-pressed carries the state. From 64rem, five
+                          across, it moves to the photo's top right corner
+                          on an opaque 28px plate (never bare over the photo),
+                          so the name gets the full width of the tile. */}
                       <span
                         aria-hidden="true"
-                        className="flex shrink-0 items-center gap-1.5"
+                        className="flex shrink-0 items-center gap-1.5 lg:absolute lg:top-2 lg:right-2 lg:z-10 lg:h-7 lg:rounded-[2px] lg:bg-background lg:px-1"
                       >
                         <span
                           className={cn(
                             "orbix-readout-inline w-3 text-center text-xs leading-none text-foreground",
-                            !isSelected && "invisible",
+                            !isSelected && "invisible lg:hidden",
                           )}
                         >
                           {isSelected ? position + 1 : null}
@@ -387,16 +406,18 @@ export function ComparisonControls({
                           ) : null}
                         </span>
                       </span>
-                      <span className="flex min-w-0 flex-col gap-1">
+                      <span className="flex min-w-0 flex-col gap-1 lg:gap-2">
                         <span
                           id={nameId}
                           className={cn(
                             "font-display text-[1.125rem] leading-[1.1] tracking-[-0.03em] sm:text-[1.3125rem] sm:leading-[1.05]",
-                            // Five across from 64rem, the check box shares the
-                            // name's row, so some names wrap at every width
-                            // from there: two lines are reserved from 64rem
-                            // so the maker lines align across the row.
-                            isAircraft && "lg:min-h-[2.1em] lg:text-[1.25rem]",
+                            // Five across from 64rem, "Space Launch System
+                            // (SLS)" wraps, so launch vehicle names reserve
+                            // two lines and the maker lines align across
+                            // that row. No aircraft name wraps, so aircraft
+                            // tiles read name, 8px, maker.
+                            "lg:text-[1.25rem] lg:leading-[1.05]",
+                            !isAircraft && "lg:min-h-[2.2em]",
                             isBlocked ? "text-muted" : "text-foreground",
                           )}
                         >
@@ -411,8 +432,15 @@ export function ComparisonControls({
                       </span>
                     </span>
                     {thumbnail ? (
+                      // Five across from 64rem, "Steve Jurvetson, CC BY
+                      // 2.0" needs two lines even with no tracking, so
+                      // launch vehicle credits reserve two lines and
+                      // every credit in that row starts on one line.
                       <span
-                        className="orbix-micro mt-auto text-[0.6875rem] text-muted max-sm:whitespace-nowrap"
+                        className={cn(
+                          "orbix-micro mt-auto text-[0.6875rem] text-muted max-sm:whitespace-nowrap",
+                          !isAircraft && "lg:min-h-[2.9em]",
+                        )}
                         id={creditId}
                       >
                         <span className="sr-only">Photo: </span>

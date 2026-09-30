@@ -70,7 +70,7 @@ describe("DemoMode", () => {
       />,
     );
 
-    expect(markup).toContain("Guided tour of a mission");
+    expect(markup).toContain("runs no new analysis");
     expect(markup).toContain("Mission concept");
     expect(markup).toContain('data-demo-step="mission-concept"');
     expect(markup).toContain("Mission objective");
@@ -158,7 +158,6 @@ describe("DemoMode", () => {
     const markup = renderToStaticMarkup(<DemoMode />);
 
     expect(markup).toContain("ORBIX Guided Mission");
-    expect(markup).toContain("Educational mission");
     expect(markup).toContain("has not been supplied");
   });
 });

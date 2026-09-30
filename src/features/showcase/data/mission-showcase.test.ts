@@ -20,7 +20,6 @@ describe("showcase mission data", () => {
     const mission = getShowcaseMissionById("leo-satellite-deployment");
 
     expect(mission?.preset).toBe(preset);
-    expect(mission?.includedSystems).toContain("Delta-v budget");
     expect(mission?.availableVisualizations.length).toBeGreaterThan(0);
     expect(mission?.analysisAvailability.length).toBeGreaterThan(0);
     expect(mission?.engineeringFocus.length).toBeGreaterThan(0);

@@ -163,7 +163,8 @@ function ToolList({
  * name and number range that opens its first tool. All 33 tools open would
  * need about 1,100px, so at a 900px-tall window the later disciplines would
  * sit behind an inner scroll; folded, the whole index fits in about 440px.
- * From a 1,200px-tall window every discipline shows its rows.
+ * From a 1,376px-tall window (86rem) every discipline shows its rows:
+ * all 33 open, with the longer titles wrapping, need about 1,260px of rail.
  * Every tool stays reachable: its discipline link, then its own row, and the
  * narrow select and "Show all tools" list carry the full catalogue.
  */
@@ -176,12 +177,21 @@ function DesktopIndex({
 }) {
   const starts = groupStarts(groups);
   const listRef = useRef<HTMLDivElement>(null);
+  // Set when a folded discipline's header is activated. Following an
+  // in-page link drops focus to <body> (the tool frame cannot take focus),
+  // so once the shell has opened the tool, focus moves to its row and the
+  // next Tab reaches the discipline's second tool.
+  const openedFromHeader = useRef(false);
 
   useEffect(() => {
     const list = listRef.current;
     const activeLink = list?.querySelector<HTMLElement>(
       'a[aria-current="location"]',
     );
+    if (openedFromHeader.current) {
+      openedFromHeader.current = false;
+      activeLink?.focus({ preventScroll: true });
+    }
     // On a short window the rail (from 1024px) can still scroll. Scroll only
     // it, like `scrollIntoView({ block: "nearest" })` scoped to the rail, so
     // the page itself never moves when the open tool changes.
@@ -217,11 +227,10 @@ function DesktopIndex({
 
         return (
           <div className={groupIndex > 0 ? "mt-4" : undefined} key={group.id}>
-            {/* One element in both states: the discipline header is always
-             * this link to the discipline's first tool, and only the list
-             * after it changes. Pressing Enter on a folded discipline opens
-             * it without unmounting the link, so keyboard focus stays put
-             * and the next Tab reaches the discipline's second tool. */}
+            {/* A folded discipline's header is a link to its first tool;
+             * the open discipline's header is the same element without an
+             * href (not a link, no tab stop), so the open list's first row
+             * is the only way to its first tool. */}
             <a
               className={cn(
                 "flex min-h-7 items-center justify-between gap-3 border-b text-[0.8125rem] leading-5 font-semibold transition-colors focus-visible:outline-offset-2",
@@ -229,8 +238,17 @@ function DesktopIndex({
                   ? "border-border text-foreground"
                   : "border-border-subtle text-text-secondary hover:border-border-control hover:text-foreground",
               )}
-              href={firstTool === undefined ? undefined : `#${firstTool.id}`}
+              href={
+                open || firstTool === undefined ? undefined : `#${firstTool.id}`
+              }
               id={headingId}
+              onClick={
+                open
+                  ? undefined
+                  : () => {
+                      openedFromHeader.current = true;
+                    }
+              }
             >
               {/* The range is decorative, so the link and the list it labels
                * are both named by the discipline alone. */}
@@ -243,11 +261,11 @@ function DesktopIndex({
               </span>
             </a>
             {/* Folded disciplines keep their rows mounted but hidden, and a
-             * window tall enough for all 33 rows (from 1,200px) shows every
+             * window tall enough for all 33 rows (from 1,376px) shows every
              * discipline open, so the whole numbered index reads at once. */}
             <div
               className={
-                open ? undefined : "hidden [@media(min-height:75rem)]:block"
+                open ? undefined : "hidden [@media(min-height:86rem)]:block"
               }
             >
               <ToolRows

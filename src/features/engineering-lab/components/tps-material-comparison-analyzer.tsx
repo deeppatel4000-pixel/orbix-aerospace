@@ -23,6 +23,8 @@ import {
   LabValueText,
   EqDot,
   EQ_SUP,
+  LAB_GROUP,
+  LAB_GROUP_LEGEND,
 } from "@/features/engineering-lab/components/shared";
 import { listTPSMaterials } from "@/features/engineering-lab/materials";
 import type {
@@ -350,8 +352,8 @@ export function TPSMaterialComparisonAnalyzer() {
             onKeyDown={focusFirstInvalidFieldOnEnter}
             onSubmit={preventSubmission}
           >
-            <fieldset>
-              <legend className="text-base font-semibold text-foreground">
+            <fieldset className={LAB_GROUP}>
+              <legend className={LAB_GROUP_LEGEND}>
                 Shared reentry conditions
               </legend>
               <div className="mt-4 grid gap-5 @min-[36rem]/col:grid-cols-2">
@@ -418,10 +420,8 @@ export function TPSMaterialComparisonAnalyzer() {
               </div>
             </fieldset>
 
-            <fieldset className="mt-10">
-              <legend className="text-base font-semibold text-foreground">
-                TPS design
-              </legend>
+            <fieldset className={LAB_GROUP}>
+              <legend className={LAB_GROUP_LEGEND}>TPS design</legend>
               <div className="mt-4">
                 <CalculatorNumberField
                   error={errors.safetyFactor}
@@ -448,11 +448,9 @@ export function TPSMaterialComparisonAnalyzer() {
                   : undefined
               }
               aria-invalid={Boolean(errors.materialSelection)}
-              className="mt-8 border-t border-border pt-7"
+              className={LAB_GROUP}
             >
-              <legend className="text-base font-semibold text-foreground">
-                Material selection
-              </legend>
+              <legend className={LAB_GROUP_LEGEND}>Material selection</legend>
               <p
                 className="mt-4 text-sm leading-6 text-muted"
                 id="tps-material-comparison-selection-hint"

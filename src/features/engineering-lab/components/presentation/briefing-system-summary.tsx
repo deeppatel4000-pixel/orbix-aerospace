@@ -5,6 +5,8 @@ import type {
 import { formatLabValue } from "../visualization/format-lab-value";
 import { formatFigure } from "@/components/ui/readout";
 import { LabHeading } from "../visualization/lab-heading";
+import { LabUnit } from "../visualization/lab-unit";
+import { THERMAL_MODEL_NOTE } from "../visualization/thermal-model-note";
 
 export interface BriefingSystemSummaryProps {
   readonly missionProfile: MissionProfileAnalysis;
@@ -48,9 +50,7 @@ function SummaryCard({ description, id, metrics, title }: SummaryCardProps) {
               <dd className="text-right whitespace-nowrap">
                 <output className="orbix-data text-foreground">
                   {formatFigure(formatLabValue(metric.value))}
-                  {metric.unit ? (
-                    <span className="ml-1 text-muted">{metric.unit}</span>
-                  ) : null}
+                  {metric.unit ? <LabUnit unit={metric.unit} /> : null}
                 </output>
               </dd>
             </div>
@@ -155,7 +155,7 @@ export function BriefingSystemSummary({
           title="Vehicle"
         />
         <SummaryCard
-          description="Reported heating and thermal-protection outputs; no suitability decision is added here."
+          description={`Reported heating and thermal-protection outputs. ${THERMAL_MODEL_NOTE}`}
           id="thermal"
           metrics={[
             {

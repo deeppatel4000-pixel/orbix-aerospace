@@ -22,6 +22,8 @@ import {
   LabFigure,
   EqDot,
   EQ_SUP,
+  LAB_GROUP,
+  LAB_GROUP_LEGEND,
 } from "@/features/engineering-lab/components/shared";
 import type {
   DeltaVBudgetInputs,
@@ -790,9 +792,9 @@ function VehicleFields({
     "primaryNoseRadiusMetres" | "alternativeNoseRadiusMetres";
 
   return (
-    <fieldset className="border-t border-border pt-6">
-      <legend className="px-2 text-base font-semibold">{label}</legend>
-      <div>
+    <fieldset className={LAB_GROUP}>
+      <legend className={LAB_GROUP_LEGEND}>{label}</legend>
+      <div className="mt-4">
         <label className="orbix-field__label block" htmlFor={nameId}>
           Vehicle name
         </label>
@@ -1048,10 +1050,8 @@ export function MissionProfileAnalyzer({
             onKeyDown={focusFirstInvalidFieldOnEnter}
             onSubmit={preventSubmission}
           >
-            <fieldset>
-              <legend className="text-base font-semibold text-foreground">
-                Mission identity
-              </legend>
+            <fieldset className={LAB_GROUP}>
+              <legend className={LAB_GROUP_LEGEND}>Mission identity</legend>
               <div className="mt-4">
                 <label
                   className="orbix-field__label block"
@@ -1102,10 +1102,8 @@ export function MissionProfileAnalyzer({
               </div>
             </fieldset>
 
-            <fieldset className="mt-10">
-              <legend className="text-base font-semibold text-foreground">
-                Optional systems
-              </legend>
+            <fieldset className={LAB_GROUP}>
+              <legend className={LAB_GROUP_LEGEND}>Optional systems</legend>
               <div className="mt-4 grid gap-3 @min-[40rem]/col:grid-cols-3">
                 {[
                   {
@@ -1147,14 +1145,9 @@ export function MissionProfileAnalyzer({
             </fieldset>
 
             {values.includeDeltaVBudget ? (
-              <fieldset
-                className="mt-7 border-t border-border pt-7"
-                id="mission-profile-delta-system"
-              >
-                <legend className="text-base font-semibold text-foreground">
-                  Delta-v budget
-                </legend>
-                <div className="mt-5 flex flex-wrap gap-3">
+              <fieldset className={LAB_GROUP} id="mission-profile-delta-system">
+                <legend className={LAB_GROUP_LEGEND}>Delta-v budget</legend>
+                <div className="mt-4 flex flex-wrap gap-3">
                   <label className="flex min-h-11 cursor-pointer items-center gap-3 rounded border border-border-control bg-surface-input px-4 py-2 text-sm font-medium hover:border-muted has-checked:border-accent has-checked:bg-surface-raised">
                     <input
                       aria-controls="mission-profile-hohmann-inputs"
@@ -1270,12 +1263,9 @@ export function MissionProfileAnalyzer({
             ) : null}
 
             {reentryEnabled ? (
-              <div
-                className="mt-7 space-y-6 border-t border-border pt-7"
-                id="mission-profile-reentry-system"
-              >
-                <fieldset>
-                  <legend className="text-base font-semibold text-foreground">
+              <div id="mission-profile-reentry-system">
+                <fieldset className={LAB_GROUP}>
+                  <legend className={LAB_GROUP_LEGEND}>
                     Shared reentry scenario
                   </legend>
                   <div className="mt-4 grid gap-5 @min-[36rem]/col:grid-cols-2">

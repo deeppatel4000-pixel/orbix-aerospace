@@ -11,7 +11,6 @@ import { Button } from "@/components/ui/button";
 import type { MissionScenario } from "@/features/engineering-lab/missions";
 import type {
   MissionInsightsAnalysis,
-  MissionPresetCategory,
   MissionProfileAnalysis,
   MissionReport,
 } from "@/features/engineering-lab/types";
@@ -23,6 +22,7 @@ import { DemoNavigation } from "./demo-navigation";
 import { DEMO_STEPS, DemoStep } from "./demo-step";
 import { MissionBriefing } from "./mission-briefing";
 import { MissionShowcase } from "./mission-showcase";
+import { MissionIdentity } from "../visualization/mission-identity";
 import {
   altitudeReadout,
   formatLabValue,
@@ -33,6 +33,7 @@ import {
   LabHeading,
   useHeadingLevel,
 } from "../visualization/lab-heading";
+import { LabUnit } from "../visualization/lab-unit";
 
 export interface DemoModeProps {
   readonly insights?: MissionInsightsAnalysis;
@@ -57,14 +58,6 @@ export type DemoModeAction =
 export const INITIAL_DEMO_MODE_STATE: DemoModeState = {
   currentStepIndex: 0,
   status: "active",
-};
-
-const categoryLabels: Readonly<Record<MissionPresetCategory, string>> = {
-  "deep-space-concept": "Deep-space concept",
-  "lunar-transfer": "Lunar transfer",
-  "orbital-deployment": "Orbital deployment",
-  "orbital-logistics": "Orbital logistics",
-  "reentry-demonstration": "Reentry demonstration",
 };
 
 export function demoModeReducer(
@@ -116,9 +109,7 @@ function DemoMetric({
           {typeof value === "number"
             ? formatFigure(formatLabValue(value))
             : (value ?? "Not reported")}
-          {value !== undefined && unit ? (
-            <span className="ml-1 text-muted">{unit}</span>
-          ) : null}
+          {value !== undefined && unit ? <LabUnit unit={unit} /> : null}
         </output>
       </dd>
     </div>
@@ -160,9 +151,6 @@ export function DemoMode({
     missionScenario?.description ??
     report?.missionSummary.description ??
     "A completed mission scenario has not been supplied to this guided presentation.";
-  const missionCategory = missionScenario
-    ? categoryLabels[missionScenario.category]
-    : "Educational mission";
   const systems =
     report?.missionSummary.systemsUsed ?? insights?.systemsInterpreted ?? [];
   const deltaVBudget = missionProfile?.sourceAnalyses.deltaVBudget;
@@ -218,26 +206,19 @@ export function DemoMode({
   function renderStepContent() {
     if (activeStep.id === "mission-concept") {
       return (
-        // Objective and category share one top rule, like a record row.
-        <div className="grid gap-6 border-t border-border-subtle pt-3 lg:grid-cols-[minmax(0,1.3fr)_minmax(16rem,0.7fr)]">
-          <section aria-labelledby="demo-objective-title">
-            <p className="orbix-label" id="demo-objective-title">
-              Mission objective
-            </p>
-            <p className="mt-1 text-base font-semibold text-foreground">
-              {missionName}
-            </p>
-            <p className="mt-2 max-w-[68ch] text-sm leading-6 text-text-secondary">
-              {missionDescription}
-            </p>
-          </section>
-          <dl className="lg:border-l lg:border-border-subtle lg:pl-6">
-            <dt className="orbix-label">Mission category</dt>
-            <dd className="mt-1 text-base text-foreground">
-              {missionCategory}
-            </dd>
-          </dl>
-        </div>
+        // The identity block above already names the mission and its
+        // category, so the first step adds only the objective.
+        <section
+          aria-labelledby="demo-objective-title"
+          className="border-t border-border-subtle pt-3"
+        >
+          <p className="orbix-label" id="demo-objective-title">
+            Mission objective
+          </p>
+          <p className="mt-1 max-w-[68ch] text-sm leading-6 text-text-secondary">
+            {missionDescription}
+          </p>
+        </section>
       );
     }
 
@@ -409,11 +390,13 @@ export function DemoMode({
     return missionProfile ? (
       <div className="space-y-6">
         <MissionBriefing
+          category={missionScenario?.category}
           insights={insights}
           missionProfile={missionProfile}
           report={report}
         />
         <MissionShowcase
+          category={missionScenario?.category}
           insights={insights}
           missionProfile={missionProfile}
           report={report}
@@ -433,16 +416,24 @@ export function DemoMode({
       className="min-w-0 text-foreground"
       onKeyDown={handleKeyboard}
     >
-      <header className="border-b border-border-subtle pb-4">
-        <LabHeading>Guided tour of a mission</LabHeading>
-        <p className="mt-2 max-w-[68ch] text-sm leading-6 text-muted">
-          Six steps that follow one example mission from concept to analysis,
-          diagrams, review and presentation. The tour only shows results that
-          already exist; it runs no new analysis.
-        </p>
-      </header>
+      <MissionIdentity
+        category={missionScenario?.category}
+        missionName={missionName}
+      />
 
       <div className="space-y-6 pt-6">
+        {/* Transport above the step row, as in the walkthrough and the
+         * replay. */}
+        {state.status === "active" ? (
+          <DemoNavigation
+            currentStepIndex={state.currentStepIndex}
+            onBack={() => dispatch({ type: "back" })}
+            onNext={() => dispatch({ type: "next" })}
+            onRestart={() => dispatch({ type: "restart" })}
+            onSkip={() => dispatch({ type: "skip" })}
+            totalSteps={DEMO_STEPS.length}
+          />
+        ) : null}
         <ol
           aria-label="ORBIX demo steps"
           className="grid gap-x-4 gap-y-1 text-sm sm:grid-cols-3 xl:grid-cols-6"
@@ -479,14 +470,6 @@ export function DemoMode({
                 {renderStepContent()}
               </HeadingLevel>
             </DemoStep>
-            <DemoNavigation
-              currentStepIndex={state.currentStepIndex}
-              onBack={() => dispatch({ type: "back" })}
-              onNext={() => dispatch({ type: "next" })}
-              onRestart={() => dispatch({ type: "restart" })}
-              onSkip={() => dispatch({ type: "skip" })}
-              totalSteps={DEMO_STEPS.length}
-            />
           </>
         ) : (
           // The end state sits behind a hairline, not in a second box inside
@@ -520,6 +503,7 @@ export function DemoMode({
           className="text-sm leading-6 text-muted"
           id="demo-mode-keyboard-help"
         >
+          The tour shows results that already exist; it runs no new analysis.
           Use the buttons to move between steps. With focus inside the tour but
           not on a control, the left and right arrow keys change steps, Home
           restarts and Escape skips the tour.

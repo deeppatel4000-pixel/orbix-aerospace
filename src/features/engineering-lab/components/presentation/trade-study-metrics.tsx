@@ -81,61 +81,6 @@ const NUMERIC_COLUMNS = [
   { key: "maneuverCount", label: "Maneuvers" },
 ] as const;
 
-export function buildTradeStudyExplanations(
-  entries: readonly MissionTradeStudyEntry[],
-): readonly string[] {
-  const explanations: string[] = [];
-
-  for (let index = 1; index < entries.length; index += 1) {
-    const current = entries[index];
-    const previous = entries[index - 1];
-    if (!current || !previous) continue;
-
-    const currentMetrics = getScenarioMetrics(current);
-    const previousMetrics = getScenarioMetrics(previous);
-
-    if (
-      currentMetrics.deltaVMetresPerSecond !== undefined &&
-      previousMetrics.deltaVMetresPerSecond !== undefined
-    ) {
-      const relationship =
-        currentMetrics.deltaVMetresPerSecond ===
-        previousMetrics.deltaVMetresPerSecond
-          ? "the same reported total delta-v as"
-          : currentMetrics.deltaVMetresPerSecond >
-              previousMetrics.deltaVMetresPerSecond
-            ? "a larger reported total delta-v than"
-            : "a smaller reported total delta-v than";
-      explanations.push(
-        `${current.scenario.name} has ${relationship} ${previous.scenario.name}.`,
-      );
-    }
-
-    if (
-      currentMetrics.tpsMassKilograms !== undefined &&
-      previousMetrics.tpsMassKilograms !== undefined
-    ) {
-      const relationship =
-        currentMetrics.tpsMassKilograms === previousMetrics.tpsMassKilograms
-          ? "the same reported TPS mass as"
-          : currentMetrics.tpsMassKilograms > previousMetrics.tpsMassKilograms
-            ? "a heavier reported TPS mass than"
-            : "a lighter reported TPS mass than";
-      explanations.push(
-        `${current.scenario.name} has ${relationship} ${previous.scenario.name}.`,
-      );
-    }
-  }
-
-  if (explanations.length === 0) {
-    explanations.push(
-      "No common completed orbital or TPS metrics are available for a direct explanatory comparison.",
-    );
-  }
-
-  return explanations;
-}
-
 /** One metric of the transposed table: a row, with one cell per mission. */
 interface TradeStudyMetricRow {
   readonly key: string;
@@ -188,7 +133,7 @@ const METRIC_ROWS: readonly TradeStudyMetricRow[] = [
   },
   {
     key: "tps-thickness",
-    label: "Thickness",
+    label: "TPS thickness",
     numeric: true,
     unit: "mm",
     value: (metrics) => metrics.tpsThicknessMillimetres,
@@ -217,7 +162,7 @@ function metricCell(
   const value = row.value(metrics);
   if (value === undefined) {
     return (
-      <span className="block text-right leading-5 text-muted">
+      <span className="block text-right text-[0.8125rem] leading-5 text-muted">
         Not reported
       </span>
     );
@@ -239,6 +184,17 @@ export function TradeStudyMetrics({ entries }: TradeStudyMetricsProps) {
     entry,
     metrics: getScenarioMetrics(entry),
   }));
+  // A row compares something only when at least two missions report it.
+  // Rows reported by one mission are named in one muted line instead, so
+  // the table is not mostly "Not reported".
+  const minimumReports = Math.min(2, missions.length);
+  const reportCount = (row: TradeStudyMetricRow) =>
+    missions.filter(({ metrics }) => row.value(metrics) !== undefined).length;
+  const rows = METRIC_ROWS.filter((row) => reportCount(row) >= minimumReports);
+  const singleRows = METRIC_ROWS.filter((row) => {
+    const count = reportCount(row);
+    return count > 0 && count < minimumReports;
+  });
   const columns: readonly DataTableColumn<TradeStudyMetricRow>[] = [
     {
       cell: (row) => (
@@ -275,22 +231,41 @@ export function TradeStudyMetrics({ entries }: TradeStudyMetricsProps) {
 
   return (
     <section aria-labelledby="trade-study-metrics-title">
-      <LabHeading offset={1} id="trade-study-metrics-title">
+      <LabHeading id="trade-study-metrics-title">
         Mission comparison metrics
       </LabHeading>
       <p className="mt-1 max-w-[60ch] text-sm leading-6 text-pretty text-muted">
         Values as supplied by each completed analysis, one column per mission in
-        scenario order, not ranked.
+        scenario order.
       </p>
-      <DataTable
-        caption="Metrics by mission"
-        // Mono figures and sans words share one 20px line and a baseline,
-        // so a figure never sits above the label in its row.
-        className="mt-3 [&_tbody_:is(th,td)]:align-baseline"
-        columns={columns}
-        getRowKey={(row) => row.key}
-        rows={METRIC_ROWS}
-      />
+      {rows.length === 0 ? (
+        <p className="mt-3 text-sm leading-6 text-text-secondary">
+          No metric is reported by two or more of these missions.
+        </p>
+      ) : (
+        <DataTable
+          caption="Metrics by mission"
+          // Mono figures and sans words share one 20px line and a baseline,
+          // so a figure never sits above the label in its row.
+          className="mt-3 [&_tbody_:is(th,td)]:align-baseline"
+          columns={columns}
+          getRowKey={(row) => row.key}
+          rows={rows}
+        />
+      )}
+      {singleRows.length > 0 ? (
+        <p className="mt-3 max-w-[68ch] text-[0.8125rem] leading-5 text-muted">
+          Reported by one mission only, so not compared:{" "}
+          {singleRows
+            .map((row) =>
+              /^[A-Z][a-z]/.test(row.label)
+                ? row.label.charAt(0).toLowerCase() + row.label.slice(1)
+                : row.label,
+            )
+            .join(", ")}
+          .
+        </p>
+      ) : null}
     </section>
   );
 }

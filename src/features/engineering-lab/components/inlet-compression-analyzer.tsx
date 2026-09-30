@@ -8,7 +8,6 @@ import { analyzeInletCompression } from "@/features/engineering-lab/analysis";
 import {
   EQ_CONT,
   EQ_LINE,
-  EQ_SUP,
   EQ_TERM,
   CalculatorNumberField,
   focusFirstInvalidField,
@@ -22,6 +21,10 @@ import {
   LabFigure,
   EqDot,
   EqSubSup,
+  LAB_GROUP,
+  LAB_GROUP_LEGEND,
+  EqFrac,
+  EQ_SUB_CLEAR,
 } from "@/features/engineering-lab/components/shared";
 import type {
   InletCompressionAnalysis,
@@ -284,37 +287,45 @@ const toolEquation = (
         </span>
         <span className={EQ_LINE}>
           <span className={EQ_TERM}>
-            p<sub>t2</sub>/p<sub>t1</sub>
+            p<sub className={EQ_SUB_CLEAR}>t2</sub>/p
+            <sub className={EQ_SUB_CLEAR}>t1</sub>
           </span>
         </span>
+        {/* Stacked fractions in tall parentheses, so one bracket family
+            is used: B612 Mono draws "(" and "[" almost alike. */}
         <span className={EQ_CONT}>
           <span className={EQ_TERM}>
-            = [(γ+1)M
-            <EqSubSup sub="n" sup="2" />
-          </span>
-          <wbr />
-          <span className={EQ_TERM}>
-            /((γ−1)M
-            <EqSubSup sub="n" sup="2" />
-          </span>
-          <wbr />
-          <span className={EQ_TERM}>
-            +2)]<sup className={EQ_SUP}>γ/(γ−1)</sup>
+            ={" "}
+            <EqFrac
+              den={
+                <>
+                  (γ−1)M
+                  <EqSubSup sub="n" sup="2" /> + 2
+                </>
+              }
+              num={
+                <>
+                  (γ+1)M
+                  <EqSubSup sub="n" sup="2" />
+                </>
+              }
+              power="γ/(γ−1)"
+            />
           </span>
         </span>
         <span className={EQ_CONT}>
           <span className={EQ_TERM}>
             <EqDot />
-            [(γ+1)
-          </span>
-          <wbr />
-          <span className={EQ_TERM}>
-            /(2γM
-            <EqSubSup sub="n" sup="2" />
-          </span>
-          <wbr />
-          <span className={EQ_TERM}>
-            −(γ−1))]<sup className={EQ_SUP}>1/(γ−1)</sup>
+            <EqFrac
+              den={
+                <>
+                  2γM
+                  <EqSubSup sub="n" sup="2" /> − (γ−1)
+                </>
+              }
+              num="γ+1"
+              power="1/(γ−1)"
+            />
           </span>
         </span>
       </>
@@ -454,8 +465,8 @@ export function InletCompressionAnalyzer() {
             onKeyDown={focusFirstInvalidFieldOnEnter}
             onSubmit={preventSubmission}
           >
-            <fieldset>
-              <legend className="text-base font-semibold text-foreground">
+            <fieldset className={LAB_GROUP}>
+              <legend className={LAB_GROUP_LEGEND}>
                 Inlet entry conditions
               </legend>
               <div className="mt-4 grid gap-5 @min-[36rem]/col:grid-cols-2">

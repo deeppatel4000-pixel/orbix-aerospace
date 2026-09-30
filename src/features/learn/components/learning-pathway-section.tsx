@@ -66,16 +66,22 @@ interface LearningPathwaySectionProps {
  *
  * The large faint numeral (the accent at 16 percent over the page ground,
  * decorative and hidden from assistive technology) sits top right at every
- * width. Below 640px it floats beside the heading's first line, so only
- * that line is shortened. "Pathway 01" is the number's accessible
- * carrier. The rail names the tools. "Why it matters" is set in the display
- * cut under a 1px accent rule, so it reads as a pull quote, not a second
- * lede.
+ * width. Below 640px the header is a two-row grid: "Pathway 0N" and a
+ * 5.5rem numeral share the first row, and the heading has the second row
+ * to itself, so the numeral never shortens a heading line. From 640px the
+ * header is block flow and the numeral is placed absolutely.
+ * "Pathway 0N" is the number's accessible carrier.
+ * The rail names the tools. "Why it matters" is set in the display cut
+ * under a 1px accent rule, so it reads as a pull quote, not a second lede.
  * After "Why it matters" comes the pathway's figure, where it has one.
  *
- * The chapter body has two right edges only: hairline rules and equation
- * blocks span the 8-column figure track, and running text stops at a 38rem
- * measure inside it. DOM order is summary, lab links, then key ideas and
+ * Right edges in the chapter body: every hairline rule (the accent rule
+ * over "Why it matters" included), equation block and figure spans the
+ * 8-column figure track. Running text stops at a 38rem measure inside it.
+ * The pull quote alone runs to 40rem: its display size sets fewer
+ * characters per line, and at 38rem the longest quote takes one more line
+ * at 1440px. It has no rule of its own, so its 2rem longer measure reads
+ * as a looser line, not a third rule edge. DOM order is summary, lab links, then key ideas and
  * further reading, so the lab links come early on a phone. From 1024px the
  * links move to a sticky rail in columns 9 to 12 by grid placement, which
  * keeps the visual order the same as the DOM order.
@@ -93,20 +99,29 @@ export function LearningPathwaySection({
       className="relative scroll-mt-20 border-t border-border pt-10 pb-20 last:pb-0 sm:pt-14 sm:pb-24"
       id={area.id}
     >
-      <header className="relative flow-root">
-        <p className="orbix-caps mb-4 text-text-muted">Pathway {chapter}</p>
-        {/* Below 640px the numeral floats beside the heading's first line
-            only, so later lines use the full width. From 640px it is
-            placed absolutely, top right, 40px below the section rule.
-            pr-[0.06em] offsets the trailing negative tracking, so the ink
-            of the last digit ends flush with the container edge. */}
+      <header className="relative grid grid-cols-[1fr_auto] items-end sm:block">
+        <p className="orbix-caps mb-1 self-end text-text-muted sm:mb-4">
+          Pathway {chapter}
+        </p>
+        {/* Below 640px the numeral is the right item of the first grid row,
+            level with "Pathway 0N", and the heading has the second row to
+            itself. From 640px it is placed absolutely, top right, 40px
+            below the section rule. pr-[0.06em] offsets the trailing
+            negative tracking, so the ink of the last digit ends flush with
+            the container edge. Below 360px the heading steps down from the
+            2rem H2 floor to 1.875rem: at 2rem "Atmospheric entry and" is
+            about 292px in a 288px column, and the balanced wrap then leaves
+            "Atmospheric" alone on the first line. */}
         <span
           aria-hidden="true"
-          className="font-display pointer-events-none float-right -mt-1 ml-4 block pr-[0.06em] text-[4.5rem] leading-[0.8] tracking-[-0.06em] text-[color-mix(in_srgb,var(--accent)_16%,var(--bg-page))] select-none sm:absolute sm:-top-4 sm:right-0 sm:float-none sm:mt-0 sm:ml-0 sm:text-[clamp(6rem,17vw,13.5rem)]"
+          className="font-display pointer-events-none block pr-[0.06em] text-[5.5rem] leading-[0.78] tracking-[-0.06em] text-[color-mix(in_srgb,var(--accent)_16%,var(--bg-page))] select-none sm:absolute sm:-top-4 sm:right-0 sm:text-[clamp(6rem,17vw,13.5rem)] sm:leading-[0.8]"
         >
           {chapter}
         </span>
-        <h2 className="orbix-h2 text-text-primary sm:max-w-[22ch]" id={titleId}>
+        <h2
+          className="orbix-h2 col-span-2 mt-3 text-text-primary max-[359px]:text-[1.875rem]! sm:mt-0 sm:max-w-[22ch]"
+          id={titleId}
+        >
           {area.title}
         </h2>
       </header>
@@ -119,7 +134,7 @@ export function LearningPathwaySection({
 
           <div className="mt-12 border-t border-accent pt-5">
             <h3 className={MINOR_HEADING}>Why it matters</h3>
-            <p className="font-display mt-4 max-w-[52ch] text-[clamp(1.25rem,1.7vw,1.5rem)] leading-[1.35] tracking-[-0.015em] text-pretty text-text-primary [--font-display-weight:500]">
+            <p className="font-display mt-4 max-w-[40rem] text-[clamp(1.25rem,1.7vw,1.5rem)] leading-[1.35] tracking-[-0.015em] text-pretty text-text-primary [--font-display-weight:500]">
               {withSubscripts(area.whyItMatters)}
             </p>
           </div>
@@ -183,15 +198,11 @@ export function LearningPathwaySection({
               >
                 <span
                   aria-hidden="true"
-                  className="orbix-caps pt-[0.3125rem] tracking-[0.02em]! text-accent tabular-nums"
+                  className="self-baseline font-sans text-[0.8125rem] font-medium tracking-normal text-accent tabular-nums"
                 >
-                  {/* B612 Mono gives the point a full cell; pull it in so
-                      "1.1" reads as one number, not "1. 1". */}
-                  {number}
-                  <span className="-mr-[0.35em] -ml-[0.05em]">.</span>
-                  {index + 1}
+                  {`${number}.${index + 1}`}
                 </span>
-                <p className="max-w-[35.25rem] leading-[1.65] text-pretty text-text-secondary">
+                <p className="max-w-[35.25rem] self-baseline leading-[1.65] text-pretty text-text-secondary">
                   {withSubscripts(idea.text)}
                 </p>
                 {idea.equation ? (

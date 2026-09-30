@@ -8,7 +8,7 @@ describe("MissionScenarioBuilder", () => {
     const markup = renderToStaticMarkup(<MissionScenarioBuilder />);
 
     expect(markup).toContain('aria-label="Custom mission scenario"');
-    expect(markup).toContain("Mission briefing");
+    expect(markup).toContain("Mission identity");
     expect(markup).toContain("Mission name");
     expect(markup).toContain("Mission category");
     expect(markup).toContain("Mission description");

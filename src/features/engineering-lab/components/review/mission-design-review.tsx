@@ -1,3 +1,5 @@
+import { ButtonArrowIcon } from "@/components/ui/button-arrow";
+import { buttonClass } from "@/components/ui/button-class";
 import { EmptyState } from "@/components/ui/empty-state";
 import type {
   MissionInsightsAnalysis,
@@ -100,13 +102,14 @@ export function MissionDesignReview({
         </LabHeading>
         <p className="mt-2 max-w-[68ch] text-sm leading-6 text-muted">
           Reported mission parameters, source assumptions and known model
-          limits, grouped for review. No feasibility decision is produced.
+          limits, grouped for review.
         </p>
         <a
-          className="mt-3 inline-block text-sm text-accent underline underline-offset-4 hover:text-accent-strong"
+          className={buttonClass({ className: "mt-1", variant: "tertiary" })}
           href="#design-review-assumptions-title"
         >
           Jump to modeling assumptions
+          <ButtonArrowIcon direction="down" />
         </a>
       </header>
 
@@ -279,7 +282,7 @@ export function MissionDesignReview({
         </ReviewCategory>
       </div>
 
-      <footer className="mt-6 border-t border-border-subtle pt-4 text-sm leading-6 text-muted">
+      <footer className="mt-6 border-t border-border-subtle pt-4 text-[0.8125rem] leading-5 text-muted">
         This workspace organizes existing mission information for educational
         review. It does not evaluate feasibility or make design decisions.
       </footer>

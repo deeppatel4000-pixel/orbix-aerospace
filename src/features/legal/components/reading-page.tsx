@@ -94,11 +94,17 @@ interface ReadingPageProps {
  * the build log and verification.
  *
  * Intro: eyebrow, a display H1 with its last words in the accent, then the
- * lead. Body: from 80rem a 12-column grid with a sticky numbered "On this
- * page" list in the rail (3 columns) and the text in the other 9; below
- * 80rem the list sits above the text and tables get the full container
- * width. Running text keeps a 60ch measure; tables and figures use the
- * full track, and spec lists keep 68ch.
+ * lead, closed by a control-weight rule so the band has a defined end
+ * without any decoration.
+ *
+ * Body: from 80rem a 12-column grid with a sticky numbered "On this page"
+ * list in the rail (3 columns) and the text in the other 9; below 80rem
+ * the list sits above the text and tables get the full container width.
+ * Spec lists keep the 68ch measure of spec 9 (at their 15px size).
+ * Paragraphs, lists, notes and table captions share one absolute measure
+ * of 38.25rem (about 612px, 60ch of 17px body text, `LegalSection`), a
+ * little narrower than 68ch so the long legal paragraphs stay easy to
+ * track. Tables and figures use the full track.
  *
  * Sections are numbered with a CSS counter (`LegalSection`), so the
  * numbers in the list and on the headings always agree without anyone
@@ -122,8 +128,8 @@ export function ReadingPage({
 
   return (
     <>
-      <div className="relative border-b border-border-subtle">
-        <Container className="relative pt-12 pb-12 sm:pt-20 sm:pb-16 lg:pt-24">
+      <div className="relative border-b border-border-control">
+        <Container className="relative pt-12 pb-12 sm:pt-20 sm:pb-16 lg:pt-24 xl:pt-28">
           <Eyebrow>{eyebrow}</Eyebrow>
           <h1 className="orbix-h1 mt-6 max-w-[18ch] text-text-primary">
             {title}

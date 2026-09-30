@@ -316,26 +316,6 @@ export function MissionScenarioBuilder({
           Engineering calculations begin only inside the Mission Profile
           Analyzer, which runs below once you select Analyze mission.
         </p>
-        <dl className="mt-4 flex flex-wrap gap-x-8 gap-y-2 text-sm">
-          <div className="flex items-baseline gap-2">
-            <dt className="text-muted">Orbital systems</dt>
-            <dd className="font-medium text-foreground">
-              {usesOrbit ? "On" : "Off"}
-            </dd>
-          </div>
-          <div className="flex items-baseline gap-2">
-            <dt className="text-muted">Reentry analysis</dt>
-            <dd className="font-medium text-foreground">
-              {values.enableReentryAnalysis ? "On" : "Off"}
-            </dd>
-          </div>
-          <div className="flex items-baseline gap-2">
-            <dt className="text-muted">Vehicle comparison</dt>
-            <dd className="font-medium text-foreground">
-              {values.enableVehicleComparison ? "On" : "Off"}
-            </dd>
-          </div>
-        </dl>
       </div>
 
       <form
@@ -345,7 +325,7 @@ export function MissionScenarioBuilder({
         onSubmit={analyzeScenario}
       >
         <fieldset className="orbix-fieldset border-t border-border-subtle pt-8 [&>legend+*]:clear-left">
-          <PanelHeading>Mission briefing</PanelHeading>
+          <PanelHeading>Mission identity</PanelHeading>
           <div className="grid gap-6 md:grid-cols-2">
             <div className="orbix-field">
               <label
@@ -573,7 +553,7 @@ export function MissionScenarioBuilder({
                 idPrefix="mission-scenario"
                 label="Inclination change"
                 onChange={updateNumericField}
-                unit="deg"
+                unit="°"
                 value={values.inclinationChangeDegrees}
               />
             </div>
@@ -672,7 +652,7 @@ export function MissionScenarioBuilder({
                   hint="Optional descent angle; blank preserves analysis defaults."
                   label="Flight path angle"
                   onChange={updateNumericField}
-                  unit="deg"
+                  unit="°"
                   value={values.initialFlightPathAngleDegrees}
                 />
               </div>

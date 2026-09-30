@@ -183,6 +183,7 @@ export function MissionControlDashboard({
     if (activeView === "briefing") {
       return missionProfileAnalysis ? (
         <MissionBriefing
+          category={missionCategory}
           insights={missionInsights}
           missionProfile={missionProfileAnalysis}
           preset={missionPreset}
@@ -211,6 +212,7 @@ export function MissionControlDashboard({
     if (activeView === "showcase") {
       return missionProfileAnalysis ? (
         <MissionShowcase
+          category={missionCategory}
           insights={missionInsights}
           missionProfile={missionProfileAnalysis}
           report={missionReport ?? undefined}

@@ -139,15 +139,14 @@ export function MissionPresetLauncher() {
 
   return (
     <div className="space-y-6">
-      <p className="max-w-[68ch] text-sm leading-6 text-muted">
-        Each preset is a fixed set of mission-profile inputs. Loading one
-        replaces the inputs in the mission profile analyzer; this page does no
-        calculation of its own.
-      </p>
-
       <fieldset className="orbix-fieldset">
         <legend className="text-foreground">Choose a mission preset</legend>
-        <div className="grid gap-3 lg:grid-cols-2">
+        {/* One treatment at every width: each tile sits on a 1px top rule
+         * across its full width, with 12px of inner padding so the text
+         * never touches a fill. The chosen tile's rule becomes a 2px accent
+         * rule, it takes the raised fill and a check, and it never reaches
+         * past the column edge the rules above and below stop at. */}
+        <div className="grid gap-y-3 lg:grid-cols-2 lg:gap-x-6">
           {presets.map((preset, presetIndex) => {
             const selected = preset.id === selectedPresetId;
             const loaded = preset.id === loadedPresetId;
@@ -156,29 +155,28 @@ export function MissionPresetLauncher() {
             return (
               <label
                 className={cn(
-                  // Only the chosen preset is boxed (accent outline); the
-                  // rest sit on a hairline top rule, so no box nests inside
-                  // the tool frame. Border width, radius and padding are
-                  // equal in both states, so choosing a preset changes only
-                  // colour and the hover fill has the same corners.
-                  "relative flex cursor-pointer gap-3 rounded-lg border p-4 transition-colors",
+                  // Padding is equal in both states, so choosing a preset
+                  // changes only colour and the weight of the top rule.
+                  "relative flex cursor-pointer gap-3 px-3 py-4 transition-colors before:pointer-events-none before:absolute before:inset-x-0 before:top-0",
                   // An odd last tile spans both columns, so no blank cell.
                   presets.length % 2 === 1 &&
                     presetIndex === presets.length - 1 &&
                     "lg:col-span-2",
                   "has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-[var(--orbix-focus)]",
                   selected
-                    ? "border-accent bg-surface-raised"
-                    : "border-transparent border-t-border-subtle hover:bg-surface-raised",
+                    ? "bg-surface-raised before:h-0.5 before:bg-accent"
+                    : "before:h-px before:bg-border-subtle hover:bg-surface-raised",
                 )}
                 htmlFor={inputId}
                 key={preset.id}
               >
                 {/* Native radio for the group semantics and arrow keys.
                     Single choice, so no empty box at rest (that reads as
-                    multi-select, like the Compare tiles): the chosen tile
-                    shows the accent outline and a check. The 16px slot
-                    stays so choosing a preset moves nothing. */}
+                    multi-select, like the Compare tiles) and no empty slot
+                    indenting the text: the chosen tile shows the accent
+                    rule and a check pinned to its top-right corner, and
+                    the text always keeps clear of that corner, so choosing a
+                    preset moves nothing. */}
                 <input
                   aria-describedby={`${inputId}-description`}
                   checked={selected}
@@ -192,18 +190,15 @@ export function MissionPresetLauncher() {
                   type="radio"
                   value={preset.id}
                 />
-                <span
-                  aria-hidden="true"
-                  className={cn(
-                    "mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-[2px] border",
-                    selected
-                      ? "border-accent bg-accent text-on-accent"
-                      : "border-transparent",
-                  )}
-                >
-                  {selected ? <Check size={12} strokeWidth={3} /> : null}
-                </span>
-                <span className="min-w-0">
+                {selected ? (
+                  <span
+                    aria-hidden="true"
+                    className="pointer-events-none absolute top-4 right-3 flex h-4 w-4 items-center justify-center rounded-[2px] bg-accent text-on-accent"
+                  >
+                    <Check size={12} strokeWidth={3} />
+                  </span>
+                ) : null}
+                <span className="min-w-0 pr-6">
                   <span className="orbix-label block">
                     {formatCategory(preset.category)}
                   </span>

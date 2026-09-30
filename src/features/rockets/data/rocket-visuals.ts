@@ -16,20 +16,20 @@ export interface RocketVisual {
    */
   readonly cardName?: string;
   /**
-   * One factual line for the registry card, taken only from the vehicle
-   * record, in one grammar for every vehicle: architecture or propulsion,
-   * then type ("Twin-engine stealth fighter", "Three-stage heavy-lift
-   * rocket"). At most 34 characters (CARD_SUMMARY_MAX_LENGTH), about 225px
-   * at 14px, so it sets on one line in the narrowest card (about 240px of
-   * text at 320px). Shown whole, never truncated; the visuals test enforces
-   * the limit.
+   * One factual line for the registry card, taken only from the stage
+   * records: the engines and propellants ("Merlin engines on RP-1 and
+   * LOX"), which the classification line above it (stage count and
+   * reusability) does not give. At most 31 characters
+   * (CARD_SUMMARY_MAX_LENGTH): the summary line is 223px wide in the
+   * narrowest card (320px), where 33 characters wrapped. Shown whole,
+   * never truncated; the visuals test enforces the limit.
    */
   readonly cardSummary: string;
   /** Photographer or agency, as the licence asks to be credited. */
   readonly credit: string;
   /**
-   * `object-position` for the first registry card from 64rem: the left
-   * half of a two-column card, as tall as its grid row (narrower than 3:4,
+   * `object-position` for the first registry card from 40rem: the left
+   * half of a two-column card, as tall as the card (narrower than 3:4,
    * so the crop only trims the sides).
    */
   readonly featureObjectPosition: string;
@@ -37,6 +37,11 @@ export interface RocketVisual {
   readonly height: number;
   /** `object-position` for the full-bleed profile and registry hero. */
   readonly heroObjectPosition: string;
+  /**
+   * `object-position` for the hero's 3:4 phone plate (below 48rem), chosen
+   * so the whole vehicle, nose to pad, stays in frame.
+   */
+  readonly heroPhoneObjectPosition: string;
   /** Licence name, for example "Public domain (U.S. government work)" or "CC BY 2.0". */
   readonly license: string;
   /** Page that states the licence terms. */
@@ -62,12 +67,13 @@ const rocketVisuals = {
   "falcon-9": {
     alt: "Falcon 9 climbing away from Launch Complex 39A, with the launch tower and a cloud of steam below",
     cardObjectPosition: "50% 30%",
-    cardSummary: "Two-stage partly reusable rocket",
+    cardSummary: "Merlin engines on RP-1 and LOX",
     cardTreatment: "flagship",
     credit: "NASA/Tony Gray and Tim Powers",
     featureObjectPosition: "50% 0%",
     height: 1920,
     heroObjectPosition: "50% 13%",
+    heroPhoneObjectPosition: "50% 15%",
     ...PUBLIC_DOMAIN_NASA,
     modifications: RESIZED,
     objectPosition: "50% 35%",
@@ -79,12 +85,13 @@ const rocketVisuals = {
   "falcon-heavy": {
     alt: "Falcon Heavy lifting off beside its launch tower at Launch Complex 39A, with steam clouds spreading across the pad",
     cardObjectPosition: "50% 40%",
-    cardSummary: "Three-core heavy-lift rocket",
+    cardSummary: "Three Merlin-powered cores",
     cardTreatment: "standard",
     credit: "NASA/Kim Shiflett",
     featureObjectPosition: "40% 50%",
     height: 1920,
     heroObjectPosition: "50% 29%",
+    heroPhoneObjectPosition: "50% 30%",
     ...PUBLIC_DOMAIN_NASA,
     modifications: RESIZED,
     objectPosition: "50% 45%",
@@ -96,12 +103,13 @@ const rocketVisuals = {
   "saturn-v": {
     alt: "Saturn V lifting off beside its launch umbilical tower at Launch Complex 39A during the Apollo 11 launch",
     cardObjectPosition: "45% 50%",
-    cardSummary: "Three-stage heavy-lift rocket",
+    cardSummary: "F-1 and J-2 engines",
     cardTreatment: "wide",
     credit: "NASA",
     featureObjectPosition: "54% 50%",
     height: 1920,
     heroObjectPosition: "50% 21%",
+    heroPhoneObjectPosition: "50% 55%",
     ...PUBLIC_DOMAIN_NASA,
     modifications: RESIZED,
     objectPosition: "50% 45%",
@@ -114,12 +122,13 @@ const rocketVisuals = {
     alt: "Space Launch System lifting off from Launch Complex 39B for Artemis II, seen from across the water",
     cardName: "Space Launch System",
     cardObjectPosition: "50% 0%",
-    cardSummary: "Super heavy-lift crew rocket",
+    cardSummary: "Solid boosters and four RS-25s",
     cardTreatment: "standard",
     credit: "NASA/Michael DeMocker",
     featureObjectPosition: "78% 50%",
     height: 1920,
     heroObjectPosition: "50% 6%",
+    heroPhoneObjectPosition: "50% 0%",
     ...PUBLIC_DOMAIN_NASA,
     modifications: RESIZED,
     objectPosition: "55% 35%",
@@ -131,12 +140,13 @@ const rocketVisuals = {
   starship: {
     alt: "Starship on its Super Heavy booster rising above a large exhaust cloud during its fifth flight test",
     cardObjectPosition: "100% 50%",
-    cardSummary: "Two-stage fully reusable rocket",
+    cardSummary: "Raptor engines on methane",
     cardTreatment: "wide",
     credit: "Steve Jurvetson",
     featureObjectPosition: "72% 50%",
     height: 1920,
     heroObjectPosition: "50% 12%",
+    heroPhoneObjectPosition: "57% 50%",
     license: "CC BY 2.0",
     licenseUrl: "https://creativecommons.org/licenses/by/2.0/",
     modifications: RESIZED,
@@ -153,4 +163,4 @@ export function getRocketVisual(id: string): RocketVisual | undefined {
 }
 
 /** The longest `cardSummary` that still sets on one line at 320px. */
-export const CARD_SUMMARY_MAX_LENGTH = 34;
+export const CARD_SUMMARY_MAX_LENGTH = 31;

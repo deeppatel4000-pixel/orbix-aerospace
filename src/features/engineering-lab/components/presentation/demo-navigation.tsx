@@ -1,5 +1,7 @@
 import { Button } from "@/components/ui/button";
 
+import { TRANSPORT_ROW_CLASS } from "../visualization/transport-row";
+
 export interface DemoNavigationProps {
   readonly currentStepIndex: number;
   readonly onBack: () => void;
@@ -20,26 +22,25 @@ export function DemoNavigation({
   const isLastStep = currentStepIndex === totalSteps - 1;
 
   return (
-    <nav
-      aria-label="ORBIX demo tour navigation"
-      className="border-t border-border-subtle pt-4"
-    >
-      <div className="flex flex-wrap gap-2">
-        <Button
-          arrow="back"
-          disabled={currentStepIndex === 0}
-          onClick={onBack}
-          variant="secondary"
-        >
-          Back
-        </Button>
+    <nav aria-label="ORBIX demo tour navigation">
+      {/* The shared transport order: the primary action first, then the
+       * quiet controls, as in the replay and the walkthrough. */}
+      <div className={TRANSPORT_ROW_CLASS}>
         <Button arrow={isLastStep ? undefined : "right"} onClick={onNext}>
           {isLastStep ? "Complete tour" : "Next step"}
         </Button>
         <Button
+          arrow="back"
+          disabled={currentStepIndex === 0}
+          onClick={onBack}
+          variant="ghost"
+        >
+          Back
+        </Button>
+        <Button
           aria-label="Restart demo tour"
           onClick={onRestart}
-          variant="secondary"
+          variant="ghost"
         >
           Restart
         </Button>
@@ -48,7 +49,7 @@ export function DemoNavigation({
         </Button>
       </div>
 
-      {/* No progress bar: the step row above and "Step n of 6" already
+      {/* No progress bar: the step row below and "Step n of 6" already
        * say where the reader is. */}
     </nav>
   );

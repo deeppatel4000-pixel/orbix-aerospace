@@ -7,7 +7,54 @@ import type {
   VehicleReentryEvaluationAnalysis,
 } from "@/features/engineering-lab/types";
 
-import { StartupCheckList, type StartupCheckItem } from "./startup-check-list";
+interface SourceCheck {
+  readonly available: boolean;
+  readonly id: string;
+  readonly label: string;
+}
+
+/** "a", "a and b", "a, b and c". */
+function joinList(items: readonly string[]): string {
+  if (items.length <= 1) return items.join("");
+  return `${items.slice(0, -1).join(", ")} and ${items.at(-1)}`;
+}
+
+/**
+ * One sentence naming what the workspace was built from, and what was not
+ * supplied. It replaces a five-row list of check icons that never changed
+ * on this page and read as status chrome (spec 2).
+ */
+export function describeMissionSources(checks: readonly SourceCheck[]): string {
+  const byId = (id: string) => checks.find((check) => check.id === id);
+  const analyses = ["orbital-systems", "vehicle-data", "thermal-data"]
+    .map(byId)
+    .filter((check): check is SourceCheck => check !== undefined);
+  const suppliedAnalyses = analyses
+    .filter((check) => check.available)
+    .map((check) => check.label);
+  const parts = [
+    byId("mission-profile")?.available ? "the mission profile" : null,
+    suppliedAnalyses.length > 0
+      ? `the ${joinList(suppliedAnalyses)} ${
+          suppliedAnalyses.length === 1 ? "analysis" : "analyses"
+        }`
+      : null,
+    byId("mission-report")?.available ? "the mission report" : null,
+  ].filter((part): part is string => part !== null);
+  const missing = checks
+    .filter((check) => !check.available)
+    .map((check) =>
+      analyses.includes(check) ? `${check.label} analysis` : check.label,
+    );
+
+  if (parts.length === 0) {
+    return "No completed analysis has been supplied to this workspace yet.";
+  }
+  const built = `Built from ${parts.length > 2 ? parts.slice(0, -1).join(", ") + ", and " + parts.at(-1) : parts.join(" and ")}.`;
+  return missing.length > 0
+    ? `${built} Not supplied: ${joinList(missing)}.`
+    : built;
+}
 
 export interface MissionStartupSequenceProps {
   readonly children?: ReactNode;
@@ -19,8 +66,8 @@ export interface MissionStartupSequenceProps {
 }
 
 /**
- * The data checks for a mission workspace: which completed analyses were
- * supplied. Mission control renders it at the foot of its header, under the
+ * The sources of a mission workspace: which completed analyses were
+ * supplied, as one sentence. Mission control renders it at the foot of its header, under the
  * mission's name and identity row, so name and category are not repeated.
  *
  * This used to be a timed "startup sequence" overlay that implied live
@@ -33,11 +80,11 @@ export function MissionStartupSequence({
   missionReport,
   vehicleReentryEvaluation,
 }: MissionStartupSequenceProps) {
-  const checks: readonly StartupCheckItem[] = [
+  const checks: readonly SourceCheck[] = [
     {
       available: Boolean(missionProfileAnalysis),
       id: "mission-profile",
-      label: "Mission profile",
+      label: "mission profile",
     },
     {
       available: Boolean(
@@ -45,7 +92,7 @@ export function MissionStartupSequence({
         missionReport?.orbitalAnalysis,
       ),
       id: "orbital-systems",
-      label: "Orbital analysis",
+      label: "orbital",
     },
     {
       available: Boolean(
@@ -56,7 +103,7 @@ export function MissionStartupSequence({
         vehicleReentryEvaluation,
       ),
       id: "vehicle-data",
-      label: "Vehicle analysis",
+      label: "vehicle",
     },
     {
       available: Boolean(
@@ -65,30 +112,23 @@ export function MissionStartupSequence({
         vehicleReentryEvaluation,
       ),
       id: "thermal-data",
-      label: "Thermal analysis",
+      label: "thermal",
     },
     {
       available: Boolean(missionReport),
       id: "mission-report",
-      label: "Mission report",
+      label: "mission report",
     },
   ];
 
   return (
     <>
-      <section aria-labelledby="mission-checks-title" className="mt-6">
-        <h4
-          className="text-[0.9375rem] leading-6 font-semibold text-foreground"
-          id="mission-checks-title"
-        >
-          Checks performed
-        </h4>
-        <p className="mt-1 text-sm leading-6 text-muted">
-          Which completed analyses were supplied to this workspace. Nothing
-          below is live data.
-        </p>
-        <StartupCheckList items={checks} />
-      </section>
+      <p
+        className="mt-6 max-w-[68ch] text-sm leading-6 text-muted"
+        data-mission-sources=""
+      >
+        {describeMissionSources(checks)}
+      </p>
 
       {children}
     </>

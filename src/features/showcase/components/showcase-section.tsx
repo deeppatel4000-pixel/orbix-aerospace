@@ -39,11 +39,10 @@ export function ShowcaseSection({
     >
       <Container>
         <div className="border-t border-border pt-6 sm:pt-8">
-          <div className="grid gap-3 sm:grid-cols-[4rem_minmax(0,1fr)] sm:gap-x-4">
-            <p
-              aria-hidden="true"
-              className="orbix-data pt-1 text-accent sm:pt-3"
-            >
+          {/* From 40rem the number sits on the heading's first baseline,
+              like a drawing reference on the title line. */}
+          <div className="grid gap-3 sm:grid-cols-[4rem_minmax(0,1fr)] sm:items-baseline sm:gap-x-4">
+            <p aria-hidden="true" className="orbix-data text-accent">
               {formatIndexNumber(number)}
             </p>
             <div className="max-w-[68ch]">

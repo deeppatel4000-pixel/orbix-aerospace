@@ -78,7 +78,7 @@ describe("MissionBriefing", () => {
     );
 
     expect(markup).toContain("Orbital logistics");
-    expect(markup).toContain("Educational mission");
+    expect(markup).toContain("Typical mission phases");
     expect(markup).toContain("does not assess mission feasibility");
   });
 
@@ -123,7 +123,7 @@ describe("MissionBriefing", () => {
     );
     expect(markup).toContain("Launch");
     expect(markup).toContain("Orbit insertion");
-    expect(markup).toContain("Recovery review");
+    expect(markup).toContain("Recovery");
     expect(markup).toContain("Not simulated; shown for context only");
   });
 

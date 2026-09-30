@@ -28,11 +28,12 @@ export function ArchitecturePanel({
       title="Stages"
     >
       <DataTable
+        singleLineCells
         caption={`${name} stages`}
         columns={[
           {
             cell: (stage) => (
-              <span className="block min-w-40">{stage.name}</span>
+              <span className="block md:min-w-40">{stage.name}</span>
             ),
             header: "Element",
             key: "element",

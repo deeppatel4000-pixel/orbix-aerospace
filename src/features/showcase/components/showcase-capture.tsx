@@ -73,8 +73,8 @@ export function ShowcaseCapture({ mission }: ShowcaseCaptureProps) {
             <span className="sr-only">ORBIX</span>
             {/* The caption for the whole view, in the title block. */}
             <span className="orbix-label">
-              Educational mission preset. Values shown are preset inputs,
-              converted to display units.
+              Educational mission preset. Values are preset inputs converted to
+              display units, except where a caption says otherwise.
             </span>
           </p>
           <ButtonLink
@@ -86,7 +86,7 @@ export function ShowcaseCapture({ mission }: ShowcaseCaptureProps) {
           </ButtonLink>
         </header>
 
-        <div className="flex flex-1 flex-col justify-center py-8 sm:py-12 lg:py-6">
+        <div className="flex flex-1 flex-col justify-center py-8 sm:py-12 lg:py-4">
           <MissionBody
             footer={<CaptureDetails mission={mission} />}
             header={

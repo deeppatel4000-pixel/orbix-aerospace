@@ -24,7 +24,6 @@ export function EngineeringNotesList({
 }: EngineeringNotesListProps) {
   return (
     <VehicleProfileSection
-      description="Concise engineering observations based on public aerospace specifications and documented design characteristics."
       id="engineering-notes"
       index={index}
       title="Engineering analysis"

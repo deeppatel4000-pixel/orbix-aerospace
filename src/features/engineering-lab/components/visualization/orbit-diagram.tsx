@@ -86,6 +86,14 @@ const ANNOTATION_TEXT = {
 } as const;
 
 /**
+ * The large drawing's label size before it is measured, by the figure's
+ * width: 11 x 400 / (figure width less the 2rem plate padding), rounded up,
+ * so the labels never render under 11 CSS px on a phone before hydration.
+ */
+const ANNOTATION_FLOOR_CLASS =
+  "text-[17.25px] @[20rem]:text-[15.5px] @[22.5rem]:text-[13.5px] @[25rem]:text-[12.25px] @[28rem]:text-[11px]";
+
+/**
  * B612 Mono has no subscript digits (U+2081, U+2082), so subscripts are
  * drawn as a smaller, lowered plain digit.
  */
@@ -410,11 +418,20 @@ export function OrbitDiagram({
     y: CENTRE + (drawnR2 ?? 0) * 0.62 * Math.sin(dimensionAngle),
   };
 
-  const { fontSize: annotationFontSize, svgRef } = useAnnotationFontSize(
-    annotated,
-    VIEW_SIZE,
-  );
-  const annotationText = { ...ANNOTATION_TEXT, fontSize: annotationFontSize };
+  const {
+    fontSize: annotationFontSize,
+    measured,
+    svgRef,
+  } = useAnnotationFontSize(annotated, VIEW_SIZE);
+  // Until the drawing is measured, stepped container-query sizes (in user
+  // units, set on the class) keep the labels at 11 CSS px or more; once it
+  // is measured the inline size, which wins over the class, takes over.
+  const annotationText = {
+    ...ANNOTATION_TEXT,
+    className: ANNOTATION_FLOOR_CLASS,
+    fontSize: annotationFontSize,
+    style: measured ? { fontSize: annotationFontSize } : undefined,
+  };
   const subscriptShift = annotationFontSize * 0.25;
 
   const drawing = (
@@ -425,6 +442,9 @@ export function OrbitDiagram({
         "mx-auto block h-auto w-full",
         size === "default" &&
           (withLimb ? "max-w-[8rem] @[40rem]:max-w-[10rem]" : "max-w-md"),
+        // Below 48rem the large drawing is capped at 18rem square, so on a
+        // phone the hero reaches the tool index sooner.
+        size === "large" && "max-md:max-w-[18rem]",
       )}
       role="img"
       viewBox={`0 0 ${VIEW_SIZE} ${VIEW_SIZE}`}
@@ -559,7 +579,7 @@ export function OrbitDiagram({
       {size === "large" ? (
         // Registration marks frame the drawing only, like a plate; the
         // legend and caption sit below them.
-        <div className="relative p-4 sm:p-5">
+        <div className="relative mx-auto p-4 max-md:max-w-[20.5rem] sm:p-5">
           <RegistrationMarks />
           {drawing}
         </div>
@@ -567,8 +587,8 @@ export function OrbitDiagram({
         <div className="grid items-end gap-6 @[40rem]:grid-cols-[10rem_minmax(0,1fr)]">
           <div>
             {drawing}
-            <p className="orbix-caps mt-2 text-center text-muted">
-              Full view, to scale
+            <p className="orbix-caps mt-2 text-center whitespace-nowrap text-muted">
+              To scale
             </p>
           </div>
           <LimbView

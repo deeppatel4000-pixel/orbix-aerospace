@@ -44,12 +44,12 @@ describe("ReadoutGrid", () => {
 });
 
 describe("LabFigure", () => {
-  it("keeps the number whole and the text content readable", () => {
+  it("keeps the number whole and lets the unit wrap under it", () => {
     const html = renderToStaticMarkup(
       <LabFigure unit="Pa">54,019.55</LabFigure>,
     );
-    expect(html).toMatch(/^<span class="lab-figure whitespace-nowrap">/);
-    expect(html).toContain('class="lab-figure__value"');
+    expect(html).toMatch(/^<span class="lab-figure">/);
+    expect(html).toContain('class="lab-figure__value whitespace-nowrap"');
     expect(html).toContain('class="lab-figure__unit"');
     expect(html.replace(/<[^>]+>/g, "")).toBe("54,019.55 Pa");
   });

@@ -51,6 +51,7 @@ export function VariantsPanel({ index, name, variants }: VariantsPanelProps) {
       title="History and variants"
     >
       <DataTable
+        singleLineCells
         caption={`${name} variants by first flight`}
         columns={[
           {
@@ -64,7 +65,7 @@ export function VariantsPanel({ index, name, variants }: VariantsPanelProps) {
                     {variant.designation}
                   </span>
                   {subName ? (
-                    <span className="block min-w-[10rem] text-sm font-normal text-muted">
+                    <span className="block text-sm font-normal text-muted md:min-w-[10rem]">
                       {subName}
                     </span>
                   ) : null}
@@ -99,10 +100,11 @@ export function VariantsPanel({ index, name, variants }: VariantsPanelProps) {
             key: "first-flight",
           },
           {
-            // At least 16rem, so a note sets in a few lines instead of a
-            // narrow column several lines taller than the rest of the row.
+            // At least 16rem from 48rem (18rem below, set by the `wrap`
+            // column), so a note sets in a few lines instead of a narrow
+            // column several lines taller than the rest of the row.
             cell: (variant) => (
-              <span className="block min-w-[16rem]">
+              <span className="block md:min-w-[16rem]">
                 {variant.notes ?? (
                   <span className="text-muted">None recorded</span>
                 )}
@@ -110,6 +112,7 @@ export function VariantsPanel({ index, name, variants }: VariantsPanelProps) {
             ),
             header: "Notes",
             key: "notes",
+            wrap: true,
           },
         ]}
         getRowKey={(variant) => variant.id}

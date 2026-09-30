@@ -1,5 +1,6 @@
 import { formatLabValue } from "../visualization/format-lab-value";
 import { formatFigure } from "@/components/ui/readout";
+import { LabUnit } from "../visualization/lab-unit";
 export interface DesignConstraintCardProps {
   readonly description?: string;
   readonly label: string;
@@ -38,9 +39,7 @@ export function DesignConstraintCard({
           {typeof value === "number"
             ? formatFigure(formatLabValue(value))
             : (value ?? "Not reported")}
-          {isReported && unit ? (
-            <span className="ml-1 text-muted">{unit}</span>
-          ) : null}
+          {isReported && unit ? <LabUnit unit={unit} /> : null}
         </output>
       </dd>
       {description ? (

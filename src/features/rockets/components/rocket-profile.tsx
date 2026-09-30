@@ -19,16 +19,18 @@ import {
 } from "@/features/rockets/utils";
 import {
   CONVERSION_NOTE,
-  MINIMUM_NOTE,
   measurementParts,
   qualifiedFigure,
 } from "@/features/vehicles/components/measurement-display";
 import { MeasurementTable } from "@/features/vehicles/components/measurement-table";
+import {
+  VehicleFactsTable,
+  type VehicleFact,
+} from "@/features/vehicles/components/vehicle-facts-table";
 import { VehicleProfileHero } from "@/features/vehicles/components/vehicle-profile-hero";
 import { VehicleProfileLayout } from "@/features/vehicles/components/vehicle-profile-layout";
 import { VehicleProfileSection } from "@/features/vehicles/components/vehicle-profile-section";
 import type { PayloadCapability, Rocket } from "@/features/vehicles/types";
-import { formatCountWord } from "@/features/vehicles/utils/format-measurement";
 
 interface RocketProfileProps {
   rocket: Rocket;
@@ -67,11 +69,38 @@ function payloadRecord(leo: PayloadCapability) {
   };
 }
 
+/**
+ * The Overview facts, each taken from the record. The engine count covers
+ * every stage element, boosters included, and says "engines and motors"
+ * when a stage burns solid motors.
+ */
+function overviewFacts(rocket: Rocket): VehicleFact[] {
+  const stageCount = countRocketStages(rocket.stages);
+  const hasSolidMotors = rocket.stages.some((stage) =>
+    stage.engines.some((engine) => engine.cycle === "solid"),
+  );
+  return [
+    { label: "Manufacturer", value: rocket.manufacturer },
+    { label: "Country", value: rocket.country.name },
+    {
+      label: "First flight",
+      value: (
+        <time dateTime={rocket.firstFlight}>
+          {formatRocketFirstFlight(rocket.firstFlight)}
+        </time>
+      ),
+    },
+    { label: "Stages", value: String(stageCount) },
+    {
+      label: hasSolidMotors ? "Engines and motors" : "Engines",
+      value: `${countRocketEngines(rocket)} in total`,
+    },
+  ];
+}
+
 /** The `/rockets/[id]` profile (spec 9). */
 export function RocketProfile({ rocket }: RocketProfileProps) {
   const visual = getRocketVisual(rocket.id);
-  const stageCount = countRocketStages(rocket.stages);
-  const engineCount = countRocketEngines(rocket);
   const leo = maxPayloadTo(rocket, "LEO");
   const related = listRockets()
     .filter((candidate) => candidate.id !== rocket.id)
@@ -119,7 +148,14 @@ export function RocketProfile({ rocket }: RocketProfileProps) {
           ]}
           visual={
             visual
-              ? { ...visual, objectPosition: visual.heroObjectPosition }
+              ? {
+                  ...visual,
+                  position: {
+                    base: visual.heroPhoneObjectPosition,
+                    lg: visual.heroObjectPosition,
+                    md: visual.heroObjectPosition,
+                  },
+                }
               : undefined
           }
         />
@@ -129,9 +165,9 @@ export function RocketProfile({ rocket }: RocketProfileProps) {
     >
       {/*
        * The hero already shows the whole rocket, large and unobscured, so
-       * the Overview does not repeat the photograph. Overview and
-       * Specifications use the same spec-sheet split and full-width rule
-       * as every section after them.
+       * the Overview does not repeat the photograph. It is a short spec
+       * sheet of the record's facts, in the same split as every section
+       * after it.
        */}
       <VehicleProfileSection
         className="border-t-0"
@@ -139,36 +175,21 @@ export function RocketProfile({ rocket }: RocketProfileProps) {
         index={1}
         title="Overview"
       >
-        <div className="orbix-prose max-w-[68ch]">
-          <p>
-            {rocket.name} was developed by {rocket.manufacturer} (
-            {rocket.country.name}) and first flew on{" "}
-            <time dateTime={rocket.firstFlight}>
-              {formatRocketFirstFlight(rocket.firstFlight)}
-            </time>
-            .
-          </p>
-          <p>
-            It flies in {formatCountWord(stageCount)}{" "}
-            {stageCount === 1 ? "stage" : "stages"} with{" "}
-            {formatCountWord(engineCount)} engines or motors in total across{" "}
-            {rocket.stages.length === 1
-              ? "one stage element"
-              : `${formatCountWord(rocket.stages.length)} stage elements`}
-            .
-          </p>
-        </div>
+        <VehicleFactsTable
+          caption={`${rocket.name} record`}
+          facts={overviewFacts(rocket)}
+        />
       </VehicleProfileSection>
 
       <VehicleProfileSection
-        description="Size, mass and thrust at liftoff as published, with the basis of each figure."
+        description="Size, mass and thrust at liftoff as published, with the basis of each figure under it."
         id="specifications"
         index={2}
         title="Specifications"
       >
         <MeasurementTable
           caption={`${rocket.name} key specifications`}
-          note={`${CONVERSION_NOTE} ${MINIMUM_NOTE}`}
+          note={CONVERSION_NOTE}
           rows={[
             { label: "Height", measurement: rocket.dimensions.height },
             { label: "Liftoff mass", measurement: rocket.mass.liftoff },

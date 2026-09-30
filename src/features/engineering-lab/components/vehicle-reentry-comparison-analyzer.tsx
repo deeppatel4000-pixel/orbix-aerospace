@@ -22,6 +22,8 @@ import {
   LabFigure,
   EqDot,
   EQ_SUP,
+  LAB_GROUP,
+  LAB_GROUP_LEGEND,
 } from "@/features/engineering-lab/components/shared";
 import type {
   VehicleReentryComparisonAnalysis,
@@ -540,8 +542,8 @@ export function VehicleReentryComparisonAnalyzer() {
             onKeyDown={focusFirstInvalidFieldOnEnter}
             onSubmit={preventSubmission}
           >
-            <fieldset>
-              <legend className="text-base font-semibold text-foreground">
+            <fieldset className={LAB_GROUP}>
+              <legend className={LAB_GROUP_LEGEND}>
                 Shared reentry conditions
               </legend>
               <div className="mt-4 grid gap-5 @min-[36rem]/col:grid-cols-2">

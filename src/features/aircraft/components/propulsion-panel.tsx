@@ -1,6 +1,9 @@
 import { DataTable } from "@/components/ui/data-table";
 import { formatAircraftEngineType } from "@/features/aircraft/utils";
-import { renderDualMeasurement } from "@/features/vehicles/components/measurement-display";
+import {
+  minimumNote,
+  renderDualMeasurement,
+} from "@/features/vehicles/components/measurement-display";
 import { VehicleProfileSection } from "@/features/vehicles/components/vehicle-profile-section";
 import type {
   AircraftEngine,
@@ -33,7 +36,12 @@ function describeEngines(name: string, engines: readonly AircraftEngine[]) {
   return `The ${name} is powered by ${list.join(" and ")}. Thrust figures in the table are per engine.`;
 }
 
-/** Propulsion (spec 9): one sentence, then the engine spec sheet. */
+/**
+ * Propulsion (spec 9): one sentence, then the engine spec sheet. The
+ * quantity and manufacturer sit under the engine name and the thrust
+ * columns come straight after it, so on a phone the figures are in view
+ * without scrolling; the engine type follows.
+ */
 export function PropulsionPanel({
   index,
   name,
@@ -53,38 +61,30 @@ export function PropulsionPanel({
       title="Propulsion"
     >
       <DataTable
+        singleLineCells
         caption={`${name} engines`}
         columns={[
           {
             // A designation such as "F119-PW-100" breaks at each hyphen in
             // the narrow sticky first column on a phone.
             cell: (engine) => (
-              <span className="whitespace-nowrap">{engine.name}</span>
+              <>
+                <span className="whitespace-nowrap">{engine.name}</span>
+                <span className="block text-sm font-normal text-muted">
+                  {engine.quantity}{" "}
+                  {engine.quantity === 1 ? "engine" : "engines"},{" "}
+                  {engine.manufacturer}
+                </span>
+              </>
             ),
             header: "Engine",
             key: "name",
-          },
-          {
-            cell: (engine) => engine.manufacturer,
-            header: "Manufacturer",
-            key: "manufacturer",
-          },
-          {
-            cell: (engine) => formatAircraftEngineType(engine.type),
-            header: "Type",
-            key: "type",
-          },
-          {
-            cell: (engine) => engine.quantity,
-            header: "Quantity",
-            key: "quantity",
-            numeric: true,
           },
           ...columns.map((column) => ({
             cell: (engine: AircraftEngine) => {
               const measurement = engine.thrust[column.key];
               return measurement ? (
-                renderDualMeasurement(measurement, { qualifier: true })
+                renderDualMeasurement(measurement)
               ) : (
                 <span className="font-sans text-muted">Not published</span>
               );
@@ -93,8 +93,18 @@ export function PropulsionPanel({
             key: column.key,
             numeric: true,
           })),
+          {
+            cell: (engine) => formatAircraftEngineType(engine.type),
+            header: "Type",
+            key: "type",
+          },
         ]}
         getRowKey={(engine) => engine.id}
+        note={minimumNote(
+          engines.flatMap((engine) =>
+            thrustColumns.map((column) => engine.thrust[column.key]),
+          ),
+        )}
         rows={engines}
       />
     </VehicleProfileSection>

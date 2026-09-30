@@ -33,7 +33,7 @@ const SCRIPT_SPLIT = /(_[A-Za-z0-9]+|\^-?[0-9]+(?:\/[0-9]+)?|[²³])/;
  * may fall back for it.
  */
 const NOWRAP_SPLIT =
-  /(½ ρ V²|\bdelta-v\b|\bSutton-Graves\b|\bthrust-to-weight\b)/;
+  /(½ ρ V²|\bdelta-v\b|\bSutton-Graves\b|\bthrust-to-weight\b)/i;
 
 function renderScripts(value: string, key: string): ReactNode {
   const parts = value.split(SCRIPT_SPLIT);

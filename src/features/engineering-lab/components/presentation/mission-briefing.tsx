@@ -1,6 +1,7 @@
 import type {
   MissionInsightsAnalysis,
   MissionPreset,
+  MissionPresetCategory,
   MissionProfileAnalysis,
   MissionReport,
 } from "@/features/engineering-lab/types";
@@ -12,6 +13,8 @@ import { BriefingSystemSummary } from "./briefing-system-summary";
 import { LabHeading } from "../visualization/lab-heading";
 
 export interface MissionBriefingProps {
+  /** Category for a mission that is not a preset; a preset's wins. */
+  readonly category?: MissionPresetCategory;
   readonly insights?: MissionInsightsAnalysis;
   readonly missionProfile: MissionProfileAnalysis;
   readonly preset?: MissionPreset;
@@ -24,7 +27,7 @@ const architecturePhases = [
   "Transfer",
   "Arrival",
   "Reentry",
-  "Recovery review",
+  "Recovery",
 ] as const;
 
 function getIntegratedSystems(
@@ -49,6 +52,7 @@ function getIntegratedSystems(
 }
 
 export function MissionBriefing({
+  category,
   insights,
   missionProfile,
   preset,
@@ -66,7 +70,7 @@ export function MissionBriefing({
       className="min-w-0 text-foreground"
     >
       <BriefingHeader
-        category={preset?.category}
+        category={preset?.category ?? category}
         missionName={missionProfile.missionName}
       />
 
@@ -99,20 +103,17 @@ export function MissionBriefing({
             The usual order of phases for a mission like this. Not simulated;
             shown for context only.
           </p>
-          {/* The lab's step row in its non-interactive state: B612 Mono
-           * number, label and a 2px rule, flush with the content edge. */}
-          <div className="@container mt-3">
-            <ol className="grid grid-cols-2 gap-x-4 gap-y-1 text-sm leading-5 text-text-secondary @md:grid-cols-3 @3xl:grid-cols-6">
-              {architecturePhases.map((phase, index) => (
-                <li className="border-b-2 border-border py-2" key={phase}>
-                  <span className="orbix-data mr-2 text-muted">
-                    {index + 1}
-                  </span>
-                  {phase}
-                </li>
-              ))}
-            </ol>
-          </div>
+          {/* A static sequence, not a step row: one 1px rule and inline
+           * B612 numbers, so it never reads as tabs beside the interactive
+           * rows in the walkthrough, demo and viewer. */}
+          <ol className="mt-3 flex flex-wrap gap-x-6 gap-y-2 border-t border-border-subtle pt-3 text-sm leading-5 text-text-secondary">
+            {architecturePhases.map((phase, index) => (
+              <li className="whitespace-nowrap" key={phase}>
+                <span className="orbix-data mr-2 text-muted">{index + 1}</span>
+                {phase}
+              </li>
+            ))}
+          </ol>
         </section>
 
         {insights?.insights.length ? (
@@ -131,7 +132,7 @@ export function MissionBriefing({
           </section>
         ) : null}
 
-        <footer className="border-t border-border-subtle pt-4 text-sm leading-6 text-muted">
+        <footer className="border-t border-border-subtle pt-4 text-[0.8125rem] leading-5 text-muted">
           This briefing restates computed results. It does not assess mission
           feasibility, readiness, safety, or certification.
         </footer>

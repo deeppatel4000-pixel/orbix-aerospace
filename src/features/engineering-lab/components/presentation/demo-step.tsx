@@ -75,7 +75,10 @@ export function DemoStep({
       ref={focusRef}
       tabIndex={-1}
     >
-      <header className="border-b border-border-subtle pb-4">
+      {/* No rule under the header: most steps open on their own top
+       * hairline (a record row or metric list), and a second rule 24px
+       * above it would double up. */}
+      <header>
         <p className="orbix-label">
           Step {stepIndex + 1} of {DEMO_STEPS.length}
         </p>

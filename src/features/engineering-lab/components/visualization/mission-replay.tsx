@@ -19,6 +19,7 @@ import {
 } from "./replay-phase-indicator";
 import { formatLabValue } from "./format-lab-value";
 import { formatFigure } from "@/components/ui/readout";
+import { LabUnit } from "./lab-unit";
 
 export interface MissionReplayProps {
   readonly missionProfileAnalysis?: MissionProfileAnalysis | null;
@@ -234,7 +235,7 @@ function ReplayTelemetry({
           {typeof value === "number"
             ? formatFigure(formatLabValue(value))
             : (value ?? "Not reported")}
-          {value !== undefined && unit ? ` ${unit}` : ""}
+          {value !== undefined && unit ? <LabUnit unit={unit} /> : null}
         </output>
       </dd>
     </div>

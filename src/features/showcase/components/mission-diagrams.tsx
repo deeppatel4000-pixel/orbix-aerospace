@@ -17,23 +17,33 @@ const POINT_RADIUS = 8;
 /**
  * Detail A, the window around the second burn, in kilometres, drawn with
  * one scale on both axes. It runs from 600 km inside the target orbit to
- * 200 km outside it, and is 400 km tall, so a 200 km altitude step is a
- * quarter of its width.
+ * 200 km outside it, so a 200 km altitude step is a quarter of its width.
+ * It is 500 km tall on the page and 400 km tall in the capture column,
+ * where the whole preset has to fit one screen.
  */
 const DETAIL_INSIDE = 600;
 const DETAIL_WIDTH = 800;
-const DETAIL_HEIGHT = 400;
+const DETAIL_HEIGHT = { compact: 400, page: 500 } as const;
 /** Burn dot radius in the detail, in kilometres of drawing. */
 const DETAIL_DOT = 7;
-/** Height below the window's centre line, in km, of the direct labels. */
+/**
+ * Offset from the window's centre line, in km, of the direct labels
+ * (Surface above, orbits below).
+ */
 const DETAIL_LABEL_Y = 150;
+/**
+ * Burn dot radius in the locator, in drawing units: 4px at the locator's
+ * 10rem width, so the dots stay visible at that size.
+ */
+const LOCATOR_DOT = 8;
 
 /**
- * How a transfer plate is laid out. `standard` and `feature` (page plates):
- * the whole transfer, then detail A where there is one, then the key.
- * `compact` (the capture column): detail A leads, with the whole transfer
- * as a small locator beside the key, so the preset fits one screen; at
- * point scale there is no detail and the whole drawing is shown instead.
+ * How a transfer plate is laid out. Wherever there is a detail, detail A
+ * leads at the plate's full width and the whole transfer follows as a
+ * 10rem locator beside the key. At point scale there is no detail, and the
+ * whole drawing is the figure: large on the page (`feature`), smaller in
+ * the capture column (`compact`). `standard` is a page plate that is not
+ * at point scale.
  */
 export type TransferDiagramSize = "compact" | "feature" | "standard";
 
@@ -55,15 +65,21 @@ export function isPointScaleTransfer(diagram: MissionDiagram): boolean {
  * row it sits centred on the first line of its label, however many lines
  * the label wraps to.
  */
-function LegendSwatch({
+export function LegendSwatch({
+  arrow = false,
   dash,
   dot = false,
+  fill,
   stroke,
   width = 2,
 }: {
+  /** A line ending in an arrowhead on the right. */
+  arrow?: boolean;
   dash?: string;
   /** A burn dot instead of a line. */
   dot?: boolean;
+  /** A filled block outlined in `stroke`, for a solid body. */
+  fill?: string;
   stroke: string;
   width?: number;
 }) {
@@ -73,8 +89,30 @@ function LegendSwatch({
       className="mt-[calc(0.5lh-0.25rem)] h-2 w-6 shrink-0"
       viewBox="0 0 24 8"
     >
-      {dot ? (
+      {fill ? (
+        <rect
+          fill={fill}
+          height="7"
+          stroke={stroke}
+          strokeWidth="1"
+          width="23"
+          x="0.5"
+          y="0.5"
+        />
+      ) : dot ? (
         <circle cx="4" cy="4" fill={stroke} r="3.5" />
+      ) : arrow ? (
+        <>
+          <line
+            stroke={stroke}
+            strokeWidth={width}
+            x1="0"
+            x2="18"
+            y1="4"
+            y2="4"
+          />
+          <path d="M17 0.5 L24 4 L17 7.5 Z" fill={stroke} />
+        </>
       ) : (
         <line
           stroke={stroke}
@@ -112,7 +150,7 @@ function ScaleBar({ widthKilometres }: { widthKilometres: number }) {
   const share = kilometres / widthKilometres;
 
   return (
-    <p className="orbix-data mt-3 flex items-center gap-2 text-[0.6875rem] text-text-muted">
+    <p className="orbix-micro mt-3 flex items-center gap-2 text-text-muted">
       <span
         aria-hidden="true"
         className="relative block h-2 flex-none border-x border-text-muted before:absolute before:inset-x-0 before:top-1/2 before:h-px before:bg-text-muted"
@@ -126,13 +164,9 @@ function ScaleBar({ widthKilometres }: { widthKilometres: number }) {
   );
 }
 
-/** A small label over one panel of a drawing, in the data face. */
+/** A small label over one panel of a drawing, in the uppercase data face. */
 function PanelLabel({ children }: { children: ReactNode }) {
-  return (
-    <p className="orbix-data mb-3 text-[0.6875rem] tracking-[0.12em] text-text-muted uppercase">
-      {children}
-    </p>
-  );
+  return <p className="orbix-caps mb-3 text-text-muted">{children}</p>;
 }
 
 /**
@@ -140,7 +174,7 @@ function PanelLabel({ children }: { children: ReactNode }) {
  * SVG, so it keeps that size however large the drawing is set.
  */
 const drawingLabel =
-  "orbix-data pointer-events-none absolute text-[0.6875rem] leading-none whitespace-nowrap text-text-muted";
+  "orbix-micro pointer-events-none absolute whitespace-nowrap text-text-muted";
 
 function percent(share: number): string {
   return `${share * 100}%`;
@@ -154,8 +188,8 @@ const line = { vectorEffect: "non-scaling-stroke" } as const;
  * around the planet. The ellipse has its focus at the planet's centre,
  * periapsis on the inner orbit and apoapsis on the outer one. Unless the
  * drawing is at point scale, detail A enlarges the second burn with one
- * scale on both axes, so the altitudes can be read apart, and its window
- * is drawn on the whole transfer.
+ * scale on both axes, so the altitudes can be read apart, and the whole
+ * transfer is a locator that marks detail A's window.
  */
 export function TransferOrbitDiagram({
   diagram,
@@ -176,6 +210,7 @@ export function TransferOrbitDiagram({
   const final = formatShowcaseNumber(diagram.finalAltitudeKilometres);
   const captionId = `${missionId}-transfer-caption`;
   const compact = size === "compact";
+  const detailHeight = compact ? DETAIL_HEIGHT.compact : DETAIL_HEIGHT.page;
 
   // At point scale Earth and the initial orbit are smaller than the first
   // burn marker, so neither is drawn and there is no detail; the caption
@@ -183,18 +218,17 @@ export function TransferOrbitDiagram({
   // the initial orbit (about 5 units across) at that scale.
   const pointScale = r1 < POINT_RADIUS;
   const hasDetail = !pointScale;
-  const locator = hasDetail && compact;
-  const dotRadius = size === "feature" ? 3.5 : 4;
+  const dotRadius = hasDetail ? LOCATOR_DOT : size === "feature" ? 3.5 : 4;
 
   // Detail A's window, in kilometres from the planet's centre, and the
   // same window in the whole drawing's units.
   const windowLeft = outer - DETAIL_INSIDE;
   const windowRight = windowLeft + DETAIL_WIDTH;
   const box = {
-    height: DETAIL_HEIGHT * scale,
+    height: detailHeight * scale,
     width: DETAIL_WIDTH * scale,
     x: HALF + windowLeft * scale,
-    y: HALF - (DETAIL_HEIGHT / 2) * scale,
+    y: HALF - (detailHeight / 2) * scale,
   };
 
   const drawing = (
@@ -270,15 +304,20 @@ export function TransferOrbitDiagram({
         ) : null}
       </svg>
       {hasDetail ? (
+        // The window is only a few pixels across at locator size, so its
+        // letter stands 12px above it on a 1px leader. The leader rises
+        // from the window's outer edge, which lies outside the target
+        // orbit, so it crosses no other line.
         <span
           aria-hidden="true"
-          className={cn(drawingLabel, "ml-1 -translate-y-1/2")}
+          className="pointer-events-none absolute flex -translate-x-1/2 -translate-y-full flex-col items-center"
           style={{
             left: percent((box.x + box.width) / (HALF * 2)),
-            top: "50%",
+            top: percent(box.y / (HALF * 2)),
           }}
         >
-          A
+          <span className="orbix-micro pb-0.5 text-text-muted">A</span>
+          <span className="block h-3 w-px bg-border-control" />
         </span>
       ) : null}
     </div>
@@ -295,19 +334,19 @@ export function TransferOrbitDiagram({
     { label: `${initial} km`, radius: inner, y: DETAIL_LABEL_Y },
     { label: `${final} km`, radius: outer, y: DETAIL_LABEL_Y },
   ].filter(({ radius }) => radius > windowLeft && radius < windowRight);
-  const labelTop = (y: number) => (y + DETAIL_HEIGHT / 2) / DETAIL_HEIGHT;
+  const labelTop = (y: number) => (y + detailHeight / 2) / detailHeight;
 
   // Detail A, in kilometres with the planet's centre at the origin; the
   // viewBox crops it to the window.
   const detail = hasDetail ? (
-    <div className="@container/detail min-w-0">
+    <div className="min-w-0">
       <PanelLabel>Detail A, second burn</PanelLabel>
       <div className="relative">
         <svg
           aria-label={`Enlarged scale drawing of the second burn, detail A, in a window ${formatShowcaseNumber(DETAIL_WIDTH)} km wide: Earth's surface, the ${initial} km orbit, and the transfer meeting the ${final} km orbit.`}
           className="block h-auto w-full"
           role="img"
-          viewBox={`${windowLeft} ${-DETAIL_HEIGHT / 2} ${DETAIL_WIDTH} ${DETAIL_HEIGHT}`}
+          viewBox={`${windowLeft} ${-detailHeight / 2} ${DETAIL_WIDTH} ${detailHeight}`}
         >
           <circle
             cx="0"
@@ -356,8 +395,14 @@ export function TransferOrbitDiagram({
         </svg>
         {/* Each label needs up to about 72px ("Surface" and its 8px gap)
             before the next line, a quarter of the panel, so they show once
-            the panel is 19rem wide; below that the key names the lines. */}
-        <div aria-hidden="true" className="hidden @min-[19rem]/detail:block">
+            the plate is 20.5rem wide: an 18rem panel inside the 20px
+            padding that a plate this narrow has. Below that
+            the key names the surface and the burn, and the line styles
+            name the orbits. */}
+        <div
+          aria-hidden="true"
+          className="hidden @min-[20.5rem]/transfer:block"
+        >
           {detailLines.map(({ label, radius, y }) => (
             <span
               className={cn(drawingLabel, "ml-2 -translate-y-1/2")}
@@ -393,25 +438,40 @@ export function TransferOrbitDiagram({
     <div
       className={cn(
         "min-w-0",
-        locator ? "w-32 shrink-0" : "mx-auto w-full",
-        !locator && (compact ? "max-w-[15rem]" : "max-w-[34rem]"),
+        hasDetail
+          ? "w-40 shrink-0"
+          : cn("mx-auto w-full", compact ? "max-w-[15rem]" : "max-w-[34rem]"),
       )}
     >
-      {hasDetail ? <PanelLabel>Whole transfer</PanelLabel> : null}
+      <PanelLabel>
+        {hasDetail ? "Whole transfer" : "Whole transfer, to scale"}
+      </PanelLabel>
       {drawing}
       {/* A locator only places detail A; the detail carries the scale. */}
-      {locator ? null : <ScaleBar widthKilometres={(HALF * 2) / scale} />}
+      {hasDetail ? null : <ScaleBar widthKilometres={(HALF * 2) / scale} />}
     </div>
   );
+
+  // Key entries shown only while the detail's direct labels are hidden.
+  const narrowOnly = "flex items-start gap-2 @min-[20.5rem]/transfer:hidden";
 
   const key = (
     <ul
       aria-label="Diagram key"
       className={cn(
         "grid min-w-0 content-start gap-2 text-sm text-text-secondary",
-        !locator && "border-t border-border-subtle pt-4",
+        !hasDetail && "border-t border-border-subtle pt-4",
       )}
     >
+      {hasDetail ? (
+        <li className={narrowOnly}>
+          <LegendSwatch
+            fill="var(--orbix-surface-raised)"
+            stroke="var(--orbix-border-strong)"
+          />
+          <span>Earth, bounded by its surface</span>
+        </li>
+      ) : null}
       <li className="flex items-start gap-2">
         <LegendSwatch
           dash={pointScale ? undefined : "2 3"}
@@ -434,6 +494,12 @@ export function TransferOrbitDiagram({
         <span>Transfer half ellipse, dots mark the two burns</span>
       </li>
       {hasDetail ? (
+        <li className={narrowOnly}>
+          <LegendSwatch dot stroke="var(--orbix-data-2)" />
+          <span>Burn 2, the dot in detail A</span>
+        </li>
+      ) : null}
+      {hasDetail ? (
         <li className="flex items-start gap-2">
           <LegendSwatch stroke="var(--orbix-border-control)" width={1} />
           <span>Window A, enlarged as detail A</span>
@@ -442,41 +508,64 @@ export function TransferOrbitDiagram({
     </ul>
   );
 
+  // The wrapper is the container the plate's layout responds to, measured
+  // at the plate's outer width. From 24rem the locator stands beside the
+  // key, and on the page beside the caption too; below that everything
+  // stacks.
   return (
-    <DiagramPlate
-      aria-labelledby={captionId}
-      className={cn("grid content-start gap-6", compact && "gap-5 lg:p-5")}
-    >
-      {locator ? (
-        <>
-          {detail}
-          <div className="flex items-start gap-5 border-t border-border-subtle pt-4">
+    <div className="@container/transfer min-w-0">
+      <DiagramPlate
+        aria-labelledby={captionId}
+        className={cn(
+          "grid content-start",
+          compact ? "gap-5 lg:p-5" : "gap-6",
+          hasDetail &&
+            "@min-[24rem]/transfer:grid-cols-[10rem_minmax(0,1fr)] @min-[24rem]/transfer:gap-x-5",
+        )}
+      >
+        {hasDetail ? (
+          <>
+            <div className="min-w-0 @min-[24rem]/transfer:col-span-2">
+              {detail}
+            </div>
+            <span
+              aria-hidden="true"
+              className="-my-2 block h-px bg-border-subtle @min-[24rem]/transfer:col-span-2"
+            />
+            <div
+              className={cn(
+                "min-w-0",
+                !compact && "@min-[24rem]/transfer:row-span-2",
+              )}
+            >
+              {whole}
+            </div>
+            {key}
+          </>
+        ) : (
+          <>
             {whole}
             {key}
-          </div>
-        </>
-      ) : (
-        <>
-          {whole}
-          {detail}
-          {key}
-        </>
-      )}
-      <figcaption
-        className="orbix-label border-t border-border-subtle pt-4"
-        id={captionId}
-      >
-        {diagram.planetRadiusSource === "calculator-default"
-          ? `Drawn to scale from the preset altitudes. The Earth radius, ${formatShowcaseNumber(planet)} km, is the calculators’ standard value, not a preset input.`
-          : `Drawn to scale from the preset altitudes and the preset’s planet radius of ${formatShowcaseNumber(planet)} km.`}
-        {pointScale
-          ? " At this scale Earth and the initial orbit are smaller than the first burn marker beside the center, so they are not drawn."
-          : " Detail A is enlarged with one scale on both axes, so altitude is not exaggerated."}
-        {hasDetail && !compact
-          ? " There the transfer meets the target orbit tangentially and runs along it."
-          : null}
-      </figcaption>
-    </DiagramPlate>
+          </>
+        )}
+        <figcaption
+          className={cn(
+            "orbix-label border-t border-border-subtle pt-4",
+            // The capture's key column is too narrow to hold the caption
+            // as well, so there it runs the full width below.
+            compact && hasDetail && "@min-[24rem]/transfer:col-span-2",
+          )}
+          id={captionId}
+        >
+          {diagram.planetRadiusSource === "calculator-default"
+            ? `Drawn to scale from the preset altitudes. Earth radius ${formatShowcaseNumber(planet)} km is the calculators’ standard value, not a preset input.`
+            : `Drawn to scale from the preset altitudes and the preset’s planet radius of ${formatShowcaseNumber(planet)} km.`}
+          {pointScale
+            ? " At this scale Earth and the initial orbit are smaller than the first burn marker beside the center, so they are not drawn."
+            : " Detail A uses one scale on both axes."}
+        </figcaption>
+      </DiagramPlate>
+    </div>
   );
 }
 
@@ -495,10 +584,12 @@ export function AllowanceBars({
 
   return (
     <DiagramPlate aria-labelledby={captionId}>
-      <figcaption className="orbix-h4 text-text-primary" id={captionId}>
+      {/* The plate's label, set like the panel labels on the transfer
+          plates so the figures read as one set of drawings. */}
+      <figcaption className="orbix-caps mb-3 text-text-muted" id={captionId}>
         Delta-v allowances, in flight order
       </figcaption>
-      <ol className="mt-5 grid gap-4">
+      <ol className="grid gap-4">
         {diagram.maneuvers.map((maneuver) => (
           <li key={maneuver.id}>
             <div className="flex flex-wrap items-baseline justify-between gap-x-4 text-sm">

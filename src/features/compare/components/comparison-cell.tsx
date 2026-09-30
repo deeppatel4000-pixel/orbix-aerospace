@@ -226,11 +226,14 @@ function TextLine({
   const [designation, description] = splitDescription(text);
   return (
     <>
-      <span className="block text-sm leading-5 font-medium text-foreground">
+      {/* 13px below 48rem, so the widest designation ("2 × F119-PW-100")
+          fits the 8rem phone column whole; 15px from 48rem, so a text
+          row holds its own beside the 17px mono figures. */}
+      <span className="block text-[0.8125rem] leading-5 font-medium text-foreground md:text-[0.9375rem]">
         <KeepDesignations text={designation} />
       </span>
       {description ? (
-        <span className="block text-sm leading-5 font-normal text-text-secondary">
+        <span className="block text-[0.8125rem] leading-5 font-normal text-text-secondary md:text-sm">
           {description}
         </span>
       ) : null}
@@ -262,7 +265,7 @@ function TextValue({
         <ul className="space-y-0.5">
           {text.split(LIST_SEPARATOR).map((item) => (
             <li
-              className="text-sm leading-5 font-normal text-foreground"
+              className="text-[0.8125rem] leading-5 font-normal text-foreground md:text-sm"
               key={item}
             >
               {item}
@@ -271,6 +274,15 @@ function TextValue({
         </ul>
         <Qualifier text={qualifierAt(0)} />
       </>
+    );
+  }
+  // A single value is one line of text, not a one-item list: a list would
+  // be announced as "list, 1 item" in every such cell.
+  if (details.length === 0) {
+    return (
+      <div>
+        <TextLine qualifier={qualifierAt(0)} text={text} />
+      </div>
     );
   }
   return (
@@ -337,9 +349,14 @@ export function ComparisonCell({
       {/* A flat 4px accent track under the figure: relative scale within the
        * row only, no ranking. Hidden from assistive technology because the
        * published number above it is the value; a normalized fraction is an
-       * artefact of this layout, not a property of the vehicle. */}
+       * artefact of this layout, not a property of the vehicle. The track
+       * spans the whole column (the shared rule caps it at 11rem) on the
+       * default border colour, so its far end, the row maximum, is legible. */}
       {typeof magnitude === "number" ? (
-        <span aria-hidden="true" className="orbix-magnitude w-full">
+        <span
+          aria-hidden="true"
+          className="orbix-magnitude w-full max-w-full bg-border-default"
+        >
           <span
             className="orbix-magnitude__fill"
             style={{ "--orbix-magnitude": magnitude } as CSSProperties}

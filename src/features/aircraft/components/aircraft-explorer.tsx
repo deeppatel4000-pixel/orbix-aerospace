@@ -22,6 +22,7 @@ import {
 import {
   responsiveHeroPosition,
   STOPGAP_HERO_SPEC_PANEL,
+  STOPGAP_PHOTO_HERO_BANNER_TABLET,
 } from "@/features/vehicles/components/primitive-stopgaps";
 import { VehicleRegistry } from "@/features/vehicles/components/vehicle-registry";
 import type { Aircraft } from "@/features/vehicles/types";
@@ -152,10 +153,12 @@ export function AircraftExplorer({ aircraft }: AircraftExplorerProps) {
     <>
       {heroVisual && heroPosition && featured ? (
         <PhotoHero
-          // The landscape photograph runs behind the text (spec 8), with
-          // the spec panel over the open ocean at the bottom right.
+          // From 64rem the landscape photograph runs behind the text (spec
+          // 8), with the spec panel over the open ocean at the bottom
+          // right. From 48rem to 64rem the text column would cross the
+          // B-2's centre body, so the photograph is a banner above it.
           aside={<FeaturedPanel aircraft={featured} />}
-          className={heroPosition.className}
+          className={`${heroPosition.className} ${STOPGAP_PHOTO_HERO_BANNER_TABLET}`}
           style={heroPosition.style}
           visual={{
             ...heroVisual,

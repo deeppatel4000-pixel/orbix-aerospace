@@ -7,6 +7,8 @@ import { formatFigure } from "@/components/ui/readout";
 
 import { altitudeReadout, formatLabValue } from "./format-lab-value";
 import { LabHeading } from "./lab-heading";
+import { LabUnit } from "./lab-unit";
+import { THERMAL_MODEL_NOTE } from "./thermal-model-note";
 
 export interface MissionMetricsGridProps {
   readonly missionProfileAnalysis?: MissionProfileAnalysis | null;
@@ -64,9 +66,7 @@ function MissionMetricReadout({ label, unit, value }: MissionMetric) {
           {displayValue === undefined
             ? "Not reported"
             : formatFigure(displayValue)}
-          {value !== undefined && unit ? (
-            <span className="ml-1 text-muted">{unit}</span>
-          ) : null}
+          {value !== undefined && unit ? <LabUnit unit={unit} /> : null}
         </output>
       </dd>
     </div>
@@ -170,10 +170,7 @@ export function MissionMetricsGrid({
 
   return (
     <section aria-labelledby="mission-metrics-title" className="min-w-0">
-      <div className="flex flex-col gap-1 sm:flex-row sm:items-baseline sm:justify-between">
-        <LabHeading id="mission-metrics-title">Mission metrics</LabHeading>
-        <p className="text-sm text-muted">No feasibility assessment</p>
-      </div>
+      <LabHeading id="mission-metrics-title">Mission metrics</LabHeading>
 
       <div className="mt-3 grid gap-x-8 gap-y-4 lg:grid-cols-3">
         {metricGroups.map((group) => (
@@ -197,6 +194,11 @@ export function MissionMetricsGrid({
           </section>
         ))}
       </div>
+      {thermal ? (
+        <p className="mt-3 max-w-[68ch] text-[0.8125rem] leading-5 text-muted">
+          {THERMAL_MODEL_NOTE}
+        </p>
+      ) : null}
     </section>
   );
 }

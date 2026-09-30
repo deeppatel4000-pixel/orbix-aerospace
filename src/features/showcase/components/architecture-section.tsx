@@ -1,6 +1,7 @@
 import { DiagramPlate } from "@/components/ui/diagram-plate";
 import { formatCode } from "@/components/ui/readout";
 import { keepCompounds } from "@/features/showcase/components/keep-compounds";
+import { LegendSwatch } from "@/features/showcase/components/mission-diagrams";
 import { ShowcaseSection } from "@/features/showcase/components/showcase-section";
 
 interface ArchitectureLayer {
@@ -290,28 +291,58 @@ export function ArchitectureSection() {
       number={1}
       title="Architecture"
     >
-      {/* The page's hero figure: the drawing up to 34rem, its caption
-          centred beside it from 1024px. */}
+      {/* The page's hero figure: the drawing up to 34rem, then its key and
+          caption, level with the Data box from 1024px. */}
       <DiagramPlate
-        aria-labelledby="architecture-figure-caption"
-        className="grid gap-10 lg:min-h-[28rem] lg:grid-cols-[minmax(0,34rem)_minmax(0,1fr)] lg:items-center lg:gap-16"
+        aria-labelledby="architecture-figure-title architecture-figure-caption"
+        className="grid gap-y-4 lg:grid-cols-[minmax(0,34rem)_minmax(0,1fr)] lg:grid-rows-[auto_1fr] lg:items-start lg:gap-x-16"
       >
-        <div className="w-full max-w-[34rem] justify-self-center py-2 lg:justify-self-start">
+        <div className="mb-6 w-full max-w-[34rem] justify-self-center py-2 lg:row-span-2 lg:mb-0 lg:justify-self-start">
           <ArchitectureDiagram />
         </div>
+        <div className="max-w-[40ch] lg:pt-2">
+          <p
+            className="orbix-caps text-text-muted"
+            id="architecture-figure-title"
+          >
+            Layer order in the repository
+          </p>
+          <ul
+            aria-label="Diagram key"
+            className="mt-4 grid gap-2 border-t border-border-subtle pt-4 text-sm text-text-secondary"
+          >
+            <li className="flex items-start gap-2">
+              <LegendSwatch
+                fill="var(--orbix-surface-raised)"
+                stroke="var(--orbix-border-control)"
+              />
+              <span>A box is a layer.</span>
+            </li>
+            <li className="flex items-start gap-2">
+              <LegendSwatch arrow stroke={STROKE} width={1.25} />
+              <span>
+                An arrow is an import edge, from the imported layer to the
+                importing one.
+              </span>
+            </li>
+            <li className="flex items-start gap-2">
+              <LegendSwatch
+                fill="var(--orbix-surface-raised)"
+                stroke="var(--orbix-accent)"
+              />
+              <span>
+                The accent outline marks React, below the presentation boundary.
+              </span>
+            </li>
+          </ul>
+        </div>
         <figcaption
-          className="max-w-[40ch] lg:self-center"
+          className="max-w-[40ch] border-t border-border-subtle pt-4 text-sm leading-relaxed text-text-secondary lg:col-start-2 lg:self-end lg:pb-2"
           id="architecture-figure-caption"
         >
-          <span className="orbix-caps block text-text-muted">
-            Layer order in the repository
-          </span>
-          <span className="mt-3 block text-sm leading-relaxed text-text-secondary">
-            Each arrow points from an imported layer to the layer that imports
-            it: analyses import calculators and data, calculators and reports
-            import no other layer, and the rail on the right shows React
-            importing from every layer above the boundary.
-          </span>
+          Analyses import calculators and data, calculators and reports import
+          no other layer, and the rail on the right shows React importing from
+          every layer above the boundary.
         </figcaption>
       </DiagramPlate>
 

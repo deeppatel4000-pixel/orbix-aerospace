@@ -25,22 +25,25 @@ export function TradeStudyCard({ index, scenario }: TradeStudyCardProps) {
   return (
     <article
       aria-labelledby={`trade-study-scenario-${scenario.id}-title`}
-      className="min-w-0 border-t border-border-subtle py-4"
+      // From two columns each card spans four rows of the parent grid
+      // (label, title, description, systems) through subgrid, so every row,
+      // and with it every "Included systems" rule, starts on one line.
+      className="min-w-0 border-t border-border-subtle py-4 @[30rem]/trade:row-span-4 @[30rem]/trade:grid @[30rem]/trade:grid-rows-subgrid"
     >
       <p className="orbix-label">
         Architecture {index + 1}: {formatCategory(scenario.category)}
       </p>
       <LabHeading
-        offset={2}
+        offset={1}
         className="mt-1"
         id={`trade-study-scenario-${scenario.id}-title`}
       >
         {scenario.name}
       </LabHeading>
-      <p className="mt-2 text-sm leading-6 text-muted">
+      <p className="mt-2 mb-3 text-sm leading-6 text-muted">
         {scenario.description}
       </p>
-      <p className="mt-3 border-t border-border-subtle pt-3 text-sm text-text-secondary">
+      <p className="border-t border-border-subtle pt-3 text-sm text-text-secondary">
         <span className="text-muted">Included systems: </span>
         {systems.length > 0 ? systems.join(", ") : "Mission identity only"}
       </p>

@@ -22,6 +22,9 @@ import {
   LabFigure,
   EqDot,
   EQ_SUP,
+  LAB_GROUP,
+  LAB_GROUP_LEGEND,
+  EQ_SUB_CLEAR,
 } from "@/features/engineering-lab/components/shared";
 import type {
   ReentryDecelerationAnalysis,
@@ -173,7 +176,7 @@ const toolEquation = (
         </span>
         <span className={EQ_LINE}>
           <span className={EQ_TERM}>
-            n = a/g<sub>0</sub>
+            n = a/g<sub className={EQ_SUB_CLEAR}>0</sub>
           </span>
         </span>
       </>
@@ -204,7 +207,7 @@ const toolEquation = (
       {
         symbol: (
           <>
-            g<sub>0</sub>
+            g<sub className={EQ_SUB_CLEAR}>0</sub>
           </>
         ),
         meaning: "Standard gravity, 9.80665",
@@ -248,8 +251,8 @@ export function ReentryDecelerationAnalyzer() {
             onKeyDown={focusFirstInvalidFieldOnEnter}
             onSubmit={preventSubmission}
           >
-            <fieldset>
-              <legend className="text-base font-semibold text-foreground">
+            <fieldset className={LAB_GROUP}>
+              <legend className={LAB_GROUP_LEGEND}>
                 Reentry condition inputs
               </legend>
               <div className="mt-4 grid gap-5 @min-[36rem]/col:grid-cols-2">

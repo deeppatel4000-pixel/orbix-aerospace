@@ -20,6 +20,7 @@ import {
   ValidationErrorSummary,
   LabFigure,
   EqDot,
+  EQ_SUB_CLEAR,
 } from "@/features/engineering-lab/components/shared";
 import type {
   RocketEquationField,
@@ -69,7 +70,7 @@ const toolEquation = (
         <span className={EQ_LINE}>
           <span className={EQ_TERM}>
             Δv = I<sub>sp</sub>
-            <EqDot />g<sub>0</sub>
+            <EqDot />g<sub className={EQ_SUB_CLEAR}>0</sub>
           </span>
           <wbr />
           <span className={EQ_TERM}>
@@ -95,7 +96,7 @@ const toolEquation = (
       {
         symbol: (
           <>
-            g<sub>0</sub>
+            g<sub className={EQ_SUB_CLEAR}>0</sub>
           </>
         ),
         meaning: (

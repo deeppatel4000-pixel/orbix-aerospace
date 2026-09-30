@@ -22,17 +22,28 @@ import type { ReactNode } from "react";
  *
  * `stale`: a tool that calculates on submit keeps its last result on screen
  * while its inputs are edited, rather than collapsing the panel to one line
- * on the first keystroke. The body takes `data-stale`, the figures turn
- * muted, and a first compartment row says the inputs changed and names the
- * tool's own submit verb (`staleAction`, "Calculate" unless given), so the
- * instruction matches the button. The live region announces that row once,
- * when it appears.
+ * on the first keystroke. Only such a tool passes `stale` (true or false);
+ * a tool that recalculates as its inputs change never does, and its head
+ * is the title alone. When passed, the head is a two-column grid: the
+ * title, then a small `role="status"` slot on the same row. When stale,
+ * the body takes `data-stale` and the figures turn muted, and the slot
+ * shows "Inputs changed" (sans 500, text-sm, nowrap, about 110px), with
+ * the rest of the instruction naming the tool's own submit verb
+ * (`staleAction`, "Calculate" unless given) in screen-reader text. The
+ * slot is always rendered for these tools and never wraps, so the head is
+ * one row whether it is empty or filled (a long title wraps instead):
+ * nothing below it moves on the first keystroke or on submit, and the
+ * figures region is not re-announced when the line appears.
  */
 
 interface CalculatorResultSectionProps {
   children: ReactNode;
   id: string;
-  /** The figures shown were calculated from inputs that have since changed. */
+  /**
+   * The figures shown were calculated from inputs that have since changed.
+   * Pass it (true or false) only from a tool that calculates on submit;
+   * leave it out on a tool that recalculates as you type.
+   */
   stale?: boolean;
   /** The verb on the tool's submit button, named in the stale line. */
   staleAction?: string;
@@ -42,7 +53,7 @@ interface CalculatorResultSectionProps {
 export function CalculatorResultSection({
   children,
   id,
-  stale = false,
+  stale,
   staleAction = "Calculate",
   title,
 }: CalculatorResultSectionProps) {
@@ -54,13 +65,30 @@ export function CalculatorResultSection({
       className="min-w-0 overflow-hidden rounded-lg border border-border bg-surface"
       id={id}
     >
-      <div className="border-b border-border px-4 py-3 sm:px-5">
+      <div
+        className={
+          "border-b border-border px-4 py-3 sm:px-5" +
+          (stale === undefined ? "" : " lab-result-head")
+        }
+      >
         <h3
           className="text-base leading-6 font-semibold text-foreground"
           id={titleId}
         >
           {title}
         </h3>
+        {stale === undefined ? null : (
+          <p aria-live="polite" className="lab-result-stale" role="status">
+            {stale ? (
+              <>
+                Inputs changed
+                <span className="sr-only">
+                  {". " + staleAction + " to update."}
+                </span>
+              </>
+            ) : null}
+          </p>
+        )}
       </div>
 
       <div
@@ -69,11 +97,6 @@ export function CalculatorResultSection({
         data-stale={stale ? "" : undefined}
         role="status"
       >
-        {stale ? (
-          <p className="lab-result-stale">
-            Inputs changed. {staleAction} to update.
-          </p>
-        ) : null}
         {children}
       </div>
     </section>

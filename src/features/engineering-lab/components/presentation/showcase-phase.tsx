@@ -27,7 +27,7 @@ export const SHOWCASE_PHASES: readonly [
     id: "orbit-insertion",
     label: "Orbit insertion",
     scene: "orbit",
-    shortLabel: "Orbit",
+    shortLabel: "Orbit insertion",
   },
   {
     description:
@@ -49,9 +49,9 @@ export const SHOWCASE_PHASES: readonly [
     description:
       "The vehicle and heating results from the completed reentry evaluation.",
     id: "atmospheric-entry",
-    label: "Atmospheric entry",
+    label: "Reentry",
     scene: "entry",
-    shortLabel: "Entry",
+    shortLabel: "Reentry",
   },
   {
     description: "A summary of the completed results for the whole mission.",
@@ -96,7 +96,9 @@ export function ShowcasePhase({
           <span aria-hidden="true" className="orbix-data mr-2">
             {index + 1}
           </span>
-          {phase.label}
+          {/* The short label keeps every step on one line; the stage
+           * below titles the phase in full. */}
+          {phase.shortLabel}
         </span>
       </button>
     </li>

@@ -103,7 +103,7 @@ describe("MissionControlDashboard", () => {
     expect(markup).toContain("Engineering review unavailable");
   });
 
-  it("lists supplied outputs under Checks performed, not a separate status panel", () => {
+  it("names supplied outputs in one sentence, not a status panel", () => {
     const emptyMarkup = renderToStaticMarkup(
       <MissionControlDashboard
         missionProfileAnalysis={null}
@@ -119,12 +119,11 @@ describe("MissionControlDashboard", () => {
       />,
     );
 
-    expect(emptyMarkup).toContain("Checks performed");
-    expect(emptyMarkup).not.toContain('data-check-availability="available"');
-    expect(suppliedMarkup).toContain("Mission report");
-    expect(suppliedMarkup).not.toContain(
-      'data-check-availability="not-supplied"',
+    expect(emptyMarkup).toContain(
+      "No completed analysis has been supplied to this workspace yet.",
     );
+    expect(suppliedMarkup).toContain("and the mission report.");
+    expect(suppliedMarkup).not.toContain("Not supplied:");
     expect(suppliedMarkup).not.toContain("data-current-status");
     expect(suppliedMarkup).not.toContain("Mission status");
   });

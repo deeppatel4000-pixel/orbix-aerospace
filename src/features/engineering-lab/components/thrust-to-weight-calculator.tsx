@@ -24,6 +24,7 @@ import {
   LabFigure,
   LabValueText,
   EqDot,
+  EQ_SUB_CLEAR,
 } from "@/features/engineering-lab/components/shared";
 import type {
   ThrustToWeightField,
@@ -113,7 +114,7 @@ const toolEquation = (
           <wbr />
           <span className={EQ_TERM}>
             /(m
-            <EqDot />g<sub>0</sub>)
+            <EqDot />g<sub className={EQ_SUB_CLEAR}>0</sub>)
           </span>
         </span>
       </>
@@ -126,7 +127,7 @@ const toolEquation = (
       {
         symbol: (
           <>
-            g<sub>0</sub>
+            g<sub className={EQ_SUB_CLEAR}>0</sub>
           </>
         ),
         meaning: (

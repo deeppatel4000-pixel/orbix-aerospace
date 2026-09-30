@@ -67,9 +67,7 @@ describe("MissionOrbitVisualization", () => {
 
     expect(markup).toContain("Circular orbit");
     expect(markup).toContain("Maneuver orbit");
-    expect(markup).toContain(
-      '<dt>Plane change</dt><dd>5<span class="orbix-record-row__unit">deg</span></dd>',
-    );
+    expect(markup).toContain("<dt>Plane change</dt><dd>5°</dd>");
   });
 
   it("renders an accessible empty state when orbital analyses are absent", () => {

@@ -344,7 +344,15 @@ export function ScenarioLibrary() {
 
   return (
     <div className="space-y-6">
-      <header className="flex flex-col gap-4 border-b border-border-subtle pb-6 md:flex-row md:items-end md:justify-between">
+      <header
+        className={
+          // The rule separates the header from the list; an empty library
+          // has no list, so it ends on the sentence.
+          scenarios.length > 0
+            ? "flex flex-col gap-4 border-b border-border-subtle pb-6 md:flex-row md:items-end md:justify-between"
+            : "flex flex-col gap-4 md:flex-row md:items-end md:justify-between"
+        }
+      >
         <div className="max-w-[68ch]">
           <h3
             className="orbix-h3 text-foreground outline-none"
@@ -352,11 +360,26 @@ export function ScenarioLibrary() {
             ref={libraryHeadingRef}
             tabIndex={-1}
           >
-            Saved educational scenarios
+            {/* The card already says what the library is; the heading
+             * names what is in it. */}
+            {scenarios.length === 0
+              ? "No saved scenarios"
+              : `${scenarios.length} saved ${
+                  scenarios.length === 1 ? "scenario" : "scenarios"
+                }`}
           </h3>
-          <p className="mt-2 text-sm leading-6 text-muted">
-            Scenarios are stored in this browser only. The library keeps the
-            mission inputs; it does not run or change any calculation.
+          {/* One sentence beside the Save button: how to save, or what is
+           * ready to save. With an empty library it is the whole empty
+           * state, so no second heading repeats the title. */}
+          <p
+            className="mt-2 text-sm leading-6 text-muted"
+            id="save-current-mission-hint"
+          >
+            {currentScenario !== null
+              ? `Ready to save "${currentScenario.profile.missionName}" from the mission scenario builder.`
+              : scenarios.length === 0
+                ? "Analyze a mission in the mission scenario builder, then select Save current mission to keep its inputs here."
+                : "To enable saving, open the mission scenario builder and select Analyze mission."}
           </p>
         </div>
         <Button
@@ -369,18 +392,6 @@ export function ScenarioLibrary() {
           Save current mission
         </Button>
       </header>
-
-      {/* With an empty library the empty state below carries this hint. */}
-      {scenarios.length > 0 || currentScenario !== null ? (
-        <p
-          className="text-sm leading-6 text-muted"
-          id="save-current-mission-hint"
-        >
-          {currentScenario === null
-            ? "To enable saving, open the mission scenario builder and select Analyze mission."
-            : `Ready to save "${currentScenario.profile.missionName}" from the mission scenario builder.`}
-        </p>
-      ) : null}
 
       {storageError ? (
         <p
@@ -420,27 +431,7 @@ export function ScenarioLibrary() {
         ) : null}
       </div>
 
-      {scenarios.length === 0 ? (
-        // EmptyState always renders an H3 at 22px; the library title is the
-        // H3 here, so the empty state is its H4 part behind a hairline.
-        <div
-          className="border-t border-border-subtle pt-5"
-          id="scenario-library-empty"
-        >
-          <h4 className="orbix-h4 text-foreground">
-            No saved mission scenarios
-          </h4>
-          <p
-            className="mt-2 max-w-prose text-sm leading-6 text-muted"
-            id={
-              currentScenario === null ? "save-current-mission-hint" : undefined
-            }
-          >
-            Analyze a mission in the mission scenario builder, then select Save
-            current mission to keep its inputs here.
-          </p>
-        </div>
-      ) : (
+      {scenarios.length === 0 ? null : (
         <ul
           aria-label="Saved mission scenarios"
           className="grid gap-x-8 gap-y-4 lg:grid-cols-2"
@@ -461,10 +452,12 @@ export function ScenarioLibrary() {
                   // item has the same 1px border and radius, so loading one
                   // changes only colour and moves nothing.
                   cn(
-                    "rounded-lg border p-4 sm:p-6",
+                    "relative rounded-lg border p-4 sm:p-6",
                     loaded
                       ? "border-accent bg-surface-raised"
-                      : "border-transparent border-t-border-subtle",
+                      : // A straight 1px rule across the top, not a top
+                        // border that would taper into the rounded corners.
+                        "border-transparent before:pointer-events-none before:absolute before:-inset-x-px before:-top-px before:h-px before:bg-border-subtle",
                   )
                 }
                 key={scenario.id}

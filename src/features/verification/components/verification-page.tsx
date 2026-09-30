@@ -179,7 +179,7 @@ function CaseSection({ item }: { readonly item: VerificationCase }) {
       aria-labelledby={headingId}
       className="flex flex-col gap-5 border-t border-border-subtle pt-8 [h2+&]:border-t-0 [h2+&]:pt-4"
     >
-      <h3 className="mt-0!" id={headingId}>
+      <h3 className="mt-0! max-sm:text-[1.25rem]!" id={headingId}>
         {item.title}
       </h3>
       <SpecList

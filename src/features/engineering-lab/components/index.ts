@@ -97,11 +97,6 @@ export {
   type ShowcaseScene,
 } from "./presentation/showcase-phase";
 export {
-  StartupCheckList,
-  type StartupCheckItem,
-  type StartupCheckListProps,
-} from "./presentation/startup-check-list";
-export {
   ShowcaseStage,
   type ShowcaseStageProps,
 } from "./presentation/showcase-stage";
@@ -114,7 +109,6 @@ export {
   type TradeStudyCardProps,
 } from "./presentation/trade-study-card";
 export {
-  buildTradeStudyExplanations,
   type MissionTradeStudyEntry,
   TradeStudyMetrics,
   type TradeStudyMetricsProps,

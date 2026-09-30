@@ -67,37 +67,75 @@ import {
 } from "@/features/engineering-lab/missions";
 import { generateMissionReport } from "@/features/engineering-lab/reports";
 
+/**
+ * The example mission the report, diagrams, viewer, mission control and
+ * presentation tools open with. It is the lab's own example, not a preset:
+ * the orbit raise of the ISS Style Resupply preset (200 km to 408 km) and the
+ * entry case of the Reentry Demonstrator preset (10 km at 750 m/s), because
+ * the entry models run in the standard troposphere (0 to 11 km) and that is
+ * the strongest entry case they can represent.
+ */
+const EXAMPLE_MISSION = {
+  category: "orbital-logistics",
+  description:
+    "A Hohmann transfer from a 200 km to a 408 km circular orbit, then a 5,000 kg entry vehicle's descent from 10 km at 750 m/s. The entry models cover the standard troposphere only (0 to 11 km).",
+  id: "lab-example-orbit-raise-and-entry",
+  name: "Orbit Raise and Entry",
+  profile: {
+    deltaVBudget: {
+      hohmannTransfer: {
+        finalAltitudeMetres: 408_000,
+        initialAltitudeMetres: 200_000,
+      },
+      missionName: "Orbit Raise and Entry Budget",
+    },
+    missionName: "Orbit Raise and Entry",
+    vehicleReentryEvaluation: {
+      initialAltitudeMeters: 10_000,
+      initialVelocityMetersPerSecond: 750,
+      safetyFactor: 1.5,
+      vehicle: {
+        dragCoefficient: 1.5,
+        massKilograms: 5_000,
+        noseRadiusMetres: 1,
+        referenceAreaSquareMetres: 12,
+        vehicleName: "Example Entry Vehicle",
+      },
+    },
+  },
+} as const;
+
 function createMissionPreview() {
-  const preset = getMissionPresetById("iss-style-resupply");
-
-  if (preset === undefined) {
-    throw new Error("Mission report preview preset is unavailable.");
-  }
-
-  const analysis = analyzeMissionProfile(preset.missionProfileInputs);
+  const analysis = analyzeMissionProfile(EXAMPLE_MISSION.profile);
   const report = generateMissionReport({
-    description: preset.description,
+    description: EXAMPLE_MISSION.description,
     missionProfileAnalysis: analysis,
   });
   const scenario = {
-    category: preset.category,
+    category: EXAMPLE_MISSION.category,
     createdAt: "2026-08-04T00:00:00.000Z",
-    description: preset.description,
-    id: `demo-${preset.id}`,
-    name: preset.name,
-    profile: preset.missionProfileInputs,
+    description: EXAMPLE_MISSION.description,
+    id: EXAMPLE_MISSION.id,
+    name: EXAMPLE_MISSION.name,
+    profile: EXAMPLE_MISSION.profile,
     updatedAt: "2026-08-04T00:00:00.000Z",
   } satisfies MissionScenario;
 
-  return { analysis, category: preset.category, preset, report, scenario };
+  return { analysis, category: EXAMPLE_MISSION.category, report, scenario };
 }
 
 const missionPreview = createMissionPreview();
 
+/**
+ * Three presets that all report an orbital budget (delta-v, transfer time,
+ * maneuvers), ordered by target altitude, so every table row compares all
+ * three. Only the resupply preset has an entry case; its vehicle rows are
+ * named under the table rather than filled with "Not reported".
+ */
 function createTradeStudyPreview() {
   const presetIds = [
-    "leo-satellite-deployment",
     "iss-style-resupply",
+    "leo-satellite-deployment",
     "lunar-transfer-concept",
   ] as const;
   const entries = presetIds.map((presetId) => {
@@ -497,7 +535,7 @@ export function EngineeringDashboard() {
   return (
     <>
       <header className="orbix-blueprint-minor relative border-b border-border">
-        <Container className="grid gap-10 pt-10 pb-12 sm:pt-14 lg:grid-cols-[minmax(0,6fr)_minmax(0,5fr)] lg:items-start lg:gap-14 lg:pt-14 lg:pb-16">
+        <Container className="grid gap-10 pt-10 pb-12 sm:pt-14 lg:grid-cols-[minmax(0,6fr)_minmax(0,5fr)] lg:items-start lg:gap-14 lg:pt-14">
           {/* Top-aligned, with the text dropped to meet the diagram frame's
            * top registration marks, so the H1 does not sink to mid-height. */}
           <div className="orbix-rise min-w-0 lg:pt-6">
@@ -571,10 +609,11 @@ export function EngineeringDashboard() {
               size="large"
               title="Hohmann transfer from low Earth orbit to geostationary altitude"
             />
-            {/* Always three columns; on a phone they turn compact (value
-             * over unit) rather than wrapping 2 + 1. */}
+            {/* Always three columns; on a phone the readout steps down to
+             * 16px with a tighter inset, so each unit stays on its value's
+             * line rather than wrapping 2 + 1 or under the figure. */}
             <RecordRow
-              className="mt-6 max-[30rem]:[--record-inset:0.75rem] max-[30rem]:[&_dd>span:last-child]:mt-0.5 max-[30rem]:[&_dd>span:last-child]:ml-0 max-[30rem]:[&_dd>span:last-child]:block [&_dl]:grid-cols-3"
+              className="mt-6 max-[30rem]:[--record-inset:0.75rem] max-[30rem]:[&_dd]:text-base [&_dl]:grid-cols-3"
               items={[
                 {
                   label: "First burn",
@@ -602,7 +641,7 @@ export function EngineeringDashboard() {
       </header>
 
       <Container
-        className="pt-0 pb-12 lg:py-12"
+        className="pt-0 pb-12 lg:pt-[4.5rem] lg:pb-12"
         id="laboratory-tools"
         tabIndex={-1}
       >
@@ -691,7 +730,10 @@ export function EngineeringDashboard() {
                 <MissionPresetLauncher />
               </Module>
               <Module id="mission-report-viewer">
-                <MissionReportViewer report={missionPreview.report} />
+                <MissionReportViewer
+                  category={missionPreview.category}
+                  report={missionPreview.report}
+                />
               </Module>
             </Workflow>
           </MissionPresetIntegration>
@@ -708,6 +750,7 @@ export function EngineeringDashboard() {
             </Module>
             <Module id="interactive-mission-viewer">
               <MissionViewer
+                category={missionPreview.category}
                 missionProfileAnalysis={missionPreview.analysis}
                 missionReport={missionPreview.report}
                 vehicleReentryEvaluation={reentryEvaluation}
@@ -717,7 +760,6 @@ export function EngineeringDashboard() {
               <MissionControlDashboard
                 missionCategory={missionPreview.category}
                 missionProfileAnalysis={missionPreview.analysis}
-                missionPreset={missionPreview.preset}
                 missionReport={missionPreview.report}
                 missionScenario={missionPreview.scenario}
                 tradeStudyAnalyses={tradeStudyPreview.analyses}
@@ -739,8 +781,8 @@ export function EngineeringDashboard() {
               </Module>
               <Module id="mission-briefing">
                 <MissionBriefing
+                  category={missionPreview.category}
                   missionProfile={missionPreview.analysis}
-                  preset={missionPreview.preset}
                   report={missionPreview.report}
                 />
               </Module>
@@ -753,6 +795,7 @@ export function EngineeringDashboard() {
               </Module>
               <Module id="mission-showcase">
                 <MissionShowcase
+                  category={missionPreview.category}
                   missionProfile={missionPreview.analysis}
                   report={missionPreview.report}
                 />

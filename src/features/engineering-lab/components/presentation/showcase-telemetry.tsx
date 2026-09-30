@@ -5,6 +5,7 @@ import type {
 import { formatLabValue } from "../visualization/format-lab-value";
 import { formatFigure } from "@/components/ui/readout";
 import { LabHeading } from "../visualization/lab-heading";
+import { LabUnit } from "../visualization/lab-unit";
 
 export interface ShowcaseTelemetryProps {
   readonly missionProfile: MissionProfileAnalysis;
@@ -34,9 +35,7 @@ function TelemetryCard({ label, unit, value }: TelemetryValue) {
           {typeof value === "number"
             ? formatFigure(formatLabValue(value))
             : (value ?? "Not reported")}
-          {value !== undefined && unit ? (
-            <span className="ml-1 text-muted">{unit}</span>
-          ) : null}
+          {value !== undefined && unit ? <LabUnit unit={unit} /> : null}
         </output>
       </dd>
     </div>

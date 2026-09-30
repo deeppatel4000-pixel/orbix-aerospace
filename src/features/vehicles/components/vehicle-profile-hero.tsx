@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import type { CSSProperties, ReactNode } from "react";
 
 import { Breadcrumbs } from "@/components/ui/breadcrumbs";
 import { Eyebrow } from "@/components/ui/eyebrow";
@@ -8,13 +8,24 @@ import { Container } from "@/components/layout/container";
 import { cn } from "@/lib/cn";
 
 import {
+  responsiveHeroPosition,
+  STOPGAP_PHOTO_HERO_PHONE_TALL,
   STOPGAP_PHOTO_HERO_RIGHT,
+  STOPGAP_PHOTO_HERO_SIDE,
   STOPGAP_RECORD_ROW,
+  type ResponsiveObjectPosition,
 } from "./primitive-stopgaps";
 
 export interface VehiclePageCrumb {
   readonly href?: string;
   readonly label: string;
+}
+
+/** The photograph, its crop per breakpoint and its intrinsic size. */
+export interface VehicleHeroVisual extends VisualRecord {
+  readonly height: number;
+  readonly position: ResponsiveObjectPosition;
+  readonly width: number;
 }
 
 interface VehicleProfileHeroProps {
@@ -26,23 +37,24 @@ interface VehicleProfileHeroProps {
   lead: string;
   name: string;
   /**
-   * `behind` (default): the photo spans the hero behind the text.
-   * `right`: from 64rem the photo fills the right half with a feathered
-   * left edge, for a portrait photograph whose vehicle stands in the middle
-   * of the frame and would otherwise sit behind the lead. Below 48rem it
-   * also makes the framed plate portrait (4:5), so a tall vehicle is shown
-   * whole.
+   * `side` (default), for a landscape photograph of an airframe: a banner
+   * across the top from 48rem, then from 64rem the photograph on the right
+   * at its own aspect, uncropped, beside the text (`STOPGAP_PHOTO_HERO_SIDE`).
+   * `right`, for a portrait photograph of a launch vehicle: from 48rem the
+   * photograph stands on the right at the hero's height with a feathered
+   * left edge; below 48rem a 3:4 plate. The hero is the one place a
+   * profile shows its photograph large (spec 9), so the sections below do
+   * not repeat it.
    */
-  photoPlacement?: "behind" | "right";
+  photoPlacement?: "right" | "side";
   /** Three or four key figures (spec 8). */
   record: readonly RecordRowItem[];
-  /** The photograph with the crop to use behind the text. */
-  visual?: VisualRecord;
+  visual?: VehicleHeroVisual;
 }
 
 /**
- * The profile hero (spec 9): a full-bleed photograph behind the breadcrumb,
- * classification, display name, lead and record row, with the photo credit
+ * The profile hero (spec 9): the photograph with the breadcrumb,
+ * classification, display name, lead and record row, and the photo credit
  * at the bottom right. Without a photograph the same text sits on the page
  * ground.
  */
@@ -52,10 +64,11 @@ export function VehicleProfileHero({
   classification,
   lead,
   name,
-  photoPlacement = "behind",
+  photoPlacement = "side",
   record,
   visual,
 }: VehicleProfileHeroProps) {
+  const isSide = photoPlacement === "side";
   const content = (
     <>
       <Breadcrumbs items={breadcrumbs} />
@@ -63,37 +76,57 @@ export function VehicleProfileHero({
       <h1
         className={cn(
           "orbix-h1 mt-4 text-foreground",
-          photoPlacement === "right" && "lg:max-w-[38rem]",
+          !isSide && "lg:max-w-[38rem]",
         )}
       >
         {name}
       </h1>
       {/*
-       * The lead and the record row stop at 38rem: at 1440px the hero
-       * overlay thins past about half the width, and wider lines there fell
-       * below 4.5:1 over bright photographs. Below 64rem the record row is
-       * a 2x2 grid instead of wrapping three and one.
+       * Beside a portrait photograph the lead and the record row stop at
+       * 38rem, clear of the plate. Beside an aircraft photograph the whole
+       * column is 32 to 34rem, and the record row stays a 2x2 grid.
        */}
-      <p className="orbix-lead mt-6 lg:max-w-[38rem]">{lead}</p>
+      <p className={cn("orbix-lead mt-6", !isSide && "lg:max-w-[38rem]")}>
+        {lead}
+      </p>
       <RecordRow
-        className={cn("mt-8 lg:max-w-[38rem]", STOPGAP_RECORD_ROW)}
+        className={cn(
+          "mt-8",
+          !isSide && "lg:max-w-[38rem]",
+          STOPGAP_RECORD_ROW,
+          isSide && String.raw`lg:[&_.orbix-record-row\_\_list]:grid-cols-2`,
+        )}
         items={record}
       />
       {action ? <div className="mt-8">{action}</div> : null}
     </>
   );
 
-  return visual ? (
+  if (!visual) {
+    return <Container className="py-16">{content}</Container>;
+  }
+
+  const position = responsiveHeroPosition(visual.position);
+
+  return (
     <PhotoHero
-      className={
-        photoPlacement === "right" ? STOPGAP_PHOTO_HERO_RIGHT : undefined
+      className={cn(
+        position.className,
+        isSide
+          ? STOPGAP_PHOTO_HERO_SIDE
+          : cn(STOPGAP_PHOTO_HERO_RIGHT, STOPGAP_PHOTO_HERO_PHONE_TALL),
+      )}
+      plate={isSide ? "landscape" : "portrait"}
+      style={
+        {
+          ...position.style,
+          // A plain number: it divides a length in `STOPGAP_PHOTO_HERO_SIDE`.
+          "--orbix-hero-aspect": (visual.width / visual.height).toFixed(4),
+        } as CSSProperties
       }
-      plate={photoPlacement === "right" ? "portrait" : "landscape"}
-      visual={visual}
+      visual={{ ...visual, objectPosition: position.objectPosition }}
     >
       {content}
     </PhotoHero>
-  ) : (
-    <Container className="py-16">{content}</Container>
   );
 }

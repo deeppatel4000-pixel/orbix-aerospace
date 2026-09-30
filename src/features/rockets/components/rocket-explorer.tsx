@@ -30,7 +30,9 @@ import {
   STOPGAP_HERO_SPEC_PANEL,
   STOPGAP_HERO_SPEC_PANEL_STRIP,
   STOPGAP_PHOTO_HERO_ASIDE_BELOW,
+  STOPGAP_PHOTO_HERO_PHONE_TALL,
   STOPGAP_PHOTO_HERO_RIGHT,
+  responsiveHeroPosition,
 } from "@/features/vehicles/components/primitive-stopgaps";
 import { VehicleRegistry } from "@/features/vehicles/components/vehicle-registry";
 import type { Rocket } from "@/features/vehicles/types";
@@ -70,8 +72,8 @@ function capitalise(text: string) {
 /**
  * The featured launch vehicle's published figures, each with its
  * conversion and qualifier, and a link to its profile. Thrust is shown in
- * MN, as on the cards. The conversion note is given once, in "About these
- * figures".
+ * the published unit, as on the cards. The conversion note is given once,
+ * in "About these figures".
  */
 function FeaturedPanel({ rocket }: { rocket: Rocket }) {
   const leo = maxPayloadTo(rocket, "LEO");
@@ -118,6 +120,13 @@ export function RocketExplorer({ rockets }: RocketExplorerProps) {
   const featured =
     rockets.find((rocket) => rocket.id === FEATURED_ROCKET_ID) ?? rockets[0];
   const heroVisual = featured ? getRocketVisual(featured.id) : undefined;
+  const heroPosition = heroVisual
+    ? responsiveHeroPosition({
+        base: heroVisual.heroPhoneObjectPosition,
+        lg: heroVisual.heroObjectPosition,
+        md: heroVisual.heroObjectPosition,
+      })
+    : undefined;
 
   const heroText = (
     <>
@@ -147,16 +156,17 @@ export function RocketExplorer({ rockets }: RocketExplorerProps) {
 
   return (
     <>
-      {heroVisual && featured ? (
+      {heroVisual && heroPosition && featured ? (
         <PhotoHero
           aside={<FeaturedPanel rocket={featured} />}
           // Saturn V on the right, as on the launch vehicle profiles, so the
           // lead never runs into the rocket.
-          className={`${STOPGAP_PHOTO_HERO_RIGHT} ${STOPGAP_PHOTO_HERO_ASIDE_BELOW}`}
+          className={`${heroPosition.className} ${STOPGAP_PHOTO_HERO_RIGHT} ${STOPGAP_PHOTO_HERO_ASIDE_BELOW} ${STOPGAP_PHOTO_HERO_PHONE_TALL}`}
           plate="portrait"
+          style={heroPosition.style}
           visual={{
             ...heroVisual,
-            objectPosition: heroVisual.heroObjectPosition,
+            objectPosition: heroPosition.objectPosition,
           }}
         >
           {heroText}

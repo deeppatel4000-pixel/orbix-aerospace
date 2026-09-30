@@ -32,7 +32,6 @@ describe("GroundTrackVisualization", () => {
 
     expect(markup).toContain("Orbital ground track");
     expect(markup).toContain("Illustrative Earth ground-track view");
-    expect(markup).toContain("Illustrative orbital ground track");
     expect(markup).toContain('data-ground-track-mode="ground"');
   });
 
@@ -108,7 +107,7 @@ describe("GroundTrackVisualization", () => {
     );
 
     expect(markup).toContain(
-      "This visualization illustrates orbital concepts and does not represent real spacecraft navigation data.",
+      "They are not propagated orbital coordinates or spacecraft navigation data.",
     );
   });
 });

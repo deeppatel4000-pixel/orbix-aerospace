@@ -107,7 +107,7 @@ const learningAreas: readonly LearningArea[] = [
       "An aircraft in flight is acted on by four forces: lift, weight, thrust and drag. Lift and drag come from the pressure and friction of air moving over the vehicle. Both grow in proportion to air density and to the square of airspeed. Air density falls with altitude, so the same wing at the same speed produces less lift higher up.",
     title: "Aerodynamics and flight fundamentals",
     whyItMatters:
-      "These relationships set the flight envelope of a winged vehicle: the minimum speed for level flight, the thrust needed to overcome drag, and how both change with altitude. Wing sizing, cruise altitude selection and the performance charts in an aircraft flight manual all start from them.",
+      "These relationships set a winged vehicle's flight envelope: the minimum speed for level flight, the thrust needed to overcome drag, and how both change with altitude. Wing sizing and cruise altitude selection start from them.",
   },
   {
     explorationLinks: [
@@ -192,7 +192,7 @@ const learningAreas: readonly LearningArea[] = [
       "A vehicle accelerates when its thrust exceeds the forces resisting it. For a rocket, the ideal rocket equation links the velocity change a stage can deliver to two quantities: the exhaust velocity of its engines and the ratio of its mass before and after the burn.",
     title: "Propulsion and vehicle performance",
     whyItMatters:
-      "Thrust-to-weight ratio decides whether a rocket can leave the pad and how quickly an aircraft can climb or accelerate. The rocket equation explains why launch vehicles use stages: dropping empty structure lets the remaining stages reach a higher velocity with the propellant they carry.",
+      "Thrust-to-weight ratio decides whether a rocket can leave the pad and how quickly an aircraft can climb. The rocket equation explains staging: dropping empty structure lets the remaining stages reach a higher velocity.",
   },
   {
     explorationLinks: [
@@ -290,7 +290,7 @@ const learningAreas: readonly LearningArea[] = [
       "At low speed, air density barely changes as air flows around a body. Near and above the speed of sound, air compresses noticeably. Where the flow is supersonic it adjusts to an obstacle through shock waves: thin regions across which pressure, temperature and density change abruptly.",
     title: "High-speed and compressible flow",
     whyItMatters:
-      "Supersonic aircraft and their engine inlets are shaped to control where shocks form and how strong they are. A strong shock loses total pressure, which lowers the pressure available at the engine face and adds drag.",
+      "Supersonic aircraft and their engine inlets are shaped to control where shocks form and how strong they are. A strong shock loses total pressure, which lowers the pressure at the engine face and adds drag.",
   },
   {
     explorationLinks: [
@@ -395,7 +395,7 @@ const learningAreas: readonly LearningArea[] = [
       "A spacecraft returning from orbit must lose almost all of its orbital speed in the atmosphere. Compression of the air ahead of the vehicle turns that kinetic energy into heat. Heating models estimate how intense the heating becomes, and a thermal protection system (TPS) is sized so the structure underneath stays within its temperature limits.",
     title: "Atmospheric entry and thermal protection",
     whyItMatters:
-      "Entry heating and deceleration drive a spacecraft's shape, its heat shield material and thickness, and the trajectory it flies. Peak heating and peak deceleration happen at different points on the trajectory, and the vehicle and its crew or payload must stay within limits for both.",
+      "Entry heating and deceleration drive a spacecraft's shape, its heat shield and the trajectory it flies. Peak heating and peak deceleration come at different points, and the vehicle and its crew or payload must stay within limits at both.",
   },
   {
     explorationLinks: [
@@ -528,7 +528,7 @@ const learningAreas: readonly LearningArea[] = [
       "An analysis is only useful if someone else can check it and act on it. That means stating the inputs, the method and its assumptions, the results with units and the limits of those results, and comparing alternatives against the same criteria.",
     title: "Mission operations and engineering communication",
     whyItMatters:
-      "Aerospace programs review designs at set milestones, and each review depends on analysis presented this way. The mission tools in the Engineering Lab follow the same structure using the lab's own simplified models, not flight data.",
+      "Aerospace programs review designs at set milestones, and each review depends on analysis presented this way. The Engineering Lab's mission tools follow the same structure, using the lab's simplified models, not flight data.",
   },
 ];
 

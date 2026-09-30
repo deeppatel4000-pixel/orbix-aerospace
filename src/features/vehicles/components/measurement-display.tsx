@@ -85,14 +85,17 @@ function convertedText(measurement: Measurement<MeasurementUnit>) {
  */
 function renderMeasurement(measurement: Measurement<MeasurementUnit>) {
   const { unit, value } = formatMeasurementParts(measurement);
+  // The plus sign of `measurementParts`, so a published minimum reads the
+  // same in the hero, on the cards and in the tables.
+  const figure = `${value}${measurement.qualifier === "minimum" ? "+" : ""}`;
 
   return measurement.unit === "Mach" ? (
     <span>
-      <span className="orbix-table-unit">Mach</span> {value}
+      <span className="orbix-table-unit">Mach</span> {figure}
     </span>
   ) : (
     <span>
-      {value} <span className="orbix-table-unit">{unit}</span>
+      {figure} <span className="orbix-table-unit">{unit}</span>
     </span>
   );
 }
@@ -101,7 +104,7 @@ function renderMeasurement(measurement: Measurement<MeasurementUnit>) {
  * Spec panel, record row and card parts: value and unit kept apart. A value
  * the source publishes as a minimum gets a plus sign ("Mach 3+", "50,000+
  * ft") so a floor never reads as an exact or maximum figure. Pages that
- * show these parts say what the sign means (`FIGURES_NOTE`).
+ * show these parts say what the sign means (`minimumNote`).
  */
 export function measurementParts(measurement: Measurement<MeasurementUnit>) {
   const { unit, value } = formatMeasurementParts(measurement);
@@ -195,8 +198,8 @@ export function qualifiedFigure(
 }
 
 /**
- * Said once per page, after the first table or in the page's figures
- * note: where the second unit comes from, and what a plus sign means.
+ * Said once per page, under the first table: where the second unit comes
+ * from.
  */
 export const CONVERSION_NOTE =
   "Published figures are shown as recorded. The figure under each one, in the other unit system, is converted by ORBIX and rounded to four significant figures.";
@@ -206,18 +209,39 @@ export const MINIMUM_NOTE =
   "A plus sign after a figure marks a published minimum.";
 
 /**
+ * `MINIMUM_NOTE` for a table that shows at least one published minimum,
+ * otherwise undefined, so the note only sits under a table with a plus.
+ */
+export function minimumNote(
+  measurements: readonly (Measurement<MeasurementUnit> | undefined)[],
+) {
+  return measurements.some(
+    (measurement) => measurement?.qualifier === "minimum",
+  )
+    ? MINIMUM_NOTE
+    : undefined;
+}
+
+/** Notes for under a table, joined as sentences, or undefined if none. */
+export function joinTableNotes(...notes: (string | undefined)[]) {
+  const present = notes.filter((note): note is string => Boolean(note));
+  return present.length > 0 ? present.join(" ") : undefined;
+}
+
+/**
  * The one dual-unit pattern used in every vehicle table (spec 8): the
- * published figure, then the ORBIX conversion on a second muted line. With
- * `qualifier`, the source's qualifier follows on a third line in the sans
- * face, for tables with several figure columns where a basis column per
- * figure would be too wide; other tables give it in a Basis column.
+ * published figure, then the ORBIX conversion on a second muted line, then
+ * the source's qualifier ("Approximate", "Published minimum") on a third
+ * line in the sans face. The qualifier is always read under its own figure,
+ * so no vehicle table needs a separate Basis column, which on a phone sat
+ * off-screen or was clipped mid-word.
  */
 export function renderDualMeasurement(
   measurement: Measurement<MeasurementUnit>,
-  { qualifier = false }: { qualifier?: boolean } = {},
 ) {
   const converted = convertMeasurement(measurement);
-  const note = qualifier ? qualifierNote(measurement) : undefined;
+  const note = qualifierNote(measurement);
+  const floor = measurement.qualifier === "minimum" ? "+" : "";
 
   return (
     <span className="block">
@@ -226,11 +250,14 @@ export function renderDualMeasurement(
       </span>
       {converted ? (
         <span className="mt-1 block text-xs whitespace-nowrap text-muted">
-          {converted.value} {converted.unit}
+          {converted.value}
+          {floor} {converted.unit}
         </span>
       ) : null}
       {note ? (
-        <span className="mt-1 block font-sans text-xs text-muted">{note}</span>
+        <span className="mt-1 block font-sans text-xs whitespace-nowrap text-muted">
+          {note}
+        </span>
       ) : null}
     </span>
   );

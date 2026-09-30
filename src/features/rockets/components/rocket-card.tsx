@@ -1,6 +1,7 @@
 import { RocketImage } from "@/features/rockets/components/rocket-image";
 import { getRocketVisual } from "@/features/rockets/data/rocket-visuals";
 import {
+  countRocketEngines,
   maxPayloadTo,
   payloadConfiguration,
   payloadLabel,
@@ -47,10 +48,11 @@ function classificationLines(rocket: Rocket) {
  * Launch vehicle card link (spec 8): a 3:4 portrait photograph framed so the
  * whole vehicle shows, the stage arrangement, the name, the one-line
  * `cardSummary` from the visual record and a two-spec row of liftoff thrust
- * (in MN) and height, both required fields on `Rocket`. The feature card
- * adds the record's description (from 64rem, in place of the summary), the
- * payload to LEO with its configuration and the first-flight year in a 2x2;
- * the classification line already gives the stage count.
+ * (in the published unit) and height, both required fields on `Rocket`.
+ * The feature card adds the record's description (from 64rem, in place of
+ * the summary), the payload to LEO and to GTO (where published) with their configurations,
+ * the first-flight year and the engine count across all stages; the
+ * classification line already gives the stage count.
  */
 export function RocketCard({
   className,
@@ -63,6 +65,10 @@ export function RocketCard({
   const isFeature = layout === "feature";
   const visual = getRocketVisual(rocket.id);
   const leo = maxPayloadTo(rocket, "LEO");
+  const gto = maxPayloadTo(rocket, "GTO");
+  const hasSolidMotors = rocket.stages.some((stage) =>
+    stage.engines.some((engine) => engine.cycle === "solid"),
+  );
 
   return (
     <VehicleRecordCard
@@ -72,7 +78,7 @@ export function RocketCard({
       href={`/rockets/${rocket.id}`}
       layout={isFeature ? "feature-portrait" : "stacked"}
       media={
-        <VehicleMediaFrame aspect="tall">
+        <VehicleMediaFrame aspect="tall" settle>
           <RocketImage
             decorative
             fillContainer
@@ -110,6 +116,23 @@ export function RocketCard({
             ]
           : []),
         { label: "First flight", value: rocket.firstFlight.slice(0, 4) },
+        // The fifth and sixth, only in the feature card.
+        ...(gto
+          ? [
+              {
+                label: payloadLabel(gto),
+                value: qualifiedFigure(
+                  recordText(gto.mass),
+                  undefined,
+                  payloadConfiguration(gto),
+                ),
+              },
+            ]
+          : []),
+        {
+          label: hasSolidMotors ? "Engines and motors" : "Engines",
+          value: String(countRocketEngines(rocket)),
+        },
       ]}
       summary={visual?.cardSummary}
       variant={variant}

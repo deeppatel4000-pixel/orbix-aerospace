@@ -39,7 +39,7 @@ describe("ScenarioLibrary", () => {
   it("renders saved scenario metadata and included systems", () => {
     const markup = renderLibrary([scenario]);
 
-    expect(markup).toContain("Saved educational scenarios");
+    expect(markup).toContain("1 saved scenario");
     expect(markup).toContain("Saved Deployment Scenario");
     expect(markup).toContain("An accessible saved scenario fixture.");
     expect(markup).toContain("Orbital deployment");
@@ -64,12 +64,14 @@ describe("ScenarioLibrary", () => {
   it("renders a clear empty state", () => {
     const markup = renderLibrary([]);
 
-    expect(markup).toContain("No saved mission scenarios");
+    expect(markup).toContain("No saved scenarios");
+    // One heading only: the title, then one sentence that is the save hint.
+    expect(markup).not.toContain("<h4");
     expect(markup).toContain(
       "Analyze a mission in the mission scenario builder",
     );
     // Heading first, then one sentence, which is also the save hint.
-    expect(markup.indexOf("No saved mission scenarios")).toBeLessThan(
+    expect(markup.indexOf("No saved scenarios")).toBeLessThan(
       markup.indexOf('id="save-current-mission-hint"'),
     );
     expect(markup.match(/mission scenario builder/g)).toHaveLength(1);

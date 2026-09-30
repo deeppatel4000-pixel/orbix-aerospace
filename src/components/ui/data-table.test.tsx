@@ -74,6 +74,36 @@ describe("DataTable", () => {
     expect(render(false)).not.toContain("data-sticky-first");
   });
 
+  it("keeps cells on one line below 48rem with singleLineCells, except wrap columns", () => {
+    const markup = renderToStaticMarkup(
+      <DataTable
+        caption="Variants"
+        columns={[
+          ...columns,
+          {
+            cell: () => "A long note.",
+            header: "Notes",
+            key: "notes",
+            wrap: true,
+          },
+        ]}
+        getRowKey={(row) => row.name}
+        rows={rows}
+        singleLineCells
+      />,
+    );
+    expect(markup).toContain('class="orbix-table max-md:min-w-max"');
+    expect(markup).toContain(
+      '<th class="max-md:w-[8.5rem] max-md:min-w-[8.5rem]" scope="row">Falcon 9</th>',
+    );
+    expect(markup).toContain(
+      '<td class="orbix-num max-md:whitespace-nowrap">35<span class="orbix-num-sep">,</span>100</td>',
+    );
+    expect(markup).toContain(
+      '<td class="max-md:w-[18rem] max-md:min-w-[18rem]">A long note.</td>',
+    );
+  });
+
   it("renders the note under the table", () => {
     expect(render()).toContain(
       '<p class="orbix-data-table__note">Sea-level figures.</p>',

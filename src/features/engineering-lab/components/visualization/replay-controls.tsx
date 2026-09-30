@@ -2,6 +2,8 @@ import { ChevronDown, Pause, Play } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 
+import { TRANSPORT_ROW_CLASS } from "./transport-row";
+
 export type ReplaySpeed = 0.5 | 1 | 2;
 
 export interface ReplayControlsProps {
@@ -37,7 +39,7 @@ export function ReplayControls({
   return (
     <section aria-label="Mission replay controls" className="min-w-0">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-        <div className="flex flex-wrap items-center gap-2">
+        <div className={TRANSPORT_ROW_CLASS}>
           {/* One toggle rather than a Play/Pause pair: disabling the button
            * that has focus would drop keyboard focus to <body>. */}
           <Button
@@ -56,7 +58,7 @@ export function ReplayControls({
           <Button
             aria-label="Restart mission replay"
             onClick={onRestart}
-            variant="secondary"
+            variant="ghost"
           >
             Restart
           </Button>

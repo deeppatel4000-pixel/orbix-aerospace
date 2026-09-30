@@ -25,6 +25,8 @@ import {
   LabFigure,
   EqDot,
   EQ_SUP,
+  LAB_GROUP,
+  LAB_GROUP_LEGEND,
 } from "@/features/engineering-lab/components/shared";
 import {
   getTPSMaterialById,
@@ -307,10 +309,8 @@ export function MaterialTPSSizingAnalyzer() {
             onKeyDown={focusFirstInvalidFieldOnEnter}
             onSubmit={preventSubmission}
           >
-            <fieldset>
-              <legend className="text-base font-semibold text-foreground">
-                Reentry inputs
-              </legend>
+            <fieldset className={LAB_GROUP}>
+              <legend className={LAB_GROUP_LEGEND}>Reentry inputs</legend>
               <div className="mt-4 grid gap-5 @min-[36rem]/col:grid-cols-2">
                 <CalculatorNumberField
                   error={errors.initialAltitudeMeters}
@@ -375,10 +375,8 @@ export function MaterialTPSSizingAnalyzer() {
               </div>
             </fieldset>
 
-            <fieldset className="mt-10">
-              <legend className="text-base font-semibold text-foreground">
-                TPS sizing inputs
-              </legend>
+            <fieldset className={LAB_GROUP}>
+              <legend className={LAB_GROUP_LEGEND}>TPS sizing inputs</legend>
               <div className="mt-4 grid gap-5 @min-[36rem]/col:grid-cols-2">
                 <div className="@min-[36rem]/col:col-span-2">
                   <label

@@ -12,7 +12,9 @@ import type { CSSProperties } from "react";
  * - RecordRow: a column count (2 below 64rem, auto-fit from 64rem) and a
  *   no-wrap value, plus a `secondary` line under the value.
  * - PhotoHero: `placement="right"` (the photo on the right with a feathered
- *   left edge and a matching overlay), and separate mobile and desktop
+ *   left edge and a matching overlay), `placement="banner"` (the photo
+ *   across the top with the text starting on its bottom fade), a phone
+ *   plate at the photo's own aspect, and separate mobile and desktop
  *   `objectPosition`.
  *
  * If a primitive renames its internal classes these rules stop matching
@@ -94,22 +96,93 @@ export const STOPGAP_RECORD_ROW = [
 ].join(" ");
 
 /**
- * PhotoHero with a portrait photograph on the right, from 64rem: the photo
- * plate starts at the larger of 50% + 10rem and 46rem. That is the content
- * edge (the 72rem container's left edge plus its 2rem gutter) plus 44rem at
- * every width from 64rem, so the 44rem strip panel ends where the plate
- * begins and the 38rem lead and record row stay clear of it; its left edge is
- * feathered into the page over 22 percent of its width; and the overlay on
- * it keeps only the bottom fade. The spec's horizontal overlay is not
- * applied to the plate: it was drawn for a photo spanning the whole hero
- * and, squeezed onto the right half, it darkened the vehicle a second
- * time. No text sits on the photograph.
+ * PhotoHero with a portrait photograph on the right, from 48rem. From
+ * 64rem the photo plate starts at the larger of 50% + 10rem and 46rem.
+ * That is the content edge (the 72rem container's left edge plus its 2rem
+ * gutter) plus 44rem at every width from 64rem, so the 44rem strip panel
+ * ends where the plate begins and the 38rem lead and record row stay clear
+ * of it. From 48rem to 64rem (a portrait tablet) the plate starts at 56vw
+ * and the text column and aside stop 2rem short of it, so the vehicle
+ * never stands behind the heading. The plate's left edge is feathered into
+ * the page with an eased mask over its left 48 percent (a straight or a
+ * shorter ramp read as a soft vertical wall on bright skies such as
+ * Starship's), and the overlay on it keeps only the bottom fade. A launch
+ * vehicle stands near the middle of its photograph, clear of the ramp. The
+ * spec's horizontal overlay is not applied to the plate: it was drawn for a
+ * photo spanning the whole hero and, squeezed onto the right, it darkened
+ * the vehicle a second time. No text sits on the photograph.
  */
 export const STOPGAP_PHOTO_HERO_RIGHT = [
+  String.raw`md:[&_.orbix-photo-hero\_\_plate]:left-[56vw]`,
   String.raw`lg:[&_.orbix-photo-hero\_\_plate]:left-[max(calc(50%+10rem),46rem)]`,
-  String.raw`lg:[&_.orbix-photo-hero\_\_plate]:[mask-image:linear-gradient(90deg,transparent_0,#000_22%)]`,
-  String.raw`lg:[&_.orbix-photo-hero\_\_scrim]:[background:linear-gradient(to_bottom,transparent_62%,color-mix(in_srgb,var(--bg-page)_80%,transparent)_90%,var(--bg-page)_100%)]`,
+  String.raw`md:[&_.orbix-photo-hero\_\_plate]:[mask-image:linear-gradient(90deg,transparent_0,color-mix(in_srgb,black_20%,transparent)_14%,color-mix(in_srgb,black_60%,transparent)_30%,black_48%)]`,
+  String.raw`md:[&_.orbix-photo-hero\_\_scrim]:[background:linear-gradient(to_bottom,transparent_62%,color-mix(in_srgb,var(--bg-page)_80%,transparent)_90%,var(--bg-page)_100%)]`,
+  String.raw`md:max-lg:[&_.orbix-photo-hero\_\_content]:max-w-[calc(56vw-3.5rem)]`,
+  String.raw`md:max-lg:[&_.orbix-photo-hero\_\_aside]:max-w-[calc(56vw-3.5rem)]`,
 ].join(" ");
+
+/**
+ * The aircraft profile hero, for a landscape photograph whose airframe
+ * reaches close to its edges. Set `--orbix-hero-aspect` (the photograph's
+ * width over its height) on the hero with this class.
+ *
+ * - 48rem to 64rem, a banner: the photograph full-bleed across the top at
+ *   `min(70svh, 44rem, 100vw / aspect)`, never taller than the photograph
+ *   at the window's width, so it is not cropped at the sides; only a
+ *   bottom fade (no horizontal overlay), and the text starting on the fade
+ *   over the photograph's last 6rem.
+ * - From 64rem, beside the text: the photograph on the right at its own
+ *   aspect, never cropped, vertically centred in the hero, from the larger
+ *   of 50% + 2rem, 36rem and 100% - 56rem to the window's right edge. Its
+ *   left edge is feathered over 12 percent of its width (the rocket ramp
+ *   of 48 percent would fade a nose or a wingtip). The text column is
+ *   32rem (34rem from 80rem) and ends 2rem short of the plate at every
+ *   width, so no text is set on the photograph and there is no overlay.
+ *   A full-width banner cropped the airframe harder the wider the window:
+ *   at 1440x900 the SR-71 lost its nose and tail.
+ */
+export const STOPGAP_PHOTO_HERO_SIDE = [
+  "[--orbix-hero-banner-h:min(70svh,44rem,calc(100vw/var(--orbix-hero-aspect,1.5)))]",
+  "md:max-lg:min-h-0 md:max-lg:justify-start",
+  String.raw`md:max-lg:[&_.orbix-photo-hero\_\_plate]:bottom-auto`,
+  String.raw`md:max-lg:[&_.orbix-photo-hero\_\_plate]:h-(--orbix-hero-banner-h)`,
+  String.raw`md:max-lg:[&_.orbix-photo-hero\_\_scrim]:[background:linear-gradient(to_bottom,transparent_55%,color-mix(in_srgb,var(--bg-page)_55%,transparent)_72%,color-mix(in_srgb,var(--bg-page)_92%,transparent)_84%,var(--bg-page)_92%)]`,
+  String.raw`md:max-lg:[&_.orbix-photo-hero\_\_body]:pt-[calc(var(--orbix-hero-banner-h)-6rem)]`,
+  String.raw`lg:[&_.orbix-photo-hero\_\_plate]:inset-auto`,
+  String.raw`lg:[&_.orbix-photo-hero\_\_plate]:top-1/2`,
+  String.raw`lg:[&_.orbix-photo-hero\_\_plate]:right-0`,
+  String.raw`lg:[&_.orbix-photo-hero\_\_plate]:left-[max(calc(50%+2rem),36rem,calc(100%-56rem))]`,
+  String.raw`lg:[&_.orbix-photo-hero\_\_plate]:-translate-y-1/2`,
+  String.raw`lg:[&_.orbix-photo-hero\_\_plate]:aspect-(--orbix-hero-aspect)`,
+  String.raw`lg:[&_.orbix-photo-hero\_\_plate]:[mask-image:linear-gradient(90deg,transparent_0,color-mix(in_srgb,black_45%,transparent)_5%,black_12%)]`,
+  String.raw`lg:[&_.orbix-photo-hero\_\_scrim]:[background:none]`,
+  String.raw`lg:[&_.orbix-photo-hero\_\_content]:max-w-[32rem]`,
+  String.raw`xl:[&_.orbix-photo-hero\_\_content]:max-w-[34rem]`,
+].join(" ");
+
+/**
+ * The aircraft registry hero from 48rem to 80rem: the photograph as a
+ * banner at `min(70svh, 44rem)` with the text starting on its bottom fade.
+ * Below 80rem the full-width overlay darkened the B-2 almost to black and
+ * the spec panel covered its right wing; from 80rem the photograph runs
+ * behind the text (spec 8) with the panel over open ocean.
+ */
+export const STOPGAP_PHOTO_HERO_BANNER_TABLET = [
+  "md:max-xl:min-h-0 md:max-xl:justify-start",
+  String.raw`md:max-xl:[&_.orbix-photo-hero\_\_plate]:bottom-auto`,
+  String.raw`md:max-xl:[&_.orbix-photo-hero\_\_plate]:h-[min(70svh,44rem)]`,
+  String.raw`md:max-xl:[&_.orbix-photo-hero\_\_scrim]:[background:linear-gradient(to_bottom,transparent_55%,color-mix(in_srgb,var(--bg-page)_55%,transparent)_72%,color-mix(in_srgb,var(--bg-page)_92%,transparent)_84%,var(--bg-page)_92%)]`,
+  String.raw`md:max-xl:[&_.orbix-photo-hero\_\_body]:pt-[calc(min(70svh,44rem)-6rem)]`,
+].join(" ");
+
+/**
+ * Below 48rem, a framed 3:4 plate instead of the 4:5 portrait plate, with
+ * a phone crop per vehicle (`heroPhoneObjectPosition` in the rocket
+ * visuals) that keeps the whole vehicle in view. A 2:3 plate, the
+ * photographs' own aspect, pushed the heading below the first screen of a
+ * 390px phone. The plate keeps PhotoHero's height cap.
+ */
+export const STOPGAP_PHOTO_HERO_PHONE_TALL = String.raw`max-md:[&_.orbix-photo-hero\_\_frame]:aspect-[3/4]`;
 
 /** A photo crop per breakpoint: below 48rem, 48rem to 64rem, from 64rem. */
 export interface ResponsiveObjectPosition {

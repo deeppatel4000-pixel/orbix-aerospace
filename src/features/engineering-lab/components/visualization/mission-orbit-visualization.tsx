@@ -101,11 +101,12 @@ export function MissionOrbitVisualization({
                   planeChange?.orbitalRadiusMetres ?? 0,
                 ),
                 {
+                  // The degree sign sits on the figure with no space, as in
+                  // the report and ground track, so it travels in the value.
                   label: "Plane change",
-                  unit: "deg",
-                  value: formatLabValue(
+                  value: `${formatLabValue(
                     planeChange?.inclinationChangeDegrees ?? 0,
-                  ),
+                  )}°`,
                 },
                 {
                   label: "Delta-v",

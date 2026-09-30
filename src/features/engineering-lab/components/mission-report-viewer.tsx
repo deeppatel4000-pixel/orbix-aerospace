@@ -1,16 +1,23 @@
 "use client";
 
-import type { ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 
-import type { MissionReport } from "@/features/engineering-lab/types";
+import type {
+  MissionPresetCategory,
+  MissionReport,
+} from "@/features/engineering-lab/types";
 import { formatFigure } from "@/components/ui/readout";
 import {
   altitudeReadout,
   formatLabValue,
 } from "@/features/engineering-lab/components/visualization/format-lab-value";
 import { LabHeading } from "@/features/engineering-lab/components/visualization/lab-heading";
+import { MissionIdentity } from "@/features/engineering-lab/components/visualization/mission-identity";
+import { LabUnit } from "./visualization/lab-unit";
+import { THERMAL_MODEL_NOTE } from "./visualization/thermal-model-note";
 
 interface MissionReportViewerProps {
+  readonly category?: MissionPresetCategory;
   readonly report: MissionReport;
 }
 
@@ -44,7 +51,7 @@ function ReportMetric({ label, text = false, unit, value }: ReportMetricProps) {
           }
         >
           {text ? value : formatFigure(value)}
-          {unit ? <span className="ml-1 text-muted">{unit}</span> : null}
+          {unit ? <LabUnit unit={unit} /> : null}
         </output>
       </dd>
     </div>
@@ -67,7 +74,10 @@ function MetricList({ children }: { readonly children: ReactNode }) {
   return <dl className="mt-3 grid gap-x-8 sm:grid-cols-2">{children}</dl>;
 }
 
-export function MissionReportViewer({ report }: MissionReportViewerProps) {
+export function MissionReportViewer({
+  category,
+  report,
+}: MissionReportViewerProps) {
   const { missionAssessment, missionSummary } = report;
   const orbital = report.orbitalAnalysis;
   const vehicle = report.vehicleAnalysis;
@@ -76,28 +86,45 @@ export function MissionReportViewer({ report }: MissionReportViewerProps) {
   const planeChange = orbital?.orbitalPlaneChange;
   const tps = thermal?.tpsRecommendation;
 
+  // The status line stays empty on first render and is rewritten on every
+  // later report, with a running update number, so each update (even one
+  // that keeps the mission name) is announced once.
+  const [announcement, setAnnouncement] = useState("");
+  const updateCount = useRef(0);
+  const firstReport = useRef(report);
+  useEffect(() => {
+    if (report === firstReport.current) {
+      return;
+    }
+    updateCount.current += 1;
+    const deltaV =
+      orbital === undefined
+        ? ""
+        : ` Total delta-v ${figure(orbital.totalDeltaVMetresPerSecond)} m/s.`;
+    setAnnouncement(
+      `Report ${updateCount.current + 1} ready for ${missionSummary.missionName}.${deltaV}`,
+    );
+  }, [report, orbital, missionSummary.missionName]);
+
   return (
     <article aria-labelledby="mission-report-title" className="min-w-0">
-      <header className="border-b border-border-subtle pb-4">
-        <LabHeading id="mission-report-title">
-          Mission engineering report
-        </LabHeading>
+      <MissionIdentity
+        category={category}
+        headingId="mission-report-title"
+        missionName={missionSummary.missionName}
+      >
         {/* Only this line is live, so an update announces one sentence
          * rather than every value in the report. */}
         <p className="sr-only" role="status">
-          Report updated for {missionSummary.missionName}.
+          {announcement}
         </p>
-      </header>
+      </MissionIdentity>
 
       <div className="space-y-8 pt-6">
         <section aria-labelledby="mission-report-overview-title">
           <LabHeading id="mission-report-overview-title" offset={1}>
             Mission overview
           </LabHeading>
-          <p className="orbix-label mt-3">Mission name</p>
-          <output className="mt-1 block text-base font-semibold text-foreground">
-            {missionSummary.missionName}
-          </output>
           <p className="mt-3 max-w-[68ch] text-sm leading-6 text-muted">
             {missionSummary.description}
           </p>
@@ -211,7 +238,7 @@ export function MissionReportViewer({ report }: MissionReportViewerProps) {
                 <MetricList>
                   <ReportMetric
                     label="Inclination change"
-                    unit="deg"
+                    unit="°"
                     value={figure(planeChange.inclinationChangeDegrees)}
                   />
                   <ReportMetric
@@ -307,7 +334,7 @@ export function MissionReportViewer({ report }: MissionReportViewerProps) {
                       vehicle.performanceSummary.dynamics.peakDeceleration
                         .decelerationGs,
                     )}
-                    <span className="ml-1 text-muted">g</span>
+                    <LabUnit unit="g" />
                     <span className="ml-2 text-muted">
                       (
                       {figure(
@@ -340,6 +367,9 @@ export function MissionReportViewer({ report }: MissionReportViewerProps) {
             <LabHeading id="mission-report-thermal-title" offset={1}>
               Thermal protection
             </LabHeading>
+            <p className="mt-1 max-w-[68ch] text-[0.8125rem] leading-5 text-muted">
+              {THERMAL_MODEL_NOTE}
+            </p>
 
             <MetricList>
               <ReportMetric

@@ -110,7 +110,9 @@ describe("showcase capture view", () => {
       expect(markup).toContain('aria-labelledby="capture-mission-title"');
       expect(markup.match(/<h1/g)).toHaveLength(1);
       expect(markup).toContain(mission.preset.name);
-      expect(markup).toContain("Values shown are preset inputs");
+      expect(textOf(markup)).toContain(
+        "Values are preset inputs converted to display units, except where a caption says otherwise.",
+      );
       expect(markup).not.toContain("/images/");
       expect(markup).not.toContain(EM_DASH);
     }

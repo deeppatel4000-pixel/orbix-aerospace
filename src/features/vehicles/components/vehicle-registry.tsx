@@ -12,9 +12,10 @@ export interface VehicleRegistryEntry {
   /** The rendered card. */
   readonly card: ReactNode;
   /**
-   * Spans two grid columns from 64rem (spec 8: vary emphasis, the first
-   * card in a registry spans two columns). Render its card with the
-   * `feature` layout.
+   * Spans two grid columns wherever the grid has two or more (from 40rem;
+   * spec 8: vary emphasis, the first card in a registry spans two
+   * columns). With five vehicles that also leaves no card alone on the
+   * last row of the two-column grid. Render its card with a feature layout.
    */
   readonly featured?: boolean;
   readonly id: string;
@@ -47,7 +48,7 @@ function normalise(value: string) {
 /**
  * The registry (spec 8, 9): a heading row with the search field and a live
  * result count, then a grid of card links (1 column, 2 from 40rem, 3 from
- * 64rem) whose featured first card spans two columns. Every card is
+ * 64rem) whose featured first card spans two columns from 40rem. Every card is
  * rendered on the server, so the full list is present without JavaScript;
  * the search only hides non-matching cards.
  */
@@ -134,7 +135,7 @@ export function VehicleRegistry({
       >
         {entries.map((entry) => (
           <li
-            className={cn(entry.featured && "lg:col-span-2")}
+            className={cn(entry.featured && "sm:col-span-2")}
             hidden={!matches.includes(entry)}
             key={entry.id}
           >

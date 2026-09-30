@@ -118,7 +118,7 @@ export const LAB_TOOL_SPLIT =
 
 /**
  * `LAB_TOOL_SPLIT` whose results column also stays in view while the left
- * column scrolls, on a viewport at least 50rem tall. Only for tools whose
+ * column scrolls, on a viewport at least 56rem (896px) tall. Only for tools whose
  * whole result panel is short enough to fit that viewport: a taller sticky
  * column would keep its lower part below the fold until the left column
  * ended.

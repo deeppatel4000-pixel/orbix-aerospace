@@ -8,7 +8,6 @@ import type {
 
 import { TradeStudyCard } from "./trade-study-card";
 import {
-  buildTradeStudyExplanations,
   TradeStudyMetrics,
   type MissionTradeStudyEntry,
 } from "./trade-study-metrics";
@@ -32,22 +31,15 @@ export function MissionTradeStudy({
       scenario,
     }),
   );
-  const explanations = buildTradeStudyExplanations(entries);
 
   return (
     <article
       aria-label="Mission architecture trade study"
       className="min-w-0 text-foreground"
     >
-      <header className="border-b border-border-subtle pb-4">
-        <LabHeading>Architecture comparison review</LabHeading>
-        <p className="mt-2 max-w-[68ch] text-sm leading-6 text-muted">
-          Mission trade study of saved architectures, using completed results
-          only. It does not score, rank, or pick a preferred mission.
-        </p>
-      </header>
-
-      <div className="space-y-8 pt-6">
+      {/* The tool card already titles and describes the study, so the body
+       * starts with the architectures; the one disclaimer is the foot note. */}
+      <div className="space-y-8">
         {entries.length === 0 ? (
           <EmptyState
             description="Supply saved scenarios and optional completed reports or analyses to open an architecture comparison review."
@@ -59,14 +51,17 @@ export function MissionTradeStudy({
               aria-labelledby="trade-study-scenarios-title"
               className="@container/trade"
             >
-              <LabHeading offset={1} id="trade-study-scenarios-title">
+              <LabHeading id="trade-study-scenarios-title">
                 Mission architectures
               </LabHeading>
               {/* Open hairline grid: each architecture sits on a top
                * rule; no outer box inside the tool frame. */}
               <div
                 className={cn(
-                  "mt-3 grid gap-x-8",
+                  // Rows: label, title, description, systems. Each card
+                  // spans them through subgrid; the description row takes
+                  // the slack so the systems rules share one line.
+                  "mt-3 grid items-stretch gap-x-8 @[30rem]/trade:grid-rows-[auto_auto_1fr_auto]",
                   // One column per architecture up to three, matching the
                   // mission columns of the table below, with no orphan.
                   entries.length % 3 === 0
@@ -89,23 +84,6 @@ export function MissionTradeStudy({
             <div className="border-t border-border-subtle pt-8">
               <TradeStudyMetrics entries={entries} />
             </div>
-
-            <section
-              aria-labelledby="trade-study-insights-title"
-              className="border-t border-border-subtle pt-8"
-            >
-              <LabHeading offset={1} id="trade-study-insights-title">
-                Trade study notes
-              </LabHeading>
-              <p className="mt-1 text-sm leading-6 text-muted">
-                Factual differences only. No recommendation.
-              </p>
-              <ul className="mt-3 list-disc space-y-1 pl-5 text-sm leading-6 text-text-secondary">
-                {explanations.map((explanation) => (
-                  <li key={explanation}>{explanation}</li>
-                ))}
-              </ul>
-            </section>
           </>
         )}
 
@@ -113,7 +91,7 @@ export function MissionTradeStudy({
           Trade study contains {entries.length} supplied mission scenarios.
         </p>
 
-        <footer className="border-t border-border-subtle pt-4 text-sm leading-6 text-muted">
+        <footer className="border-t border-border-subtle pt-4 text-[0.8125rem] leading-5 text-muted">
           This comparison keeps the supplied values and scenario order. It
           provides no feasibility assessment, optimization, ranking, or winner
           selection.

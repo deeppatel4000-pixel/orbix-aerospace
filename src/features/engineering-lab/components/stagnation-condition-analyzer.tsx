@@ -21,6 +21,7 @@ import {
   ValidationErrorSummary,
   LabFigure,
   EqDot,
+  EQ_SUB_CLEAR,
 } from "@/features/engineering-lab/components/shared";
 import type {
   StagnationConditionAnalysis,
@@ -111,7 +112,7 @@ const toolEquation = (
         </span>
         <span className={EQ_LINE}>
           <span className={EQ_TERM}>
-            p<sub>t</sub>/p
+            p<sub className={EQ_SUB_CLEAR}>t</sub>/p
           </span>{" "}
           <span className={EQ_TERM}>
             = (T<sub>t</sub>/T)
@@ -140,7 +141,7 @@ const toolEquation = (
       {
         symbol: (
           <>
-            T<sub>t</sub>, p<sub>t</sub>, ρ<sub>t</sub>
+            T<sub>t</sub>, p<sub className={EQ_SUB_CLEAR}>t</sub>, ρ<sub>t</sub>
           </>
         ),
         meaning: "Stagnation (total) conditions",

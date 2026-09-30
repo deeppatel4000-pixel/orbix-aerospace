@@ -11,24 +11,26 @@ export interface AircraftVisual {
   readonly cardObjectPosition: string;
   /**
    * One factual line for the registry card, taken only from the vehicle
-   * record, in one grammar for every vehicle: architecture or propulsion,
-   * then type ("Twin-engine stealth fighter", "Three-stage heavy-lift
-   * rocket"). At most 34 characters (CARD_SUMMARY_MAX_LENGTH), about 225px
-   * at 14px, so it sets on one line in the narrowest card (about 240px of
-   * text at 320px). Shown whole, never truncated; the visuals test enforces
-   * the limit.
+   * record: engines, then type ("Twin-engine stealth fighter"). At most
+   * 31 characters (CARD_SUMMARY_MAX_LENGTH): the summary line is 223px
+   * wide in the narrowest card (320px), where 33 characters wrapped.
+   * Shown whole, never truncated; the visuals test enforces the limit.
    */
   readonly cardSummary: string;
   /** Photographer or agency, as the licence asks to be credited. */
   readonly credit: string;
   /**
-   * `object-position` for the first registry card from 64rem, a 16:10
-   * photograph across two grid columns.
+   * `object-position` for the first registry card from 40rem: the left
+   * half of a two-column card, as tall as the card.
    */
   readonly featureObjectPosition: string;
   /** Intrinsic height of the file in pixels. */
   readonly height: number;
-  /** `object-position` for the full-bleed profile and registry hero. */
+  /**
+   * `object-position` for the profile hero banner: the y value keeps the
+   * nose and the fins in frame where a wide window crops the photograph
+   * top and bottom, and clear of the bottom fade under the heading.
+   */
   readonly heroObjectPosition: string;
   /** Licence name, for example "Public domain (U.S. government work)" or "CC BY 2.0". */
   readonly license: string;
@@ -75,9 +77,7 @@ const aircraftVisuals = {
     credit: "U.S. Air Force photo by Staff Sgt. Bennie J. Davis III",
     featureObjectPosition: "50% 40%",
     height: 1202,
-    // Only the x value changes the crop below the full-width breakpoint:
-    // at 768px it moves the canopy out from behind the heading.
-    heroObjectPosition: "20% 40%",
+    heroObjectPosition: "50% 40%",
     ...PUBLIC_DOMAIN_USAF,
     modifications: RESIZED,
     objectPosition: "50% 45%",
@@ -87,13 +87,12 @@ const aircraftVisuals = {
     // panel at the bottom right never covers it. From 64rem x = 58% keeps
     // both wingtips in frame wherever the hero is cropped at the sides
     // (1024x768 and 1152x864: x from 41 to 71 percent works). From 48rem to
-    // 64rem (portrait tablet) the wings cannot both fit, so x = 20% keeps
-    // the centre body to the right of the lead. On the 4:3 phone plate 50%
-    // trims both tips evenly.
+    // 64rem (portrait tablet) the photograph is a banner above the text, so
+    // it is centred. On the 4:3 phone plate 50% trims both tips evenly.
     registryHeroObjectPosition: {
       base: "50% 40%",
       lg: "58% 40%",
-      md: "20% 40%",
+      md: "50% 40%",
     },
     sourceUrl:
       "https://commons.wikimedia.org/wiki/File:B-2_Spirit_original.jpg",
@@ -108,7 +107,7 @@ const aircraftVisuals = {
     credit: "U.S. Air Force photo by Airman 1st Class Matthew Seefeldt",
     featureObjectPosition: "60% 50%",
     height: 1345,
-    heroObjectPosition: "50% 50%",
+    heroObjectPosition: "50% 58%",
     ...PUBLIC_DOMAIN_USAF,
     modifications: RESIZED,
     objectPosition: "50% 50%",
@@ -125,10 +124,7 @@ const aircraftVisuals = {
     credit: "U.S. Air Force photo by Master Sgt. Andy Dunaway",
     featureObjectPosition: "38% 50%",
     height: 1277,
-    // Behind the text at every width. From 64rem the hero is wider than
-    // the photo's 3:2, so only the y value crops; on a portrait tablet the
-    // x value centres the airframe (28% to 85% of the frame) in the window.
-    heroObjectPosition: "65% 50%",
+    heroObjectPosition: "50% 58%",
     ...PUBLIC_DOMAIN_USAF,
     modifications: RESIZED,
     objectPosition: "50% 48%",
@@ -139,12 +135,12 @@ const aircraftVisuals = {
   "f-35-lightning-ii": {
     alt: "F-35A Lightning II in flight against a clear blue sky",
     cardObjectPosition: "50% 12%",
-    cardSummary: "Single-engine multirole fighter",
+    cardSummary: "Single-engine fighter family",
     cardTreatment: "standard",
     credit: "U.S. Air Force photo by Master Sgt. Donald R. Allen",
     featureObjectPosition: "50% 40%",
     height: 1271,
-    heroObjectPosition: "50% 40%",
+    heroObjectPosition: "50% 62%",
     ...PUBLIC_DOMAIN_USAF,
     modifications:
       "Converted to WebP from the Wikimedia Commons crop of the original",
@@ -162,7 +158,7 @@ const aircraftVisuals = {
     credit: "NASA",
     featureObjectPosition: "55% 50%",
     height: 1532,
-    heroObjectPosition: "50% 40%",
+    heroObjectPosition: "50% 62%",
     ...PUBLIC_DOMAIN_NASA,
     modifications: RESIZED,
     objectPosition: "50% 55%",
@@ -178,4 +174,4 @@ export function getAircraftVisual(id: string): AircraftVisual | undefined {
 }
 
 /** The longest `cardSummary` that still sets on one line at 320px. */
-export const CARD_SUMMARY_MAX_LENGTH = 34;
+export const CARD_SUMMARY_MAX_LENGTH = 31;

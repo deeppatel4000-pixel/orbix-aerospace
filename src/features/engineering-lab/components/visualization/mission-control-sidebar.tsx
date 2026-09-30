@@ -223,7 +223,14 @@ export function MissionControlSidebar({
               </p>
 
               <div
-                className="flex w-full flex-wrap gap-px overflow-hidden rounded border border-border-control bg-border-control"
+                className={cn(
+                  "w-full gap-px overflow-hidden rounded border border-border-control bg-border-control",
+                  // Below 30rem a four-segment group is a 2 x 2 grid, so it
+                  // never wraps 3 + 1 with one segment on a row of its own.
+                  group.workspaceIds.length === 4
+                    ? "grid grid-cols-2 min-[30rem]:flex min-[30rem]:flex-wrap"
+                    : "flex flex-wrap",
+                )}
                 role="presentation"
               >
                 {group.workspaceIds.map((workspaceId) => {

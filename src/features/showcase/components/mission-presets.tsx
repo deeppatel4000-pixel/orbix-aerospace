@@ -36,44 +36,66 @@ function tableCaption(visible: string, mission: ShowcaseMission): ReactNode {
 }
 
 /**
+ * Below 48rem the showcase tables use 10px cell padding in place of 16px,
+ * so the two-vehicle table fits a 390px screen without scrolling.
+ */
+const phoneCells = "max-md:[&_:is(th,td)]:px-2.5";
+
+/**
  * One `DataTable` per input group, each captioned with the group title.
- * `pair` sets two groups side by side from 48rem.
+ * Two columns, Input and Value, with the unit set after the figure in the
+ * value cell, so a quantity never shows without its unit and every table
+ * fits a 320px screen. `pair` sets two groups side by side from 48rem;
+ * `extra` (the vehicle table) then fills the first column under the first
+ * group while the second group runs beside both, so the capture view of a
+ * preset with a vehicle fits one laptop screen.
  */
 function PresetInputsTable({
+  extra,
   mission,
   pair = false,
 }: {
+  extra?: ReactNode;
   mission: ShowcaseMission;
   pair?: boolean;
 }) {
-  if (mission.inputGroups.length === 0) {
-    return null;
+  const groups = mission.inputGroups.length;
+
+  if (groups === 0) {
+    return extra ?? null;
   }
+
+  const paired = pair && groups > 1;
 
   return (
     <div
       className={cn(
-        "grid min-w-0 grid-cols-1 content-start gap-8",
-        pair && mission.inputGroups.length > 1 && "md:grid-cols-2 md:gap-x-8",
+        "grid min-w-0 grid-cols-1 content-start",
+        paired ? "gap-5 md:grid-cols-2 md:gap-x-8" : "gap-8",
+        paired &&
+          extra != null &&
+          groups === 2 &&
+          "md:[&>:nth-child(2)]:row-span-2",
       )}
     >
       {mission.inputGroups.map((group) => (
         <DataTable<PresetInputRow>
           caption={tableCaption(group.title, mission)}
+          className={phoneCells}
           columns={[
             { cell: (row) => row.label, header: "Input", key: "input" },
             {
-              cell: (row) => formatShowcaseNumber(row.value),
+              cell: (row) => (
+                <>
+                  {formatShowcaseNumber(row.value)}
+                  {row.unit ? (
+                    <span className="orbix-table-unit ml-1.5">{row.unit}</span>
+                  ) : null}
+                </>
+              ),
               header: "Value",
               key: "value",
               numeric: true,
-            },
-            {
-              cell: (row) => (
-                <span className="orbix-table-unit">{row.unit}</span>
-              ),
-              header: "Unit",
-              key: "unit",
             },
           ]}
           getRowKey={(row) => row.label}
@@ -81,84 +103,128 @@ function PresetInputsTable({
           rows={group.rows}
         />
       ))}
+      {extra}
     </div>
   );
 }
 
-/**
- * Each header names its quantity on the first line and its unit on a
- * second, and every header cell sits on the bottom rule, so a one-line
- * header lines up with its two-line neighbours. Units keep their own case.
- */
-const vehicleHeaderLines =
-  "[&_thead_th]:align-bottom [&_thead_.orbix-table-unit]:block [&_thead_.orbix-table-unit]:normal-case";
+/** One quantity of the vehicle table: a row, read across the vehicles. */
+interface VehicleQuantity {
+  readonly label: string;
+  readonly unit?: string;
+  readonly value: (vehicle: VehicleReentryConfiguration) => number;
+}
 
-function VehicleInputsTable({
-  compact = false,
+const VEHICLE_QUANTITIES: readonly VehicleQuantity[] = [
+  { label: "Mass", unit: "kg", value: (vehicle) => vehicle.massKilograms },
+  {
+    label: "Drag coefficient",
+    value: (vehicle) => vehicle.dragCoefficient,
+  },
+  {
+    label: "Reference area",
+    unit: "m²",
+    value: (vehicle) => vehicle.referenceAreaSquareMetres,
+  },
+  {
+    label: "Nose radius",
+    unit: "m",
+    value: (vehicle) => vehicle.noseRadiusMetres,
+  },
+];
+
+/** A quantity and its unit, set after the figure in one value cell. */
+function quantityCell(
+  row: VehicleQuantity,
+  vehicle: VehicleReentryConfiguration,
+) {
+  return (
+    <>
+      {formatShowcaseNumber(row.value(vehicle))}
+      {row.unit ? (
+        <span className="orbix-table-unit ml-1.5">{row.unit}</span>
+      ) : null}
+    </>
+  );
+}
+
+/**
+ * One vehicle's quantities in two columns, Quantity and Value, captioned
+ * with the vehicle name. The quantity labels stay on one line.
+ */
+function SingleVehicleTable({
   mission,
+  vehicle,
 }: {
-  /** For the narrower capture column: vehicle names may wrap. */
-  compact?: boolean;
   mission: ShowcaseMission;
+  vehicle: VehicleReentryConfiguration;
 }) {
-  if (mission.vehicles.length === 0) {
+  return (
+    <DataTable<VehicleQuantity>
+      caption={tableCaption(`Vehicle inputs, ${vehicle.vehicleName}`, mission)}
+      className={cn(phoneCells, "[&_tbody_th]:whitespace-nowrap")}
+      columns={[
+        { cell: (row) => row.label, header: "Quantity", key: "quantity" },
+        {
+          cell: (row) => quantityCell(row, vehicle),
+          header: "Value",
+          key: "value",
+          numeric: true,
+        },
+      ]}
+      getRowKey={(row) => row.label}
+      rows={VEHICLE_QUANTITIES}
+    />
+  );
+}
+
+/**
+ * The vehicle inputs. One vehicle: a Quantity and Value table. Several:
+ * from 48rem one table with the vehicles as columns, so they compare side
+ * by side; below 48rem one Quantity and Value table per vehicle, so no
+ * quantity is cut off from its unit on a phone screen.
+ */
+function VehicleInputsTable({ mission }: { mission: ShowcaseMission }) {
+  const { vehicles } = mission;
+  const [first, ...others] = vehicles;
+
+  if (!first) {
     return null;
   }
 
+  if (others.length === 0) {
+    return <SingleVehicleTable mission={mission} vehicle={first} />;
+  }
+
   return (
-    <DataTable<VehicleReentryConfiguration>
-      caption={tableCaption("Vehicle inputs", mission)}
-      className={cn(
-        vehicleHeaderLines,
-        // On the page the headers wrap below 1280px, so the table fits a
-        // 768px column instead of scrolling. The capture column is narrower
-        // still: there the headers always wrap and vehicle names may too.
-        compact
-          ? "[&_thead_th]:whitespace-normal"
-          : "max-xl:[&_thead_th]:whitespace-normal",
-      )}
-      columns={[
-        {
-          cell: (vehicle) => (
-            <span className={compact ? undefined : "whitespace-nowrap"}>
-              {vehicle.vehicleName}
-            </span>
-          ),
-          header: "Vehicle",
-          key: "vehicle",
-        },
-        {
-          cell: (vehicle) => formatShowcaseNumber(vehicle.massKilograms),
-          header: "Mass",
-          key: "mass",
-          numeric: true,
-          unit: "kg",
-        },
-        {
-          cell: (vehicle) => formatShowcaseNumber(vehicle.dragCoefficient),
-          header: "Drag coefficient",
-          key: "drag",
-          numeric: true,
-        },
-        {
-          cell: (vehicle) =>
-            formatShowcaseNumber(vehicle.referenceAreaSquareMetres),
-          header: "Reference area",
-          key: "area",
-          numeric: true,
-          unit: "m²",
-        },
-        {
-          cell: (vehicle) => formatShowcaseNumber(vehicle.noseRadiusMetres),
-          header: "Nose radius",
-          key: "nose",
-          numeric: true,
-          unit: "m",
-        },
-      ]}
-      getRowKey={(vehicle) => vehicle.vehicleName}
-      rows={mission.vehicles}
-    />
+    <>
+      <div className="max-md:hidden">
+        <DataTable<VehicleQuantity>
+          caption={tableCaption("Vehicle inputs", mission)}
+          className="[&_thead_th]:align-bottom [&_thead_th]:whitespace-normal"
+          columns={[
+            { cell: (row) => row.label, header: "Quantity", key: "quantity" },
+            ...vehicles.map((vehicle) => ({
+              cell: (row: VehicleQuantity) => quantityCell(row, vehicle),
+              header: vehicle.vehicleName,
+              key: vehicle.vehicleName,
+              numeric: true,
+            })),
+          ]}
+          getRowKey={(row) => row.label}
+          rows={VEHICLE_QUANTITIES}
+        />
+      </div>
+      <div className="grid gap-8 md:hidden">
+        {vehicles.map((vehicle) => (
+          <SingleVehicleTable
+            key={vehicle.vehicleName}
+            mission={mission}
+            vehicle={vehicle}
+          />
+        ))}
+      </div>
+    </>
   );
 }
 
@@ -198,23 +264,25 @@ interface MissionBodyProps {
   readonly header: ReactNode;
   readonly mission: ShowcaseMission;
   /**
-   * `page`: a 7 to 5 split from 1024px, the vehicle table across the full
-   * width below. `capture`: a narrower figure column, the vehicle table in
-   * the text column and `footer` across both, so the preset fits one
-   * laptop screen.
+   * `page`: a 7 to 5 split from 1024px. `capture`: a narrower figure
+   * column and `footer` across both, so the preset fits one laptop screen.
    */
   readonly variant?: "capture" | "page";
 }
 
 /**
- * One template for every preset with a drawing. From 1024px the figure
- * holds the first column and the title block opens the second, level with
- * the top of the plate; the input tables and `after` follow the title.
- * Below 1024px the title comes first, then the figure, then the tables.
- * A preset without orbital geometry (reentry only) has no figure: the
- * title block and the entry conditions share the first row and the
- * vehicle table runs the full width below.
- * `footer` closes it.
+ * One template for every preset. From 1024px the figure holds the first
+ * column and the title block opens the second, level with the top of the
+ * plate; the input tables, the vehicle table and `after` follow the title
+ * in that order. Below 1024px the title comes first, then the figure, then
+ * the tables and `after`. `footer` closes it.
+ *
+ * A preset without orbital geometry (reentry only) has no drawing. Its
+ * parts are set in one flat grid in reading order (title, entry
+ * conditions, vehicles, `after`), so the DOM, focus and visual order agree
+ * at every width. From 1024px the tables take the figure's column, so
+ * every title sits on the same vertical line; in the capture view the
+ * vehicle table stays in the wider second column.
  */
 export function MissionBody({
   after,
@@ -226,72 +294,105 @@ export function MissionBody({
 }: MissionBodyProps) {
   const capture = variant === "capture";
   const { diagram } = mission;
+  const drawn = diagram.kind !== "none";
   const size: TransferDiagramSize = capture
     ? "compact"
     : isPointScaleTransfer(diagram)
       ? "feature"
       : "standard";
-  const sideInputs =
-    diagram.kind !== "none" && mission.inputGroups.length > 0 ? (
-      <PresetInputsTable mission={mission} pair={capture} />
-    ) : null;
+  const hasInputs = mission.inputGroups.length > 0;
   const vehicles =
     mission.vehicles.length > 0 ? (
-      <VehicleInputsTable compact={capture} mission={mission} />
+      <VehicleInputsTable mission={mission} />
     ) : null;
   const gap = capture ? "gap-5" : "gap-10";
-  const column = cn("grid min-w-0 content-start max-lg:contents", gap);
+  const columns = cn(
+    "grid grid-cols-1",
+    gap,
+    capture
+      ? "lg:grid-cols-[21rem_minmax(0,1fr)] lg:gap-x-10 xl:grid-cols-[25rem_minmax(0,1fr)] xl:gap-x-14"
+      : "lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)] lg:gap-x-12 xl:gap-x-16",
+  );
 
-  if (diagram.kind === "none") {
+  if (!drawn) {
+    // The second row takes the spare height, so `after` sits right under
+    // the title while the tables beside them run on.
     return (
       <div className={cn("grid grid-cols-1", gap, className)}>
-        <div
-          className={cn(
-            "grid grid-cols-1",
-            gap,
-            "lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)] lg:gap-x-12 xl:gap-x-16",
-          )}
-        >
-          <div className="min-w-0">{header}</div>
-          <div className="grid min-w-0 content-start gap-10">
-            <PresetInputsTable mission={mission} />
-            {after}
+        <div className={cn(columns, "lg:grid-rows-[auto_1fr]")}>
+          <div className="min-w-0 lg:col-start-2 lg:row-start-1">{header}</div>
+          <div
+            className={cn(
+              "grid min-w-0 content-start lg:col-start-1 lg:row-start-1",
+              gap,
+              capture ? "lg:row-span-1" : "lg:row-span-2",
+            )}
+          >
+            {hasInputs ? <PresetInputsTable mission={mission} /> : null}
+            {!capture ? vehicles : null}
           </div>
+          {capture && vehicles ? (
+            <div className="min-w-0 lg:col-start-2 lg:row-start-2 lg:self-start">
+              {vehicles}
+            </div>
+          ) : null}
+          {after ? (
+            <div className="min-w-0 lg:col-start-2 lg:row-start-2 lg:self-start">
+              {after}
+            </div>
+          ) : null}
         </div>
-        {vehicles}
         {footer}
       </div>
     );
   }
 
+  // The column that is often the shorter one stays in view beside the
+  // other while it scrolls: the text column, or the plate when a vehicle
+  // table makes the text column the longer one.
+  const stickFigure = !capture && mission.vehicles.length > 0;
+  const sticky = "lg:sticky lg:top-24 lg:self-start";
+  const column = cn("grid min-w-0 content-start max-lg:contents", gap);
+
   return (
     <div className={cn("grid grid-cols-1", gap, className)}>
-      <div
-        className={cn(
-          "grid grid-cols-1",
-          gap,
-          capture
-            ? "lg:grid-cols-[21rem_minmax(0,1fr)] lg:gap-x-10 xl:grid-cols-[25rem_minmax(0,1fr)] xl:gap-x-14"
-            : "lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)] lg:gap-x-12 xl:gap-x-16",
-        )}
-      >
-        <div className={cn(column, "lg:col-start-2 lg:row-start-1")}>
+      <div className={columns}>
+        <div
+          className={cn(
+            column,
+            "lg:col-start-2 lg:row-start-1",
+            !capture && !stickFigure && sticky,
+          )}
+        >
           <div className="min-w-0 max-lg:order-1">{header}</div>
-          {sideInputs ? (
-            <div className="min-w-0 max-lg:order-3">{sideInputs}</div>
+          {/* In the capture view the vehicle table joins the paired input
+              tables, so the preset fits one laptop screen. */}
+          {hasInputs || (capture && vehicles) ? (
+            <div className="min-w-0 max-lg:order-3">
+              <PresetInputsTable
+                extra={capture ? vehicles : undefined}
+                mission={mission}
+                pair={capture}
+              />
+            </div>
           ) : null}
-          {capture && vehicles ? (
+          {vehicles && !capture ? (
             <div className="min-w-0 max-lg:order-3">{vehicles}</div>
           ) : null}
           {after ? <div className="min-w-0 max-lg:order-3">{after}</div> : null}
         </div>
-        <div className={cn(column, "lg:col-start-1 lg:row-start-1")}>
+        <div
+          className={cn(
+            column,
+            "lg:col-start-1 lg:row-start-1",
+            stickFigure && sticky,
+          )}
+        >
           <div className="min-w-0 max-lg:order-2">
             <MissionDiagramView mission={mission} size={size} />
           </div>
         </div>
       </div>
-      {capture ? null : vehicles}
       {footer}
     </div>
   );

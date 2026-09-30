@@ -59,7 +59,7 @@ describe("MissionShowcase", () => {
       />,
     );
 
-    expect(markup).toContain("Mission walkthrough");
+    expect(markup).toContain("Mission walkthrough for");
     expect(markup).toContain("Cinematic Showcase Mission");
     expect(markup).toContain("not a flight simulation");
   });
@@ -70,12 +70,13 @@ describe("MissionShowcase", () => {
     );
 
     expect(SHOWCASE_PHASES).toHaveLength(6);
+    // The step row shows the short labels; the stage titles the current
+    // phase in full.
     expect(markup).toContain("Launch preparation");
-    expect(markup).toContain("Orbit insertion");
-    expect(markup).toContain("Orbital transfer");
-    expect(markup).toContain("Arrival and mission phase");
-    expect(markup).toContain("Atmospheric entry");
-    expect(markup).toContain("Mission review");
+    for (const phase of SHOWCASE_PHASES) {
+      expect(phase.shortLabel.length).toBeLessThanOrEqual(16);
+      expect(markup).toContain(phase.shortLabel);
+    }
   });
 
   it("supports phase navigation through presentation state", () => {
