@@ -1,51 +1,53 @@
-import { expect, ROUTES, test } from "../fixtures/orbix";
+import {
+  AIRCRAFT_IDS,
+  expect,
+  PROJECT_ROUTES,
+  ROCKET_IDS,
+  ROUTES,
+  test,
+} from "../fixtures/orbix";
 
 /**
- * Homepage coverage.
+ * Homepage coverage (v4 plan section 4).
  *
- * The homepage this replaced never linked to `/aircraft`, `/rockets`,
- * `/compare` or `/learn` at all — four of its six calls to action pointed at
- * `/engineering-lab` — so the product's largest completed systems were
- * unreachable from the front door and nothing failed. These tests make that
- * class of regression loud.
+ * The home page is built for a five-minute read: a hero with the thesis,
+ * the author and his grade and the live Transfer Explorer; the verification
+ * score with one sample row; three featured tools; one vehicle photo plate;
+ * and three sentences on authorship. These tests pin what each section
+ * links to and that every number it shows agrees with the page it comes
+ * from.
  *
- * Copy is deliberately not asserted word-for-word; destinations, structure and
- * honesty of claims are the contracts.
+ * Copy is deliberately not asserted word-for-word; destinations, structure,
+ * counts and honesty of claims are the contracts.
  */
 
-/**
- * Design v3 (spec 6 and 11, Home): after the hero, the two registries as
- * two open catalogue columns, aircraft then launch vehicles, each with a
- * pictured vehicle (F-22 Raptor, Saturn V), a table of every vehicle in
- * the registry and a link to the registry. No card chrome.
- */
-const REGISTRY_LINKS = ["/aircraft", "/rockets"] as const;
-const AIRCRAFT_PROFILES = [
-  "/aircraft/b-2-spirit",
-  "/aircraft/f-15-eagle",
-  "/aircraft/f-22-raptor",
-  "/aircraft/f-35-lightning-ii",
-  "/aircraft/sr-71-blackbird",
-] as const;
-const ROCKET_PROFILES = [
-  "/rockets/falcon-9",
-  "/rockets/falcon-heavy",
-  "/rockets/saturn-v",
-  "/rockets/space-launch-system",
-  "/rockets/starship",
-] as const;
-
-/** Every primary destination the homepage must expose. */
+/** Every destination the homepage must expose in its content. */
 const REQUIRED_DESTINATIONS = [
-  "/aircraft",
-  "/rockets",
-  "/compare",
-  "/engineering-lab",
-  "/learn",
-  "/showcase",
-  "/verification",
-  "/build-log",
+  ROUTES.engineeringLab,
+  ROUTES.aircraft,
+  ROUTES.rockets,
+  ROUTES.compare,
+  PROJECT_ROUTES.verification,
+  PROJECT_ROUTES.buildLog,
 ] as const;
+
+/** The comparison the vehicles section opens (v4 plan section 3). */
+const PRELOADED_COMPARISON = ["SR-71 Blackbird", "F-22 Raptor", "B-2 Spirit"];
+
+type Page = import("@playwright/test").Page;
+
+/** The section a heading titles: its nearest `<section>` ancestor. */
+function sectionOf(page: Page, titleId: string) {
+  return page.locator(`#${titleId}`).locator("xpath=ancestor::section[1]");
+}
+
+function sectionHrefs(page: Page, titleId: string) {
+  return sectionOf(page, titleId)
+    .locator("a[href]")
+    .evaluateAll((nodes) =>
+      nodes.map((n) => (n.getAttribute("href") ?? "").split(/[?#]/)[0] ?? ""),
+    );
+}
 
 test.describe("Homepage", () => {
   test.skip(
@@ -62,9 +64,9 @@ test.describe("Homepage", () => {
     await page.goto(ROUTES.home, { waitUntil: "domcontentloaded" });
 
     const hrefs = await page
-      .locator("main a[href]")
+      .locator("#main-content a[href]")
       .evaluateAll((nodes) =>
-        nodes.map((n) => (n.getAttribute("href") ?? "").split("#")[0] ?? ""),
+        nodes.map((n) => (n.getAttribute("href") ?? "").split(/[?#]/)[0] ?? ""),
       );
 
     for (const destination of REQUIRED_DESTINATIONS) {
@@ -79,33 +81,27 @@ test.describe("Homepage", () => {
     // section could point at the wrong route and still pass because another
     // section happens to link there. Each section owns its outbound routes.
     const sections = [
-      { expected: ["/aircraft", "/engineering-lab"], id: "home-title" },
-      { expected: [...REGISTRY_LINKS], id: "home-registries-title" },
       {
-        // The plain section list (spec 11, no numbers): Compare,
-        // Engineering Lab, Learn, Verification, How I built ORBIX, Showcase.
         expected: [
-          "/compare",
-          "/engineering-lab",
-          "/learn",
-          "/verification",
-          "/build-log",
-          "/showcase",
+          ROUTES.engineeringLab,
+          PROJECT_ROUTES.verification,
+          PROJECT_ROUTES.buildLog,
         ],
-        id: "home-sections-title",
+        id: "home-title",
       },
-      { expected: ["/about"], id: "home-sourcing-title" },
+      { expected: [PROJECT_ROUTES.verification], id: "home-proof-title" },
+      { expected: [ROUTES.engineeringLab], id: "home-tools-title" },
+      {
+        expected: [ROUTES.aircraft, ROUTES.rockets, ROUTES.compare],
+        id: "home-vehicles-title",
+      },
+      { expected: [PROJECT_ROUTES.buildLog], id: "home-authorship-title" },
     ] as const;
 
     await page.goto(ROUTES.home, { waitUntil: "domcontentloaded" });
 
     for (const { expected, id } of sections) {
-      const hrefs = await page
-        .locator(`section:has(#${id}) a[href]`)
-        .evaluateAll((nodes) =>
-          nodes.map((n) => (n.getAttribute("href") ?? "").split("#")[0] ?? ""),
-        );
-
+      const hrefs = await sectionHrefs(page, id);
       for (const destination of expected) {
         expect(
           hrefs,
@@ -115,140 +111,178 @@ test.describe("Homepage", () => {
     }
   });
 
-  test("presents both registries as open catalogue columns", async ({
+  test("the hero names the author and his grade, with no photograph", async ({
     page,
   }) => {
     await page.goto(ROUTES.home, { waitUntil: "domcontentloaded" });
 
-    const section = page.locator("section:has(#home-registries-title)");
-    await expect(
-      section.getByRole("heading", { level: 3, name: "Aircraft" }),
-    ).toBeVisible();
-    await expect(
-      section.getByRole("heading", { level: 3, name: "Launch vehicles" }),
-    ).toBeVisible();
-
-    // One pictured vehicle per column, credited on the ground.
-    const plates = section.locator("figure");
-    await expect(plates).toHaveCount(2);
-    await expect(plates.nth(0).locator("img")).toHaveAttribute("alt", /F-22/);
-    await expect(plates.nth(1).locator("img")).toHaveAttribute(
-      "alt",
-      /Saturn V/,
-    );
-    await expect(plates.nth(0).locator("figcaption")).toContainText(
-      "Source file",
-    );
-
-    // Each table lists every vehicle in its registry.
-    const tables = section.locator("table");
-    await expect(tables).toHaveCount(2);
-    const rowHrefs = (table: number) =>
-      tables
-        .nth(table)
-        .locator("tbody a[href]")
-        .evaluateAll((nodes) =>
-          nodes.map((n) => n.getAttribute("href") ?? "").sort(),
-        );
-    expect(await rowHrefs(0)).toEqual([...AIRCRAFT_PROFILES]);
-    expect(await rowHrefs(1)).toEqual([...ROCKET_PROFILES]);
+    const hero = sectionOf(page, "home-title");
+    await expect(hero).toContainText("Deep Patel");
+    await expect(hero).toContainText("high school senior");
+    // Authorship framing (v4 plan section 2): never "I coded".
+    await expect(hero).toContainText("AI coding assistants wrote the code");
+    await expect(hero.locator("img")).toHaveCount(0);
   });
 
-  test("the registry columns carry no card chrome", async ({ page }) => {
-    // Spec 3.2: no bordered or filled container around content. The
-    // columns are structured by type, a 2px heading rule and the tables'
-    // horizontal rules only.
+  test("the hero shows the live Transfer Explorer", async ({ page }) => {
     await page.goto(ROUTES.home, { waitUntil: "domcontentloaded" });
 
-    const columns = page.locator(
-      "section:has(#home-registries-title) [data-division]",
-    );
-    await expect(columns).toHaveCount(2);
-    const chrome = await columns.evaluateAll((nodes) =>
-      nodes.map((n) => {
-        const style = getComputedStyle(n);
-        return {
-          background: style.backgroundColor,
-          border: [
-            style.borderTopWidth,
-            style.borderRightWidth,
-            style.borderBottomWidth,
-            style.borderLeftWidth,
-          ].join(" "),
-          radius: style.borderRadius,
-        };
-      }),
-    );
-    for (const column of chrome) {
-      expect(column.background).toBe("rgba(0, 0, 0, 0)");
-      expect(column.border).toBe("0px 0px 0px 0px");
-      expect(column.radius).toBe("0px");
+    const explorer = sectionOf(page, "home-explorer-title");
+    await expect(
+      explorer.getByRole("img", { name: /^Hohmann transfer from 200 km/ }),
+    ).toBeVisible();
+    await expect(
+      explorer.getByRole("slider", { name: "Target orbit altitude" }),
+    ).toBeVisible();
+    await expect(explorer.getByText("Total delta-v")).toBeVisible();
+    // Its own lab link shows from 1024px only: below that the byline and
+    // "Open the Engineering Lab" follow the explorer directly.
+    const labLink = explorer.getByRole("link", {
+      name: "Open in the Engineering Lab",
+    });
+    if (test.info().project.name === "desktop") {
+      await expect(labLink).toHaveAttribute(
+        "href",
+        "/engineering-lab#hohmann-transfer-analyzer",
+      );
+    } else {
+      await expect(labLink).toHaveCount(0);
+      await expect(
+        page.getByRole("link", { name: "Open the Engineering Lab" }),
+      ).toBeVisible();
     }
+  });
+
+  test("the proof line states the same counts as the Verification page", async ({
+    page,
+  }) => {
+    await page.goto(PROJECT_ROUTES.verification, {
+      waitUntil: "domcontentloaded",
+    });
+    const lead = (await page.locator("#main-content").textContent()) ?? "";
+    const match = /(\d+) of (\d+) compared values pass/.exec(lead);
+    expect(match, "the Verification page states its score").not.toBeNull();
+    const [, within, total] = match ?? [];
+
+    await page.goto(ROUTES.home, { waitUntil: "domcontentloaded" });
+    const proof = sectionOf(page, "home-proof-title");
+    const text = ((await proof.textContent()) ?? "").replace(/\s+/g, " ");
+    expect(text).toContain(
+      `${within} of ${total} compared values fall within the rounding`,
+    );
+    expect(text).toContain(
+      `the other ${Number(total) - Number(within)} are listed`,
+    );
+    // The sample row and the explorer above it use different Earth radii,
+    // and the page says so, so their two answers do not read as a conflict.
+    expect(text).toContain("from a 6,378.14 km Earth radius");
+    expect(text).toContain("uses the 6,371 km mean radius");
+  });
+
+  test("the three featured tools open real lab tools", async ({ page }) => {
+    await page.goto(ROUTES.home, { waitUntil: "domcontentloaded" });
+
+    const links = sectionOf(page, "home-tools-title").locator(
+      'a[href^="/engineering-lab#"]',
+    );
+    await expect(links).toHaveCount(3);
+    const anchors = await links.evaluateAll((nodes) =>
+      nodes.map((n) => (n.getAttribute("href") ?? "").split("#")[1] ?? ""),
+    );
+
+    await page.goto(ROUTES.engineeringLab, { waitUntil: "domcontentloaded" });
+    for (const anchor of anchors) {
+      await expect(
+        page.locator(`[data-laboratory-tool="${anchor}"]`),
+        `#${anchor} is a tool on the lab page`,
+      ).toHaveCount(1);
+    }
+  });
+
+  test("the vehicles plate is credited and its counts match the registries", async ({
+    page,
+  }) => {
+    await page.goto(ROUTES.home, { waitUntil: "domcontentloaded" });
+
+    const section = sectionOf(page, "home-vehicles-title");
+    const plate = section.locator("figure");
+    await expect(plate).toHaveCount(1);
+    await expect(plate.locator("img")).toHaveAttribute("alt", /.+/);
+    await expect(
+      plate.getByRole("link", { name: "Source file" }),
+    ).toHaveAttribute(
+      "href",
+      /^https:\/\/commons\.wikimedia\.org\/wiki\/File:/,
+    );
+
+    await expect(section).toContainText(
+      `records of ${AIRCRAFT_IDS.length} aircraft and ${ROCKET_IDS.length} launch vehicles`,
+    );
+  });
+
+  test("the comparison link opens the three aircraft it names", async ({
+    page,
+  }) => {
+    await page.goto(ROUTES.home, { waitUntil: "domcontentloaded" });
+
+    const link = sectionOf(page, "home-vehicles-title").locator(
+      'a[href^="/compare"]',
+    );
+    await expect(link).toHaveCount(1);
+    for (const name of PRELOADED_COMPARISON) {
+      await expect(link).toContainText(name);
+    }
+
+    await link.click();
+    await expect(page).toHaveURL(/\/compare\?/);
+    // The sheet's vehicle column headers (visually hidden under the name
+    // band; compare-workspace.spec.ts covers what a sighted reader sees).
+    const headers = page
+      .getByRole("table")
+      .first()
+      .locator("thead th[scope=col]:not(:first-child)");
+    await expect(headers).toHaveText(PRELOADED_COMPARISON);
   });
 
   test("every homepage link resolves", async ({ page, request }) => {
     await page.goto(ROUTES.home, { waitUntil: "domcontentloaded" });
 
     const hrefs = await page
-      .locator("main a[href^='/']")
+      .locator("#main-content a[href^='/']")
       .evaluateAll((nodes) =>
         nodes.map((n) => (n.getAttribute("href") ?? "").split("#")[0] ?? ""),
       );
 
+    expect(hrefs.length).toBeGreaterThan(0);
     for (const href of new Set(hrefs)) {
       const response = await request.get(href);
       expect(response.status(), `${href} should resolve`).toBe(200);
     }
   });
 
-  test("the homepage copy does not claim a scrubber, live data or simulation", async ({
+  test("the homepage copy does not claim live data, a simulation or validation", async ({
     page,
   }) => {
-    // Mission Replay has play/pause/restart, a speed selector and phase
-    // buttons; its progress element is non-interactive, and every figure is
-    // computed from textbook models. Promising a scrubber, a live feed or a
-    // simulation would misrepresent the product.
+    // Every figure is computed from textbook models when the reader moves a
+    // control. Promising a live feed, a simulation or validated results
+    // would misrepresent the product (v4 plan section 8: "selected results
+    // checked", never "validated").
     await page.goto(ROUTES.home, { waitUntil: "domcontentloaded" });
 
     // `main` alone also matches the loading fallback's
     // <main role="status">, so scope to the real content landmark.
     const copy = (await page.locator("#main-content").textContent()) ?? "";
     for (const forbidden of [
-      "scrubber",
-      "scrub ",
       "live telemetry",
       "real-time",
       "simulation",
+      "validated",
     ]) {
       expect(
         copy.toLowerCase(),
         `homepage copy should not claim "${forbidden.trim()}"`,
       ).not.toContain(forbidden);
     }
-  });
-
-  test("the hero figure credits its photograph", async ({ page }) => {
-    await page.goto(ROUTES.home, { waitUntil: "domcontentloaded" });
-
-    // The SR-71 photograph (spec 9) with its credit line: who took it, the
-    // licence (linked to its terms) and the source file.
-    const hero = page.locator("section:has(#home-title)");
-    await expect(hero.locator("img").first()).toHaveAttribute("alt", /SR-71/);
-
-    const caption = hero.locator("figcaption");
-    await expect(caption).toContainText("Photo: NASA");
-    await expect(
-      caption.getByRole("link", { name: /^Public domain/ }),
-    ).toHaveAttribute(
-      "href",
-      "https://commons.wikimedia.org/wiki/Template:PD-USGov-NASA",
-    );
-    await expect(
-      caption.getByRole("link", { name: "Source file" }),
-    ).toHaveAttribute(
-      "href",
-      /^https:\/\/commons\.wikimedia\.org\/wiki\/File:SR-71_/,
-    );
   });
 
   test("contains no nested interactive controls", async ({ page }) => {

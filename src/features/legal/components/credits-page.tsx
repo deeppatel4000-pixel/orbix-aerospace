@@ -14,9 +14,19 @@ import {
   type ImageCredit,
   type ImageCreditGroup,
 } from "@/features/legal/data/image-credits";
+import {
+  DEFAULT_PHOTO_MODIFICATIONS,
+  listPhotos,
+} from "@/features/vehicles/data/gallery";
+import {
+  DRAWINGS_IN_USE,
+  listDrawings,
+  type VehicleDrawing,
+} from "@/features/vehicles/data/gallery-drawings";
 
 const toc: readonly LegalTocItem[] = [
   { id: "photographs", title: "Vehicle photographs" },
+  ...(DRAWINGS_IN_USE ? [{ id: "drawings", title: "Vehicle drawings" }] : []),
   { id: "logo", title: "ORBIX logo" },
   { id: "fonts", title: "Fonts" },
   { id: "icons", title: "Icons" },
@@ -57,6 +67,42 @@ const groupCaptions: Record<ImageCredit["group"], string> = {
   Aircraft: "Aircraft photographs",
   "Launch vehicles": "Launch vehicle photographs",
 };
+
+/** Table caption for the photographs beyond each vehicle's main photograph. */
+const moreCaptions: Record<ImageCredit["group"], string> = {
+  Aircraft: "More aircraft photographs",
+  "Launch vehicles": "More launch vehicle photographs",
+};
+
+const AIRCRAFT_PREFIX = "/images/aircraft/";
+
+/**
+ * Every photograph a page shows that is not a vehicle's main photograph
+ * (those are listed by `listImageCredits`), in the same row shape so the
+ * tables share columns. Rows are named by vehicle and a short title from the
+ * caption ("Saturn V, Apollo 12 leaving the VAB").
+ */
+function listMorePhotoCredits(
+  mainSources: ReadonlySet<string>,
+): readonly ImageCredit[] {
+  return listPhotos({ inUseOnly: true })
+    .filter((use) => !mainSources.has(use.photo.src))
+    .map(({ photo, vehicleName }) => ({
+      alt: photo.alt,
+      cardObjectPosition: photo.objectPosition,
+      credit: photo.credit,
+      group: photo.src.startsWith(AIRCRAFT_PREFIX)
+        ? "Aircraft"
+        : "Launch vehicles",
+      license: photo.license,
+      licenseUrl: photo.licenseUrl,
+      modifications: photo.modifications,
+      sourceUrl: photo.sourceUrl,
+      src: photo.src,
+      vehicleId: photo.id,
+      vehicleName: `${vehicleName}, ${photo.title}`,
+    }));
+}
 
 const NOT_RECORDED = "Not yet recorded";
 
@@ -134,8 +180,67 @@ const creditColumns: readonly DataTableColumn<ImageCredit>[] = [
             </span>
           </a>
         )}
+        {/* The usual change is stated once above the tables. */}
+        {item.modifications === DEFAULT_PHOTO_MODIFICATIONS ? null : (
+          <span className="mt-1 block text-muted">
+            Changes: {item.modifications ?? NOT_RECORDED}
+          </span>
+        )}
+      </span>
+    ),
+    foldInto: "credit",
+    header: "Source",
+    key: "source",
+  },
+];
+
+const drawingColumns: readonly DataTableColumn<
+  VehicleDrawing & { readonly vehicleName: string }
+>[] = [
+  {
+    cell: (item) => (
+      <span className="block min-w-20 sm:min-w-32 md:min-w-0">
+        {item.vehicleName}
         <span className="mt-1 block text-muted">
-          Changes: {item.modifications ?? NOT_RECORDED}
+          {item.view === "top" ? "Top view" : "Side view"}
+        </span>
+      </span>
+    ),
+    header: "Vehicle",
+    key: "vehicle",
+  },
+  {
+    cell: (item) => (
+      <span className="block min-w-36 md:min-w-0">{item.credit}</span>
+    ),
+    header: "Credit",
+    key: "credit",
+  },
+  {
+    cell: (item) => (
+      <span className="relative block min-w-32 md:min-w-0">
+        <a className="orbix-link" href={item.licenseUrl}>
+          {item.license}
+          <span className="sr-only"> (licence text)</span>
+        </a>
+      </span>
+    ),
+    foldInto: "credit",
+    header: "Licence",
+    key: "licence",
+  },
+  {
+    cell: (item) => (
+      <span className="relative block min-w-36 md:min-w-0">
+        <a className="orbix-link" href={item.sourceUrl}>
+          {describeSourceSite(item.sourceUrl)}
+          <span className="sr-only">
+            {" "}
+            (source drawing for the {item.vehicleName} outline)
+          </span>
+        </a>
+        <span className="mt-1 block text-muted">
+          Changes: {item.modifications}
         </span>
       </span>
     ),
@@ -178,6 +283,16 @@ const softwareColumns: readonly DataTableColumn<SoftwareItem>[] = [
 
 export function CreditsPage() {
   const credits = listImageCredits();
+  const moreCredits = listMorePhotoCredits(
+    new Set(credits.map((item) => item.src)),
+  );
+  const names = new Map(
+    credits.map((item) => [item.vehicleId, item.vehicleName]),
+  );
+  const drawings = listDrawings().map((drawing) => ({
+    ...drawing,
+    vehicleName: names.get(drawing.vehicleId) ?? drawing.vehicleId,
+  }));
   const groups: readonly ImageCreditGroup[] = ["Aircraft", "Launch vehicles"];
   const hasGaps = credits.some(
     (item) =>
@@ -189,7 +304,11 @@ export function CreditsPage() {
 
   return (
     <LegalPage
-      lead="Who made the photographs, fonts, icons and software that ORBIX uses, and the licence each one is used under."
+      lead={
+        DRAWINGS_IN_USE
+          ? "Who made the photographs, drawings, fonts, icons and software that ORBIX uses, and the licence each one is used under."
+          : "Who made the photographs, fonts, icons and software that ORBIX uses, and the licence each one is used under."
+      }
       title="Image credits and licences"
       toc={toc}
     >
@@ -213,6 +332,10 @@ export function CreditsPage() {
             removed, email <ContactEmailLink />.
           </p>
         )}
+        <p>
+          Unless a row lists other changes, each photograph was resized and
+          converted to WebP.
+        </p>
         {groups.map((group) => {
           const items = credits.filter((item) => item.group === group);
           if (items.length === 0) return null;
@@ -228,17 +351,52 @@ export function CreditsPage() {
             />
           );
         })}
+        {groups.map((group) => {
+          const items = moreCredits.filter((item) => item.group === group);
+          if (items.length === 0) return null;
+
+          return (
+            <DataTable
+              caption={moreCaptions[group]}
+              className={creditTableClass}
+              columns={creditColumns}
+              getRowKey={(item) => item.vehicleId}
+              key={`more-${group}`}
+              rows={items}
+            />
+          );
+        })}
         {credits.length === 0 ? (
           <p>No vehicle photographs are currently shown on ORBIX.</p>
         ) : null}
       </LegalSection>
 
+      {DRAWINGS_IN_USE ? (
+        <LegalSection id="drawings" title="Vehicle drawings">
+          <p>
+            The vehicle outlines in the to-scale drawings were traced from the
+            drawings below and then scaled to the length, wingspan or height
+            recorded for each vehicle. Outlines traced from a CC BY-SA 4.0
+            drawing are released under CC BY-SA 4.0.
+          </p>
+          <DataTable
+            caption="Sources of the vehicle outlines"
+            className={creditTableClass}
+            columns={drawingColumns}
+            getRowKey={(item) => item.vehicleId}
+            rows={drawings}
+          />
+        </LegalSection>
+      ) : null}
+
       <LegalSection id="logo" title="ORBIX logo">
         <p>
           The ORBIX logo and wordmark were created by Deep Patel with the help
           of AI image generation tools. They identify this project and are not
-          licensed for reuse. Every other image on ORBIX is a credited
-          photograph listed above.
+          licensed for reuse.{" "}
+          {DRAWINGS_IN_USE
+            ? "Every photograph and vehicle drawing on ORBIX is credited above."
+            : "Every photograph on ORBIX is credited above."}
         </p>
       </LegalSection>
 

@@ -11,6 +11,8 @@ import {
   calculateVisViva,
 } from "@/features/engineering-lab/calculators";
 
+import { keplerVerificationCase } from "./kepler-case";
+
 /**
  * Published reference values for the /verification page.
  *
@@ -631,6 +633,7 @@ export const verificationGroups: readonly VerificationGroup[] = [
         sourceId: "braeunig",
         title: "Orbital speed from the vis-viva equation",
       },
+      keplerVerificationCase,
     ],
     id: "orbital-mechanics",
     title: "Orbital mechanics",

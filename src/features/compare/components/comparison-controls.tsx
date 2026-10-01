@@ -1,18 +1,16 @@
 "use client";
 
-import {
-  useEffect,
-  useState,
-  useTransition,
-  type CSSProperties,
-  type FormEvent,
-} from "react";
-import Image from "next/image";
+import { useEffect, useState, useTransition, type FormEvent } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { Check, CircleAlert } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { shortCredit } from "@/features/compare/components/photo-credit";
+import { getVehicleDrawing } from "@/features/vehicles/data/gallery-drawings";
+import {
+  drawingsFor,
+  sharedOutlineBox,
+  VehicleOutline,
+} from "@/features/vehicles/drawings/vehicle-outline";
 import { cn } from "@/lib/cn";
 import {
   MAX_COMPARISON_VEHICLES,
@@ -20,28 +18,10 @@ import {
   type ComparisonOptions,
 } from "@/features/compare/types";
 
-/** Photo record for one selectable tile, resolved on the server. */
-export interface ComparisonThumbnail {
-  readonly credit: string;
-  readonly license: string;
-  readonly objectPosition: string;
-  readonly src: string;
-  /** `object-position` for the tile from 64rem, when it differs. */
-  readonly wideTilePosition?: string;
-}
-
-export type ComparisonThumbnails = Readonly<
-  Record<
-    ComparisonCategory,
-    Readonly<Record<string, ComparisonThumbnail | undefined>>
-  >
->;
-
 interface ComparisonControlsProps {
   category: ComparisonCategory;
   options: ComparisonOptions;
   selectedIds: readonly string[];
-  thumbnails: ComparisonThumbnails;
 }
 
 const categoryOptions: readonly {
@@ -59,8 +39,9 @@ function prefersReducedMotion() {
 /**
  * Selection for `/compare` (design v3, spec 11): text choices for the
  * vehicle type (native radios, so arrow keys move between them), then one
- * open toggle tile per vehicle (`aria-pressed`) with a checkbox glyph, then
- * one primary action. Nothing navigates until the action is taken, so the table never
+ * open toggle tile per vehicle (`aria-pressed`) with its traced outline,
+ * every outline of a type at one scale (v4 plan section 7), and a checkbox
+ * glyph, then one primary action. Nothing navigates until the action is taken, so the table never
  * changes under a keyboard or screen reader user while they are choosing.
  * Tiles keep the order they were chosen in, which is the column order.
  */
@@ -68,7 +49,6 @@ export function ComparisonControls({
   category,
   options,
   selectedIds,
-  thumbnails,
 }: ComparisonControlsProps) {
   const pathname = usePathname();
   const router = useRouter();
@@ -116,7 +96,10 @@ export function ComparisonControls({
       : "";
 
   const vehicleOptions = options[activeCategory];
-  const categoryThumbnails = thumbnails[activeCategory];
+  // One box for every outline of this type, so the tiles read to scale.
+  const outlineBox = sharedOutlineBox(
+    drawingsFor(vehicleOptions.map((option) => option.id)),
+  );
   const isAircraft = activeCategory === "aircraft";
   const plural = isAircraft ? "aircraft" : "launch vehicles";
   const isFull = selection.length >= MAX_COMPARISON_VEHICLES;
@@ -217,8 +200,7 @@ export function ComparisonControls({
             Choose vehicles
           </h2>
           <p className="mt-3 text-sm leading-6 text-muted" id="compare-help">
-            Choose two, a third is optional. The order you choose them in is the
-            column order.
+            Choose two or three. The order you choose is the column order.
           </p>
         </div>
 
@@ -272,77 +254,56 @@ export function ComparisonControls({
         </legend>
 
         {/* Below 40rem each vehicle is a ruled catalogue row: checkbox,
-            thumbnail, name, maker and credit. From 40rem the rows become
-            open tiles, three across and five from 64rem: a hard-edged
-            photo plate, then the name with the checkbox at its right end,
-            the maker, the one-line photo credit (after the name and maker,
-            as in the catalogue captions elsewhere, so it never reads as an
-            eyebrow) and the column number, all flush with the plate's left
-            edge. The checkbox is the only boxed element. */}
+            outline, name and maker. From 40rem the rows become open tiles,
+            three across and five from 64rem: the outline, then the name
+            with the checkbox at its right end, the maker and the column
+            number, all flush with the outline area's left edge. The
+            checkbox is the only boxed element. */}
         <ul className="grid grid-cols-1 max-sm:border-b max-sm:border-border-subtle sm:grid-cols-3 sm:gap-x-5 sm:gap-y-8 lg:grid-cols-5">
-          {vehicleOptions.map((option, index) => {
-            const thumbnail = categoryThumbnails[option.id];
+          {vehicleOptions.map((option) => {
+            const drawing = getVehicleDrawing(option.id);
             const position = selection.indexOf(option.id);
             const isSelected = position !== -1;
             const isBlocked = isFull && !isSelected;
             const nameId = "compare-name-" + option.id;
             const makerId = "compare-maker-" + option.id;
-            const creditId = "compare-credit-" + option.id;
 
             return (
               <li
                 className="max-sm:border-t max-sm:border-border-subtle"
                 key={option.id}
               >
-                {/* Named by the vehicle and its maker only; the photo credit
-                    is a description, so a screen reader does not repeat it
-                    before the state. */}
+                {/* Named by the vehicle and its maker. */}
                 <button
-                  aria-describedby={cn(
-                    thumbnail && creditId,
-                    "compare-count compare-help",
-                  )}
+                  aria-describedby="compare-count compare-help"
                   aria-labelledby={nameId + " " + makerId}
                   aria-pressed={isSelected}
-                  className="group grid w-full cursor-pointer grid-cols-[auto_auto_minmax(0,1fr)] items-center gap-x-4 py-3 text-left focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--orbix-focus)] sm:grid-cols-[minmax(0,1fr)_auto] sm:items-start sm:gap-x-3 sm:py-0 sm:[grid-template-areas:'plate_plate'_'name_box'_'maker_maker'_'credit_credit'_'column_column']"
+                  className="group grid w-full cursor-pointer grid-cols-[auto_auto_minmax(0,1fr)] items-center gap-x-4 py-3 text-left focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--orbix-focus)] sm:grid-cols-[minmax(0,1fr)_auto] sm:items-start sm:gap-x-3 sm:py-0 sm:[grid-template-areas:'plate_plate'_'name_box'_'maker_maker'_'column_column']"
                   onClick={() => toggleVehicle(option.id, option.name)}
                   type="button"
                 >
-                  {/* The photo plate: a thumbnail in the row below 40rem,
-                      the full tile width above it. */}
+                  {/* The outline: a thumbnail in the row below 40rem, the
+                      full tile width above it, every outline of the type
+                      in one box so they share one scale. */}
                   <span
                     className={cn(
-                      "relative order-2 block overflow-hidden bg-background sm:w-full sm:[grid-area:plate]",
+                      "relative order-2 block sm:w-full sm:[grid-area:plate]",
                       isAircraft
                         ? "aspect-[16/10] h-14 sm:h-auto"
                         : "aspect-[3/4] h-[5.5rem] sm:aspect-[4/5] sm:h-auto",
                     )}
                   >
-                    {thumbnail ? (
-                      <Image
-                        alt=""
+                    {drawing ? (
+                      <VehicleOutline
+                        box={outlineBox}
                         className={cn(
-                          "object-cover [object-position:var(--tile-pos)] saturate-[0.9] transition-opacity duration-200 motion-reduce:transition-none lg:[object-position:var(--tile-pos-lg)]",
+                          "absolute inset-0 h-full w-full transition-colors duration-200 motion-reduce:transition-none",
+                          isSelected
+                            ? "text-foreground"
+                            : "text-ink-muted group-hover:text-foreground",
                           isBlocked && "opacity-50",
                         )}
-                        fill
-                        // The first row is in view on load at tablet and
-                        // desktop widths, so it is not lazy-loaded.
-                        loading={index < 5 ? "eager" : undefined}
-                        sizes={
-                          isAircraft
-                            ? "(min-width: 64rem) 13rem, (min-width: 40rem) 30vw, 5.5rem"
-                            : "(min-width: 64rem) 13rem, (min-width: 40rem) 30vw, 4.125rem"
-                        }
-                        src={thumbnail.src}
-                        style={
-                          {
-                            "--tile-pos": thumbnail.objectPosition,
-                            "--tile-pos-lg":
-                              thumbnail.wideTilePosition ??
-                              thumbnail.objectPosition,
-                          } as CSSProperties
-                        }
+                        drawing={drawing}
                       />
                     ) : null}
                   </span>
@@ -392,15 +353,6 @@ export function ComparisonControls({
                     >
                       {option.manufacturer}
                     </span>
-                    {thumbnail ? (
-                      <span
-                        className="orbix-micro text-[0.75rem] text-muted sm:mt-1 sm:[grid-area:credit]"
-                        id={creditId}
-                      >
-                        <span className="sr-only">Photo: </span>
-                        {shortCredit(thumbnail.credit, thumbnail.license)}
-                      </span>
-                    ) : null}
                     {/* The column this vehicle fills, from 40rem. The
                         live status already announces it on selection. */}
                     <span

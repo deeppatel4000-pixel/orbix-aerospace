@@ -4,45 +4,56 @@ An educational website about aircraft, launch vehicles and the engineering behin
 
 **Live site:** [orbix-aerospace.vercel.app](https://orbix-aerospace.vercel.app)
 
-**Created by Deep Patel.** Read [how I built ORBIX](https://orbix-aerospace.vercel.app/build-log).
+**Created by Deep Patel**, a high school senior who plans to study aerospace engineering. Read
+[how I built ORBIX](https://orbix-aerospace.vercel.app/build-log).
 
-ORBIX has sourced records of 10 U.S. vehicles (5 military aircraft and 5 launch vehicles), each
-with a credited photograph. You can compare up to three aircraft, or up to three launch vehicles,
-side by side. The Engineering Lab has 33 modules, from the rocket equation and the lift equation to
-shock waves, atmospheric entry heating and orbital transfers. The calculators show their equation,
-inputs and units, and the analyzers state their assumptions. A verification page runs the same calculations against published textbook
-and reference values and shows every difference.
+The Engineering Lab has 13 calculators, from the rocket equation and the lift equation to shock
+waves and orbital transfers, plus a mission planner. Each calculator shows its equation, units and
+assumptions. The Transfer Explorer on the home page draws a Hohmann transfer and updates its
+delta-v as you move the target orbit. A verification page runs the lab's own functions on published
+worked examples and tables: 26 of the 36 compared values fall within the published rounding, and
+the page gives a reason for each of the other 10. ORBIX also has sourced records of 10 U.S.
+vehicles (5 military aircraft and 5 launch vehicles), with credited photographs.
 
-![ORBIX home page on a desktop browser, with the ORBIX logo, the heading "Aerospace engineering, explained with real vehicles." and a NASA photograph of the SR-71 Blackbird over mountains](docs/assets/screenshots/home.jpg)
+![ORBIX home page on a desktop browser: the heading "Aerospace engineering, explained with real vehicles.", a lead naming Deep Patel, two buttons, and the Transfer Explorer drawing a transfer from 200 km to 35,786 km with a total delta-v of 3,935 m/s and a target altitude slider](docs/assets/screenshots/home.jpg)
 
 ## Features
 
+- **Engineering Lab:** 14 tools in three groups (foundations, compressible flow, and orbits and
+  missions): 13 calculators and a mission planner.
+- **Transfer Explorer:** a Hohmann transfer drawn with Earth to scale. Drag the target orbit or use
+  the slider (160 km to 400,000 km, with stops at the ISS, GEO and the Moon) and the burns, total
+  delta-v and transfer time update. A play button moves the craft along the transfer; with reduced
+  motion it moves in three steps instead. A table gives the same numbers as text.
+- **Mission planner:** pick one of four preset missions or enter your own altitudes. It lists each
+  step in flight order with its delta-v, marks the steps it does not model, and compares the presets
+  on one delta-v axis. The Mars preset uses allowances and is labelled as not computed.
+- **Verification:** Engineering Lab results next to values from four published sources, including
+  the U.S. Standard Atmosphere, 1976 and the compressible flow tables of NACA Report 1135, with a
+  rounding check on each row.
 - **Aircraft and launch vehicle records:** F-22 Raptor, F-35 Lightning II, SR-71 Blackbird, B-2
   Spirit and F-15 Eagle; Falcon 9, Falcon Heavy, Saturn V, Space Launch System and Starship.
-  Values are kept in their published units, with qualifiers such as "approximate" beside them.
-- **Compare:** two or three vehicles of the same kind in one table. It does not score vehicles or
-  pick a winner, and a value missing from the dataset reads "Not published" instead of zero.
-- **Engineering Lab:** 33 modules in six groups: foundations, compressible flow, atmospheric entry,
-  orbits and missions, mission visualization, and scenarios and review.
-- **Verification:** Engineering Lab results next to values from published sources such as the U.S.
-  Standard Atmosphere, 1976 and the compressible flow tables of NACA Report 1135, with a rounding check on each row.
-- **Learn:** six reading pathways on the engineering behind the calculators, each linked to the tools
-  that apply it and to published references.
-- **Scenario library:** preset mission scenarios, plus custom scenarios saved in your own browser.
+  Values are kept in their published units, with qualifiers such as "approximate" beside them. Each
+  profile has a credited photograph at the top and two or three more views further down.
+- **Compare:** two or three vehicles of the same kind in one table, with outlines drawn to one scale.
+  It opens on the SR-71, F-22 and B-2. It does not score vehicles or pick a winner, and a value
+  missing from the dataset reads "Not published" instead of zero.
+- **Learn:** four reading pathways on the engineering behind the calculators, each linked to the
+  tools that apply it and to published references.
 
 ## Screenshots
 
-| SR-71 Blackbird profile                                                                                                                                                                                                                   | Three aircraft compared                                                                                                                                                                                                                     |
-| ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| ![SR-71 Blackbird profile page: title, description, maximum speed, service ceiling, range and first flight beside the NASA photograph set on the right, with its caption and credit under it](docs/assets/screenshots/aircraft-sr-71.jpg) | ![Spec sheet comparing the SR-71 Blackbird, F-22 Raptor and F-15 Eagle: column headings, then the heritage and program, geometry and mass rows, each row label with an "About this row" note](docs/assets/screenshots/compare-aircraft.jpg) |
+| SR-71 Blackbird profile                                                                                                                                                                                                                   | Three aircraft compared                                                                                                                                                                                                                        |
+| ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| ![SR-71 Blackbird profile page: title, description, maximum speed, service ceiling, range and first flight beside the NASA photograph set on the right, with its caption and credit under it](docs/assets/screenshots/aircraft-sr-71.jpg) | ![Spec sheet comparing the SR-71 Blackbird, F-22 Raptor and B-2 Spirit: plan-view outlines of the three aircraft drawn to one scale, then the column headings and the heritage and program rows](docs/assets/screenshots/compare-aircraft.jpg) |
 
-| Launch vehicle registry                                                                                                                                                                                                                                                  | Learn: numbered equations                                                                                                                                                                             | Heights to one scale on a phone                                                                                                                                                                                                                                          |
-| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| ![Launch vehicle registry: the heading, lead and two actions beside the NASA photograph of Saturn V lifting off for Apollo 11, with the pictured vehicle's height, liftoff thrust and payload to low Earth orbit under the actions](docs/assets/screenshots/rockets.jpg) | ![Learn page: key ideas 1.1 and 1.2 with the lift and drag equations, each numbered at the right margin and followed by its list of variables and units](docs/assets/screenshots/learn-equations.jpg) | ![Heights to one scale at phone width: Falcon 9, Falcon Heavy, Space Launch System, Saturn V and Starship drawn as horizontal dimension lines from a common base line, with a 50 m scale bar and the figure caption](docs/assets/screenshots/rockets-heights-mobile.jpg) |
+| Launch vehicle registry                                                                                                                                                                                                                                                                                       | Learn: numbered equations                                                                                                                                                                             | Heights to one scale on a phone                                                                                                                                                                                                                                          |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| ![Launch vehicle registry: the heading, lead and two actions beside the NASA photograph of the Apollo 11 Saturn V on the crawler-transporter at Launch Complex 39A, with the pictured vehicle's height, liftoff thrust and payload to low Earth orbit under the actions](docs/assets/screenshots/rockets.jpg) | ![Learn page: key ideas 1.1 and 1.2 with the lift and drag equations, each numbered at the right margin and followed by its list of variables and units](docs/assets/screenshots/learn-equations.jpg) | ![Heights to one scale at phone width: Falcon 9, Falcon Heavy, Space Launch System, Saturn V and Starship drawn as horizontal dimension lines from a common base line, with a 50 m scale bar and the figure caption](docs/assets/screenshots/rockets-heights-mobile.jpg) |
 
-| Rocket equation calculator                                                                                                                                                                                | Verification against published values                                                                                                                                                            |
-| --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| ![Tsiolkovsky rocket equation calculator with 100,000 kg initial mass, 40,000 kg final mass and 300 s specific impulse, giving 2,695.72 m/s](docs/assets/screenshots/engineering-lab-rocket-equation.jpg) | ![Verification table for orbital speed from the vis-viva equation, comparing three ORBIX results with published worked examples, each within rounding](docs/assets/screenshots/verification.jpg) |
+| Mission planner                                                                                                                                                                                                                                                                                | Verification against published values                                                                                                                                                            |
+| ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| ![Engineering Lab mission planner: the tool index on the left, the five mission choices with LEO satellite deployment selected, the flight plan starting with an unmodelled launch, and the transfer drawn from 200 km to 550 km](docs/assets/screenshots/engineering-lab-mission-planner.jpg) | ![Verification table for orbital speed from the vis-viva equation, comparing three ORBIX results with published worked examples, each within rounding](docs/assets/screenshots/verification.jpg) |
 
 Capture details are in [`docs/assets/screenshots/README.md`](docs/assets/screenshots/README.md).
 
@@ -80,17 +91,18 @@ The equations are kept separate from the interface:
 - `src/features/engineering-lab/calculators`: pure TypeScript functions, one equation each, with
   SI units and input validation.
 - `src/features/engineering-lab/analysis`: studies that combine calculators, such as a delta-v
-  budget or a vehicle reentry evaluation.
-- `src/features/engineering-lab/materials`, `missions` and `reports`: typed data and
-  transformations. The report module can serialise a mission report to JSON or Markdown.
+  budget or a Hohmann transfer.
+- `src/features/engineering-lab/materials` and `missions`: typed data and transformations.
+- `src/features/orbits`: the Transfer Explorer's drawing, scale mapping and playback, also used by
+  the mission planner. The physics stays in the calculators.
 - `src/features/engineering-lab/components`: React components that collect inputs and display
   results. They do not contain equations.
 - `src/features/vehicles`: vehicle types and data.
 - `src/app`: App Router pages and metadata.
 
 React Server Components are the default; client components are used only for interactive forms and
-presentation state. See the [architecture guide](docs/architecture.md) and the site's
-[project notes](https://orbix-aerospace.vercel.app/showcase).
+presentation state. See the [architecture guide](docs/architecture.md) and the build log's
+[layer diagram](https://orbix-aerospace.vercel.app/build-log#structure).
 
 ## Running locally
 
@@ -136,9 +148,8 @@ may be approximate or out of date.
 
 ## Privacy
 
-The site has no sign-up and no analytics code. Custom scenarios saved in the scenario library stay
-in your browser's local storage and are not sent to a server. The hosting provider may keep
-standard request logs.
+The site has no sign-up and no analytics code, sets no cookies and stores nothing in your browser.
+The hosting provider may keep standard request logs.
 
 ## Contributing
 

@@ -1,3 +1,6 @@
+import { readdirSync } from "node:fs";
+import path from "node:path";
+
 import type { FullConfig } from "@playwright/test";
 
 /**
@@ -36,31 +39,30 @@ import type { FullConfig } from "@playwright/test";
  */
 
 /**
- * Vehicle source images, at both qualities the app requests (90 for a
- * priority hero image, 75 elsewhere).
+ * Every photograph in `public/images`, at both qualities the app requests
+ * (90 for a priority hero image, 75 elsewhere). Read from the folder rather
+ * than listed, so a new or renamed photograph is warmed without editing
+ * this file.
  */
-const IMAGE_PATHS = [
-  { path: "/images/aircraft/b-2-spirit.webp", quality: 75 },
-  { path: "/images/aircraft/b-2-spirit.webp", quality: 90 },
-  { path: "/images/aircraft/f-15-eagle.webp", quality: 75 },
-  { path: "/images/aircraft/f-15-eagle.webp", quality: 90 },
-  { path: "/images/aircraft/f-22-raptor.webp", quality: 75 },
-  { path: "/images/aircraft/f-22-raptor.webp", quality: 90 },
-  { path: "/images/aircraft/f-35-lightning-ii.webp", quality: 75 },
-  { path: "/images/aircraft/f-35-lightning-ii.webp", quality: 90 },
-  { path: "/images/aircraft/sr-71-blackbird.webp", quality: 75 },
-  { path: "/images/aircraft/sr-71-blackbird.webp", quality: 90 },
-  { path: "/images/rockets/falcon-9.webp", quality: 75 },
-  { path: "/images/rockets/falcon-9.webp", quality: 90 },
-  { path: "/images/rockets/falcon-heavy.webp", quality: 75 },
-  { path: "/images/rockets/falcon-heavy.webp", quality: 90 },
-  { path: "/images/rockets/saturn-v.webp", quality: 75 },
-  { path: "/images/rockets/saturn-v.webp", quality: 90 },
-  { path: "/images/rockets/space-launch-system.webp", quality: 75 },
-  { path: "/images/rockets/space-launch-system.webp", quality: 90 },
-  { path: "/images/rockets/starship.webp", quality: 75 },
-  { path: "/images/rockets/starship.webp", quality: 90 },
-] as const;
+function listImagePaths(): { path: string; quality: 75 | 90 }[] {
+  const root = path.join(process.cwd(), "public");
+  const files: string[] = [];
+  const walk = (dir: string) => {
+    for (const entry of readdirSync(dir, { withFileTypes: true })) {
+      const full = path.join(dir, entry.name);
+      if (entry.isDirectory()) walk(full);
+      else if (/\.(webp|jpe?g|png)$/i.test(entry.name)) files.push(full);
+    }
+  };
+  walk(path.join(root, "images"));
+  return files
+    .sort()
+    .map((file) => `/${path.relative(root, file).split(path.sep).join("/")}`)
+    .flatMap((imagePath) => [
+      { path: imagePath, quality: 75 as const },
+      { path: imagePath, quality: 90 as const },
+    ]);
+}
 
 /**
  * The srcset candidate widths Chromium was observed selecting for these
@@ -96,7 +98,7 @@ export default async function globalSetup(config: FullConfig): Promise<void> {
 
   // Serial on purpose: concurrent cold resizes are exactly the contention
   // this is meant to eliminate.
-  for (const image of IMAGE_PATHS) {
+  for (const image of listImagePaths()) {
     for (const width of WIDTHS) {
       const url =
         `${baseURL}/_next/image` +

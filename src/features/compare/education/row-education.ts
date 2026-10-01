@@ -32,36 +32,32 @@ export const educationCategoryMeta: Readonly<
   heritage: {
     id: "heritage",
     label: "Heritage and program",
-    summary: "Who built the vehicle, and when its design was first flown.",
+    summary: "Who built the vehicle and when it first flew.",
   },
   geometry: {
     id: "geometry",
     label: "Geometry",
-    summary:
-      "Physical scale that sets the reference dimensions used in aerodynamic and structural analysis.",
+    summary: "Overall size: length and wingspan, or height.",
   },
   "mass-structures": {
     id: "mass-structures",
     label: "Mass and structures",
-    summary:
-      "The structural mass budget available for propellant, fuel, and payload.",
+    summary: "Empty and maximum takeoff weight, or mass at liftoff.",
   },
   propulsion: {
     id: "propulsion",
     label: "Propulsion",
-    summary:
-      "Installed thrust and how it is delivered across the flight or ascent profile.",
+    summary: "Engines, thrust and stages.",
   },
   performance: {
     id: "performance",
     label: "Performance",
-    summary:
-      "Achieved flight capability resulting from the interaction of thrust, aerodynamics, and mass.",
+    summary: "Speed, range and ceiling.",
   },
   capability: {
     id: "capability",
     label: "Capability",
-    summary: "The mission-level role or reach the vehicle is designed for.",
+    summary: "The job the vehicle was built for, and what it can carry where.",
   },
 };
 
@@ -79,8 +75,7 @@ export interface RowEducationEntry {
 const aircraftRowEducation: Readonly<Record<string, RowEducationEntry>> = {
   manufacturer: {
     categoryId: "heritage",
-    explanation:
-      "Identifies the organization responsible for the airframe's design and production, providing engineering lineage and manufacturing context.",
+    explanation: "The organization that designed and built the airframe.",
   },
   role: {
     categoryId: "capability",
@@ -90,17 +85,17 @@ const aircraftRowEducation: Readonly<Record<string, RowEducationEntry>> = {
   "first-flight": {
     categoryId: "heritage",
     explanation:
-      "Marks when the design was first validated in flight, anchoring the airframe in the historical development timeline of the type.",
+      "Marks when the design first flew, which places the airframe in the development timeline of the type.",
   },
   speed: {
     categoryId: "performance",
     explanation:
-      "Maximum speed reflects the point where available thrust and aerodynamic drag reach equilibrium at a given altitude and Mach number.",
+      "At maximum speed the engines' thrust just balances drag, at a given altitude and Mach number.",
     labLinks: [
-      { anchor: "drag-equation", label: "Drag Equation" },
+      { anchor: "drag-equation", label: "Drag equation" },
       {
         anchor: "flight-condition-analyzer",
-        label: "Flight Condition Analyzer",
+        label: "Flight condition",
       },
     ],
   },
@@ -108,47 +103,46 @@ const aircraftRowEducation: Readonly<Record<string, RowEducationEntry>> = {
     categoryId: "performance",
     explanation:
       "Range results from usable fuel mass, propulsive efficiency, and aerodynamic lift-to-drag ratio carried across the mission profile.",
-    labLinks: [{ anchor: "lift-equation", label: "Lift Equation" }],
+    labLinks: [{ anchor: "lift-equation", label: "Lift equation" }],
   },
   ceiling: {
     categoryId: "performance",
     explanation:
       "Service ceiling is limited by how thin the atmosphere becomes with altitude, reducing the air density available to generate lift.",
     labLinks: [
-      { anchor: "standard-atmosphere", label: "Standard Atmosphere" },
-      { anchor: "lift-equation", label: "Lift Equation" },
+      { anchor: "standard-atmosphere", label: "Standard atmosphere" },
+      { anchor: "lift-equation", label: "Lift equation" },
     ],
   },
   propulsion: {
     categoryId: "propulsion",
     explanation:
-      "The installed engine configuration sets the thrust available to overcome drag and weight, directly shaping achievable speed, climb rate, and range.",
-    labLinks: [{ anchor: "thrust-to-weight", label: "Thrust-to-Weight Ratio" }],
+      "The engines set the thrust available against drag and weight, and with it the speed, climb rate and range the aircraft can reach.",
+    labLinks: [{ anchor: "thrust-to-weight", label: "Thrust-to-weight ratio" }],
   },
   dimensions: {
     categoryId: "geometry",
     explanation:
       "Length and wingspan define the reference wing area and aspect ratio that govern lift generation and aerodynamic efficiency.",
-    labLinks: [{ anchor: "lift-equation", label: "Lift Equation" }],
+    labLinks: [{ anchor: "lift-equation", label: "Lift equation" }],
   },
   weight: {
     categoryId: "mass-structures",
     explanation:
-      "Empty and maximum takeoff weight define the structural mass budget and the fuel and payload margin available within performance limits.",
-    labLinks: [{ anchor: "thrust-to-weight", label: "Thrust-to-Weight Ratio" }],
+      "The difference between maximum takeoff weight and empty weight is roughly the fuel and payload the aircraft can carry.",
+    labLinks: [{ anchor: "thrust-to-weight", label: "Thrust-to-weight ratio" }],
   },
 };
 
 const rocketRowEducation: Readonly<Record<string, RowEducationEntry>> = {
   manufacturer: {
     categoryId: "heritage",
-    explanation:
-      "Identifies the organization responsible for the vehicle's design and production, providing engineering lineage and program context.",
+    explanation: "The organization that designed and built the vehicle.",
   },
   "first-flight": {
     categoryId: "heritage",
     explanation:
-      "Marks when the vehicle was first validated in flight, anchoring it in the historical development timeline of the program.",
+      "Marks when the vehicle first flew, which places it in the development timeline of the program.",
   },
   height: {
     categoryId: "geometry",
@@ -160,48 +154,48 @@ const rocketRowEducation: Readonly<Record<string, RowEducationEntry>> = {
     explanation:
       "Liftoff mass combines structure, propellant, and payload. It is the mass term that installed thrust must exceed for the vehicle to lift off and accelerate.",
     labLinks: [
-      { anchor: "thrust-to-weight", label: "Thrust-to-Weight Ratio" },
-      { anchor: "rocket-equation", label: "Tsiolkovsky Rocket Equation" },
+      { anchor: "thrust-to-weight", label: "Thrust-to-weight ratio" },
+      { anchor: "rocket-equation", label: "Tsiolkovsky rocket equation" },
     ],
   },
   thrust: {
     categoryId: "propulsion",
     explanation:
       "Liftoff thrust must exceed the vehicle's total weight to generate positive acceleration off the pad; the ratio of the two defines the thrust-to-weight ratio.",
-    labLinks: [{ anchor: "thrust-to-weight", label: "Thrust-to-Weight Ratio" }],
+    labLinks: [{ anchor: "thrust-to-weight", label: "Thrust-to-weight ratio" }],
   },
   stages: {
     categoryId: "propulsion",
     explanation:
       "Staging sheds spent structural mass during ascent, letting each stage apply the rocket equation to only its own remaining mass, reaching orbital velocity more efficiently than a single continuous burn could.",
     labLinks: [
-      { anchor: "rocket-equation", label: "Tsiolkovsky Rocket Equation" },
+      { anchor: "rocket-equation", label: "Tsiolkovsky rocket equation" },
     ],
   },
   "payload-capability": {
     categoryId: "capability",
     explanation:
-      "Payload capability quantifies how much mass a vehicle can deliver to a specific orbit and configuration, the mission-value metric produced by applying the rocket equation across the full ascent profile.",
+      "How much mass the vehicle can deliver to a given orbit in a given configuration. It follows from applying the rocket equation over the whole ascent.",
     labLinks: [
-      { anchor: "rocket-equation", label: "Tsiolkovsky Rocket Equation" },
+      { anchor: "rocket-equation", label: "Tsiolkovsky rocket equation" },
       {
-        anchor: "mission-profile-analyzer",
-        label: "Mission Profile Analyzer",
+        anchor: "mission-planner",
+        label: "Mission planner",
       },
     ],
   },
   "orbit-capability": {
     categoryId: "capability",
     explanation:
-      "Supported orbital regimes reflect the vehicle's achievable delta-v budget and trajectory design, connecting propulsion performance to actual mission reach.",
+      "Which orbits the vehicle can reach depends on the delta-v it can deliver and on the trajectory flown.",
     labLinks: [
       {
         anchor: "hohmann-transfer-analyzer",
-        label: "Hohmann Transfer Analyzer",
+        label: "Hohmann transfer",
       },
       {
-        anchor: "mission-profile-analyzer",
-        label: "Mission Profile Analyzer",
+        anchor: "mission-planner",
+        label: "Mission planner",
       },
     ],
   },

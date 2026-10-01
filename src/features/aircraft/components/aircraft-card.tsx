@@ -15,6 +15,12 @@ interface AircraftCardProps {
   className?: string;
   /** `row` in the registry and related lists; `stacked` elsewhere. */
   layout?: VehicleRecordCardLayout;
+  /**
+   * `photo` (default): the registry photograph. `none`: a text row, where
+   * the photograph is already on the page or a page away (the related list
+   * on a profile), so no photograph repeats.
+   */
+  media?: "none" | "photo";
   priority?: boolean;
   sizes?: string;
   variant?: VehicleRecordCardVariant;
@@ -30,6 +36,7 @@ export function AircraftCard({
   aircraft,
   className,
   layout = "row",
+  media = "photo",
   priority = false,
   sizes,
   variant = "default",
@@ -44,21 +51,23 @@ export function AircraftCard({
       href={`/aircraft/${aircraft.id}`}
       layout={layout}
       media={
-        <VehicleMediaFrame aspect="wide" settle>
-          <AircraftImage
-            aircraft={aircraft}
-            decorative
-            fillContainer
-            framing="card"
-            priority={priority}
-            sizes={
-              sizes ??
-              (isRow
-                ? "(min-width: 48rem) 11rem, (min-width: 40rem) 9rem, 6.5rem"
-                : "(max-width: 639px) 100vw, (max-width: 1023px) 50vw, 23rem")
-            }
-          />
-        </VehicleMediaFrame>
+        media === "none" ? null : (
+          <VehicleMediaFrame aspect="wide" settle>
+            <AircraftImage
+              aircraft={aircraft}
+              decorative
+              fillContainer
+              framing="card"
+              priority={priority}
+              sizes={
+                sizes ??
+                (isRow
+                  ? "(min-width: 48rem) 11rem, (min-width: 40rem) 9rem, 6.5rem"
+                  : "(max-width: 639px) 100vw, (max-width: 1023px) 50vw, 23rem")
+              }
+            />
+          </VehicleMediaFrame>
+        )
       }
       name={aircraft.name}
       specs={[

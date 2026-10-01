@@ -25,24 +25,30 @@ import {
  * table is populated from real data, and that the photograph is credited.
  */
 
-/** Section ids in document order, per domain. */
+/**
+ * Section ids in document order, per domain. v4 (plan sections 7 and 8)
+ * moved the engineering analysis up to follow the overview and added a
+ * gallery of further photographs before the related vehicles.
+ */
 const AIRCRAFT_SECTIONS = [
   "overview",
+  "engineering-notes",
   "specifications",
   "propulsion",
   "performance",
   "variants",
-  "engineering-notes",
+  "photographs",
   "related-aircraft",
 ] as const;
 
 const ROCKET_SECTIONS = [
   "overview",
+  "engineering-notes",
   "specifications",
   "stages",
   "propulsion",
   "performance",
-  "engineering-notes",
+  "photographs",
   "related-rockets",
 ] as const;
 
@@ -164,6 +170,50 @@ test.describe("Vehicle profile structure", () => {
         has: page.getByRole("link", { name: /^Source file of the / }),
       });
       await expect(repeated).toHaveCount(0);
+    }
+  });
+
+  test("each profile's gallery adds two or three credited views, none repeating the hero", async ({
+    page,
+  }) => {
+    // v4 plan section 7: a short gallery per profile, and no photograph in
+    // more than one slot.
+    const sourceOf = (img: import("@playwright/test").Locator) =>
+      img.evaluate((node) => {
+        const src = node.getAttribute("src") ?? "";
+        return new URL(src, "http://localhost").searchParams.get("url") ?? src;
+      });
+
+    for (const { path } of PROFILES) {
+      await page.goto(path, { waitUntil: "domcontentloaded" });
+
+      const heroSource = await sourceOf(
+        page.locator("#main-content .orbix-photo-hero__figure img"),
+      );
+      const views = page.locator("#photographs figure");
+      const count = await views.count();
+      expect(count, `${path} gallery size`).toBeGreaterThanOrEqual(2);
+      expect(count, `${path} gallery size`).toBeLessThanOrEqual(3);
+
+      const sources: string[] = [];
+      for (let index = 0; index < count; index += 1) {
+        const view = views.nth(index);
+        const alt = (await view.locator("img").getAttribute("alt")) ?? "";
+        expect(
+          alt.trim().length,
+          `${path} view ${index + 1} alt`,
+        ).toBeGreaterThan(10);
+        await expect(view.locator("figcaption")).toContainText(
+          /public domain|CC BY|CC0/i,
+        );
+        await expect(
+          view.getByRole("link", { name: /^Source file/ }),
+        ).toHaveAttribute("href", /^https:\/\//);
+        sources.push(await sourceOf(view.locator("img")));
+      }
+
+      expect(new Set(sources).size, `${path} repeats a view`).toBe(count);
+      expect(sources, `${path} repeats its hero`).not.toContain(heroSource);
     }
   });
 

@@ -2,7 +2,7 @@ import { CookiesPage, legalMetadata } from "@/features/legal";
 
 export const metadata = legalMetadata({
   description:
-    "ORBIX sets no cookies and shows no cookie banner. How the Engineering Lab scenario library uses local storage on your device, and how to clear it.",
+    "ORBIX sets no cookies, shows no cookie banner and stores nothing in your browser. What the hosting provider does.",
   path: "/cookies",
   title: "Cookies and local storage",
 });

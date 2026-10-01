@@ -1,5 +1,3 @@
-import Link from "next/link";
-
 import { siteLegal } from "@/config/site-legal";
 import { ContactEmailLink } from "@/features/legal/components/contact-email-link";
 import {
@@ -7,9 +5,7 @@ import {
   type LegalTocItem,
 } from "@/features/legal/components/legal-page";
 import { LegalSection } from "@/features/legal/components/legal-section";
-import { StorageKey } from "@/features/legal/components/storage-key";
 import { withoutFinalStop } from "@/features/legal/lib/without-final-stop";
-import { SCENARIO_LIBRARY_STORAGE_KEY } from "@/features/engineering-lab/missions/scenario-library";
 
 const toc: readonly LegalTocItem[] = [
   { id: "summary", title: "Summary" },
@@ -47,10 +43,7 @@ export function PrivacyPage() {
             The hosting provider keeps standard request logs, such as IP
             addresses, to deliver and protect the site.
           </li>
-          <li>
-            Mission scenarios you choose to save in the Engineering Lab stay in
-            your own browser and are never sent to ORBIX.
-          </li>
+          <li>ORBIX stores nothing in your browser.</li>
         </ul>
       </LegalSection>
 
@@ -107,38 +100,9 @@ export function PrivacyPage() {
 
       <LegalSection id="on-your-device" title="Data stored on your device">
         <p>
-          The Mission Scenario Library in the{" "}
-          <Link href="/engineering-lab#scenario-library">Engineering Lab</Link>{" "}
-          lets you save mission scenarios for later. When you press save, the
-          scenario is written to your browser&apos;s local storage under the key{" "}
-          <StorageKey value={SCENARIO_LIBRARY_STORAGE_KEY} />. Each saved
-          scenario holds:
+          None. ORBIX does not write to your browser&apos;s local storage,
+          session storage or any other browser storage, and it sets no cookies.
         </p>
-        <ul>
-          <li>the scenario name and description you entered;</li>
-          <li>its mission category;</li>
-          <li>
-            the mission profile inputs (orbits, vehicle and reentry values);
-          </li>
-          <li>a random identifier and the times it was created and updated.</li>
-        </ul>
-        <p>
-          This data never leaves your device and ORBIX cannot see it. Nothing is
-          saved unless you choose to save a scenario. No other local storage,
-          session storage or similar browser storage is used.
-        </p>
-        <p>To remove saved scenarios, either:</p>
-        <ul>
-          <li>
-            use the Delete button next to each scenario in the Mission Scenario
-            Library; or
-          </li>
-          <li>
-            clear site data for this website in your browser settings (often
-            listed as &ldquo;Cookies and site data&rdquo;), which removes every
-            saved scenario at once.
-          </li>
-        </ul>
       </LegalSection>
 
       <LegalSection id="email" title="Email you send">

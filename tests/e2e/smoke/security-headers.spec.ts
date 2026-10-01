@@ -34,7 +34,7 @@ const EXPECTED_HEADERS: ReadonlyArray<readonly [string, string]> = [
 
 /**
  * `next.config.ts` applies these to `source: "/(.*)"`, so every route is
- * covered, including the one outside the `(site)` layout group.
+ * covered.
  */
 const ROUTES_UNDER_TEST: ReadonlyArray<readonly [string, string]> = [
   ["home", ROUTES.home],
@@ -43,10 +43,10 @@ const ROUTES_UNDER_TEST: ReadonlyArray<readonly [string, string]> = [
   ["compare", ROUTES.compare],
   ["engineering-lab", ROUTES.engineeringLab],
   ["learn", ROUTES.learn],
-  ["showcase", ROUTES.showcase],
   ["aircraft profile", "/aircraft/f-22-raptor"],
   ["rocket profile", "/rockets/falcon-9"],
-  ["showcase-capture", "/showcase-capture/leo-satellite-deployment"],
+  ["verification", "/verification"],
+  ["build log", "/build-log"],
 ];
 
 test.describe("Security headers", () => {

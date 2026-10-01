@@ -50,8 +50,8 @@ function createRow(
 /**
  * A cell whose displayed value is exactly one measurement.
  *
- * The magnitude is copied straight off the dataset record — the same object the
- * formatter reads — so the number and the unit are the published source values,
+ * The magnitude is copied straight off the dataset record, the same object the
+ * formatter reads, so the number and the unit are the published source values,
  * never anything recovered from the formatted string. Rows whose cells mix
  * units (speed can be Mach or mph, range can be miles or nautical miles) are
  * filtered out downstream by unit equality, not here.

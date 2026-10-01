@@ -31,12 +31,13 @@ interface ParsedFigure {
 
 /**
  * Reads a figure out of a published value: an optional "Label: " prefix, a
- * number with an optional unit ("44.5 ft", "1,850 mi") and an optional
+ * number with an optional "+" for a published minimum and an optional unit
+ * ("44.5 ft", "85,000+ ft", "1,850 mi") and an optional
  * parenthetical qualifier ("(Expendable)"). Anything else is text.
  */
 function parseFigure(text: string): ParsedFigure | null {
   const match =
-    /^(?:([^:]+):\s+)?(\d[\d,.]*(?:\s?[A-Za-z%°/]+)?)(?:\s+(\(.+\)))?$/.exec(
+    /^(?:([^:]+):\s+)?(\d[\d,.]*\+?(?:\s?[A-Za-z%°/]+)?)(?:\s+(\(.+\)))?$/.exec(
       text.trim(),
     );
   if (!match?.[2]) return null;

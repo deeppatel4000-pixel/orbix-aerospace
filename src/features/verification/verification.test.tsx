@@ -5,6 +5,7 @@ import {
   calculateEscapeVelocity,
   calculateHohmannTransfer,
   calculateIsentropicFlow,
+  calculateKeplerPosition,
   calculateNormalShock,
   calculateObliqueShock,
   calculateOrbitalPlaneChange,
@@ -155,6 +156,21 @@ const expectedOrbix: Record<string, () => number> = {
     }).orbitalVelocityMetresPerSecond,
 };
 
+const kepler = calculateKeplerPosition({
+  eccentricity: 0.1,
+  elapsedTimeSeconds: 1_200,
+  gravitationalParameter: GM,
+  initialTrueAnomalyRadians: Math.PI / 2,
+  semiMajorAxisMetres: 7_500_000,
+});
+
+expectedOrbix["kepler-braeunig-4-14-mean-anomaly"] = () =>
+  kepler.meanAnomalyRadians;
+expectedOrbix["kepler-braeunig-4-14-eccentric-anomaly"] = () =>
+  kepler.eccentricAnomalyRadians;
+expectedOrbix["kepler-braeunig-4-14-true-anomaly"] = () =>
+  kepler.trueAnomalyRadians;
+
 /** Rows the page must show as outside the reference rounding. */
 const expectedOutsideRounding = [
   "atmosphere-1000-density",
@@ -164,6 +180,8 @@ const expectedOutsideRounding = [
   "atmosphere-11000-geometric-temperature",
   "hohmann-leo-geo-second-burn",
   "hohmann-leo-geo-total",
+  "kepler-braeunig-4-14-eccentric-anomaly",
+  "kepler-braeunig-4-14-mean-anomaly",
   "oblique-shock-m3-downstream-mach",
 ];
 

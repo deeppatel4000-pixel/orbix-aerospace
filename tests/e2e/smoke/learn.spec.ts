@@ -1,6 +1,7 @@
 import {
   expect,
   expectNoHorizontalOverflow,
+  LEARN_PATHWAY_COUNT,
   ROUTES,
   test,
 } from "../fixtures/orbix";
@@ -30,12 +31,35 @@ test.describe("Learn", () => {
 
     await expect(page.getByRole("heading", { level: 1 })).toHaveCount(1);
 
-    // Six learning pathways, each introduced by a level-2 heading.
+    // The learning pathways, each introduced by a level-2 heading, after
+    // the "Contents" heading.
     const pathwayHeadings = page.getByRole("heading", { level: 2 });
-    expect(await pathwayHeadings.count()).toBeGreaterThanOrEqual(6);
+    await expect(pathwayHeadings).toHaveCount(1 + LEARN_PATHWAY_COUNT);
 
     await expectNoHorizontalOverflow(page);
     expect(consoleMessages.errors).toEqual([]);
+  });
+
+  test("the orbital pathway shows a still transfer drawing that links to the lab explorer", async ({
+    page,
+  }) => {
+    await page.goto(ROUTES.learn, { waitUntil: "domcontentloaded" });
+    const figure = page
+      .locator("#orbital-mechanics-mission-design")
+      .locator("figure")
+      .first();
+
+    await expect(
+      figure.getByRole("img", {
+        name: /^Hohmann transfer from 200 km to 35,786 km/,
+      }),
+    ).toBeVisible();
+    // Not a second copy of the interactive explorer: no slider, no Play.
+    await expect(figure.getByRole("slider")).toHaveCount(0);
+    await expect(figure.getByRole("button")).toHaveCount(0);
+    await expect(
+      figure.getByRole("link", { name: "Change the target orbit in the lab" }),
+    ).toHaveAttribute("href", "/engineering-lab#transfer-explorer");
   });
 
   test("every Engineering Laboratory deep link resolves to a real anchor", async ({

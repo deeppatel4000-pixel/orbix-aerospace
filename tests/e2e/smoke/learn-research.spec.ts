@@ -1,4 +1,9 @@
-import { expect, ROUTES, test } from "../fixtures/orbix";
+import {
+  expect,
+  LEARN_PATHWAY_COUNT as PATHWAY_COUNT,
+  ROUTES,
+  test,
+} from "../fixtures/orbix";
 
 /**
  * Learn research layout (introduced in Phase 6A, redesigned in 2026 as prose
@@ -153,7 +158,7 @@ function containmentViolations(geometry: LearnGeometry): string[] {
 async function waitForStyledLearn(page: import("@playwright/test").Page) {
   await page.waitForLoadState("load");
   await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
-  await expect(page.locator("section[id]")).toHaveCount(6);
+  await expect(page.locator("section[id]")).toHaveCount(PATHWAY_COUNT);
 
   await expect
     .poll(async () =>
@@ -200,7 +205,7 @@ test.describe("Learn research layout", () => {
         contentType: "application/json",
       });
 
-      expect(geometry.pathways).toHaveLength(6);
+      expect(geometry.pathways).toHaveLength(PATHWAY_COUNT);
       expect(containmentViolations(geometry)).toEqual([]);
     });
   }
@@ -262,8 +267,8 @@ test.describe("Learn research layout", () => {
     );
     await expect(page.getByRole("heading", { level: 1 })).toHaveCount(1);
 
-    // Design v2: a "Contents" h2 (the numbered chapter index), then one h2
-    // per pathway chapter.
+    // Design v2: a "Contents" h2 (the chapter index), then one h2 per
+    // pathway chapter.
     const structure = await page.evaluate(() => {
       const h2 = [...document.querySelectorAll("#main-content h2")];
       return {
@@ -273,8 +278,8 @@ test.describe("Learn research layout", () => {
       };
     });
     expect(structure.contents).toBe(1);
-    expect(structure.h2).toBe(1 + 6);
-    expect(structure.h3).toBeGreaterThanOrEqual(6);
+    expect(structure.h2).toBe(1 + PATHWAY_COUNT);
+    expect(structure.h3).toBeGreaterThanOrEqual(PATHWAY_COUNT);
   });
 
   test("no pathway link is nested inside another interactive control", async ({

@@ -19,10 +19,13 @@ import { expect, ROUTES, test } from "../fixtures/orbix";
  * rather than derived from them, so it could drift; this test is what makes
  * that duplication safe.
  *
- * Every id below is a real deep-link target. Learn links to 28 of them,
- * Compare's row education to 8, and the homepage and showcase to the mission
- * control dashboard, so a module that stopped resolving would break navigation
- * from three other completed systems.
+ * Every id below is a real deep-link target: Learn, Compare's row education
+ * and the homepage link into the lab, so a module that stopped resolving
+ * would break navigation from three other pages.
+ *
+ * v4 (plan section 6) cut the lab to these 14 tools. The ids of merged,
+ * replaced and deferred modules still resolve: `LEGACY_ANCHORS` maps each to
+ * the tool that took its place (checked below).
  */
 
 const MODULE_IDS = [
@@ -35,31 +38,36 @@ const MODULE_IDS = [
   "stagnation-condition-analyzer",
   "shock-condition-analyzer",
   "oblique-shock-condition-analyzer",
-  "shock-pressure-loss-analyzer",
-  "multi-shock-recovery-analyzer",
   "inlet-compression-analyzer",
   "hypersonic-heating-analyzer",
-  "reentry-deceleration-analyzer",
-  "reentry-trajectory-analyzer",
-  "material-tps-sizing-analyzer",
-  "tps-material-comparison-analyzer",
-  "vehicle-reentry-evaluation-analyzer",
-  "vehicle-reentry-comparison-analyzer",
   "hohmann-transfer-analyzer",
   "orbital-plane-change-analyzer",
-  "mission-profile-analyzer",
-  "mission-preset-launcher",
-  "mission-report-viewer",
-  "mission-visualization",
-  "interactive-mission-viewer",
-  "mission-control-dashboard",
-  "mission-scenario-builder",
-  "scenario-library",
-  "mission-briefing",
-  "mission-trade-study",
-  "mission-showcase",
-  "demo-mode",
+  "mission-planner",
 ] as const;
+
+/**
+ * Old deep links and the tool each now opens: the mission modules the
+ * planner replaced, and the entry workflow whose one remaining tool is the
+ * stagnation-point heating estimate. Typed out again from
+ * `engineering-dashboard.tsx` so a dropped alias fails here.
+ */
+const LEGACY_ANCHORS = {
+  "demo-mode": "mission-planner",
+  "entry-systems-workflow": "hypersonic-heating-analyzer",
+  "interactive-mission-viewer": "mission-planner",
+  "mission-briefing": "mission-planner",
+  "mission-control-dashboard": "mission-planner",
+  "mission-operations-workflow": "mission-planner",
+  "mission-preset-launcher": "mission-planner",
+  "mission-profile-analyzer": "mission-planner",
+  "mission-report-viewer": "mission-planner",
+  "mission-scenario-builder": "mission-planner",
+  "mission-showcase": "mission-planner",
+  "mission-trade-study": "mission-planner",
+  "mission-visualization": "mission-planner",
+  "review-presentation-workflow": "mission-planner",
+  "scenario-library": "mission-planner",
+} as const;
 
 /**
  * Loads the lab once and waits until React has hydrated the tool index.
@@ -123,6 +131,47 @@ test.describe("Engineering Laboratory modules", () => {
         })
         .toBe(id);
     }
+  });
+
+  test("old deep links open the tool that replaced them", async ({ page }) => {
+    await openHydratedLab(page);
+    for (const [legacy, id] of Object.entries(LEGACY_ANCHORS)) {
+      await page.goto(`${ROUTES.engineeringLab}#${legacy}`, {
+        waitUntil: "domcontentloaded",
+      });
+      await expect
+        .poll(async () => (await shownModuleIds(page)).join(","), {
+          message: `#${legacy}`,
+          timeout: 15_000,
+        })
+        .toBe(id);
+    }
+  });
+
+  test("the index lists exactly the tools on the page, in order", async ({
+    page,
+  }) => {
+    await openHydratedLab(page);
+    const indexed = await page.evaluate(() =>
+      [
+        ...document.querySelectorAll(
+          'nav[aria-label="Engineering Lab tools"] a[href^="#"]',
+        ),
+      ]
+        .filter((link) => link.checkVisibility())
+        .map((link) => (link.getAttribute("href") ?? "").slice(1))
+        .filter((id) =>
+          document.querySelector(`[data-laboratory-tool="${id}"]`),
+        ),
+    );
+    const tools = await page.evaluate(() =>
+      [...document.querySelectorAll("[data-laboratory-tool]")].map(
+        (node) => node.getAttribute("data-laboratory-tool") ?? "",
+      ),
+    );
+
+    expect(tools).toEqual([...MODULE_IDS]);
+    expect(indexed).toEqual([...MODULE_IDS]);
   });
 
   test("the index label matches the module it reveals", async ({ page }) => {
@@ -344,7 +393,7 @@ test.describe("Engineering Laboratory modules", () => {
   test("no module renders content wider than its own workspace", async ({
     page,
   }) => {
-    // Swept across all 33 rather than sampled: the card, field and result
+    // Swept across every tool rather than sampled: the card, field and result
     // primitives are shared, so a layout defect introduced in one of them
     // surfaces in whichever module happens to have the widest content, which
     // is not knowable in advance.
@@ -362,7 +411,7 @@ test.describe("Engineering Laboratory modules", () => {
         waitUntil: "domcontentloaded",
       });
       // 30s rather than the 15s used elsewhere in this file. This test alone
-      // navigates the heaviest route 33 times in a single case, and under full
+      // navigates the heaviest route once per tool in a single case, and under full
       // parallel-suite load one of those hydrations exceeded 15 seconds once,
       // failing before the clipping assertion below ever ran. The condition is
       // unchanged — only the patience. In isolation each full sweep completes
@@ -388,33 +437,19 @@ test.describe("Engineering Laboratory modules", () => {
   });
 
   /**
-   * The three wide comparison tables.
-   *
-   * Each already had an `overflow-x-auto` wrapper, so the defect was never a
-   * missing scroller — it was that the wrapper could not shrink. All three sit
-   * in the second column of a grid, and a grid item defaults to
-   * `min-width: auto`, which refuses to go below the intrinsic width of its
-   * content. Below the `xl` breakpoint, where the grid collapses to one
-   * column, the wrapper therefore grew to the table's full width (992, 704 and
-   * 1216px), overflowed the module, and was silently cut off by the card's
-   * `overflow: hidden` — 365, 77 and 589px lost at 768, and 708, 420 and 932px
-   * at 390.
-   *
-   * The fix is `min-w-0` on that grid item, so these assertions are about the
-   * relationship the fix restores: the wrapper is narrower than its table, and
-   * the module is not.
+   * The wide table: the mission planner's delta-v ledger as a table. It sits
+   * in an `overflow-x-auto` wrapper that must be able to shrink below the
+   * table (a grid or flex item defaults to `min-width: auto`), so on a phone
+   * the wrapper scrolls and the module does not clip.
    */
-  const WIDE_TABLE_MODULES = [
-    "reentry-trajectory-analyzer",
-    "tps-material-comparison-analyzer",
-    "vehicle-reentry-comparison-analyzer",
+  const WIDE_TABLES = [
+    { id: "mission-planner", summary: "Show the numbers as a table" },
   ] as const;
 
-  for (const id of WIDE_TABLE_MODULES) {
-    test(`${id} scrolls its comparison table inside the module`, async ({
-      page,
-    }) => {
+  for (const { id, summary } of WIDE_TABLES) {
+    test(`${id} scrolls its table inside the module`, async ({ page }) => {
       await page.setViewportSize({ height: 844, width: 390 });
+      await openHydratedLab(page);
       await page.goto(`${ROUTES.engineeringLab}#${id}`, {
         waitUntil: "domcontentloaded",
       });
@@ -423,6 +458,10 @@ test.describe("Engineering Laboratory modules", () => {
           timeout: 15_000,
         })
         .toBe(id);
+
+      const tool = page.locator(`[id="${id}"]`);
+      await tool.getByText(summary, { exact: true }).click();
+      await expect(tool.locator("table")).toBeVisible();
 
       const geometry = await page.evaluate((toolId) => {
         const element = document.getElementById(toolId);
@@ -444,15 +483,8 @@ test.describe("Engineering Laboratory modules", () => {
       }, id);
 
       expect(geometry).not.toBeNull();
-      // Relational, never pixel-exact: the table keeps its full intrinsic
-      // width and the wrapper is the thing that is narrower.
-      expect(geometry?.wrapperScroll).toBeGreaterThan(
-        geometry?.wrapperClient ?? 0,
-      );
       expect(["auto", "scroll"]).toContain(geometry?.wrapperOverflowX);
       expect(geometry?.moduleClip, "the module must not clip").toBe(0);
-      // At most 0: with `scrollbar-gutter: stable` on the root (design v2)
-      // the document can be narrower than the client box, never wider.
       expect(
         geometry?.bodyOverflow,
         "the page must not scroll sideways",

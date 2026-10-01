@@ -33,15 +33,13 @@ Pure Calculators
     ↓
 Analysis Workflows
     ↓
-Reports and Domain Outputs
-    ↓
 React Presentation
 ```
 
 - `calculators` owns pure TypeScript equations and numerical validation.
 - `analysis` composes calculators and existing analyses into higher-level workflows.
-- `materials`, `missions`, and `reports` provide typed domain data and transformations without taking
-  ownership of physics.
+- `materials` and `missions` provide typed domain data and transformations without taking ownership
+  of physics.
 - `components` collects inputs or renders completed results; it does not duplicate equations.
 
 This separation lets Vitest exercise engineering behavior without React and prevents visualization

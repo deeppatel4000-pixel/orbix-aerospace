@@ -1,33 +1,29 @@
-import { ExternalLink } from "lucide-react";
 import Image from "next/image";
 import type { ReactNode } from "react";
 
-import { getAircraftVisual } from "@/features/aircraft/data/aircraft-visuals";
-import { OrbitDiagram } from "@/features/engineering-lab/components/visualization";
-import { getRocketVisual } from "@/features/rockets/data/rocket-visuals";
-import { AllowanceBars } from "@/features/showcase/components/mission-diagrams";
-import { getShowcaseMissionById } from "@/features/showcase/data/mission-showcase";
-import { formatImageCredit } from "@/features/vehicles/components/vehicle-figure";
-import type { VehiclePhotographRecord } from "@/features/vehicles/components/vehicle-photograph";
+import { ButtonLink } from "@/components/ui/button-link";
+import { creditLine, licenceLabel } from "@/components/ui/photo-hero";
+import {
+  getSitePhoto,
+  type SitePhotoSlot,
+} from "@/features/vehicles/data/gallery";
+
+import { OrbitTransferFigure } from "./orbit-transfer-figure";
 
 /**
- * One figure for each pathway that has an honest one (spec v3 sections 6,
- * 7 and 11): credited public-domain photographs from `public/images`, shown
- * as hard-edged detail crops (no frame, radius or fill) so Learn does not
- * repeat the whole frames the home page, registries and profiles show,
- * and diagrams drawn
- * by the Engineering Lab and Showcase components from preset inputs, as
- * linework on the ground. The entry pathway has none: no entry photograph
- * is in `public/images` and no lab preset starts from orbit, so its
- * equations carry it.
+ * One figure for each pathway on /learn (spec v3 sections 6, 7 and 11; v4
+ * plan sections 5 and 7). Three photographs come from the Learn slots of
+ * the photo slot map, so no file here appears anywhere else on the site,
+ * and each is shown whole at its own ratio: no zoom, frame, radius or fill.
+ * The orbital pathway carries a still drawing of one Hohmann transfer from
+ * the Transfer Explorer's canvas, linking to the interactive explorer in
+ * the Engineering Lab, so the page does not repeat the home page's
+ * explorer.
  *
- * One catalogue caption below each figure (spec 6): "Fig. 1  An F-22
- * Raptor in flight. ... U.S. Air Force, public domain. Source." in 14px
- * muted Plex Sans with the figure number in ink. The two diagrams carry no
- * note of their own: their scale and preset facts are folded into the one
- * catalogue caption. Every caption states what is shown and where it
- * comes from; none states a vehicle figure that is not already in the
- * photograph's record.
+ * One catalogue caption below each figure (spec 6): "Fig. 1  <caption>
+ * Photo: <credit>. Public domain. Source file." in 14px muted Plex Sans,
+ * the figure number in ink. Captions come from the photo records; none
+ * states a vehicle figure the record does not hold.
  *
  * Below 640px the photographs bleed across the 16px page gutters, as a
  * band (spec 7); the caption stays in the text column.
@@ -39,21 +35,38 @@ const FIGURE_AREA_IDS = [
   "propulsion-vehicle-performance",
   "high-speed-compressible-flow",
   "orbital-mechanics-mission-design",
-  "mission-operations-engineering-communication",
 ] as const;
 
-/**
- * The one pathway whose figure leaves the 8-column track: from 1024px the
- * orbit drawing sits after the key ideas across all 12 columns, larger and
- * centred, so the page changes scale once (tells T19).
- */
-export const WIDE_FIGURE_AREA_ID = "orbital-mechanics-mission-design";
+/** The pathway whose figure is the still transfer drawing. */
+const ORBIT_FIGURE_AREA_ID = "orbital-mechanics-mission-design";
 
-/** The Engineering Lab hero's transfer (engineering-dashboard.tsx). */
-const HERO_TRANSFER = {
-  finalAltitudeMetres: 35_786_000,
-  initialAltitudeMetres: 400_000,
-} as const;
+/**
+ * Photo figures. `maxWidth` caps a portrait plate so it does not run
+ * taller than a screen; `sizes` is the widest the plate is drawn (the
+ * 8-column track is about 44.3rem at 1440, 62vw from 64rem, the full
+ * width below), and each file is at least twice that, so it is never
+ * enlarged at DPR 2.
+ */
+const PHOTO_FIGURES: Readonly<
+  Record<
+    string,
+    { readonly maxWidth?: string; readonly sizes: string; slot: SitePhotoSlot }
+  >
+> = {
+  "aerodynamics-flight-fundamentals": {
+    sizes: "(min-width: 72rem) 45rem, (min-width: 64rem) 62vw, 100vw",
+    slot: "learn-aerodynamics",
+  },
+  "high-speed-compressible-flow": {
+    sizes: "(min-width: 72rem) 45rem, (min-width: 64rem) 62vw, 100vw",
+    slot: "learn-compressible-flow",
+  },
+  "propulsion-vehicle-performance": {
+    maxWidth: "28rem",
+    sizes: "(min-width: 40rem) 28rem, 100vw",
+    slot: "learn-propulsion",
+  },
+};
 
 interface PathwayFigureProps {
   /** The pathway's `id`. */
@@ -66,249 +79,62 @@ export function PathwayFigure({ areaId }: PathwayFigureProps) {
   const captionId = `${areaId}-figure-caption`;
   const label = `Fig. ${figureIndex + 1}`;
 
-  switch (areaId) {
-    case "aerodynamics-flight-fundamentals": {
-      const visual = getAircraftVisual("f-22-raptor");
-      if (!visual) return null;
-      return (
-        <PhotoFigure
-          captionId={captionId}
-          detail={{
-            alt: "Detail of a U.S. Air Force F-22 Raptor in flight over open water, its wings and tail seen from above",
-            aspect: "16 / 9",
-            focus: "52% 46%",
-            zoom: 1.35,
-          }}
-          name="F-22 Raptor"
-          visual={visual}
-          label={label}
-        >
-          An F-22 Raptor in flight. In steady, level flight the wing&apos;s lift
-          equals the aircraft&apos;s weight and the engines&apos; thrust equals
-          its drag. The lift and drag equations below say how each depends on
-          airspeed, air density and wing area.
-        </PhotoFigure>
-      );
-    }
-
-    case "propulsion-vehicle-performance": {
-      const visual = getRocketVisual("saturn-v");
-      if (!visual) return null;
-      return (
-        <PhotoFigure
-          captionId={captionId}
-          detail={{
-            alt: "Detail of the Saturn V first stage lifting off beside its launch umbilical tower, its engine exhaust and smoke spreading across the pad",
-            aspect: "3 / 2",
-            focus: "45% 74%",
-            zoom: 1.5,
-          }}
-          name="Saturn V"
-          visual={visual}
-          label={label}
-        >
-          Saturn V lifting off for Apollo 11 from Launch Complex 39A. Most of a
-          launch vehicle&apos;s mass at liftoff is propellant, which is why the
-          rocket equation rewards high exhaust velocity and staging. Saturn V
-          dropped two stages before reaching orbit.
-        </PhotoFigure>
-      );
-    }
-
-    case "high-speed-compressible-flow": {
-      const visual = getAircraftVisual("sr-71-blackbird");
-      if (!visual) return null;
-      return (
-        <PhotoFigure
-          captionId={captionId}
-          detail={{
-            alt: "Detail of NASA's SR-71B Blackbird over snow-covered mountains: an engine nacelle with the conical spike at its inlet",
-            aspect: "16 / 9",
-            focus: "76% 62%",
-            zoom: 1.9,
-          }}
-          name="SR-71 Blackbird"
-          visual={visual}
-          label={label}
-        >
-          NASA&apos;s SR-71B, detail. Each engine inlet carries a conical spike
-          that moves fore and aft with Mach number. The spike&apos;s conical
-          shock, followed by a normal shock inside the inlet, slows the air to
-          subsonic speed before it reaches the engine.
-        </PhotoFigure>
-      );
-    }
-
-    case "orbital-mechanics-mission-design": {
-      // OrbitDiagram is its own <figure>; its `caption` slot replaces the
-      // default scale note, so the legend and one catalogue caption are
-      // the only text under the drawing. Placed wide by the section.
-      return (
-        <div className="w-full lg:max-w-[50rem]">
-          <OrbitDiagram
-            caption={
-              <span className="block max-w-[38rem] text-pretty">
-                <span className="orbix-caption__number">{label}</span> A Hohmann
-                transfer from a 400 km circular orbit to geostationary altitude,
-                35,786 km, drawn to scale from the computed altitudes. The same
-                drawing heads the Engineering Lab, where the Hohmann transfer
-                analyzer computes the two burns.
-              </span>
-            }
-            description="A circular orbit at 400 km, a circular orbit at 35,786 km, and the half ellipse that joins them, drawn to scale around Earth."
-            finalAltitudeMetres={HERO_TRANSFER.finalAltitudeMetres}
-            initialAltitudeMetres={HERO_TRANSFER.initialAltitudeMetres}
-            size="large"
-            title="Hohmann transfer from low Earth orbit to geostationary altitude"
-          />
-        </div>
-      );
-    }
-
-    case "mission-operations-engineering-communication": {
-      const mission = getShowcaseMissionById("mars-transfer-concept");
-      if (!mission || mission.diagram.kind !== "allowances") return null;
-      return (
-        <figure aria-labelledby={captionId} className="m-0 mt-14">
-          {/* AllowanceBars (Showcase) sets a short label above the bars and
-              a note below them. On Learn both are folded into the catalogue
-              caption: the label stays only as the inner figure's accessible
-              name (sr-only) and the note is hidden, so each figure has one
-              caption voice. */}
-          <div className="[&_.orbix-figure>figcaption]:hidden [&_.orbix-figure>p:first-child]:sr-only">
-            <AllowanceBars
-              diagram={mission.diagram}
-              missionId={`learn-${mission.preset.id}`}
-            />
-          </div>
-          <Caption id={captionId} label={label}>
-            Delta-v allowances for the {mission.preset.name} preset, in flight
-            order, as the Showcase page presents them. The allowances are preset
-            inputs, not optimized trajectory values; their sum is the only
-            derived number. Every bar shares one scale and every value carries
-            its unit.
-          </Caption>
-        </figure>
-      );
-    }
-
-    default:
-      return null;
+  if (areaId === ORBIT_FIGURE_AREA_ID) {
+    return (
+      <figure aria-labelledby={captionId} className="m-0 mt-14">
+        <OrbitTransferFigure />
+        <Caption id={captionId} label={label}>
+          A Hohmann transfer from a 200 km orbit to geostationary altitude,
+          computed by the Engineering Lab&apos;s Hohmann analysis.{" "}
+          <ButtonLink href="/engineering-lab#transfer-explorer" variant="link">
+            Change the target orbit in the lab
+          </ButtonLink>
+          .
+        </Caption>
+      </figure>
+    );
   }
-}
 
-/**
- * A detail crop of a photograph the site also shows whole (home, the
- * registries, the profiles), so Learn does not repeat the same frame: the
- * plate is cut to `aspect` and the photograph enlarged `zoom` times about
- * `focus` (a CSS position, the point that stays fixed).
- */
-interface PhotoDetail {
-  readonly alt: string;
-  readonly aspect: string;
-  readonly focus: string;
-  readonly zoom: number;
-}
+  const config = PHOTO_FIGURES[areaId];
+  if (!config) return null;
+  const photo = getSitePhoto(config.slot);
+  const licence = licenceLabel(photo.license);
 
-/**
- * Image sizes for a detail crop: the figure track (about 44.3rem at
- * 1440px, 8 of 12 columns; 62vw from 64rem; the full width below) times
- * the zoom.
- */
-function detailSizes(zoom: number) {
-  const z = (value: number) => Math.round(value * zoom);
-  return `(min-width: 72rem) ${z(45)}rem, (min-width: 64rem) ${z(62)}vw, ${z(100)}vw`;
-}
-
-function PhotoFigure({
-  captionId,
-  children,
-  detail,
-  label,
-  name,
-  visual,
-}: {
-  captionId: string;
-  /** Caption text. */
-  children: ReactNode;
-  detail: PhotoDetail;
-  label: string;
-  name: string;
-  visual: VehiclePhotographRecord;
-}) {
   return (
-    <figure aria-labelledby={captionId} className="m-0 mt-14">
-      {/* A hard-edged plate: no frame, radius or fill (spec 3.2, 7). The
+    <figure
+      aria-labelledby={captionId}
+      className="m-0 mt-14"
+      style={config.maxWidth ? { maxWidth: config.maxWidth } : undefined}
+    >
+      {/* A hard-edged plate at the file's own ratio (spec 3.2, 7). The
           tonal treatment matches the vehicle profile photographs. */}
-      <div
-        className="relative overflow-hidden max-sm:-mx-4"
-        style={{ aspectRatio: detail.aspect }}
-      >
+      <div className="max-sm:-mx-4">
         <Image
-          alt={detail.alt}
-          className="rounded-none object-cover [filter:saturate(0.9)]"
-          fill
-          sizes={detailSizes(detail.zoom)}
-          src={visual.src}
-          style={{
-            objectPosition: detail.focus,
-            transform: `scale(${detail.zoom})`,
-            transformOrigin: detail.focus,
-          }}
+          alt={photo.alt}
+          className="block h-auto w-full rounded-none saturate-[0.9]"
+          height={photo.height}
+          sizes={config.sizes}
+          src={photo.src}
+          width={photo.width}
         />
       </div>
       <Caption id={captionId} label={label}>
-        {children}
-        <PhotoCredit name={name} visual={visual} />
+        {photo.caption} {creditLine(photo.credit)}.{" "}
+        <a
+          aria-label={licence.isShortened ? licence.full : undefined}
+          href={photo.licenseUrl}
+          rel="noopener noreferrer license"
+          title={licence.isShortened ? licence.full : undefined}
+        >
+          {licence.short}
+        </a>
+        .{" "}
+        <a href={photo.sourceUrl} rel="noopener noreferrer">
+          Source file
+        </a>
+        .
       </Caption>
     </figure>
-  );
-}
-
-/**
- * "Photo: NASA, public domain. Source." closing the caption sentence. The
- * licence links to its terms where the record gives them.
- */
-function PhotoCredit({
-  name,
-  visual,
-}: {
-  name: string;
-  visual: VehiclePhotographRecord;
-}) {
-  const credit = formatImageCredit(visual);
-  const license = visual.license
-    ?.trim()
-    .replace(/^Public domain/, "public domain");
-
-  return (
-    <span>
-      {" "}
-      {credit ?? (license ? "Licence:" : null)}
-      {license ? (credit ? ", " : " ") : null}
-      {license && visual.licenseUrl ? (
-        <a href={visual.licenseUrl} rel="noreferrer" target="_blank">
-          {license}
-          <span className="sr-only"> (opens in a new tab)</span>
-        </a>
-      ) : (
-        license
-      )}
-      {credit || license ? ". " : null}
-      <a
-        className="inline-flex items-center gap-1"
-        href={visual.sourceUrl}
-        rel="noreferrer"
-        target="_blank"
-      >
-        Source
-        <span className="sr-only">
-          {" "}
-          of the {name} photograph (opens in a new tab)
-        </span>
-        <ExternalLink aria-hidden="true" size={12} />
-      </a>
-    </span>
   );
 }
 

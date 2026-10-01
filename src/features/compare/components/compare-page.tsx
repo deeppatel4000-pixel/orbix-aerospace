@@ -1,10 +1,6 @@
 import { Container } from "@/components/layout/container";
 import { ButtonLink } from "@/components/ui/button-link";
-import { getAircraftVisual } from "@/features/aircraft/data/aircraft-visuals";
-import {
-  ComparisonControls,
-  type ComparisonThumbnails,
-} from "@/features/compare/components/comparison-controls";
+import { ComparisonControls } from "@/features/compare/components/comparison-controls";
 import { ComparisonEmptyState } from "@/features/compare/components/comparison-empty-state";
 import { ComparisonTable } from "@/features/compare/components/comparison-table";
 import type {
@@ -12,7 +8,6 @@ import type {
   ComparisonOptions,
   ComparisonResult,
 } from "@/features/compare/types";
-import { getRocketVisual } from "@/features/rockets/data/rocket-visuals";
 
 interface ComparePageProps {
   category: ComparisonCategory;
@@ -21,63 +16,14 @@ interface ComparePageProps {
 }
 
 /**
- * `object-position` for the 4:5 launch vehicle tiles from 64rem only. The
- * shared `objectPosition` frames the vehicles for the small side thumbnail;
- * in the taller five-across tile it put the SLS nose tip about 5px under
- * the photo edge. These keep at least 16px of sky above every nose.
- */
-const rocketTilePositions: Readonly<Record<string, string>> = {
-  "space-launch-system": "55% 0%",
-};
-const ROCKET_TILE_POSITION = "50% 15%";
-
-function buildThumbnails(options: ComparisonOptions): ComparisonThumbnails {
-  const pick = (
-    visual: ReturnType<typeof getAircraftVisual | typeof getRocketVisual>,
-    wideTilePosition?: string,
-    tilePosition?: string,
-  ) =>
-    visual
-      ? {
-          credit: visual.credit,
-          license: visual.license,
-          objectPosition: tilePosition ?? visual.objectPosition,
-          src: visual.src,
-          wideTilePosition,
-        }
-      : undefined;
-
-  return {
-    aircraft: Object.fromEntries(
-      options.aircraft.map((option) => {
-        // The aircraft tiles are 16:10, as the registry cards are, so they
-        // use the card crop, which keeps the whole airframe in frame (the
-        // shared crop cut the SR-71's fins and nose).
-        const visual = getAircraftVisual(option.id);
-        return [option.id, pick(visual, undefined, visual?.cardObjectPosition)];
-      }),
-    ),
-    rockets: Object.fromEntries(
-      options.rockets.map((option) => [
-        option.id,
-        pick(
-          getRocketVisual(option.id),
-          rocketTilePositions[option.id] ?? ROCKET_TILE_POSITION,
-        ),
-      ]),
-    ),
-  };
-}
-
-/**
  * `/compare` (design v3, spec 11): a typographic hero on solid ground, the
- * vehicle choice as open tiles whose checkbox is the only boxed element,
+ * vehicle choice as open tiles of traced outlines whose checkbox is the
+ * only boxed element,
  * then the comparison as an open table or a plain-text empty state. The
  * whole state lives in the URL, so a comparison can be bookmarked or shared.
  */
 export function ComparePage({ category, options, result }: ComparePageProps) {
   const canCompare = result.vehicles.length >= 2;
-  const thumbnails = buildThumbnails(options);
 
   return (
     <>
@@ -86,9 +32,9 @@ export function ComparePage({ category, options, result }: ComparePageProps) {
           <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_26rem] lg:items-end lg:gap-16">
             <h1 className="orbix-display text-foreground">Compare vehicles</h1>
             <p className="orbix-lead lg:pb-1">
-              Put two or three aircraft, or two or three launch vehicles, side
-              by side. Aircraft and launch vehicles are compared separately
-              because their published figures describe different things.
+              Two or three aircraft or launch vehicles side by side. Each kind
+              is compared only with its own, since their published figures
+              describe different things.
             </p>
           </div>
         </Container>
@@ -103,7 +49,6 @@ export function ComparePage({ category, options, result }: ComparePageProps) {
             category={category}
             options={options}
             selectedIds={result.vehicles.map((vehicle) => vehicle.id)}
-            thumbnails={thumbnails}
           />
         </Container>
       </section>

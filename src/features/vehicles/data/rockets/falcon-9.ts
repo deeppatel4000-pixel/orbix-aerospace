@@ -20,14 +20,14 @@ export const falcon9 = {
       id: "falcon-9-staging-placeholder",
       status: "reviewed",
       summary:
-        "Falcon 9 uses nine LOX/RP-1 Merlin engines on the first stage and a single Merlin Vacuum engine on the second. The upper stage can restart multiple times, allowing one launch to shape its final orbit or deliver payloads to different orbital destinations.",
+        "Falcon 9 has nine LOX/RP-1 Merlin engines on the first stage and one Merlin Vacuum engine on the second. The upper stage can restart several times, so one launch can adjust its final orbit or deliver payloads to different orbits.",
       topic: "staging",
     },
     {
       id: "falcon-9-reusability-placeholder",
       status: "reviewed",
       summary:
-        "First-stage recovery turns propellant into a mission trade: fuel reserved for entry and landing cannot also be spent on ascent. Grid fins, restartable engines and landing hardware enable reuse, while higher-energy missions can favor payload performance over recovery margin.",
+        "Recovering the first stage costs propellant: fuel kept for entry and landing cannot be spent on ascent. Grid fins, restartable engines and landing hardware make reuse possible, and higher-energy missions can give up recovery margin for payload performance.",
       topic: "reusability",
     },
   ],

@@ -50,7 +50,11 @@ export function CalculatorNumberField<Field extends string>({
   const unitId = inputId + "-unit";
   const hintId = inputId + "-hint";
   const errorId = inputId + "-error";
-  const describedBy = [unit ? unitId : null, hintId, error ? errorId : null]
+  // The error element and both references to it are rendered whether or
+  // not there is an error, so the server and the first client render
+  // always produce the same attributes; only its text and `hidden` change.
+  // A hidden, empty element adds nothing to the description.
+  const describedBy = [unit ? unitId : null, hintId, errorId]
     .filter(Boolean)
     .join(" ");
 
@@ -62,7 +66,7 @@ export function CalculatorNumberField<Field extends string>({
       <div className="orbix-field__control">
         <input
           aria-describedby={describedBy}
-          aria-errormessage={error ? errorId : undefined}
+          aria-errormessage={errorId}
           aria-invalid={error ? true : undefined}
           className="orbix-input min-w-32"
           id={inputId}
@@ -90,12 +94,14 @@ export function CalculatorNumberField<Field extends string>({
       <p className="orbix-field__help" id={hintId}>
         {hint}
       </p>
-      {error ? (
-        <p className="orbix-field__error" id={errorId}>
-          <CircleAlert aria-hidden="true" className="shrink-0" size={14} />
-          {error}
-        </p>
-      ) : null}
+      <p className="orbix-field__error" hidden={!error} id={errorId}>
+        {error ? (
+          <>
+            <CircleAlert aria-hidden="true" className="shrink-0" size={14} />
+            {error}
+          </>
+        ) : null}
+      </p>
     </div>
   );
 }

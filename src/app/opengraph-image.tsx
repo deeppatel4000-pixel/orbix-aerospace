@@ -6,7 +6,7 @@ import { ImageResponse } from "next/og";
 import { creditLine, licenceLabel } from "@/components/ui/photo-hero";
 import { siteLegal } from "@/config/site-legal";
 import { siteConfig } from "@/config/site";
-import { getAircraftVisual } from "@/features/aircraft/data/aircraft-visuals";
+import { getSitePhoto } from "@/features/vehicles/data/gallery";
 import { socialImageAlt, socialImageSize } from "@/lib/social-image";
 
 /*
@@ -34,8 +34,9 @@ const colors = {
   inkMuted: "#9aa3ad",
 } as const;
 
-const plate = getAircraftVisual("sr-71-blackbird")!;
-const plateCaption = `SR-71B over the Sierra Nevada. ${creditLine(plate.credit)}, ${licenceLabel(plate.license).short.toLowerCase()}.`;
+// The `og` slot photograph, used on no page (spec v4 section 7).
+const plate = getSitePhoto("og");
+const plateCaption = `${plate.caption} ${creditLine(plate.credit)}, ${licenceLabel(plate.license).short.toLowerCase()}.`;
 
 const PLATE_WIDTH = 600;
 const PLATE_HEIGHT = 540;

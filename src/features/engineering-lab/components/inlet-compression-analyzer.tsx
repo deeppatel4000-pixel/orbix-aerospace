@@ -5,6 +5,7 @@ import { useMemo, useRef, useState, type FormEvent } from "react";
 import { ChevronDown, CircleAlert } from "lucide-react";
 
 import { analyzeInletCompression } from "@/features/engineering-lab/analysis";
+import { calculateTotalPressureRecovery } from "@/features/engineering-lab/calculators";
 import {
   EQ_CONT,
   EQ_JOIN,
@@ -388,6 +389,16 @@ export function InletCompressionAnalyzer() {
   );
   const nextStageId = useRef(3);
   const { errors, result } = useMemo(() => deriveViewState(values), [values]);
+  // The same free stream through one normal shock, for comparison: the
+  // case the shock pressure loss tool used to show beside an oblique one.
+  const singleNormalShock = useMemo(() => {
+    if (!result) return null;
+    const gamma = parseOptionalNumber(values.gamma);
+    return calculateTotalPressureRecovery({
+      ...(gamma === undefined ? {} : { gamma }),
+      machNumber: result.initialMach,
+    });
+  }, [result, values.gamma]);
   const validationMessages = collectValidationMessages(values, errors);
   const hasReachedStageLimit =
     values.externalShocks.length >= MAXIMUM_EXTERNAL_SHOCK_STAGES;
@@ -745,6 +756,27 @@ export function InletCompressionAnalyzer() {
                       </output>
                     </dd>
                   </div>
+                  {/* The comparison the shock pressure loss tool used to
+                      show; the id keeps its old deep link working. */}
+                  {singleNormalShock ? (
+                    <div id="shock-pressure-loss-analyzer">
+                      <dt className="orbix-label">
+                        One normal shock at the same Mach
+                      </dt>
+                      <dd className="mt-1">
+                        <output
+                          className="orbix-readout-lg"
+                          htmlFor={outputIds}
+                        >
+                          <LabFigure>
+                            {precisionFormatter.format(
+                              singleNormalShock.pressureRecoveryRatio,
+                            )}
+                          </LabFigure>
+                        </output>
+                      </dd>
+                    </div>
+                  ) : null}
                   <div>
                     <dt className="orbix-label">
                       Total pressure loss,{" "}
@@ -801,48 +833,67 @@ export function InletCompressionAnalyzer() {
                   </div>
                 </ReadoutGrid>
 
-                {result.externalShockStages.map((shock, index) => (
-                  <ReadoutGrid
-                    columns={2}
-                    key={values.externalShocks[index]?.id ?? index}
-                    title={`External stage ${index + 1}, ${shock.shockType} shock`}
-                  >
-                    <div>
-                      <dt className="orbix-label">Upstream Mach</dt>
-                      <dd className="mt-1">
-                        <output className="orbix-data" htmlFor={outputIds}>
-                          <LabFigure>
-                            {precisionFormatter.format(shock.upstreamMach)}
-                          </LabFigure>
-                        </output>
-                      </dd>
-                    </div>
-                    <div>
-                      <dt className="orbix-label">Downstream Mach</dt>
-                      <dd className="mt-1">
-                        <output className="orbix-data" htmlFor={outputIds}>
-                          <LabFigure>
-                            {precisionFormatter.format(shock.downstreamMach)}
-                          </LabFigure>
-                        </output>
-                      </dd>
-                    </div>
-                    <div>
-                      <dt className="orbix-label">
-                        Individual pressure recovery
-                      </dt>
-                      <dd className="mt-1">
-                        <output className="orbix-data" htmlFor={outputIds}>
-                          <LabFigure>
-                            {precisionFormatter.format(
-                              shock.pressureRecoveryRatio,
-                            )}
-                          </LabFigure>
-                        </output>
-                      </dd>
-                    </div>
-                  </ReadoutGrid>
-                ))}
+                {/* Stage by stage, with the running product: the multi-shock
+                    recovery tool, merged here. The id keeps its old deep
+                    link working. */}
+                <div className="space-y-5" id="multi-shock-recovery-analyzer">
+                  {result.externalShockStages.map((shock, index) => (
+                    <ReadoutGrid
+                      columns={2}
+                      key={values.externalShocks[index]?.id ?? index}
+                      title={`External stage ${index + 1}, ${shock.shockType} shock`}
+                    >
+                      <div>
+                        <dt className="orbix-label">Upstream Mach</dt>
+                        <dd className="mt-1">
+                          <output className="orbix-data" htmlFor={outputIds}>
+                            <LabFigure>
+                              {precisionFormatter.format(shock.upstreamMach)}
+                            </LabFigure>
+                          </output>
+                        </dd>
+                      </div>
+                      <div>
+                        <dt className="orbix-label">Downstream Mach</dt>
+                        <dd className="mt-1">
+                          <output className="orbix-data" htmlFor={outputIds}>
+                            <LabFigure>
+                              {precisionFormatter.format(shock.downstreamMach)}
+                            </LabFigure>
+                          </output>
+                        </dd>
+                      </div>
+                      <div>
+                        <dt className="orbix-label">
+                          Individual pressure recovery
+                        </dt>
+                        <dd className="mt-1">
+                          <output className="orbix-data" htmlFor={outputIds}>
+                            <LabFigure>
+                              {precisionFormatter.format(
+                                shock.pressureRecoveryRatio,
+                              )}
+                            </LabFigure>
+                          </output>
+                        </dd>
+                      </div>
+                      <div>
+                        <dt className="orbix-label">
+                          Recovery after this stage
+                        </dt>
+                        <dd className="mt-1">
+                          <output className="orbix-data" htmlFor={outputIds}>
+                            <LabFigure>
+                              {precisionFormatter.format(
+                                shock.cumulativeRecoveryRatio,
+                              )}
+                            </LabFigure>
+                          </output>
+                        </dd>
+                      </div>
+                    </ReadoutGrid>
+                  ))}
+                </div>
 
                 <ReadoutGrid columns={2} title="Terminal normal shock">
                   <div>
@@ -884,9 +935,8 @@ export function InletCompressionAnalyzer() {
                 </ReadoutGrid>
 
                 <p className="text-sm leading-6 text-muted">
-                  Pressure loss is 1 minus the overall recovery ratio returned
-                  by the analysis layer; both are rounded to four decimal
-                  places.
+                  Each pressure loss is 1 minus its recovery ratio. Values are
+                  rounded to four decimal places.
                 </p>
               </>
             ) : (

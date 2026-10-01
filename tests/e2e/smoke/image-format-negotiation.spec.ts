@@ -178,7 +178,7 @@ test.describe("next/image format negotiation", () => {
     const variant = (width: number) =>
       `/_next/image?${new URLSearchParams({
         q: "75",
-        url: "/images/aircraft/f-22-raptor.webp",
+        url: "/images/aircraft/f-22-raptor-kadena.webp",
         w: String(width),
       }).toString()}`;
 

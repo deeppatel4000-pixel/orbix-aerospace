@@ -1,6 +1,11 @@
 import { formatFigure } from "@/components/ui/readout";
+import {
+  getVehicleDrawing,
+  type VehicleDrawing,
+} from "@/features/vehicles/data/gallery-drawings";
 import type { Aircraft, DistanceMeasurement } from "@/features/vehicles/types";
 
+import { DrawingSourceNote } from "./drawing-credits";
 import { ScaleFigure } from "./scale-figure";
 import { formatMetres, formatRecorded, obliqueTicks, toMetres } from "./units";
 
@@ -30,14 +35,14 @@ const SCALE_LABEL_M = 10;
 /**
  * The shared scale, as CSS lengths per metre at each width. Every plan and
  * the scale bar are sized from `--plan-u`, so all of them use one scale at
- * any width: 4.5px per metre on a phone, where the plans stand in one
- * column (the widest, 52 m, with its labels then fits the 328px column at
- * 360px; 3.75px below 22.5rem, so it fits the 288px column at 320px),
- * and 5px from 40rem, where the plans wrap in rows (all five fit one row
- * of the 72rem container).
+ * any width. The plans wrap in rows, smallest wingspan first: on a phone
+ * two to a row at 4.5px per metre (3.75px below 22.5rem, so two fit the
+ * 288px column at 320px), with the B-2 alone on the last row; from 40rem
+ * at 5px; from 64rem the four fighters share the first row at 8px per
+ * metre (9px from 80rem), with the B-2 on its own row under them.
  */
 const SCALE_CLASSES =
-  "[--plan-u:3.75px] min-[22.5rem]:[--plan-u:4.5px] sm:[--plan-u:5px]" as const;
+  "[--plan-u:3.75px] min-[22.5rem]:[--plan-u:4.5px] sm:[--plan-u:5px] lg:[--plan-u:8px] xl:[--plan-u:9px]" as const;
 
 /** Room above each plan for the span label, and the gap before the length label. */
 const SPAN_LABEL_ROOM = "2.5rem";
@@ -51,6 +56,8 @@ export interface PlanAircraft {
   /** "107.4 ft" as recorded, and "32.7 m" (empty when recorded in metres). */
   readonly lengthLabel: readonly [string, string];
   readonly wingspanLabel: readonly [string, string];
+  /** The traced top-view outline, scaled to the recorded dimensions. */
+  readonly drawing: VehicleDrawing;
 }
 
 function dimensionLabels(measurement: DistanceMeasurement, metres: number) {
@@ -60,35 +67,62 @@ function dimensionLabels(measurement: DistanceMeasurement, metres: number) {
   ] as const;
 }
 
+/** Both recorded dimensions are present and positive. */
+function isMeasured(lengthM: number, wingspanM: number) {
+  return (
+    Number.isFinite(lengthM) &&
+    lengthM > 0 &&
+    Number.isFinite(wingspanM) &&
+    wingspanM > 0
+  );
+}
+
 /**
- * The aircraft that can be drawn, built only from `dimensions.length` and
- * `dimensions.wingspan` in each record, converted to metres, smallest
- * wingspan first. A record missing either dimension is left out.
+ * The aircraft that can be drawn, built from `dimensions.length` and
+ * `dimensions.wingspan` in each record, converted to metres, and the
+ * vehicle's traced top-view outline, smallest wingspan first. A record
+ * missing either dimension or an outline is left out.
  */
 export function aircraftPlans(
   aircraft: readonly Aircraft[],
 ): readonly PlanAircraft[] {
   return aircraft
-    .map((item) => {
+    .flatMap((item) => {
       const lengthM = toMetres(item.dimensions.length);
       const wingspanM = toMetres(item.dimensions.wingspan);
-      return {
-        id: item.id,
-        lengthLabel: dimensionLabels(item.dimensions.length, lengthM),
-        lengthM,
-        name: item.name,
-        wingspanLabel: dimensionLabels(item.dimensions.wingspan, wingspanM),
-        wingspanM,
-      };
+      const drawing = getVehicleDrawing(item.id);
+      if (!drawing || !isMeasured(lengthM, wingspanM)) return [];
+      return [
+        {
+          drawing,
+          id: item.id,
+          lengthLabel: dimensionLabels(item.dimensions.length, lengthM),
+          lengthM,
+          name: item.name,
+          wingspanLabel: dimensionLabels(item.dimensions.wingspan, wingspanM),
+          wingspanM,
+        },
+      ];
     })
-    .filter(
-      ({ lengthM, wingspanM }) =>
-        Number.isFinite(lengthM) &&
-        lengthM > 0 &&
-        Number.isFinite(wingspanM) &&
-        wingspanM > 0,
-    )
     .sort((a, b) => a.wingspanM - b.wingspanM);
+}
+
+/**
+ * The transform that places a traced outline on its plan: nose at
+ * `NOSE_Y_M`, left wingtip at x = 0, stretched so its box is exactly the
+ * recorded wingspan by the recorded length (the traced box already matches
+ * them to within a millimetre).
+ */
+export function outlineTransform(
+  item: Pick<PlanAircraft, "drawing" | "lengthM" | "wingspanM">,
+) {
+  const sx = item.wingspanM / item.drawing.widthM;
+  const sy = item.lengthM / item.drawing.heightM;
+  return `translate(0 ${NOSE_Y_M}) scale(${round6(sx)} ${round6(sy)})`;
+}
+
+function round6(value: number) {
+  return Math.round(value * 1e6) / 1e6;
 }
 
 /**
@@ -122,36 +156,23 @@ const object = {
 } as const;
 
 /**
- * Where the wingtips sit, as a share of the length from the nose. The
- * records give no planform, so the station is a fixed schematic choice,
- * stated in the caption.
- */
-export const SPAN_STATION = 0.45;
-
-/** The four points of a plan's outline, in drawing metres. */
-function planOutline(item: Pick<PlanAircraft, "lengthM" | "wingspanM">) {
-  const centre = item.wingspanM / 2;
-  const station = NOSE_Y_M + item.lengthM * SPAN_STATION;
-  return {
-    left: [0, station],
-    nose: [centre, NOSE_Y_M],
-    right: [item.wingspanM, station],
-    tail: [centre, NOSE_Y_M + item.lengthM],
-  } as const;
-}
-
-/**
- * One aircraft seen from above, nose up, as a schematic planform: a closed
- * 1.5px outline from the nose to each wingtip at the stated station and
- * back to the tail on the centreline, built only from the recorded length
- * and wingspan. A 0.75px span dimension line runs above the plan and a
- * length dimension line to its right, each with extension lines and
- * oblique end ticks, labelled in B612 Mono. The labels are HTML, so they
- * set at one size whatever the plan's scale.
+ * One aircraft seen from above, nose up: its traced outline as a closed
+ * 1.5px line, scaled to the recorded length and wingspan. A 0.75px span
+ * dimension line runs above the plan and a length dimension line to its
+ * right, each with extension lines and oblique end ticks, labelled in
+ * B612 Mono. The labels are HTML, so they set at one size whatever the
+ * plan's scale.
  */
 function Plan({ item }: { item: PlanAircraft }) {
   const box = planViewBox(item);
-  const { left, nose, right, tail } = planOutline(item);
+  // The span's ends (the wingtips, at the outline's widest point) and the
+  // length's ends (nose and tail on the centreline) for the dimension and
+  // extension lines.
+  const tipY = NOSE_Y_M + item.lengthM * widestStation(item.drawing);
+  const left = [0, tipY] as const;
+  const right = [item.wingspanM, tipY] as const;
+  const nose = [item.wingspanM / 2, NOSE_Y_M] as const;
+  const tail = [item.wingspanM / 2, NOSE_Y_M + item.lengthM] as const;
   const spanY = PLAN_PAD_M;
   const lengthX = item.wingspanM + DIM_OFFSET_M;
   const extTop = spanY - EXT_GAP_M;
@@ -167,7 +188,7 @@ function Plan({ item }: { item: PlanAircraft }) {
       }}
     >
       <span
-        className="absolute top-0 -translate-x-1/2 text-center font-mono text-xs leading-[1.1rem] tabular-nums sm:text-[0.8125rem]"
+        className="absolute top-0 -translate-x-1/2 text-center font-mono text-[0.8125rem] leading-[1.1rem] tabular-nums"
         data-label="span"
         style={{ left: atScale(PLAN_PAD_M + item.wingspanM / 2) }}
       >
@@ -182,8 +203,10 @@ function Plan({ item }: { item: PlanAircraft }) {
         <g className="stroke-ink-muted" fill="none" strokeLinecap="butt">
           <path
             {...object}
-            d={`M${nose.join(" ")}L${right.join(" ")}L${tail.join(" ")}L${left.join(" ")}Z`}
+            d={item.drawing.d}
             data-outline=""
+            strokeLinejoin="round"
+            transform={outlineTransform(item)}
           />
           {/* Span: extension lines up from both wingtips, past the
               dimension line above the nose. */}
@@ -228,7 +251,7 @@ function Plan({ item }: { item: PlanAircraft }) {
         </g>
       </svg>
       <span
-        className="absolute -translate-y-1/2 font-mono text-xs leading-[1.1rem] tabular-nums sm:text-[0.8125rem]"
+        className="absolute -translate-y-1/2 font-mono text-[0.8125rem] leading-[1.1rem] tabular-nums"
         data-label="length"
         style={{
           left: `calc(${atScale(PLAN_PAD_M + lengthX)} + ${LENGTH_LABEL_GAP})`,
@@ -239,6 +262,25 @@ function Plan({ item }: { item: PlanAircraft }) {
       </span>
     </div>
   );
+}
+
+/**
+ * Where the outline is widest, as a share of its length from the nose: the
+ * y of the right-most point of the traced path, so the span's extension
+ * lines start at the wingtip.
+ */
+function widestStation(drawing: VehicleDrawing) {
+  const numbers = drawing.d.match(/-?\d+(?:\.\d+)?/g)?.map(Number) ?? [];
+  let bestX = Number.NEGATIVE_INFINITY;
+  let bestY = 0;
+  for (let index = 0; index + 1 < numbers.length; index += 2) {
+    const x = numbers[index]!;
+    if (x > bestX) {
+      bestX = x;
+      bestY = numbers[index + 1]!;
+    }
+  }
+  return drawing.heightM > 0 ? bestY / drawing.heightM : 0;
 }
 
 /** A recorded figure in ink, with its metre conversion muted under it. */
@@ -271,7 +313,6 @@ function ScaleBar() {
   return (
     <div
       aria-hidden="true"
-      className="mt-8"
       data-scale-bar=""
       style={{ width: atScale(SCALE_BAR_M) }}
     >
@@ -326,12 +367,13 @@ interface AircraftSizeComparisonProps {
 }
 
 /**
- * The aircraft to one scale (spec 8), as small multiples: each recorded
- * length and wingspan drawn from above, nose up, as a schematic planform
+ * The aircraft to one scale (spec 8), as small multiples: each traced
+ * top-view outline, nose up, scaled to the recorded length and wingspan,
  * with its two dimension lines, at one shared scale, with the name under
- * each plan and one metre scale bar. Linework in the muted ink, figures
- * in B612 Mono, no fills. An aircraft missing either dimension is left
- * out and named in the caption.
+ * each plan and one metre scale bar above them. Linework in the muted ink, figures
+ * in B612 Mono, no fills. An aircraft missing a dimension or an outline
+ * is left out and named in the caption, and every outline's source is
+ * credited there.
  */
 export function AircraftSizeComparison({
   aircraft,
@@ -341,30 +383,43 @@ export function AircraftSizeComparison({
   const plans = aircraftPlans(aircraft);
   const drawn = new Set(plans.map((item) => item.id));
   const omitted = aircraft.filter((item) => !drawn.has(item.id));
+  const unmeasured = omitted.filter(
+    (item) =>
+      !isMeasured(
+        toMetres(item.dimensions.length),
+        toMetres(item.dimensions.wingspan),
+      ),
+  );
+  const undrawn = omitted.filter((item) => !unmeasured.includes(item));
+  const names = (items: readonly Aircraft[]) =>
+    items.map((item) => item.name).join(", ");
 
   return (
     <ScaleFigure
       caption={
         <>
-          Recorded length and wingspan of each aircraft, seen from above with
-          the nose up, all to one scale, feet converted at 0.3048 m. Each plan
-          is schematic, an outline from the nose to wingtips at{" "}
-          {SPAN_STATION * 100} percent of the length and back to the tail, since
-          the records give no wing position or shape.
-          {omitted.length > 0
-            ? ` Not drawn, a dimension is missing: ${omitted.map((item) => item.name).join(", ")}.`
+          Each aircraft seen from above, nose up, all to one scale. Every
+          outline is scaled to the length and wingspan in its record, with feet
+          converted at 0.3048 m.
+          {unmeasured.length > 0
+            ? ` Not drawn, a dimension is missing: ${names(unmeasured)}.`
             : ""}
+          {undrawn.length > 0
+            ? ` Not drawn, no outline yet: ${names(undrawn)}.`
+            : ""}{" "}
+          <DrawingSourceNote vehicles={plans} />
         </>
       }
       className={className}
       figureNumber={figureNumber}
     >
       <div className={SCALE_CLASSES}>
-        {/* One column on a phone, every plan from the same left edge.
-            From 40rem each row stretches to its deepest plan and every
-            plan grows to fill its item, so the names along a row share one
-            baseline under the plans while the noses stay level. */}
-        <ul className="flex flex-col gap-y-10 sm:flex-row sm:flex-wrap sm:items-stretch sm:gap-x-8">
+        {/* The scale bar first, beside the smallest plans. Each row of
+            plans stretches to its deepest plan and every plan grows to
+            fill its item, so the names along a row share one baseline
+            under the plans while the noses stay level. */}
+        <ScaleBar />
+        <ul className="mt-8 flex flex-row flex-wrap items-stretch gap-x-4 gap-y-10 sm:gap-x-8">
           {plans.map((item) => (
             <li
               className="flex min-w-0 flex-col"
@@ -385,7 +440,6 @@ export function AircraftSizeComparison({
             </li>
           ))}
         </ul>
-        <ScaleBar />
       </div>
     </ScaleFigure>
   );

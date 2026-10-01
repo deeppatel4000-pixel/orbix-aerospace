@@ -2,20 +2,22 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 
 import { aircraftVehicles, rocketVehicles } from "@/features/vehicles/data";
+import { getVehicleDrawing } from "@/features/vehicles/data/gallery-drawings";
 import type { Aircraft, Rocket } from "@/features/vehicles/types";
 
 import {
   AircraftSizeComparison,
   aircraftPlans,
   NOSE_Y_M,
+  outlineTransform,
   planViewBox,
   SCALE_BAR_M as PLAN_SCALE_BAR_M,
-  SPAN_STATION,
 } from "./aircraft-size-comparison";
 import {
-  BAR_WIDTH,
+  EXT_GAP,
   LINEUP_LAYOUTS,
   type LineupLayoutName,
+  printsFigure,
   RocketHeightLineup,
   rocketLineupGeometry,
   SCALE_BAR_M,
@@ -106,24 +108,27 @@ describe.each(lineupLayouts)("rocket height lineup, %s", (layout) => {
           ) / u;
         expect(drawn).toBeCloseTo(rocket.dimensions.height.value, 9);
       } else {
-        // Upright, each height is a bar outline of the nominal width,
-        // standing on the ground line: M left ground V top H right V ground.
-        const bar = attributes(
+        // Upright, each vehicle is its traced outline, scaled so its
+        // height is the recorded height, base on the ground line and
+        // centred on its height line.
+        const outline = attributes(
           markup,
           new RegExp(
-            `data-vehicle="${rocket.id}"[^]*?<path[^>]*data-dimension="height"[^>]*>`,
+            `data-vehicle="${rocket.id}"[^]*?<path[^>]*data-outline=""[^>]*>`,
           ),
         );
-        const [left, ground, top, right, end] = bar
-          .d!.match(/-?[\d.]+/g)!
-          .map(Number);
-        expect(ground).toBeCloseTo(geometry.ground.y1, 9);
-        expect(end).toBeCloseTo(geometry.ground.y1, 9);
-        expect(right! - left!).toBeCloseTo(BAR_WIDTH, 9);
-        expect((ground! - top!) / u).toBeCloseTo(
+        const drawing = getVehicleDrawing(rocket.id)!;
+        expect(outline.d).toBe(drawing.d);
+        const [tx, ty, k] = outline.transform!.match(/-?[\d.]+/g)!.map(Number);
+        const vehicle = geometry.vehicles.find(
+          (item) => item.id === rocket.id,
+        )!;
+        expect((drawing.heightM * k!) / u).toBeCloseTo(
           rocket.dimensions.height.value,
-          9,
+          2,
         );
+        expect(ty! + drawing.heightM * k!).toBeCloseTo(geometry.ground.y1, 2);
+        expect(tx! + (drawing.widthM * k!) / 2).toBeCloseTo(vehicle.x1, 2);
       }
     }
   });
@@ -151,13 +156,13 @@ describe.each(lineupLayouts)("rocket height lineup, %s", (layout) => {
     ).toBeCloseTo(SCALE_BAR_M, 9);
   });
 
-  it("keeps every figure at 11px or more at the narrowest width shown", () => {
+  it("keeps every figure at 13px or more at the narrowest width shown", () => {
     const narrowest = layout === "level" ? 288 : 960;
     const rendered = Math.min(narrowest, geometry.width);
     const { figureSize, nameSize } = LINEUP_LAYOUTS[layout];
     expect(
       (Math.min(figureSize, nameSize) * rendered) / geometry.width,
-    ).toBeGreaterThanOrEqual(11);
+    ).toBeGreaterThanOrEqual(13);
   });
 });
 
@@ -168,7 +173,9 @@ describe("rocket height lineup", () => {
       renderToStaticMarkup(<RocketHeightLineup rockets={rocketVehicles} />),
       "upright",
     );
-    for (const vehicle of geometry.vehicles) {
+    geometry.vehicles.forEach((vehicle, index) => {
+      // A vehicle as tall as the one before it shares its line.
+      if (!printsFigure(geometry.vehicles, index)) return;
       const extension = attributes(
         svg,
         new RegExp(
@@ -177,8 +184,9 @@ describe("rocket height lineup", () => {
       );
       expect(Number(extension.y1)).toBe(vehicle.y2);
       expect(Number(extension.y2)).toBe(vehicle.y2);
+      expect(Number(extension.x1)).toBe(vehicle.x2 - EXT_GAP);
       expect(Number(extension.x2)).toBe(geometry.leaderX);
-    }
+    });
     const distinct = new Set(
       geometry.vehicles.map((vehicle) => vehicle.metres),
     );
@@ -195,13 +203,32 @@ describe("rocket height lineup", () => {
       renderToStaticMarkup(
         <AircraftSizeComparison aircraft={aircraftVehicles} />,
       );
-    expect(svg).toContain('<tspan data-num-sep="" dx="-0.24">.</tspan>');
+    expect(svg).toContain('<tspan data-num-sep="" dx="-0.28">.</tspan>');
     expect(svg).toContain('<span class="orbix-num-sep">.</span>');
     // No figure keeps a bare point between digits (screen-reader text,
     // which is not set, is left as written).
     expect(svg.replace(/<span class="sr-only">[^<]*<\/span>/g, "")).not.toMatch(
       />[^<]*\d\.\d[^<]*<\/(?:text|tspan|span)>/,
     );
+  });
+
+  it("credits every outline's source drawing in the caption", () => {
+    const markup = renderToStaticMarkup(
+      <RocketHeightLineup rockets={rocketVehicles} />,
+    );
+    // Each CC BY-SA drawing is credited in full; the public-domain
+    // government drawings are named once and listed on the credits page.
+    for (const rocket of rocketVehicles) {
+      const drawing = getVehicleDrawing(rocket.id)!;
+      if (drawing.shareAlike) {
+        expect(markup).toContain(`href="${drawing.sourceUrl}"`);
+      } else {
+        expect(markup).toContain(rocket.name);
+      }
+    }
+    expect(markup).toContain("outline shared under CC BY-SA 4.0");
+    expect(markup).toContain("traced from U.S. government drawings");
+    expect(markup).toContain('href="/credits#drawings"');
   });
 
   it("leaves out a record with no usable height and names it", () => {
@@ -299,28 +326,24 @@ describe("aircraft size comparison", () => {
       expect(Number(length.y1)).toBe(NOSE_Y_M);
       expect(Number(span.x1)).toBe(0);
 
-      // The schematic planform is closed through the nose, the right
-      // wingtip at the stated station, the tail and the left wingtip.
+      // The traced outline is placed with its nose on the nose line and
+      // stretched to the recorded wingspan by the recorded length.
       const outline = attributes(
         svg,
         new RegExp(group.source + `<path[^>]*data-outline=""[^>]*>`),
       );
-      const points = outline.d!.match(/-?[\d.]+/g)!.map(Number);
-      const station = NOSE_Y_M + item.lengthM * SPAN_STATION;
-      const expected = [
-        item.wingspanM / 2,
-        NOSE_Y_M,
-        item.wingspanM,
-        station,
-        item.wingspanM / 2,
-        NOSE_Y_M + item.lengthM,
-        0,
-        station,
-      ];
-      expect(points).toHaveLength(expected.length);
-      points.forEach((value, index) =>
-        expect(value).toBeCloseTo(expected[index]!, 9),
-      );
+      expect(outline.d).toBe(item.drawing.d);
+      expect(outline.transform).toBe(outlineTransform(item));
+      const [tx, ty, sx, sy] = outline
+        .transform!.match(/-?[\d.]+/g)!
+        .map(Number);
+      expect(tx).toBe(0);
+      expect(ty).toBe(NOSE_Y_M);
+      expect(item.drawing.widthM * sx!).toBeCloseTo(item.wingspanM, 4);
+      expect(item.drawing.heightM * sy!).toBeCloseTo(item.lengthM, 4);
+      // The traced box was drawn to the record: the stretch is under 0.1%.
+      expect(Math.abs(sx! - 1)).toBeLessThan(0.001);
+      expect(Math.abs(sy! - 1)).toBeLessThan(0.001);
       expect(outline.d).toMatch(/Z$/);
 
       // Each plan is named, with both dimensions in text, under the
@@ -339,6 +362,17 @@ describe("aircraft size comparison", () => {
   it("sizes the scale bar from the same scale", () => {
     const bar = attributes(markup(), /<div[^>]*data-scale-bar=""[^>]*>/);
     expect(bar.style).toBe(`width:calc(var(--plan-u) * ${PLAN_SCALE_BAR_M})`);
+  });
+
+  it("credits the outlines' sources in one line and links the full list", () => {
+    const svg = markup();
+    for (const item of plans) {
+      expect(item.drawing.license).toBe("Public domain (U.S. government work)");
+    }
+    expect(svg).toContain(
+      "Outlines traced from U.S. government drawings, public domain.",
+    );
+    expect(svg).toContain('href="/credits#drawings"');
   });
 
   it("leaves out an aircraft missing a dimension and names it", () => {

@@ -12,7 +12,7 @@ export interface LearnLabAnchor {
 
 /**
  * A link to another ORBIX route (a registry, a vehicle profile, Compare, or
- * Showcase) where a pathway's ideas can be seen applied to published content.
+ * the build log) where a pathway's ideas can be seen applied to published content.
  */
 export interface LearnExplorationLink {
   readonly description: string;

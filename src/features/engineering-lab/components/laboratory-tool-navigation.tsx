@@ -160,15 +160,9 @@ function ToolList({
 }
 
 /**
- * The desktop index. The open tool's discipline lists every tool with its ID;
- * the other disciplines fold to one line each, a link with the discipline's
- * name and number range that opens its first tool. All 33 tools open would
- * need about 1,100px, so at a 900px-tall window the later disciplines would
- * sit behind an inner scroll; folded, the whole index fits in about 440px.
- * From a 1,376px-tall window (86rem) every discipline shows its rows:
- * all 33 open, with the longer titles wrapping, need about 1,260px of rail.
- * Every tool stays reachable: its discipline link, then its own row, and the
- * narrow select and "Show all tools" list carry the full catalogue.
+ * The desktop index: every discipline open, each tool with its ID. With
+ * the current tool list it fits a short window; if it ever does not, the
+ * rail scrolls inside its column and keeps the current row in view.
  */
 function DesktopIndex({
   activeToolId,
@@ -179,24 +173,12 @@ function DesktopIndex({
 }) {
   const starts = groupStarts(groups);
   const listRef = useRef<HTMLDivElement>(null);
-  // Set when a folded discipline's header is activated. Following an
-  // in-page link drops focus to <body> (the tool frame cannot take focus),
-  // so once the shell has opened the tool, focus moves to its row and the
-  // next Tab reaches the discipline's second tool.
-  const openedFromHeader = useRef(false);
 
   useEffect(() => {
     const list = listRef.current;
     const activeLink = list?.querySelector<HTMLElement>(
       'a[aria-current="location"]',
     );
-    if (openedFromHeader.current) {
-      openedFromHeader.current = false;
-      activeLink?.focus({ preventScroll: true });
-    }
-    // On a short window the rail (from 1024px) can still scroll. Scroll only
-    // it, like `scrollIntoView({ block: "nearest" })` scoped to the rail, so
-    // the page itself never moves when the open tool changes.
     const rail = list?.closest<HTMLElement>("[data-tool-rail]");
     if (
       activeLink === null ||
@@ -209,7 +191,6 @@ function DesktopIndex({
     }
     const railBox = rail.getBoundingClientRect();
     const linkBox = activeLink.getBoundingClientRect();
-    // Keep a row's height of clearance above the rail's foot.
     const clearance = 32;
     if (linkBox.top < railBox.top) {
       rail.scrollTop -= railBox.top - linkBox.top;
@@ -218,68 +199,38 @@ function DesktopIndex({
     }
   }, [activeToolId]);
 
-  // The top rule and padding match the open tool's card (a 1px rule, then
-  // 1.5rem), so the index and the workspace start on one line.
   return (
     <div className="border-t border-border pt-6" ref={listRef}>
       {groups.map((group, groupIndex) => {
         const headingId = `laboratory-tools-${group.id}`;
         const start = starts[groupIndex] ?? 1;
-        const range = groupRange(start, group.tools.length);
         const open = group.tools.some((tool) => tool.id === activeToolId);
-        const firstTool = group.tools[0];
 
         return (
-          <div className={groupIndex > 0 ? "mt-4" : undefined} key={group.id}>
-            {/* A folded discipline's header is a link to its first tool;
-             * the open discipline's header is the same element without an
-             * href (not a link, no tab stop), so the open list's first row
-             * is the only way to its first tool. */}
-            <a
-              className={cn(
-                "flex min-h-7 items-center justify-between gap-3 text-[0.8125rem] leading-5 font-semibold transition-colors focus-visible:outline-offset-2",
-                open
-                  ? "text-foreground"
-                  : "text-text-secondary hover:text-foreground hover:underline hover:underline-offset-3",
-              )}
-              href={
-                open || firstTool === undefined ? undefined : `#${firstTool.id}`
-              }
-              id={headingId}
-              onClick={
-                open
-                  ? undefined
-                  : () => {
-                      openedFromHeader.current = true;
-                    }
-              }
-            >
-              {/* The range is decorative, so the link and the list it labels
-               * are both named by the discipline alone. */}
-              <span>{group.title}</span>
+          <div className={groupIndex > 0 ? "mt-5" : undefined} key={group.id}>
+            <p className="flex min-h-7 items-center justify-between gap-3 text-[0.8125rem] leading-5 font-semibold">
+              {/* The range is decorative, so the list is named by the
+               * discipline alone. */}
+              <span
+                className={open ? "text-foreground" : "text-text-secondary"}
+                id={headingId}
+              >
+                {group.title}
+              </span>
               <span
                 aria-hidden="true"
                 className="orbix-data orbix-data--sm font-normal whitespace-nowrap text-muted"
               >
-                {range}
+                {groupRange(start, group.tools.length)}
               </span>
-            </a>
-            {/* Folded disciplines keep their rows mounted but hidden, and a
-             * window tall enough for all 33 rows (from 1,376px) shows every
-             * discipline open, so the whole index reads at once. */}
-            <div
-              className={
-                open ? undefined : "hidden [@media(min-height:86rem)]:block"
-              }
-            >
-              <ToolRows
-                activeToolId={activeToolId}
-                dense
-                headingId={headingId}
-                start={start}
-                tools={group.tools}
-              />
-            </div>
+            </p>
+            <ToolRows
+              activeToolId={activeToolId}
+              dense
+              headingId={headingId}
+              start={start}
+              tools={group.tools}
+            />
           </div>
         );
       })}
@@ -293,8 +244,7 @@ function DesktopIndex({
  * marked by colour and weight alone.
  *
  * From 1024px it is a vertical list of plain in-page links with
- * `aria-current` on the active one, held below the header by the shell;
- * only the open tool's discipline is expanded.
+ * `aria-current` on the active one, held below the header by the shell.
  * Below 1024px it is only a labelled `<select>` in a slim bar under the
  * header; the full list lives in `LaboratoryToolDirectory`, in the page
  * flow above the tool. Every path ends in the URL hash, which

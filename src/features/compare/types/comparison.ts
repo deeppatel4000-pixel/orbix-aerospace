@@ -11,7 +11,7 @@ export type ComparisonCellStatus = "available" | "unavailable";
  *
  * `value` is the raw published number exactly as the dataset stores it, and
  * `unit` is the dataset's own unit. Neither is derived from the formatted
- * display string, and `unit` is only ever compared for equality — nothing in
+ * display string, and `unit` is only ever compared for equality, nothing in
  * the comparison feature converts between units.
  *
  * Present only on cells whose displayed value is a single measurement. A cell

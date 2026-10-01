@@ -1,11 +1,6 @@
-import { Fragment } from "react";
-import Image from "next/image";
-import Link from "next/link";
-
 import { ButtonLink } from "@/components/ui/button-link";
 import { DataTable, type DataTableColumn } from "@/components/ui/data-table";
 import { SectionNavigation } from "@/components/ui/section-navigation";
-import { getAircraftVisual } from "@/features/aircraft/data/aircraft-visuals";
 import {
   ComparisonCell,
   rowNeedsPerFigureQualifiers,
@@ -15,23 +10,20 @@ import {
   ComparisonRowEducation,
 } from "@/features/compare/components/comparison-row-education";
 import { ComparisonRules } from "@/features/compare/components/comparison-rules";
-import {
-  groupedCredits,
-  shortCreditSource,
-  shortLicense,
-} from "@/features/compare/components/photo-credit";
 import { getRowEducation } from "@/features/compare/education";
-import type {
-  ComparisonCategory,
-  ComparisonResult,
-  ComparisonRow,
-} from "@/features/compare/types";
+import type { ComparisonResult, ComparisonRow } from "@/features/compare/types";
 import {
   groupComparisonRows,
   normalizeRowMagnitudes,
 } from "@/features/compare/utils";
+import { getVehicleDrawing } from "@/features/vehicles/data/gallery-drawings";
+import { DrawingSourceNote } from "@/features/vehicles/drawings/drawing-credits";
+import {
+  drawingsFor,
+  sharedOutlineBox,
+  VehicleOutline,
+} from "@/features/vehicles/drawings/vehicle-outline";
 import { cn } from "@/lib/cn";
-import { getRocketVisual } from "@/features/rockets/data/rocket-visuals";
 
 interface ComparisonTableProps {
   result: ComparisonResult;
@@ -39,10 +31,6 @@ interface ComparisonTableProps {
 
 function groupAnchorId(categoryId: string) {
   return "compare-group-" + categoryId;
-}
-
-function getVisual(category: ComparisonCategory, id: string) {
-  return category === "aircraft" ? getAircraftVisual(id) : getRocketVisual(id);
 }
 
 /**
@@ -126,7 +114,8 @@ const joinedTables = cn(
 
 /**
  * The comparison as a spec sheet (design v3, spec 6 and 11). An identity
- * strip names each column with its photograph, maker and profile link, next
+ * strip names each column with its traced outline (all at one scale),
+ * maker and profile link, next
  * to the rules the sheet follows; then the groups of characteristics as one
  * sheet, the characteristic as the row header and one column per vehicle,
  * with a thin accent scale line where a row shares one unit. An open table:
@@ -151,20 +140,10 @@ export function ComparisonTable({ result }: ComparisonTableProps) {
       .map((row) => row.id),
   );
 
-  const credits = groupedCredits(
-    result.vehicles.flatMap((vehicle) => {
-      const visual = getVisual(result.category, vehicle.id);
-      return visual
-        ? [
-            {
-              credit: visual.credit,
-              license: visual.license,
-              licenseUrl: visual.licenseUrl,
-              name: vehicle.name,
-            },
-          ]
-        : [];
-    }),
+  // The selected vehicles' outlines share one box, so the strip reads to
+  // one scale.
+  const outlineBox = sharedOutlineBox(
+    drawingsFor(result.vehicles.map((vehicle) => vehicle.id)),
   );
 
   const columns: DataTableColumn<ComparisonRow>[] = [
@@ -173,19 +152,28 @@ export function ComparisonTable({ result }: ComparisonTableProps) {
       header: "Characteristic",
       cell: (row) => {
         // Below 48rem the 6.25rem sticky column is too narrow for a
-        // paragraph, so a row's description and its "About this row"
-        // note move to the full-width list under the group there. A row
-        // without a note keeps its description in the cell.
+        // paragraph, so a row's description and its note move to the
+        // full-width list under the group there. A row without a note
+        // keeps its description in the cell. From 48rem the label of a
+        // row with a note is the note's toggle.
         const hasEducation =
           getRowEducation(result.category, row.id) !== undefined;
         return (
-          /* The label, its description, then the "About this row"
-             disclosure on its own line, so the labels in the column share
-             one left edge and read as a list. */
           <span className="flex flex-col items-start">
-            <span className="text-[0.8125rem] font-medium text-muted max-md:tracking-[-0.01em] md:text-sm">
+            <span
+              className={cn(
+                "text-[0.8125rem] font-medium text-muted max-md:tracking-[-0.01em] md:text-sm",
+                hasEducation && "md:hidden",
+              )}
+            >
               {row.label}
             </span>
+            <ComparisonRowEducation
+              category={result.category}
+              className="max-md:hidden"
+              label={row.label}
+              rowId={row.id}
+            />
             {row.description ? (
               <span
                 className={cn(
@@ -196,12 +184,6 @@ export function ComparisonTable({ result }: ComparisonTableProps) {
                 {row.description}
               </span>
             ) : null}
-            <ComparisonRowEducation
-              category={result.category}
-              className="mt-1 max-md:hidden"
-              label={row.label}
-              rowId={row.id}
-            />
           </span>
         );
       },
@@ -259,8 +241,8 @@ export function ComparisonTable({ result }: ComparisonTableProps) {
 
   return (
     <div>
-      {/* The group index leads the sheet, so the identity strip, the only
-          place the photographs repeat, runs straight into the column band. */}
+      {/* The group index leads the sheet, so the identity strip runs
+          straight into the column band. */}
       {groups.length > 1 ? (
         <div className="mb-10">
           <SectionNavigation
@@ -290,65 +272,31 @@ export function ComparisonTable({ result }: ComparisonTableProps) {
                maker, link), so a name that wraps to two lines moves the
                maker and link lines of every column together. */
           >
-            {result.vehicles.map((vehicle, index) => {
-              const visual = getVisual(result.category, vehicle.id);
-              const licenseUrl =
-                visual && !visual.license.startsWith("Public domain")
-                  ? visual.licenseUrl
-                  : undefined;
+            {result.vehicles.map((vehicle) => {
+              const drawing = getVehicleDrawing(vehicle.id);
 
               return (
                 <li
                   className="flex min-w-0 items-start gap-4 sm:block lg:row-span-4 lg:grid lg:grid-rows-subgrid lg:gap-0 lg:px-4"
                   key={vehicle.id}
                 >
-                  {visual ? (
-                    /* The plate with its catalogue caption (spec 7). The
-                       name follows as the column's title, so the caption
-                       carries the figure number and the credit. On a phone
-                       the plate is a thumbnail and the credits are pooled
-                       under the strip instead. */
-                    <figure className="shrink-0">
-                      <span
-                        className={cn(
-                          "relative block max-w-full shrink-0 overflow-hidden bg-background",
-                          isAircraft
-                            ? "aspect-[16/10] h-[4.375rem] sm:h-auto sm:w-full"
-                            : "aspect-[3/4] h-24 sm:aspect-[4/5] sm:h-auto sm:max-h-[22rem] sm:w-full",
-                        )}
-                      >
-                        <Image
-                          alt={visual.alt}
-                          className="object-cover saturate-[0.9]"
-                          fill
-                          sizes={
-                            isAircraft
-                              ? "(min-width: 64rem) 24rem, (min-width: 40rem) 33vw, 7rem"
-                              : "(min-width: 64rem) 28rem, (min-width: 40rem) 33vw, 4.5rem"
-                          }
-                          src={visual.src}
-                          style={{ objectPosition: visual.objectPosition }}
-                        />
-                      </span>
-                      <figcaption className="orbix-caption mt-2 text-[0.75rem] max-sm:hidden">
-                        <span className="orbix-caption__number">
-                          Fig. {index + 1}
-                        </span>
-                        Photo: {shortCreditSource(visual.credit)},{" "}
-                        {licenseUrl ? (
-                          <a
-                            href={licenseUrl}
-                            rel="license noreferrer"
-                            target="_blank"
-                          >
-                            {shortLicense(visual.license)}
-                          </a>
-                        ) : (
-                          shortLicense(visual.license)
-                        )}
-                        .
-                      </figcaption>
-                    </figure>
+                  {drawing ? (
+                    /* The outline in the selection's shared box: a
+                       thumbnail on a phone, the column width above. */
+                    <span
+                      className={cn(
+                        "relative block max-w-full shrink-0",
+                        isAircraft
+                          ? "aspect-[16/10] h-[4.375rem] sm:h-auto sm:w-full"
+                          : "aspect-[3/4] h-24 sm:aspect-[4/5] sm:h-auto sm:max-h-[22rem] sm:w-full",
+                      )}
+                    >
+                      <VehicleOutline
+                        box={outlineBox}
+                        className="absolute inset-0 h-full w-full text-ink-muted"
+                        drawing={drawing}
+                      />
+                    </span>
                   ) : null}
                   <div className="min-w-0 lg:contents">
                     <p className="font-display text-[1.375rem] leading-[1.02] tracking-[-0.03em] text-foreground sm:mt-3 lg:text-[1.75rem]">
@@ -374,33 +322,9 @@ export function ComparisonTable({ result }: ComparisonTableProps) {
             })}
           </ul>
 
-          {credits.length > 0 ? (
-            <p className="orbix-micro mt-4 text-[0.75rem] text-muted sm:hidden">
-              Photographs:{" "}
-              {credits.map((group, index) => (
-                <Fragment key={group.license}>
-                  {index > 0 ? "; " : null}
-                  {group.sources + ", "}
-                  {group.licenseUrl ? (
-                    <a
-                      className="orbix-link"
-                      href={group.licenseUrl}
-                      rel="license noreferrer"
-                      target="_blank"
-                    >
-                      {group.license}
-                    </a>
-                  ) : (
-                    group.license
-                  )}
-                </Fragment>
-              ))}
-              .{" "}
-              <Link className="orbix-link" href="/credits">
-                Full credits
-              </Link>
-            </p>
-          ) : null}
+          <p className="orbix-caption mt-6">
+            All to one scale. <DrawingSourceNote vehicles={result.vehicles} />
+          </p>
         </div>
       </div>
 

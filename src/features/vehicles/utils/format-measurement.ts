@@ -6,6 +6,11 @@ import type {
 
 interface FormatMeasurementOptions {
   readonly locale?: string;
+  /**
+   * Sets "+" after the number of a published minimum ("Mach 3+",
+   * "85,000+ ft"), the notation the vehicle pages use.
+   */
+  readonly markMinimum?: boolean;
   readonly maximumFractionDigits?: number;
 }
 
@@ -31,7 +36,12 @@ export function formatMeasurement<TUnit extends MeasurementUnit>(
   measurement: Measurement<TUnit>,
   options: FormatMeasurementOptions = {},
 ) {
-  const { unit, value } = formatMeasurementParts(measurement, options);
+  const parts = formatMeasurementParts(measurement, options);
+  const { unit } = parts;
+  const value =
+    options.markMinimum && measurement.qualifier === "minimum"
+      ? parts.value + "+"
+      : parts.value;
 
   return measurement.unit === "Mach" ? unit + " " + value : value + " " + unit;
 }

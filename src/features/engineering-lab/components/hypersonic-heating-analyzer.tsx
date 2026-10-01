@@ -359,7 +359,7 @@ export function HypersonicHeatingAnalyzer() {
         <div className="@container/col min-w-0 space-y-5">
           <CalculatorResultSection
             id="hypersonic-heating-result"
-            title="Hypersonic heating analysis"
+            title="Stagnation-point heating estimate"
           >
             {result ? (
               <>

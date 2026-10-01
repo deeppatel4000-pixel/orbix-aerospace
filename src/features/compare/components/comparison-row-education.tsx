@@ -16,12 +16,12 @@ const summaryClass =
   "inline-flex cursor-pointer list-none items-center rounded-sm text-muted underline decoration-dotted decoration-1 underline-offset-4 transition-colors duration-200 group-open:decoration-solid hover:text-text-secondary hover:decoration-solid focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--orbix-focus)] motion-reduce:transition-none [&::-webkit-details-marker]:hidden";
 
 /**
- * The per-row trigger repeats under every row label, so at rest it is
- * faint 12px text with no underline; the underline and muted ink come on
- * hover, focus and while open. The focus ring stays.
+ * The per-row trigger is the row label itself, so nothing extra repeats
+ * down the column: the label's usual type with a dotted underline that
+ * turns solid on hover, focus and while open. The focus ring stays.
  */
 const rowSummaryClass =
-  "inline-flex min-h-6 cursor-pointer list-none items-center rounded-sm text-xs text-[var(--ink-faint)] decoration-1 underline-offset-4 transition-colors duration-200 group-open:text-muted group-open:underline hover:text-muted hover:underline focus-visible:text-muted focus-visible:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--orbix-focus)] motion-reduce:transition-none [&::-webkit-details-marker]:hidden";
+  "inline-flex min-h-6 cursor-pointer list-none items-center rounded-sm text-sm font-medium text-muted underline decoration-[var(--orbix-border-control)] decoration-dotted decoration-1 underline-offset-4 transition-colors duration-200 group-open:text-foreground group-open:decoration-solid hover:text-foreground hover:decoration-solid focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--orbix-focus)] motion-reduce:transition-none [&::-webkit-details-marker]:hidden";
 
 function LabLinks({ education }: { education: RowEducationEntry }) {
   return education.labLinks && education.labLinks.length > 0 ? (
@@ -43,19 +43,17 @@ function LabLinks({ education }: { education: RowEducationEntry }) {
 interface ComparisonRowEducationProps {
   category: ComparisonCategory;
   className?: string;
-  /** The row label, added to the summary's accessible name. */
+  /** The row label, shown as the summary. */
   label: string;
   rowId: string;
 }
 
 /**
- * Collapsed "About this row" (what this measures) note in a row header,
- * from 48rem. The visible name says what it opens, so it never reads as an
- * orphan word under the row label.
- * The explanation is general aerospace context, never an ORBIX-computed
+ * A row label that opens its "what this measures" note, from 48rem. The
+ * explanation is general aerospace context, never an ORBIX-computed
  * result, and stays collapsed by default so it never buries the published
- * values. The trigger is quiet faint text (see `rowSummaryClass`), since it
- * repeats under every row label in the column.
+ * values. Renders nothing when the row has no note; the caller then sets
+ * the label as plain text.
  */
 export function ComparisonRowEducation({
   category,
@@ -74,11 +72,10 @@ export function ComparisonRowEducation({
         className,
       )}
     >
-      {/* The accessible name starts with the visible word (WCAG 2.5.3); the
-          hidden words name the row, since the summary repeats on every row. */}
+      {/* The accessible name starts with the visible label (WCAG 2.5.3). */}
       <summary className={rowSummaryClass}>
-        About this row
-        <span className="sr-only">, {label}: what this measures</span>
+        {label}
+        <span className="sr-only">: what this measures</span>
       </summary>
       <div className="mt-1.5 mb-1 max-w-[34ch] space-y-2">
         <p className="leading-5 text-text-secondary">{education.explanation}</p>

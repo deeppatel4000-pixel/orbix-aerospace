@@ -1,7 +1,7 @@
 import type { LearningArea, LearnReference } from "@/features/learn/types";
 
 /**
- * Six reading pathways. Every string is general, textbook-level aerospace
+ * Reading pathways. Every string is general, textbook-level aerospace
  * theory: no vehicle specification, telemetry, or computed mission result is
  * stated in this module. Numbers are only calculated behind the `labAnchors`
  * links, inside the Engineering Lab.
@@ -23,7 +23,7 @@ const naca1135: LearnReference = {
   title: "Equations, Tables, and Charts for Compressible Flow",
 };
 
-const learningAreas: readonly LearningArea[] = [
+const allLearningAreas: readonly LearningArea[] = [
   {
     explorationLinks: [
       {
@@ -68,7 +68,7 @@ const learningAreas: readonly LearningArea[] = [
           { meaning: "Wing reference area", symbol: "S", unit: "m²" },
           { meaning: "Lift coefficient", symbol: "C_L" },
         ],
-        text: "Lift equals dynamic pressure times the wing reference area S times the lift coefficient C_L. Dynamic pressure is ½ ρ V², where ρ is air density and V is true airspeed.",
+        text: "Lift is dynamic pressure, ½ ρ V², times the wing's reference area and its lift coefficient.",
       },
       {
         equation: "D = ½ · ρ · V² · S · C_D",
@@ -82,7 +82,7 @@ const learningAreas: readonly LearningArea[] = [
           { meaning: "Wing reference area", symbol: "S", unit: "m²" },
           { meaning: "Drag coefficient", symbol: "C_D" },
         ],
-        text: "Drag has the same form with the drag coefficient C_D, which accounts for skin friction, pressure drag and the drag that comes with producing lift.",
+        text: "Drag has the same form. Its coefficient C_D covers skin friction, pressure drag and the drag that comes with producing lift.",
       },
       {
         text: "In steady, level, unaccelerated flight, lift equals weight and thrust equals drag.",
@@ -100,14 +100,14 @@ const learningAreas: readonly LearningArea[] = [
       { anchorId: "drag-equation", label: "Drag equation" },
       {
         anchorId: "flight-condition-analyzer",
-        label: "Flight condition analyzer",
+        label: "Flight condition",
       },
     ],
     summary:
       "An aircraft in flight is acted on by four forces: lift, weight, thrust and drag. Lift and drag come from the pressure and friction of air moving over the vehicle. Both grow in proportion to air density and to the square of airspeed. Air density falls with altitude, so the same wing at the same speed produces less lift higher up.",
     title: "Aerodynamics and flight fundamentals",
     whyItMatters:
-      "These relationships set a winged vehicle's flight envelope: the minimum speed for level flight, the thrust needed to overcome drag, and how both change with altitude. Wing sizing and cruise altitude selection start from them.",
+      "These relationships set a winged vehicle's flight envelope: the minimum speed for level flight, the thrust needed to overcome drag, and how both change with altitude. Sizing a wing and choosing a cruise altitude both start from them.",
   },
   {
     explorationLinks: [
@@ -137,14 +137,14 @@ const learningAreas: readonly LearningArea[] = [
     id: "propulsion-vehicle-performance",
     keyIdeas: [
       {
-        equation: "T / W",
-        equationLabel: "Thrust-to-weight ratio",
-        spokenAs: "T over W",
+        equation: "T / W > 1",
+        equationLabel: "Thrust-to-weight ratio for vertical liftoff",
+        spokenAs: "T over W is greater than 1",
         variables: [
           { meaning: "Thrust", symbol: "T", unit: "N" },
           { meaning: "Weight", symbol: "W", unit: "N" },
         ],
-        text: "Thrust-to-weight ratio is thrust divided by weight. A rocket needs a ratio above 1 at liftoff to rise vertically. An aircraft can fly with a ratio below 1 because its wings, not its engines, carry its weight.",
+        text: "A rocket needs a thrust-to-weight ratio above 1 at liftoff to rise vertically. An aircraft can fly with a ratio below 1 because its wings carry its weight.",
       },
       {
         equation: "Δv = v_e · ln(m_0 / m_f)",
@@ -160,7 +160,7 @@ const learningAreas: readonly LearningArea[] = [
           { meaning: "Mass at ignition", symbol: "m_0", unit: "kg" },
           { meaning: "Mass at burnout", symbol: "m_f", unit: "kg" },
         ],
-        text: "The ideal rocket equation gives the velocity change of a stage from its effective exhaust velocity v_e and its mass ratio: mass at ignition m_0 over mass at burnout m_f.",
+        text: "In the ideal case, a stage's velocity change comes from two numbers: its effective exhaust velocity and its mass ratio, the mass at ignition over the mass at burnout.",
       },
       {
         equation: "v_e = I_sp · g_0",
@@ -175,7 +175,7 @@ const learningAreas: readonly LearningArea[] = [
             unit: "m/s²",
           },
         ],
-        text: "Specific impulse I_sp is effective exhaust velocity divided by standard gravity g_0, quoted in seconds. A higher value gives more velocity change from the same propellant mass.",
+        text: "Specific impulse is quoted in seconds. A higher value gives more velocity change from the same propellant mass.",
       },
       {
         text: "Because the mass ratio sits inside a logarithm, each additional unit of velocity costs more propellant than the last. Staging discards empty tanks and engines so each later stage starts with a better mass ratio.",
@@ -192,7 +192,7 @@ const learningAreas: readonly LearningArea[] = [
       "A vehicle accelerates when its thrust exceeds the forces resisting it. For a rocket, the ideal rocket equation links the velocity change a stage can deliver to two quantities: the exhaust velocity of its engines and the ratio of its mass before and after the burn.",
     title: "Propulsion and vehicle performance",
     whyItMatters:
-      "Thrust-to-weight ratio decides whether a rocket can leave the pad and how quickly an aircraft can climb. The rocket equation explains staging: dropping empty structure lets the remaining stages reach a higher velocity.",
+      "Thrust-to-weight ratio affects how quickly an aircraft can climb. Most of a launch vehicle's mass at liftoff is propellant, which is why rocket designs push for high exhaust velocity and drop empty stages on the way up.",
   },
   {
     explorationLinks: [
@@ -245,7 +245,7 @@ const learningAreas: readonly LearningArea[] = [
           { meaning: "Specific gas constant", symbol: "R", unit: "J/(kg K)" },
           { meaning: "Static temperature", symbol: "T", unit: "K" },
         ],
-        text: "Mach number is flow speed divided by the local speed of sound. The speed of sound depends on temperature T, the ratio of specific heats γ and the gas constant R.",
+        text: "The speed of sound depends on the air's temperature, so the same flight speed gives a different Mach number in colder or warmer air.",
       },
       {
         text: "Changes in air density are usually ignored below about Mach 0.3. Above that, the compressible flow relations are needed.",
@@ -263,27 +263,19 @@ const learningAreas: readonly LearningArea[] = [
     labAnchors: [
       {
         anchorId: "stagnation-condition-analyzer",
-        label: "Stagnation condition analyzer",
+        label: "Stagnation condition",
       },
       {
         anchorId: "shock-condition-analyzer",
-        label: "Normal shock analyzer",
+        label: "Normal shock",
       },
       {
         anchorId: "oblique-shock-condition-analyzer",
-        label: "Oblique shock analyzer",
-      },
-      {
-        anchorId: "shock-pressure-loss-analyzer",
-        label: "Shock pressure loss analyzer",
-      },
-      {
-        anchorId: "multi-shock-recovery-analyzer",
-        label: "Multi-shock recovery analyzer",
+        label: "Oblique shock",
       },
       {
         anchorId: "inlet-compression-analyzer",
-        label: "Supersonic inlet compression analyzer",
+        label: "Supersonic inlet compression",
       },
     ],
     summary:
@@ -401,9 +393,9 @@ const learningAreas: readonly LearningArea[] = [
     explorationLinks: [
       {
         description:
-          "Launch vehicles compared side by side on their published specifications.",
-        href: "/compare?category=rockets",
-        label: "Compare launch vehicles",
+          "The lab's Hohmann transfer function, run on a published worked example and compared with its printed burns.",
+        href: "/verification#case-hohmann-leo-geo",
+        label: "Hohmann transfer checked against a published example",
       },
     ],
     furtherReading: [
@@ -440,7 +432,7 @@ const learningAreas: readonly LearningArea[] = [
             unit: "m",
           },
         ],
-        text: "Circular orbital speed falls as orbit radius r grows. μ is the gravitational parameter of the central body.",
+        text: "The larger the orbit, the slower a spacecraft in it moves.",
       },
       {
         text: "A Hohmann transfer moves between two circular, coplanar orbits with two burns: one to enter an elliptical transfer orbit, and one to circularise at the far end. For most pairs of orbits it is the two-burn transfer with the lowest delta-v.",
@@ -454,28 +446,22 @@ const learningAreas: readonly LearningArea[] = [
           { meaning: "Orbital speed at the burn", symbol: "v", unit: "m/s" },
           { meaning: "Change in orbit plane angle", symbol: "Δi" },
         ],
-        text: "Changing the orbit plane by an angle Δi at speed v costs this much delta-v. Because the cost grows with speed, plane changes are cheapest where the spacecraft moves slowest, such as at apoapsis.",
+        text: "The cost of tilting the orbit grows with speed, so plane changes are cheapest where the spacecraft moves slowest, such as at apoapsis.",
       },
       {
         text: "Burns can be combined. A plane change made during a transfer burn usually costs less than the two made separately.",
-      },
-      {
-        text: "These models assume instantaneous burns and ignore perturbations such as atmospheric drag and the Earth's oblateness.",
       },
     ],
     labAnchors: [
       {
         anchorId: "hohmann-transfer-analyzer",
-        label: "Hohmann transfer analyzer",
+        label: "Hohmann transfer",
       },
       {
         anchorId: "orbital-plane-change-analyzer",
-        label: "Orbital plane change analyzer",
+        label: "Orbital plane change",
       },
-      {
-        anchorId: "mission-profile-analyzer",
-        label: "Mission profile analyzer",
-      },
+      { anchorId: "mission-planner", label: "Mission planner" },
     ],
     summary:
       "A spacecraft changes orbit by firing its engines to change its velocity. The total velocity change a mission needs, its delta-v budget, is the main measure of how demanding the mission is, because the rocket equation converts it directly into propellant mass.",
@@ -487,8 +473,8 @@ const learningAreas: readonly LearningArea[] = [
     explorationLinks: [
       {
         description: "How ORBIX itself is structured and checked.",
-        href: "/showcase",
-        label: "Inside ORBIX",
+        href: "/build-log#structure",
+        label: "How ORBIX is organised",
       },
     ],
     furtherReading: [
@@ -532,6 +518,24 @@ const learningAreas: readonly LearningArea[] = [
   },
 ];
 
+/**
+ * Pathways kept in the data but not shown on /learn (v4 plan sections 3
+ * and 8). Entry and thermal protection waits for the lab's entry tools,
+ * which are deferred because their atmosphere stops at 11 km; mission
+ * operations waits for the mission tools it links to. Check every
+ * `labAnchors` entry against the lab before showing either again.
+ */
+export const DEFERRED_PATHWAY_IDS: ReadonlySet<string> = new Set([
+  "atmospheric-entry-thermal-protection",
+  "mission-operations-engineering-communication",
+]);
+
+/** The pathways shown on /learn, in page order. */
 export function listLearningAreas(): readonly LearningArea[] {
-  return learningAreas;
+  return allLearningAreas.filter((area) => !DEFERRED_PATHWAY_IDS.has(area.id));
+}
+
+/** The deferred pathways, kept for when their lab tools return. */
+export function listDeferredLearningAreas(): readonly LearningArea[] {
+  return allLearningAreas.filter((area) => DEFERRED_PATHWAY_IDS.has(area.id));
 }

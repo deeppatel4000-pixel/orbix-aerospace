@@ -27,22 +27,30 @@ import {
   EQ_PAREN,
   LabEquation,
 } from "@/features/engineering-lab/components/shared";
+import { HohmannTransferFigure } from "@/features/engineering-lab/components/hohmann-transfer-figure";
+import {
+  burnDecimals,
+  formatAltitudeKm,
+  formatDuration,
+  formatSpeed,
+} from "@/features/orbits/transfer-model";
 import type {
   HohmannTransferAnalysisInputs,
   HohmannTransferAnalysisResult,
 } from "@/features/engineering-lab/types";
 
 type HohmannTransferField =
-  | "initialAltitudeMetres"
-  | "finalAltitudeMetres"
+  | "initialAltitudeKm"
+  | "finalAltitudeKm"
   | "gravitationalParameter"
-  | "planetRadiusMetres";
+  | "planetRadiusKm";
 
+/** Altitudes and the planet radius are entered in km, as on the rest of the page. */
 interface HohmannTransferFormValues {
-  readonly finalAltitudeMetres: string;
+  readonly finalAltitudeKm: string;
   readonly gravitationalParameter: string;
-  readonly initialAltitudeMetres: string;
-  readonly planetRadiusMetres: string;
+  readonly initialAltitudeKm: string;
+  readonly planetRadiusKm: string;
 }
 
 type HohmannTransferValidationErrors = Readonly<
@@ -55,25 +63,41 @@ interface HohmannTransferViewState {
 }
 
 const initialFormValues: HohmannTransferFormValues = {
-  finalAltitudeMetres: "35786000",
+  finalAltitudeKm: "35786",
   gravitationalParameter: "",
-  initialAltitudeMetres: "400000",
-  planetRadiusMetres: "",
+  initialAltitudeKm: "400",
+  planetRadiusKm: "",
 };
 
-const distanceFormatter = new Intl.NumberFormat("en-US", {
-  maximumFractionDigits: 2,
-});
+/** Speeds as the Transfer Explorer shows them; distances in whole km. */
+function formatVelocity(metresPerSecond: number): string {
+  return formatSpeed(metresPerSecond, burnDecimals(metresPerSecond));
+}
 
-const velocityFormatter = new Intl.NumberFormat("en-US", {
-  maximumFractionDigits: 3,
-  minimumFractionDigits: 3,
-});
+/**
+ * Both burns and the total share one decimals value, and the total is the
+ * sum of the burns as shown, so the shown numbers always add up.
+ */
+export function transferDeltaVReadouts(
+  transfer: HohmannTransferAnalysisResult["transfer"],
+): { readonly first: string; readonly second: string; readonly total: string } {
+  const decimals = Math.max(
+    burnDecimals(transfer.firstBurnDeltaVMetresPerSecond),
+    burnDecimals(transfer.secondBurnDeltaVMetresPerSecond),
+  ) as 0 | 1;
+  const shown = (value: number) => Number(value.toFixed(decimals));
+  const first = shown(transfer.firstBurnDeltaVMetresPerSecond);
+  const second = shown(transfer.secondBurnDeltaVMetresPerSecond);
+  return {
+    first: formatSpeed(first, decimals),
+    second: formatSpeed(second, decimals),
+    total: formatSpeed(first + second, decimals),
+  };
+}
 
-const timeFormatter = new Intl.NumberFormat("en-US", {
-  maximumFractionDigits: 3,
-  minimumFractionDigits: 3,
-});
+function formatKm(metres: number): string {
+  return formatAltitudeKm(metres);
+}
 
 function parseRequiredNumber(value: string): number {
   return value.trim() === "" ? Number.NaN : Number(value);
@@ -87,21 +111,22 @@ function buildAnalysisInputs(
       ? undefined
       : Number(values.gravitationalParameter);
   const planetRadiusMetres =
-    values.planetRadiusMetres.trim() === ""
+    values.planetRadiusKm.trim() === ""
       ? undefined
-      : Number(values.planetRadiusMetres);
+      : Number(values.planetRadiusKm) * 1_000;
 
   return {
     ...(gravitationalParameter === undefined ? {} : { gravitationalParameter }),
     ...(planetRadiusMetres === undefined ? {} : { planetRadiusMetres }),
-    finalAltitudeMetres: parseRequiredNumber(values.finalAltitudeMetres),
-    initialAltitudeMetres: parseRequiredNumber(values.initialAltitudeMetres),
+    finalAltitudeMetres: parseRequiredNumber(values.finalAltitudeKm) * 1_000,
+    initialAltitudeMetres:
+      parseRequiredNumber(values.initialAltitudeKm) * 1_000,
   };
 }
 
 function locateAltitudeError(
   inputs: HohmannTransferAnalysisInputs,
-): "initialAltitudeMetres" | "finalAltitudeMetres" {
+): "initialAltitudeKm" | "finalAltitudeKm" {
   try {
     analyzeHohmannTransfer({ ...inputs, finalAltitudeMetres: 0 });
   } catch (error) {
@@ -109,11 +134,11 @@ function locateAltitudeError(
       error instanceof RangeError &&
       error.message.toLowerCase().includes("altitude")
     ) {
-      return "initialAltitudeMetres";
+      return "initialAltitudeKm";
     }
   }
 
-  return "finalAltitudeMetres";
+  return "finalAltitudeKm";
 }
 
 function deriveViewState(
@@ -130,8 +155,8 @@ function deriveViewState(
     const errors: Partial<Record<HohmannTransferField | "form", string>> = {};
 
     if (normalizedMessage.includes("initial and final orbit radii")) {
-      errors.initialAltitudeMetres = error.message;
-      errors.finalAltitudeMetres = error.message;
+      errors.initialAltitudeKm = error.message;
+      errors.finalAltitudeKm = error.message;
     } else if (normalizedMessage.includes("altitude")) {
       errors[locateAltitudeError(inputs)] = error.message;
     }
@@ -141,7 +166,7 @@ function deriveViewState(
     }
 
     if (normalizedMessage.includes("planet radius")) {
-      errors.planetRadiusMetres = error.message;
+      errors.planetRadiusKm = error.message;
     }
 
     if (Object.keys(errors).length === 0) {
@@ -294,17 +319,13 @@ export function HohmannTransferAnalyzer() {
   const [values, setValues] =
     useState<HohmannTransferFormValues>(initialFormValues);
   const { errors, result } = useMemo(() => deriveViewState(values), [values]);
+  const deltaV = result ? transferDeltaVReadouts(result.transfer) : null;
   const initialOrbitOutputIds =
-    "hohmann-transfer-initialAltitudeMetres hohmann-transfer-gravitationalParameter hohmann-transfer-planetRadiusMetres";
+    "hohmann-transfer-initialAltitudeKm hohmann-transfer-gravitationalParameter hohmann-transfer-planetRadiusKm";
   const finalOrbitOutputIds =
-    "hohmann-transfer-finalAltitudeMetres hohmann-transfer-gravitationalParameter hohmann-transfer-planetRadiusMetres";
+    "hohmann-transfer-finalAltitudeKm hohmann-transfer-gravitationalParameter hohmann-transfer-planetRadiusKm";
   const transferOutputIds =
-    "hohmann-transfer-initialAltitudeMetres hohmann-transfer-finalAltitudeMetres hohmann-transfer-gravitationalParameter hohmann-transfer-planetRadiusMetres";
-  const transferDirection = result
-    ? result.finalOrbit.altitudeMetres > result.initialOrbit.altitudeMetres
-      ? "Orbit raising"
-      : "Orbit lowering"
-    : null;
+    "hohmann-transfer-initialAltitudeKm hohmann-transfer-finalAltitudeKm hohmann-transfer-gravitationalParameter hohmann-transfer-planetRadiusKm";
 
   function updateValue(field: HohmannTransferField, value: string) {
     setValues((current) => ({ ...current, [field]: value }));
@@ -332,14 +353,14 @@ export function HohmannTransferAnalyzer() {
               <legend className={LAB_GROUP_LEGEND}>Initial orbit</legend>
               <div className="mt-4 @min-[36rem]/col:w-[calc(50%-0.625rem)]">
                 <CalculatorNumberField
-                  error={errors.initialAltitudeMetres}
-                  field="initialAltitudeMetres"
+                  error={errors.initialAltitudeKm}
+                  field="initialAltitudeKm"
                   hint="Altitude above the modeled central body's reference radius."
                   idPrefix="hohmann-transfer"
                   label="Initial altitude"
                   onChange={updateValue}
-                  unit="m"
-                  value={values.initialAltitudeMetres}
+                  unit="km"
+                  value={values.initialAltitudeKm}
                 />
               </div>
             </fieldset>
@@ -348,14 +369,14 @@ export function HohmannTransferAnalyzer() {
               <legend className={LAB_GROUP_LEGEND}>Final orbit</legend>
               <div className="mt-4 @min-[36rem]/col:w-[calc(50%-0.625rem)]">
                 <CalculatorNumberField
-                  error={errors.finalAltitudeMetres}
-                  field="finalAltitudeMetres"
+                  error={errors.finalAltitudeKm}
+                  field="finalAltitudeKm"
                   hint="Target circular-orbit altitude above the same reference radius."
                   idPrefix="hohmann-transfer"
                   label="Final altitude"
                   onChange={updateValue}
-                  unit="m"
-                  value={values.finalAltitudeMetres}
+                  unit="km"
+                  value={values.finalAltitudeKm}
                 />
               </div>
             </fieldset>
@@ -377,25 +398,25 @@ export function HohmannTransferAnalyzer() {
                   value={values.gravitationalParameter}
                 />
                 <CalculatorNumberField
-                  error={errors.planetRadiusMetres}
-                  field="planetRadiusMetres"
+                  error={errors.planetRadiusKm}
+                  field="planetRadiusKm"
                   hint="Optional. Leave blank to use Earth's mean radius."
                   idPrefix="hohmann-transfer"
                   label="Planet radius (optional)"
                   optional
                   onChange={updateValue}
-                  unit="m"
-                  value={values.planetRadiusMetres}
+                  unit="km"
+                  value={values.planetRadiusKm}
                 />
               </div>
             </fieldset>
 
             <ValidationErrorSummary
               errors={[
-                errors.initialAltitudeMetres,
-                errors.finalAltitudeMetres,
+                errors.initialAltitudeKm,
+                errors.finalAltitudeKm,
                 errors.gravitationalParameter,
-                errors.planetRadiusMetres,
+                errors.planetRadiusKm,
                 errors.form,
               ]}
             />
@@ -416,6 +437,16 @@ export function HohmannTransferAnalyzer() {
         </div>
 
         <div className="@container/col min-w-0 space-y-5">
+          {result ? (
+            <HohmannTransferFigure
+              customConstants={
+                values.gravitationalParameter.trim() !== "" ||
+                values.planetRadiusKm.trim() !== ""
+              }
+              finalAltitudeMetres={result.finalOrbit.altitudeMetres}
+              initialAltitudeMetres={result.initialOrbit.altitudeMetres}
+            />
+          ) : null}
           <CalculatorResultSection
             id="hohmann-transfer-result"
             title="Hohmann transfer solution"
@@ -432,11 +463,7 @@ export function HohmannTransferAnalyzer() {
                         className="orbix-readout-lg"
                         htmlFor={transferOutputIds}
                       >
-                        <LabFigure unit="m/s">
-                          {velocityFormatter.format(
-                            result.transfer.totalDeltaVMetresPerSecond,
-                          )}
-                        </LabFigure>
+                        <LabFigure unit="m/s">{deltaV?.total}</LabFigure>
                       </output>
                     </dd>
                   </div>
@@ -447,8 +474,8 @@ export function HohmannTransferAnalyzer() {
                         className="orbix-data"
                         htmlFor={transferOutputIds}
                       >
-                        <LabFigure unit="m">
-                          {distanceFormatter.format(
+                        <LabFigure unit="km">
+                          {formatKm(
                             result.transfer.transferSemiMajorAxisMetres,
                           )}
                         </LabFigure>
@@ -464,11 +491,7 @@ export function HohmannTransferAnalyzer() {
                         className="orbix-data"
                         htmlFor={transferOutputIds}
                       >
-                        <LabFigure unit="m/s">
-                          {velocityFormatter.format(
-                            result.transfer.firstBurnDeltaVMetresPerSecond,
-                          )}
-                        </LabFigure>
+                        <LabFigure unit="m/s">{deltaV?.first}</LabFigure>
                       </output>
                     </dd>
                   </div>
@@ -481,11 +504,7 @@ export function HohmannTransferAnalyzer() {
                         className="orbix-data"
                         htmlFor={transferOutputIds}
                       >
-                        <LabFigure unit="m/s">
-                          {velocityFormatter.format(
-                            result.transfer.secondBurnDeltaVMetresPerSecond,
-                          )}
-                        </LabFigure>
+                        <LabFigure unit="m/s">{deltaV?.second}</LabFigure>
                       </output>
                     </dd>
                   </div>
@@ -496,20 +515,8 @@ export function HohmannTransferAnalyzer() {
                         className="orbix-data"
                         htmlFor={transferOutputIds}
                       >
-                        <LabFigure unit="h">
-                          {timeFormatter.format(
-                            result.transfer.transferTimeHours,
-                          )}
-                        </LabFigure>
-                      </output>
-                      <output
-                        className="lab-figure-note"
-                        htmlFor={transferOutputIds}
-                      >
-                        <LabFigure unit="s">
-                          {timeFormatter.format(
-                            result.transfer.transferTimeSeconds,
-                          )}
+                        <LabFigure>
+                          {formatDuration(result.transfer.transferTimeSeconds)}
                         </LabFigure>
                       </output>
                     </dd>
@@ -524,10 +531,8 @@ export function HohmannTransferAnalyzer() {
                         className="orbix-data"
                         htmlFor={initialOrbitOutputIds}
                       >
-                        <LabFigure unit="m">
-                          {distanceFormatter.format(
-                            result.initialOrbit.altitudeMetres,
-                          )}
+                        <LabFigure unit="km">
+                          {formatKm(result.initialOrbit.altitudeMetres)}
                         </LabFigure>
                       </output>
                     </dd>
@@ -539,10 +544,8 @@ export function HohmannTransferAnalyzer() {
                         className="orbix-data"
                         htmlFor={initialOrbitOutputIds}
                       >
-                        <LabFigure unit="m">
-                          {distanceFormatter.format(
-                            result.initialOrbit.orbitalRadiusMetres,
-                          )}
+                        <LabFigure unit="km">
+                          {formatKm(result.initialOrbit.orbitalRadiusMetres)}
                         </LabFigure>
                       </output>
                     </dd>
@@ -555,7 +558,7 @@ export function HohmannTransferAnalyzer() {
                         htmlFor={initialOrbitOutputIds}
                       >
                         <LabFigure unit="m/s">
-                          {velocityFormatter.format(
+                          {formatVelocity(
                             result.initialOrbit.circularVelocityMetresPerSecond,
                           )}
                         </LabFigure>
@@ -572,10 +575,8 @@ export function HohmannTransferAnalyzer() {
                         className="orbix-data"
                         htmlFor={finalOrbitOutputIds}
                       >
-                        <LabFigure unit="m">
-                          {distanceFormatter.format(
-                            result.finalOrbit.altitudeMetres,
-                          )}
+                        <LabFigure unit="km">
+                          {formatKm(result.finalOrbit.altitudeMetres)}
                         </LabFigure>
                       </output>
                     </dd>
@@ -587,10 +588,8 @@ export function HohmannTransferAnalyzer() {
                         className="orbix-data"
                         htmlFor={finalOrbitOutputIds}
                       >
-                        <LabFigure unit="m">
-                          {distanceFormatter.format(
-                            result.finalOrbit.orbitalRadiusMetres,
-                          )}
+                        <LabFigure unit="km">
+                          {formatKm(result.finalOrbit.orbitalRadiusMetres)}
                         </LabFigure>
                       </output>
                     </dd>
@@ -603,7 +602,7 @@ export function HohmannTransferAnalyzer() {
                         htmlFor={finalOrbitOutputIds}
                       >
                         <LabFigure unit="m/s">
-                          {velocityFormatter.format(
+                          {formatVelocity(
                             result.finalOrbit.circularVelocityMetresPerSecond,
                           )}
                         </LabFigure>
@@ -616,52 +615,6 @@ export function HohmannTransferAnalyzer() {
               <NotCalculated invalid={Object.values(errors).some(Boolean)}>
                 Enter two valid, different circular-orbit altitudes to resolve
                 the ideal transfer.
-              </NotCalculated>
-            )}
-          </CalculatorResultSection>
-
-          <CalculatorResultSection
-            id="hohmann-transfer-mission-summary"
-            title="Mission summary"
-          >
-            {result && transferDirection ? (
-              <>
-                <ReadoutGrid columns={1}>
-                  <div>
-                    <dt className="orbix-label">Transfer classification</dt>
-                    <dd>
-                      <output
-                        className="lab-value-text"
-                        htmlFor="hohmann-transfer-initialAltitudeMetres hohmann-transfer-finalAltitudeMetres"
-                      >
-                        {transferDirection}
-                      </output>
-                    </dd>
-                  </div>
-                </ReadoutGrid>
-                <div className="lab-result-prose">
-                  <h4 className="text-sm font-semibold">
-                    Delta-v interpretation
-                  </h4>
-                  <p className="mt-2 text-sm leading-6 text-muted">
-                    Total Δv is the ideal velocity-change budget across both
-                    impulses. It does not include finite-burn, launch, drag, or
-                    operational correction losses.
-                  </p>
-                </div>
-                <div className="lab-result-prose">
-                  <h4 className="text-sm font-semibold">Transfer character</h4>
-                  <p className="mt-2 text-sm leading-6 text-muted">
-                    The spacecraft coasts along half of an ideal transfer
-                    ellipse between the two circular orbits before the second
-                    impulse.
-                  </p>
-                </div>
-              </>
-            ) : (
-              <NotCalculated>
-                A valid solution will classify the transfer and summarize its
-                ideal mission-level meaning.
               </NotCalculated>
             )}
           </CalculatorResultSection>
@@ -679,26 +632,16 @@ export function HohmannTransferAnalyzer() {
               Two impulses, one transfer ellipse
             </h3>
             <p className="mt-3 text-sm leading-6 text-muted">
-              A Hohmann transfer uses one ideal burn to enter an elliptical
-              transfer orbit and a second burn to circularize at the
-              destination. It is the classical minimum-energy two-impulse
-              transfer between two circular, coplanar orbits.
+              The first burn puts the craft on an ellipse that touches both
+              orbits. It coasts half way round, and the second burn makes the
+              orbit circular at the new height. Total delta-v leaves out launch,
+              drag, finite burns and course corrections.
             </p>
           </section>
-          <aside className="orbix-lab-note">
-            <p className="orbix-lab-note__title font-medium">
-              Modeling assumptions
-            </p>
-            <ul className="mt-4 grid list-disc gap-2 pl-5 text-sm leading-6 text-muted @min-[36rem]/col:grid-cols-2">
-              <li>Two-body gravity model</li>
-              <li>Circular initial and final orbits</li>
-              <li>Instantaneous impulsive burns</li>
-              <li>Coplanar orbit assumption</li>
-              <li>No atmospheric drag</li>
-              <li>No gravity assists</li>
-              <li>No launch losses</li>
-            </ul>
-          </aside>
+          <p className="text-sm leading-6 text-muted">
+            Assumes two-body gravity, circular orbits in one plane, instant
+            burns, no drag and no gravity assists.
+          </p>
         </div>
       </div>
     </LabToolLayout>

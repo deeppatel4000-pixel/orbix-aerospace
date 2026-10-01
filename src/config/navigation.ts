@@ -1,21 +1,28 @@
+/**
+ * Header navigation (v4 plan section 3): five links, in this order. The
+ * wordmark links home, so Home is not listed.
+ */
 export const navigationItems = [
-  { href: "/", label: "Home" },
+  { href: "/engineering-lab", label: "Engineering Lab" },
+  { href: "/verification", label: "Verification" },
   { href: "/aircraft", label: "Aircraft" },
   { href: "/rockets", label: "Rockets" },
-  { href: "/compare", label: "Compare" },
-  { href: "/engineering-lab", label: "Engineering Lab" },
-  { href: "/showcase", label: "Showcase" },
-  { href: "/learn", label: "Learn" },
+  { href: "/build-log", label: "How I built it" },
 ] as const;
 
 /**
- * Footer "About" group (spec 10, 14). The pages are built by the imagery
- * and legal task.
+ * Footer site links (v4 plan section 3). The mobile menu shows the same
+ * group under the header links.
  */
-export const legalNavigationItems = [
+export const footerNavigationItems = [
+  { href: "/compare", label: "Compare" },
+  { href: "/learn", label: "Learn" },
   { href: "/about", label: "About" },
-  { href: "/build-log", label: "How I built ORBIX" },
   { href: "/credits", label: "Image credits" },
+] as const;
+
+/** Footer legal pages. */
+export const legalNavigationItems = [
   { href: "/privacy", label: "Privacy" },
   { href: "/terms", label: "Terms" },
   { href: "/cookies", label: "Cookies" },

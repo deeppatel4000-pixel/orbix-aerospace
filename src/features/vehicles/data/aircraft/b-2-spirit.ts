@@ -25,14 +25,14 @@ export const b2Spirit = {
       id: "b-2-flying-wing-placeholder",
       status: "reviewed",
       summary:
-        "The B-2 combines the aerodynamic efficiency of a flying wing with shaping chosen for low observability. Integrating lift, payload volume and stealth into one broad airframe reduces the distinction between aerodynamic and signature design decisions.",
+        "The B-2 is a flying wing shaped for low observability. Lift, payload volume and stealth all come from one broad airframe, so its aerodynamic and signature design decisions overlap.",
       topic: "aerodynamics",
     },
     {
       id: "b-2-systems-placeholder",
       status: "reviewed",
       summary:
-        "B-2 survivability is produced by the whole airframe: flying-wing geometry, composite materials, special coatings and reduced infrared, acoustic, electromagnetic and radar signatures. Even surface-condition maintenance is therefore part of preserving mission performance.",
+        "The whole airframe contributes to B-2 survivability: the flying-wing shape, composite materials, special coatings, and reduced infrared, acoustic, electromagnetic and radar signatures. Keeping the surface in good condition is part of keeping that performance.",
       topic: "systems-engineering",
     },
   ],

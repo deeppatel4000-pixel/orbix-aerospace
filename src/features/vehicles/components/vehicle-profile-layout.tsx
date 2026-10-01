@@ -7,6 +7,11 @@ import { ProfileSectionNav, type ProfileNavItem } from "./profile-section-nav";
 interface VehicleProfileLayoutProps {
   /** The profile sections, in reading order. */
   children: ReactNode;
+  /**
+   * The photographs, after the sections: from 64rem they run the full
+   * container width, past the "On this page" column.
+   */
+  gallery?: ReactNode;
   /** The profile hero. */
   hero: ReactNode;
   navigation: readonly ProfileNavItem[];
@@ -17,11 +22,14 @@ interface VehicleProfileLayoutProps {
 /**
  * The profile template (spec 9, 11): the photo hero, then from 64rem a
  * plain "On this page" list in its own left column, sticky beside the
- * sections so it never covers them, and the sections to its right. Below
- * 64rem the list sits once above the sections and does not stick.
+ * sections so it never covers them, and the sections to its right. The
+ * gallery then takes the full width and the related vehicles return to
+ * the sections' column. Below 64rem everything is one column, with the
+ * list once above the sections, not sticky.
  */
 export function VehicleProfileLayout({
   children,
+  gallery,
   hero,
   navigation,
   related,
@@ -38,8 +46,13 @@ export function VehicleProfileLayout({
           <div className="lg:[&>section:first-child]:border-t-0">
             {children}
           </div>
-          {related}
         </div>
+        {gallery ? (
+          <div className="min-w-0 lg:col-span-12">{gallery}</div>
+        ) : null}
+        {related ? (
+          <div className="min-w-0 lg:col-span-9 lg:col-start-4">{related}</div>
+        ) : null}
       </Container>
     </article>
   );

@@ -62,11 +62,15 @@ describe("legal pages", () => {
     });
   }
 
-  it("names the real local storage key on the privacy and cookies pages", () => {
+  it("says ORBIX stores nothing in the browser, with no removed tool named", () => {
+    // No shipped page writes to browser storage (the scenario library is not
+    // rendered), so neither page may describe saving or a storage key.
     for (const page of [<PrivacyPage key="p" />, <CookiesPage key="c" />]) {
-      // The key is set with break points after its dots; compare its text.
       const text = renderToStaticMarkup(page).replace(/<[^>]+>/g, "");
-      expect(text).toContain("orbix.mission-scenarios.v1");
+      expect(text).toMatch(/ORBIX (does not use it|does not write to)/);
+      expect(text).not.toContain("orbix.mission-scenarios.v1");
+      expect(text).not.toContain("Scenario Library");
+      expect(text).not.toContain("#scenario-library");
     }
   });
 
@@ -74,7 +78,7 @@ describe("legal pages", () => {
     const markup = renderToStaticMarkup(<AboutPage />);
     expect(markup).toContain('href="/build-log"');
     expect(markup).toContain(
-      `a personal project created by ${siteLegal.operatorName}, a high school student who plans to study aerospace engineering`,
+      `a personal project created by ${siteLegal.operatorName}, a high school senior who plans to study aerospace engineering`,
     );
   });
 

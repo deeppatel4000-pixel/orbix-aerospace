@@ -5,7 +5,6 @@ import { ButtonLink } from "@/components/ui/button-link";
 import { EmptyState } from "@/components/ui/empty-state";
 import { PhotoHero } from "@/components/ui/photo-hero";
 import { SpecPanel, type SpecPanelItem } from "@/components/ui/spec-panel";
-import { cn } from "@/lib/cn";
 import { RocketCard } from "@/features/rockets/components/rocket-card";
 import {
   maxPayloadTo,
@@ -24,13 +23,12 @@ import {
   portraitPlate,
 } from "@/features/vehicles/components/hero-crop";
 import {
-  CONVERSION_NOTE,
-  MINIMUM_NOTE,
   measurementParts,
   panelSecondary,
 } from "@/features/vehicles/components/measurement-display";
 import { ProfileLink } from "@/features/vehicles/components/profile-link";
 import { VehicleRegistry } from "@/features/vehicles/components/vehicle-registry";
+import { getVehiclePhoto } from "@/features/vehicles/data/gallery";
 import { RocketHeightLineup, toMetres } from "@/features/vehicles/drawings";
 import type { Rocket } from "@/features/vehicles/types";
 import { formatCountWord } from "@/features/vehicles/utils/format-measurement";
@@ -69,12 +67,11 @@ function capitalise(text: string) {
 
 /**
  * The pictured launch vehicle, with three published figures as an open
- * definition list and a link to its profile. From 64rem it sits in the
- * hero's text column under the actions, beside the tall portrait plate, so
- * the column is not left empty below the buttons; below 64rem it follows
- * the plate and its caption, so the photograph comes first. Each figure
- * keeps its conversion and qualifier; thrust is shown in the published
- * unit.
+ * definition list and a link to its profile. It sits once in the hero's
+ * text column under the actions: from 64rem beside the tall portrait
+ * plate, so the column is not left empty below the buttons, and below
+ * 64rem before the plate. Each figure keeps its conversion and qualifier;
+ * thrust is shown in the published unit.
  */
 function PicturedRocket({
   className,
@@ -157,27 +154,71 @@ function heightSpread(rockets: readonly Rocket[]) {
   return `${tallest.name} stands ${text} m taller than ${shortest.name}. `;
 }
 
+/** "About these figures": what a figure's marks mean, in 30 words or fewer. */
+function FiguresNote() {
+  return (
+    <section
+      aria-labelledby="rocket-sources-title"
+      className="mt-16 border-t border-border pt-8 pb-16 lg:pb-24"
+    >
+      <h2
+        className="text-base font-semibold text-foreground"
+        id="rocket-sources-title"
+      >
+        About these figures
+      </h2>
+      <p className="mt-3 max-w-[60ch] text-sm leading-6 text-muted">
+        Figures are published specifications. A figure set under another is an
+        ORBIX conversion, and thrust is shown in MN. See{" "}
+        <Link className="orbix-link" href="/about#sources">
+          sources
+        </Link>{" "}
+        and{" "}
+        <Link className="orbix-link" href="/credits">
+          image credits
+        </Link>
+        .
+      </p>
+    </section>
+  );
+}
+
+/**
+ * Below 64rem the hero stacks the headline, the plate, then the pictured
+ * figures, as /aircraft does, so the first phone screen shows the
+ * photograph. The text column (the hero's first child) is unwrapped there,
+ * so its two blocks, the lede and the facts, sit in the hero's own column
+ * around the figure, each with the column's side padding.
+ */
+const PLATE_FIRST = [
+  "max-lg:flex max-lg:flex-col",
+  "max-lg:[&>div:first-child]:contents",
+  "max-lg:[&>div:first-child>div:first-child]:px-(--hero-gutter) max-lg:[&>div:first-child>div:first-child]:pt-(--space-7) max-lg:[&>div:first-child>div:first-child]:pb-(--space-6)",
+  "max-lg:[&>div:first-child>div:nth-child(2)]:order-1 max-lg:[&>div:first-child>div:nth-child(2)]:px-(--hero-gutter) max-lg:[&>div:first-child>div:nth-child(2)]:pb-(--space-6)",
+].join(" ");
+
 /** The `/rockets` registry page. */
 export function RocketExplorer({ rockets }: RocketExplorerProps) {
   const featured =
     rockets.find((rocket) => rocket.id === FEATURED_ROCKET_ID) ?? rockets[0];
-  const heroVisual = featured ? getRocketVisual(featured.id) : undefined;
-  const crop = heroVisual
-    ? heroCrop({
-        base: heroVisual.heroPhoneObjectPosition,
-        lg: heroVisual.heroObjectPosition,
-      })
+  // The `featured` photograph (the Apollo 11 Saturn V on its rollout), not
+  // the launch photograph its registry entry and profile use.
+  const heroPhoto = featured
+    ? getVehiclePhoto(featured.id, "featured")
+    : undefined;
+  const crop = heroPhoto
+    ? heroCrop({ base: heroPhoto.objectPosition, lg: heroPhoto.objectPosition })
     : undefined;
 
-  const plate = portraitPlate(heroVisual ?? { height: 3, width: 2 });
+  const plate = portraitPlate(heroPhoto ?? { height: 3, width: 2 });
 
   const heroText = (
     <>
       <h1 className="orbix-h1 text-foreground">Launch vehicle registry</h1>
       <p className="orbix-lead mt-6">
-        {capitalise(formatCountWord(rockets.length))} launch vehicles set out
-        from their published specifications: stages, engines, liftoff thrust and
-        payload to each destination, each with a credited photograph.
+        {capitalise(formatCountWord(rockets.length))} launch vehicles with their
+        published stages, engines, liftoff thrust and payload to each
+        destination.
       </p>
       <div className="mt-8 flex flex-wrap items-center gap-x-8 gap-y-3">
         <ButtonLink arrow="down" href="#launch-vehicle-registry" size="lg">
@@ -196,25 +237,20 @@ export function RocketExplorer({ rockets }: RocketExplorerProps) {
 
   return (
     <>
-      {heroVisual && crop && featured ? (
+      {heroPhoto && crop && featured ? (
         <PhotoHero
           aside={
             <PicturedRocket
-              className="hidden lg:block lg:pr-8"
+              className="lg:pr-8"
               headingId="pictured-rocket-title"
               rocket={featured}
             />
           }
-          className={cn(
-            crop.className,
-            plate.className,
-            // The facts slot is empty below 64rem (the pictured line follows
-            // the plate there), so it adds no gap.
-            "max-lg:[&>div:first-child>div+div]:hidden",
-          )}
+          caption={heroPhoto.caption.replace(/\.$/, "")}
+          className={`${crop.className} ${plate.className} ${PLATE_FIRST}`}
           plate="portrait"
           style={{ ...crop.style, ...plate.style }}
-          visual={{ ...heroVisual, objectPosition: crop.objectPosition }}
+          visual={{ ...heroPhoto, objectPosition: crop.objectPosition }}
         >
           {heroText}
         </PhotoHero>
@@ -223,14 +259,6 @@ export function RocketExplorer({ rockets }: RocketExplorerProps) {
       )}
 
       <Container>
-        {heroVisual && crop && featured ? (
-          <PicturedRocket
-            className="pb-16 lg:hidden"
-            headingId="pictured-rocket-title-narrow"
-            rocket={featured}
-          />
-        ) : null}
-
         {rockets.length === 0 ? (
           <EmptyState
             description="No launch vehicle records are available right now."
@@ -238,7 +266,7 @@ export function RocketExplorer({ rockets }: RocketExplorerProps) {
           />
         ) : (
           <VehicleRegistry
-            description="Each entry opens a full profile. Height is the published figure; liftoff thrust is the published figure converted to meganewtons, for the configuration each record describes."
+            description="Height is as published. Liftoff thrust is converted to meganewtons, for the configuration each record describes."
             entries={rockets.map((rocket) => ({
               card: <RocketCard rocket={rocket} />,
               id: rocket.id,
@@ -258,18 +286,13 @@ export function RocketExplorer({ rockets }: RocketExplorerProps) {
             aria-labelledby="rocket-scale-title"
             className="mt-20 border-t border-border pt-12 lg:mt-28"
           >
-            <div className="grid gap-5 lg:grid-cols-12 lg:gap-6">
-              <h2
-                className="orbix-h2 text-foreground lg:col-span-7"
-                id="rocket-scale-title"
-              >
-                Heights to one scale
-              </h2>
-              <p className="max-w-[60ch] text-pretty text-muted lg:col-span-5 lg:col-start-8">
-                {heightSpread(rockets)}Each launch vehicle is drawn from the
-                height in its record, on one ground line at one scale.
-              </p>
-            </div>
+            <h2 className="orbix-h2 text-foreground" id="rocket-scale-title">
+              Heights to one scale
+            </h2>
+            <p className="mt-5 max-w-[60ch] text-pretty text-muted">
+              {heightSpread(rockets)}Each outline is traced from a published
+              drawing and scaled to the height in its record.
+            </p>
             <RocketHeightLineup
               className="mt-10"
               figureNumber="1"
@@ -278,34 +301,7 @@ export function RocketExplorer({ rockets }: RocketExplorerProps) {
           </section>
         ) : null}
 
-        <section
-          aria-labelledby="rocket-sources-title"
-          className="mt-16 grid gap-3 border-t border-border pt-8 pb-16 lg:grid-cols-12 lg:gap-6 lg:pb-24"
-        >
-          <h2
-            className="text-base font-semibold text-foreground lg:col-span-7"
-            id="rocket-sources-title"
-          >
-            About these figures
-          </h2>
-          <p className="max-w-[68ch] text-sm leading-6 text-muted lg:col-span-5 lg:col-start-8">
-            Figures are publicly released specifications. Payload figures are
-            tied to a destination orbit and to whether boosters are recovered,
-            and a qualifier such as approximate or maximum stays beside the
-            number. {MINIMUM_NOTE} {CONVERSION_NOTE} In the registry, liftoff
-            thrust is converted to meganewtons and rounded to one decimal place
-            so the entries read in one unit; each profile gives it as published.
-            Photographs are credited on each profile and on the{" "}
-            <Link className="orbix-link" href="/credits">
-              image credits page
-            </Link>
-            . Read{" "}
-            <Link className="orbix-link" href="/about#sources">
-              how ORBIX sources its values
-            </Link>
-            .
-          </p>
-        </section>
+        <FiguresNote />
       </Container>
     </>
   );

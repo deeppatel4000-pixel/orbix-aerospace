@@ -56,7 +56,7 @@
      nearest step on the same hue that clears it on both grounds. */
   --rule-strong: #586270; /* table header rule, control borders */
 
-  --accent-space: #5fd3f0; /* default: home, rockets, showcase */
+  --accent-space: #5fd3f0; /* default: home, rockets */
   --accent-aircraft: #e3ae54; /* aircraft division */
   --accent-lab: #78bdff; /* engineering lab, learn, verification */
 

@@ -5,6 +5,24 @@ import { Breadcrumbs } from "@/components/ui/breadcrumbs";
 import { ButtonLink } from "@/components/ui/button-link";
 import type { LearningArea } from "@/features/learn/types";
 
+const COUNT_WORDS = [
+  "No",
+  "One",
+  "Two",
+  "Three",
+  "Four",
+  "Five",
+  "Six",
+  "Seven",
+  "Eight",
+  "Nine",
+] as const;
+
+/** A count as a capitalised word at the start of a sentence. */
+function countWord(count: number): string {
+  return COUNT_WORDS[count] ?? String(count);
+}
+
 interface LearnIntroProps {
   areas: readonly LearningArea[];
 }
@@ -28,10 +46,10 @@ export function LearnIntro({ areas }: LearnIntroProps) {
             Learn the physics behind the lab.
           </h1>
           <p className="orbix-lead mt-8">
-            Six reading pathways. Each explains the core ideas of one
-            discipline, sets out its governing equations where it has them,
-            links to the Engineering Lab tools that apply them, and lists
-            published references.
+            {countWord(areas.length)} short readings on the ideas the
+            Engineering Lab uses. Each gives the main ideas and equations of one
+            subject, links to the lab tools that apply them and lists published
+            references.
           </p>
           <div className="mt-10 flex flex-wrap items-center gap-x-8 gap-y-3">
             <ButtonLink arrow="right" href="/engineering-lab" size="lg">
@@ -43,15 +61,13 @@ export function LearnIntro({ areas }: LearnIntroProps) {
                 href={`#${firstArea.id}`}
                 variant="tertiary"
               >
-                Start with the first pathway
+                Start reading
               </ButtonLink>
             ) : null}
           </div>
           <p className="mt-10 max-w-[37rem] text-sm leading-6 text-pretty text-text-muted">
-            This page explains general theory. Its two diagrams are drawn from
-            preset inputs by the same components the Engineering Lab and
-            Showcase use. The Engineering Lab uses simplified models intended
-            for learning, not for operational or design decisions.
+            General theory only. The lab&apos;s models are simplified for
+            learning and are not for design or operational decisions.
           </p>
         </div>
 

@@ -20,14 +20,14 @@ export const spaceLaunchSystem = {
       id: "sls-parallel-staging-placeholder",
       status: "reviewed",
       summary:
-        "SLS Block 1 combines two five-segment solid boosters with four RS-25 engines on the core stage. The boosters supply most of the liftoff thrust, while the hydrogen-fueled RS-25s continue powering the core after booster separation.",
+        "SLS Block 1 pairs two five-segment solid boosters with four RS-25 engines on the core stage. The boosters give most of the liftoff thrust, and the hydrogen-fueled RS-25s keep powering the core after the boosters separate.",
       topic: "staging",
     },
     {
       id: "sls-evolvability-placeholder",
       status: "reviewed",
       summary:
-        "SLS is deliberately evolvable. Block 1 uses the Interim Cryogenic Propulsion Stage; Block 1B replaces it with the more capable Exploration Upper Stage, and Block 2 adds evolved boosters, raising deep-space payload capability without discarding the core architecture.",
+        "SLS was designed to evolve. Block 1 uses the Interim Cryogenic Propulsion Stage; Block 1B replaces it with the more capable Exploration Upper Stage, and Block 2 adds evolved boosters. Each step raises deep-space payload capability on the same core design.",
       topic: "systems-engineering",
     },
   ],

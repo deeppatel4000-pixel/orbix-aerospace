@@ -25,21 +25,21 @@ export const sr71Blackbird = {
       id: "sr-71-aerodynamics-placeholder",
       status: "reviewed",
       summary:
-        "The SR-71 was engineered around sustained Mach 3 flight, with prominent chines, a slender high-speed planform and carefully controlled inlet flow. NASA later used the aircraft to study aerodynamics, stability, control and thermal loads at speeds up to roughly Mach 3.2.",
+        "The SR-71 was designed for sustained Mach 3 flight, with prominent chines, a slender planform and inlets that manage the airflow reaching the engines. NASA later flew it to study aerodynamics, stability and control, and thermal loads at speeds up to about Mach 3.2.",
       topic: "aerodynamics",
     },
     {
       id: "sr-71-propulsion-placeholder",
       status: "reviewed",
       summary:
-        "The J58 installation had to manage inlet shock waves across an enormous speed range. Movable inlet hardware and bypass flow kept the engines operating at Mach 3+, where the Blackbird cruised with continuous afterburner and achieved its best specific range.",
+        "The J58 installation had to handle inlet shock waves over a very wide speed range. Movable inlet hardware and bypass flow kept the engines running at Mach 3+, where the Blackbird cruised on continuous afterburner and got its best specific range.",
       topic: "propulsion",
     },
     {
       id: "sr-71-structures-placeholder",
       status: "reviewed",
       summary:
-        "Sustained Mach 3 flight heated the SR-71’s skin to roughly 600°F in places, beyond what a conventional aluminum airframe could comfortably tolerate. Lockheed therefore relied heavily on titanium alloys, making thermal expansion and high-temperature strength core structural constraints.",
+        "Sustained Mach 3 flight heated parts of the SR-71’s skin to about 600°F, too hot for a conventional aluminum airframe. Lockheed used titanium alloys extensively, and thermal expansion and strength at high temperature became central structural constraints.",
       topic: "structures",
     },
   ],

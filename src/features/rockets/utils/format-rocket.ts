@@ -101,7 +101,7 @@ export function formatRocketMeasurement<TUnit extends MeasurementUnit>(
     note: measurement.qualifier
       ? qualifierLabels[measurement.qualifier]
       : "Published value",
-    value: formatMeasurement(measurement),
+    value: formatMeasurement(measurement, { markMinimum: true }),
   };
 }
 

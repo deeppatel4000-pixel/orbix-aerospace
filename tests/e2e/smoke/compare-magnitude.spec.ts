@@ -113,7 +113,10 @@ test.describe("Compare magnitude encoding", () => {
     // The numbers themselves are untouched, in their own source units.
     await expect(row(page, "speed")).toContainText("1,875 mph");
     await expect(row(page, "speed")).toContainText("Mach 2");
-    await expect(row(page, "speed")).toContainText("Mach 3");
+    // The SR-71's speed is a published minimum: "+" after the number, as
+    // on its profile and registry entry, plus the qualifier.
+    await expect(row(page, "speed")).toContainText("Mach 3+");
+    await expect(row(page, "speed")).toContainText("Published minimum");
   });
 
   test("a comparable row in that same comparison is still encoded", async ({

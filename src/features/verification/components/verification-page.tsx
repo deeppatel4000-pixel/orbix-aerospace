@@ -264,6 +264,79 @@ function CaseSection({ item }: { readonly item: VerificationCase }) {
   );
 }
 
+/** Short names for the three-line summary, keyed by source id. */
+const SOURCE_SHORT_NAMES: Readonly<
+  Record<keyof typeof verificationSources, string>
+> = {
+  braeunig: "Robert A. Braeunig's example problems",
+  brennen: "Brennen's Internet Book on Fluid Dynamics",
+  naca1135: "NACA Report 1135",
+  ussa1976: "the U.S. Standard Atmosphere, 1976",
+};
+
+/** "a, b, c and d". */
+function listPhrase(items: readonly string[]): string {
+  if (items.length < 2) return items.join("");
+  return `${items.slice(0, -1).join(", ")} and ${items.at(-1)}`;
+}
+
+/**
+ * The case that reads its altitude as geometric on purpose, to show the size
+ * of that error. Its rows are expected to fall outside rounding.
+ */
+const DELIBERATE_ERROR_CASE_ID = "atmosphere-11000-geometric";
+
+interface OutsideRoundingCounts {
+  /** Outside rows from the deliberate geometric-altitude case. */
+  readonly deliberate: number;
+  /** Every other outside row. */
+  readonly other: number;
+  /** True when every other outside row's case has at least one note. */
+  readonly otherAllNoted: boolean;
+}
+
+/** Splits the rows outside rounding by where their explanation lives. */
+function countOutsideRounding(): OutsideRoundingCounts {
+  let deliberate = 0;
+  let other = 0;
+  let otherAllNoted = true;
+
+  for (const group of verificationGroups) {
+    for (const item of group.cases) {
+      const count = item.rows.filter(
+        (row) => !toDisplayRow(row).withinRounding,
+      ).length;
+      if (count === 0) continue;
+      if (item.id === DELIBERATE_ERROR_CASE_ID) {
+        deliberate += count;
+      } else {
+        other += count;
+        if (item.notes.length === 0) otherAllNoted = false;
+      }
+    }
+  }
+
+  return { deliberate, other, otherAllNoted };
+}
+
+/** The summary's second sentence, from the computed counts. */
+function outsidePhrase({
+  deliberate,
+  other,
+  otherAllNoted,
+}: OutsideRoundingCounts): string {
+  const total = deliberate + other;
+  if (total === 0) return "";
+  const noted = otherAllNoted
+    ? " each have a note under their table"
+    : " are shown with their tables";
+  if (deliberate === 0) return `The other ${total}${noted}.`;
+  const reads = `${deliberate} come from a case that reads the altitude the wrong way on purpose`;
+  if (other === 0)
+    return `The other ${total} all come from a case that reads the altitude the wrong way on purpose.`;
+  return `Of the other ${total}, ${reads}, and the other ${other}${noted}.`;
+}
+
 const toc: readonly ReadingTocItem[] = [
   { id: "method", title: "How the comparison works" },
   ...verificationGroups.map((group) => ({
@@ -280,55 +353,52 @@ const toc: readonly ReadingTocItem[] = [
  */
 export function VerificationPage() {
   const summary = summarizeVerification(verificationGroups);
+  const outside = countOutsideRounding();
+  const sourceNames = Object.values(verificationSources).map(
+    (source) => SOURCE_SHORT_NAMES[source.id],
+  );
 
   return (
     <ReadingPage
       intro={
-        <>
-          <p className="mt-6 max-w-[38.25rem] text-sm leading-6 text-muted">
-            For education only. Agreement with a textbook case does not make a
-            simplified model suitable for design, operational or safety
-            decisions.
-          </p>
-          <ButtonLink
-            arrow="right"
-            className="mt-6"
-            href="/engineering-lab"
-            variant="tertiary"
-          >
-            Return to the Engineering Lab
-          </ButtonLink>
-        </>
+        <ButtonLink
+          arrow="right"
+          className="mt-6"
+          href="/engineering-lab"
+          variant="tertiary"
+        >
+          Open the Engineering Lab
+        </ButtonLink>
       }
       lead={
-        <p>
-          Selected Engineering Lab calculations run with the same inputs as a
-          published table or worked example, with the published value beside
-          each result.
-        </p>
+        <div className="flex flex-col gap-3">
+          <p>
+            {summary.withinRounding} of {summary.total} compared values pass the
+            rounding check. {outsidePhrase(outside)}
+          </p>
+          <p>
+            The published values come from {sourceNames.length} sources:{" "}
+            {listPhrase(sourceNames)}.
+          </p>
+          <p>
+            The checks show that each function works out its textbook equation
+            correctly for these inputs. They do not show that a simplified model
+            suits a real vehicle or can be used for design, operational or
+            safety decisions.
+          </p>
+        </div>
       }
       title="Checking ORBIX against published values"
       toc={toc}
     >
       <LegalSection id="method" major title="How the comparison works">
         <p>
-          The ORBIX column is not typed in. When this page is built, it calls
-          the same calculation functions the Engineering Lab uses, with the
-          inputs listed for each case, and prints what they return. The
-          published column is the value printed in the cited source, converted
-          only where the unit differs (for example millibars to pascals).
-        </p>
-        <p>
-          Difference is (ORBIX minus published) divided by published, as a
-          percentage. A row passes the rounding check when ORBIX is within half
-          a unit of the last digit the source prints: a value printed as 4.500
-          allows 4.4995 to 4.5005. Rows that fall outside are left as they are,
-          and the note under the table gives the reason where it is known.
-        </p>
-        <p>
-          {summary.withinRounding} of {summary.total} compared values pass the
-          rounding check. {summary.outsideRounding} do not; each has a note
-          below its table.
+          The page fills the ORBIX column by calling the Engineering Lab&apos;s
+          own functions with each case&apos;s inputs. Published values are
+          converted only where units differ. Difference is ORBIX minus
+          published, as a percentage of published. A row passes the rounding
+          check when ORBIX is within half a unit of the last digit the source
+          prints: 4.500 allows 4.4995 to 4.5005.
         </p>
       </LegalSection>
 
@@ -348,13 +418,10 @@ export function VerificationPage() {
 
       <LegalSection id="limits" major title="What this page does not show">
         <p>
-          These checks confirm that each function evaluates its textbook
-          equation correctly for one or a few inputs. They do not show that the
-          equation suits a real vehicle. The functions checked here are
-          deliberately simple: the atmosphere covers only the troposphere, the
-          flow functions assume a calorically perfect gas with a ratio of
-          specific heats of 1.4, and the orbital functions assume two bodies and
-          instantaneous burns.
+          The functions checked here are deliberately simple: the atmosphere
+          covers only the troposphere, the flow functions assume a calorically
+          perfect gas with a ratio of specific heats of 1.4, and the orbital
+          functions assume two bodies and instantaneous burns.
         </p>
         <p>
           No published worked example with identical inputs has been checked yet
@@ -368,8 +435,8 @@ export function VerificationPage() {
           ))}
         </ul>
         <p>
-          The Engineering Lab analyzers built on these functions (entry, thermal
-          protection and mission tools) are not compared separately.
+          Engineering Lab tools that combine several of these functions are not
+          compared separately.
         </p>
       </LegalSection>
     </ReadingPage>

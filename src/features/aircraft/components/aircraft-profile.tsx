@@ -5,6 +5,7 @@ import { PropulsionPanel } from "@/features/aircraft/components/propulsion-panel
 import { RelatedAircraft } from "@/features/aircraft/components/related-aircraft";
 import { VariantsPanel } from "@/features/aircraft/components/variants-panel";
 import { getAircraftVisual, listAircraft } from "@/features/aircraft/data";
+import type { AircraftVisual } from "@/features/aircraft/data/aircraft-visuals";
 import {
   formatAircraftFleetStatus,
   formatAircraftRoles,
@@ -22,9 +23,14 @@ import {
   VehicleFactsTable,
   type VehicleFact,
 } from "@/features/vehicles/components/vehicle-facts-table";
-import { VehicleProfileHero } from "@/features/vehicles/components/vehicle-profile-hero";
+import { VehicleGallery } from "@/features/vehicles/components/vehicle-gallery";
+import {
+  VehicleProfileHero,
+  type VehicleHeroVisual,
+} from "@/features/vehicles/components/vehicle-profile-hero";
 import { VehicleProfileLayout } from "@/features/vehicles/components/vehicle-profile-layout";
 import { VehicleProfileSection } from "@/features/vehicles/components/vehicle-profile-section";
+import { getVehiclePhoto } from "@/features/vehicles/data/gallery";
 import type { Aircraft } from "@/features/vehicles/types";
 
 interface AircraftProfileProps {
@@ -77,18 +83,62 @@ function overviewFacts(aircraft: Aircraft): VehicleFact[] {
   ];
 }
 
+/**
+ * The profile hero's photograph: the `profile` slot. When it is the
+ * aircraft's identity photograph, the art-directed crops in
+ * `aircraft-visuals.ts` frame it; a profile's own photograph (the B-2
+ * takeoff) runs as a band at its recorded centre.
+ */
+function heroPhoto(
+  aircraft: Aircraft,
+  visual: AircraftVisual | undefined,
+): { layout: "band" | "split"; visual?: VehicleHeroVisual } {
+  const photo = getVehiclePhoto(aircraft.id, "profile");
+  if (!photo) return { layout: "band" };
+  const isIdentity = visual?.src === photo.src;
+  const layout =
+    isIdentity && visual?.profileHeroLayout === "split" ? "split" : "band";
+  const crop =
+    isIdentity && visual
+      ? {
+          base: visual.objectPosition,
+          lg:
+            layout === "split"
+              ? (visual.profileHeroObjectPosition ?? visual.objectPosition)
+              : visual.heroObjectPosition,
+        }
+      : { base: photo.objectPosition, lg: photo.objectPosition };
+  return {
+    layout,
+    visual: {
+      alt: photo.alt,
+      caption: photo.caption,
+      credit: photo.credit,
+      crop,
+      height: photo.height,
+      license: photo.license,
+      licenseUrl: photo.licenseUrl,
+      sourceUrl: photo.sourceUrl,
+      src: photo.src,
+      width: photo.width,
+    },
+  };
+}
+
+/** Engineering analysis follows Overview (v4 plan section 8). */
 const navigation = [
   { id: "overview", label: "Overview" },
+  { id: "engineering-notes", label: "Engineering analysis" },
   { id: "specifications", label: "Specifications" },
   { id: "propulsion", label: "Propulsion" },
   { id: "performance", label: "Performance" },
   { id: "variants", label: "History and variants" },
-  { id: "engineering-notes", label: "Engineering analysis" },
+  { id: "photographs", label: "Photographs" },
 ] as const;
 
 /** The `/aircraft/[id]` profile (spec 11). */
 export function AircraftProfile({ aircraft }: AircraftProfileProps) {
-  const visual = getAircraftVisual(aircraft.id);
+  const hero = heroPhoto(aircraft, getAircraftVisual(aircraft.id));
   const related = listAircraft()
     .filter((candidate) => candidate.id !== aircraft.id)
     .slice(0, 3);
@@ -133,24 +183,11 @@ export function AircraftProfile({ aircraft }: AircraftProfileProps) {
               value: aircraft.firstFlight.slice(0, 4),
             },
           ]}
-          photo={visual?.profileHeroLayout === "split" ? "split" : "band"}
-          visual={
-            visual
-              ? {
-                  ...visual,
-                  crop: {
-                    base: visual.objectPosition,
-                    lg:
-                      visual.profileHeroLayout === "split"
-                        ? (visual.profileHeroObjectPosition ??
-                          visual.objectPosition)
-                        : visual.heroObjectPosition,
-                  },
-                }
-              : undefined
-          }
+          photo={hero.layout}
+          visual={hero.visual}
         />
       }
+      gallery={<VehicleGallery vehicleId={aircraft.id} />}
       navigation={navigation}
       related={<RelatedAircraft aircraft={related} />}
     >
@@ -158,6 +195,8 @@ export function AircraftProfile({ aircraft }: AircraftProfileProps) {
       <VehicleProfileSection id="overview" title="Overview">
         <VehicleFactsTable facts={overviewFacts(aircraft)} />
       </VehicleProfileSection>
+
+      <EngineeringNotesPanel notes={aircraft.engineeringAnalysis} />
 
       <VehicleProfileSection
         description="Dimensions and weights as published, with the basis of each figure."
@@ -185,7 +224,6 @@ export function AircraftProfile({ aircraft }: AircraftProfileProps) {
         performance={aircraft.performance}
       />
       <VariantsPanel name={aircraft.name} variants={aircraft.variants} />
-      <EngineeringNotesPanel notes={aircraft.engineeringAnalysis} />
     </VehicleProfileLayout>
   );
 }

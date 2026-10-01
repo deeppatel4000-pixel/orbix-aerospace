@@ -10,7 +10,6 @@ interface EngineeringNotesPanelProps {
 export function EngineeringNotesPanel({ notes }: EngineeringNotesPanelProps) {
   return (
     <EngineeringNotesList
-      description="Short notes on the engineering of the launch vehicle, one for each topic in the record."
       formatTopic={formatRocketEngineeringDomain}
       notes={notes}
     />

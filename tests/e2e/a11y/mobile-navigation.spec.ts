@@ -8,26 +8,25 @@ import {
 } from "../fixtures/orbix";
 
 /**
- * The 7 site links in mobile-navigation.tsx's declared order (mirrors
- * src/config/navigation.ts). Kept inline rather than imported so this a11y
- * suite stays decoupled from internal app config.
+ * The 5 header links in mobile-navigation.tsx's declared order (mirrors
+ * src/config/navigation.ts, v4 plan section 3). The wordmark links home, so
+ * Home is not listed. Kept inline rather than imported so this a11y suite
+ * stays decoupled from internal app config.
  */
 const expectedLabels = [
-  "Home",
+  "Engineering Lab",
+  "Verification",
   "Aircraft",
   "Rockets",
-  "Compare",
-  "Engineering Lab",
-  "Showcase",
-  "Learn",
+  "How I built it",
 ];
 
 /**
- * Design v2 (spec 8): the sheet also anchors a quieter group to its foot,
- * About, How I built ORBIX and Image credits, then the operator line with
- * the contact address as an inline link.
+ * The sheet also anchors a quieter group to its foot, the footer's site
+ * links (v4 plan section 3), then the operator line with the contact
+ * address as an inline link.
  */
-const secondaryLabels = ["About", "How I built ORBIX", "Image credits"];
+const secondaryLabels = ["Compare", "Learn", "About", "Image credits"];
 
 /** The contact address link in the operator line. */
 const CONTACT_LINK = 'a[href^="mailto:"]';
@@ -127,7 +126,7 @@ test.describe("Mobile navigation toggle", () => {
 });
 
 test.describe("Mobile navigation menu contents", () => {
-  test("opening the menu reveals all 7 nav links with correct accessible names", async ({
+  test("opening the menu reveals every nav link with its accessible name", async ({
     page,
   }) => {
     skipOnDesktop();
@@ -147,10 +146,35 @@ test.describe("Mobile navigation menu contents", () => {
       ).toBeVisible();
     }
 
-    // The current page is marked in words for assistive technology.
+    // Home is not in the menu, so nothing in it is the current page.
+    await expect(mobileNav(page).locator('[aria-current="page"]')).toHaveCount(
+      0,
+    );
+  });
+
+  test("the menu marks the current section in words", async ({ page }) => {
+    skipOnDesktop();
+    await openHome(page);
+    await page.goto(`${ROUTES.aircraft}/b-2-spirit`, {
+      waitUntil: "domcontentloaded",
+    });
+    await expect
+      .poll(() =>
+        page
+          .locator(".orbix-menu-toggle")
+          .evaluate((button) =>
+            Object.keys(button).some((key) => key.startsWith("__reactProps")),
+          ),
+      )
+      .toBe(true);
+
+    await closedToggle(page).click();
     await expect(
-      mobileNav(page).getByRole("link", { name: "Home", exact: true }),
+      mobileNav(page).getByRole("link", { name: "Aircraft", exact: true }),
     ).toHaveAttribute("aria-current", "page");
+    await expect(mobileNav(page).locator('[aria-current="page"]')).toHaveCount(
+      1,
+    );
   });
 
   test("opening the menu moves focus to its first link", async ({ page }) => {
@@ -160,7 +184,10 @@ test.describe("Mobile navigation menu contents", () => {
     await closedToggle(page).click();
 
     await expect(
-      mobileNav(page).getByRole("link", { name: "Home", exact: true }),
+      mobileNav(page).getByRole("link", {
+        name: expectedLabels[0],
+        exact: true,
+      }),
     ).toBeFocused();
   });
 
@@ -202,7 +229,10 @@ test.describe("Mobile navigation menu contents", () => {
     // genuinely deep inside the menu before backing out with Escape.
     await page.keyboard.press("Tab");
     await expect(
-      mobileNav(page).getByRole("link", { name: "Aircraft", exact: true }),
+      mobileNav(page).getByRole("link", {
+        name: expectedLabels[1],
+        exact: true,
+      }),
     ).toBeFocused();
 
     await page.keyboard.press("Escape");

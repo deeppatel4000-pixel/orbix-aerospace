@@ -30,7 +30,7 @@ a real production build, real interaction.
   at the mobile viewport.
 - **Site integrity sweep** (`tests/e2e/smoke/site-integrity.spec.ts`, added 2026-09-27, desktop
   project only): every public route (home, registries, all ten profiles, compare, lab, learn,
-  showcase, about, credits and the four legal pages) returns 200, has a unique title and meta
+  verification, build log, about, credits and the four legal pages) returns 200, has a unique title and meta
   description and exactly one h1, does not scroll sideways at 320, 360 or 1440px, loads every
   image, contains no em dash in visible text or accessible names, carries the footer `mailto:`
   contact link and a header logo linking to `/`. It also crawls every internal link and in-page
@@ -99,8 +99,8 @@ regenerated from scratch every time.
 
 ### Size tradeoff — measured, and deliberately accepted
 
-As of the 2026-09-27 redesign there are 27 baselines totalling about 12 MB, all regenerated and
-reviewed after the redesign. The figures below are from the earlier 17-baseline set: those 17
+As of the v4 integration (2026-10-01) there are 22 baselines totalling about 14 MB, all regenerated
+and reviewed after the v4 changes. The figures below are from the earlier 17-baseline set: those 17
 totalled **33.5 MB** (0.5–3.6 MB each). This was investigated properly rather
 than guessed, and the decision is to **keep them as they are**. The measurements:
 
@@ -188,9 +188,10 @@ moving between tools by hash.
 ## 7. Critical routes
 
 The smoke suite treats these as must-not-break: `/` (home), `/aircraft`, `/rockets`,
-`/compare`, `/engineering-lab`, `/showcase`, `/learn`, `/about`, `/credits`, `/privacy`,
-`/terms`, `/cookies`, `/accessibility`, every aircraft and rocket profile, and Mission
-Control's workspace tablist/switching.
+`/compare`, `/engineering-lab`, `/learn`, `/verification`, `/build-log`, `/about`, `/credits`,
+`/privacy`, `/terms`, `/cookies`, `/accessibility`, every aircraft and rocket profile, the
+Transfer Explorer, the mission planner, and the permanent redirects from the removed `/showcase`
+and `/showcase-capture/*` routes.
 
 ## 8. What these tests intentionally do NOT guarantee
 

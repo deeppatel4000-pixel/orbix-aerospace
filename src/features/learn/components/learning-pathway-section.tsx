@@ -3,10 +3,7 @@ import {
   EquationBlock,
   type EquationVariable,
 } from "@/components/ui/equation-block";
-import {
-  PathwayFigure,
-  WIDE_FIGURE_AREA_ID,
-} from "@/features/learn/components/pathway-figure";
+import { PathwayFigure } from "@/features/learn/components/pathway-figure";
 import {
   formatEquation,
   withSubscripts,
@@ -15,7 +12,6 @@ import type {
   LearnEquationVariable,
   LearningArea,
 } from "@/features/learn/types";
-import { cn } from "@/lib/cn";
 
 /**
  * The lab-link rail is quieter than a tertiary button (secondary text,
@@ -58,15 +54,13 @@ function legendEntry(variable: LearnEquationVariable): EquationVariable {
 }
 
 /**
- * The pathways whose "Why it matters" is set as a display-cut pull quote:
- * the first, which opens the page, and the entry pathway, which has no
- * figure. The others set it as a run-in paragraph after the summary, so
- * the six pathways do not repeat one rhythm (tells: identical section
- * rhythm).
+ * The pathway whose "Why it matters" is set as a display-cut pull quote:
+ * the first, which opens the page. The others set it as a run-in
+ * paragraph after the summary, so the pathways do not repeat one rhythm
+ * (tells: identical section rhythm).
  */
 const PULL_QUOTE_AREA_IDS: ReadonlySet<string> = new Set([
   "aerodynamics-flight-fundamentals",
-  "atmospheric-entry-thermal-protection",
 ]);
 
 interface LearningPathwaySectionProps {
@@ -80,17 +74,15 @@ interface LearningPathwaySectionProps {
  * One pathway (spec v3 section 11, Learn). Pathways are separated by
  * space and the 48px division rule above each heading (spec 6); there is
  * no chapter numeral and no "Pathway 0N" label. The heading is followed by
- * the summary, "Why it matters" (a display-cut pull quote in two pathways,
- * a run-in paragraph in the rest), and the figure where the pathway has
+ * the summary, "Why it matters" (a display-cut pull quote in the first
+ * pathway, a run-in paragraph in the rest), and the figure where the pathway has
  * one. Key ideas keep their real reference numbers (1.1) and
  * each display equation carries the same number at the right margin.
  *
  * DOM order is summary, lab links, key ideas, then further reading, so
  * the lab links come early on a phone. From 1024px the links move to a
  * sticky rail in columns 9 to 12 by grid placement; the rail sticks inside
- * a grid item that ends with the key ideas. One pathway's figure
- * (WIDE_FIGURE_AREA_ID) is not in the track: it follows the key ideas
- * across all 12 columns, after the rail ends. No boxes anywhere: rules
+ * a grid item that ends with the key ideas. No boxes anywhere: rules
  * only between the rows of the key-idea and reading lists.
  */
 export function LearningPathwaySection({
@@ -98,7 +90,6 @@ export function LearningPathwaySection({
   number,
 }: LearningPathwaySectionProps) {
   const titleId = `${area.id}-title`;
-  const wideFigure = area.id === WIDE_FIGURE_AREA_ID;
 
   return (
     <section
@@ -135,19 +126,13 @@ export function LearningPathwaySection({
             </p>
           )}
 
-          {wideFigure ? null : <PathwayFigure areaId={area.id} />}
+          <PathwayFigure areaId={area.id} />
         </div>
 
         {/* The grid item spans only the rows beside the rail (it stretches
             to their height), and the aside sticks inside it, so the rail
-            stops at the end of the key ideas and never rides over the
-            wide figure. */}
-        <div
-          className={cn(
-            "min-w-0 lg:col-span-4 lg:col-start-9 lg:row-start-1",
-            wideFigure ? "lg:row-span-2" : "lg:row-span-3",
-          )}
-        >
+            stops at the end of the key ideas. */}
+        <div className="min-w-0 lg:col-span-4 lg:col-start-9 lg:row-span-3 lg:row-start-1">
           <aside
             aria-label={`${area.title}: related tools and pages`}
             className="lg:sticky lg:top-24"
@@ -228,18 +213,7 @@ export function LearningPathwaySection({
           </ol>
         </div>
 
-        {wideFigure ? (
-          <div className="min-w-0 lg:col-span-12 lg:row-start-3">
-            <PathwayFigure areaId={area.id} />
-          </div>
-        ) : null}
-
-        <div
-          className={cn(
-            "min-w-0 lg:col-span-8 lg:col-start-1",
-            wideFigure ? "lg:row-start-4" : "lg:row-start-3",
-          )}
-        >
+        <div className="min-w-0 lg:col-span-8 lg:col-start-1 lg:row-start-3">
           <h3 className="orbix-h3 text-text-primary">Further reading</h3>
           <ul className="mt-4">
             {area.furtherReading.map((reference) => (

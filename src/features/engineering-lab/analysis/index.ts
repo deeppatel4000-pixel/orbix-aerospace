@@ -4,7 +4,6 @@ export { analyzeHohmannTransfer } from "./hohmann-transfer";
 export { analyzeHypersonicHeating } from "./hypersonic-heating";
 export { analyzeInletCompression } from "./inlet-compression";
 export { analyzeMaterialTPSSizing } from "./material-tps-sizing";
-export { generateMissionInsights } from "./mission-insights";
 export { analyzeMissionProfile } from "./mission-profile";
 export { analyzeMultiShockRecovery } from "./multi-shock-recovery";
 export { analyzeObliqueShockCondition } from "./oblique-shock-condition";
@@ -20,7 +19,6 @@ export {
   MAXIMUM_REENTRY_TRAJECTORY_TIME_SECONDS,
 } from "./reentry-trajectory";
 export { analyzeShockCondition } from "./shock-condition";
-export { analyzeShockPressureLoss } from "./shock-pressure-loss";
 export { analyzeStagnationCondition } from "./stagnation-condition";
 export {
   analyzeTPSSizing,

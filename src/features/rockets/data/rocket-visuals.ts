@@ -125,7 +125,7 @@ const rocketVisuals = {
     cardObjectPosition: "45% 50%",
     cardSummary: "F-1 and J-2 engines",
     credit: "NASA",
-    height: 1920,
+    height: 2880,
     heroObjectPosition: "50% 21%",
     heroPhoneObjectPosition: "50% 55%",
     ...PUBLIC_DOMAIN_NASA,
@@ -133,8 +133,8 @@ const rocketVisuals = {
     objectPosition: "50% 45%",
     sourceUrl:
       "https://commons.wikimedia.org/wiki/File:Apollo_11_Launch_-_GPN-2000-000630.jpg",
-    src: "/images/rockets/saturn-v.webp",
-    width: 1536,
+    src: "/images/rockets/saturn-v-apollo-11.webp",
+    width: 2304,
   },
   "space-launch-system": {
     alt: "Space Launch System lifting off from Launch Complex 39B for Artemis II, seen from across the water",

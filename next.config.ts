@@ -28,6 +28,26 @@ const nextConfig: NextConfig = {
   },
   poweredByHeader: false,
   reactStrictMode: true,
+  /**
+   * `/showcase` was removed in v4 (plan section 3): its architecture figure
+   * and quality checks are now the build log's "How it is organised"
+   * section. The old capture pages, with or without a mission id, go to the
+   * Engineering Lab's mission planner.
+   */
+  async redirects() {
+    return [
+      {
+        destination: "/build-log#structure",
+        permanent: true,
+        source: "/showcase",
+      },
+      {
+        destination: "/engineering-lab#mission-planner",
+        permanent: true,
+        source: "/showcase-capture/:path*",
+      },
+    ];
+  },
   async headers() {
     return [
       {

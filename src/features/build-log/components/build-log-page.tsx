@@ -1,5 +1,8 @@
 import { ButtonLink } from "@/components/ui/button-link";
+import { formatCode } from "@/components/ui/readout";
 import { siteLegal } from "@/config/site-legal";
+import { ArchitectureFigure } from "@/features/build-log/components/architecture-figure";
+import { QualityChecks } from "@/features/build-log/components/quality-checks";
 import { ContactEmailLink } from "@/features/legal/components/contact-email-link";
 import { LegalSection } from "@/features/legal/components/legal-section";
 import {
@@ -17,6 +20,7 @@ const toc: readonly ReadingTocItem[] = [
   { id: "why-this-way", title: "Why I built it this way" },
   { id: "learned", title: "What I learned" },
   { id: "checks", title: "How the engineering is checked" },
+  { id: "structure", title: "How it is organised" },
   { id: "facts", title: "Project facts" },
 ];
 
@@ -26,8 +30,10 @@ const toc: readonly ReadingTocItem[] = [
  * Follows the reading-page pattern of the legal pages (spec 14) but without a
  * "Last updated" line, because that date belongs to the legal documents.
  * Every statement here must stay checkable against the repository: the first
- * commit date, the co-author lines in the git history, and the stack in
- * package.json.
+ * commit date, the co-author lines in the git history, the stack in
+ * package.json, the folder layers in the figure and the commands in
+ * `.github/workflows`. "How it is organised" (`#structure`) is where the
+ * removed `/showcase` page redirects.
  */
 export function BuildLogPage() {
   // Counted from the same cases the Verification page prints, so the
@@ -106,9 +112,9 @@ export function BuildLogPage() {
         <p>
           The bigger lesson came from the Engineering Lab. Before any tool could
           be built, I had to research how it works: which equation it uses, what
-          goes into it, and what the result means. Across all 33 tools in the
-          lab, that meant learning how lift, drag, thrust, gravity, shock waves
-          and heating actually behave, and working out a way for each one to be
+          goes into it, and what the result means. Across every tool in the lab,
+          that meant learning how lift, drag, thrust, gravity, shock waves and
+          heating actually behave, and working out a way for each one to be
           calculated.
         </p>
         <p>
@@ -145,6 +151,32 @@ export function BuildLogPage() {
         >
           See how ORBIX results compare with published reference values.
         </ButtonLink>
+      </LegalSection>
+
+      <LegalSection id="structure" title="How it is organised">
+        <p>
+          The code is split into four layers. Vehicle records, mission presets
+          and material data come first. Each calculator is a small function for
+          one calculation, such as a Hohmann transfer, and analyses combine
+          several calculators into one study. React components draw the pages
+          and import from the layers above, and the equations stay out of them.
+        </p>
+        {/* The figure and tables take the full reading track; the reading
+            layout's prose list markers and indents stop here. */}
+        <div className="mt-2 min-w-0 [&_li+li]:mt-0!">
+          <ArchitectureFigure />
+        </div>
+        <p className="mt-6">
+          Two GitHub Actions workflows run the checks below. The first six run
+          together as{" "}
+          <code className="orbix-data orbix-data--sm whitespace-nowrap">
+            {formatCode("npm run validate", { breakAfterSlash: false })}
+          </code>
+          .
+        </p>
+        <div className="mt-2 min-w-0">
+          <QualityChecks />
+        </div>
       </LegalSection>
 
       <LegalSection id="facts" title="Project facts">

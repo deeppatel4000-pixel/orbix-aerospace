@@ -57,7 +57,10 @@ interface VehicleRecordCardProps {
   headingLevel?: 3 | 4;
   href: string;
   layout?: VehicleRecordCardLayout;
-  /** Rendered as the entry's photograph, normally a `VehicleMediaFrame`. */
+  /**
+   * Rendered as the entry's photograph, normally a `VehicleMediaFrame`.
+   * `null` sets a row as text only.
+   */
   media: ReactNode;
   /**
    * The row thumbnail's shape: `landscape` (default) for a 16:10 airframe,
@@ -186,6 +189,30 @@ export function VehicleRecordCard({
         ))}
       </dl>
     ) : null;
+
+  if (isRow && media == null) {
+    return (
+      <article className={cn("h-full", className)}>
+        <Link
+          className={cn(
+            "orbix-vehicle-card group relative grid grid-cols-[minmax(0,1fr)] gap-y-4 py-5",
+            "md:grid-cols-[minmax(0,1fr)_auto_1.25rem] md:items-center md:gap-x-8",
+          )}
+          data-layout={layout}
+          data-variant={variant}
+          href={href}
+        >
+          {heading}
+          {specList}
+          <ArrowRight
+            aria-hidden="true"
+            className="hidden text-muted transition-colors duration-(--motion-fast) group-hover:text-foreground md:block"
+            size={20}
+          />
+        </Link>
+      </article>
+    );
+  }
 
   if (isRow) {
     return (

@@ -25,14 +25,14 @@ export const f35LightningII = {
       id: "f-35-systems-placeholder",
       status: "reviewed",
       summary:
-        "The F-35 treats sensors, avionics and networking as one mission system. Onboard fusion combines data before presenting it to the pilot, while the aircraft can share that picture with other forces, making information integration a vehicle-level design requirement.",
+        "The F-35 treats its sensors, avionics and networking as one mission system. It fuses their data before showing it to the pilot and can share that picture with other forces, so information integration is a requirement for the whole aircraft.",
       topic: "systems-engineering",
     },
     {
       id: "f-35-variant-aerodynamics-placeholder",
       status: "reviewed",
       summary:
-        "A common F-35 design supports three very different basing modes. The F-35B adds short-takeoff/vertical-landing hardware, while the F-35C uses a larger wing, stronger structure and more robust landing gear for catapult launches and arrested carrier recoveries.",
+        "One F-35 design supports three very different basing modes. The F-35B adds short-takeoff and vertical-landing hardware; the F-35C has a larger wing, a stronger structure and sturdier landing gear for catapult launches and arrested landings on carriers.",
       topic: "aerodynamics",
     },
   ],

@@ -8,7 +8,7 @@
   "commitNote": "Resolve the immutable handoff checkpoint with git rev-parse HEAD after clone; a commit cannot contain its own final hash.",
   "productionUrl": "https://orbix-aerospace.vercel.app",
   "vercelProject": "orbix-aerospace",
-  "currentMilestone": "Design v3 \"Standards manual\" (docs/design-system/orbix-design-v3.md) integrated on redesign/anti-vibe-legal (uncommitted after checkpoint d3bca15; not yet merged to main)",
+  "currentMilestone": "ORBIX v4 \"built for a five-minute read\" (docs/design-system/orbix-v4-plan.md) integrated on redesign/anti-vibe-legal over the v3 visual language (uncommitted after checkpoint 89de67f; not yet merged to main)",
   "completedMilestones": [
     "Typed aircraft and rocket architecture",
     "Engineering calculators and analyses",
@@ -27,7 +27,8 @@
     "Browser test-coverage hardening (compare query params, laboratory click path, showcase captures)",
     "2026 redesign to docs/design-system/orbix-redesign-2026.md: all pages, legal pages, credited WebP vehicle photographs, AI and unsourced images deleted, dead code removed, 320px overflow fixed, e2e suite updated and site-integrity sweep added",
     "Design v2 \"Flight manual\": photo heroes, IBM Plex Sans and B612 Mono, shared UI primitives, /build-log and /verification pages, dead code removed, e2e suite and visual baselines updated, README screenshots recaptured; second pass fixed feature-card gaps, the empty reentry plate, table scroll cues, equation wrapping, RecordRow alignment and photo repetition on 404 and About; third pass fixed the lab RecordRow clip at 390px, the rocket equation at 320px, portrait hero plates for rockets below 48rem, matching 2x2 feature-card figures, one spec-sheet layout on rocket profiles (no repeated photograph), a 3:2 crop for the aircraft overview figure, the Showcase title (Inside ORBIX) and README screenshot encoding; fourth pass added PhotoHero placement=\"right\" (stopgap deleted), a distinct 404 photograph, one closing-note treatment, the rocket equation on one line at 320px, no repeated photograph on aircraft profiles, updated e2e specs and visual baselines, and recaptured README screenshots; fifth pass made every profile table fill the section track, shortened rocket profile heroes, split registry card units, aligned /showcase section numbers and deleted MissionStageName; sixth pass split card units, sized related-vehicle headings like the numbered sections, added a Basis column to the Specifications and Performance sheets, kept the /verification Rounding check header on one line and recaptured two README screenshots; seventh (final) pass made the Basis column conditional, removed dead v1 token aliases, regenerated eleven reviewed visual baselines and recaptured all README screenshots under 600 KB (home and aircraft-sr-71 as JPEG)",
-    "Design v3 \"Standards manual\": no boxes, no gradients, hard-edged captioned photo plates, open catalogue registries and tables, to-scale vehicle drawings; integration pass fixed the rocket equation at 320px and the lab hero figures at 320px, removed v3 dead code (RegistrationMarks, retired PhotoHero, SectionIndex, VehicleFactsTable and VehicleRecordCard props, feature framing and featureObjectPosition, cardTreatment, legacy caps classes and tokens), updated e2e specs for intended changes, regenerated 27 visual baselines and recaptured all eight README screenshots as JPEG; second integration pass replaced the overlaid aircraft drawing with small multiples, kept designations unbroken, made profile tables full width, moved the Pictured rocket into the hero, unified equation numbers and credit wording, regenerated six baselines and recaptured the README screenshots; third integration pass gave B612 Mono an empty next/font fallback list so Greek in equations falls through to IBM Plex Sans instead of a metric-scaled Arial, regenerated all 24 baselines whose pixels changed (3 were unchanged) and recaptured all eight README screenshots; fourth integration pass drew the aircraft plans as closed schematic planforms with dimension lines, the rocket lineup as labelled bars across the full width, folded secondary table columns under the first cell on phones with a 'Scroll sideways for N more columns' line for wide numeric tables, gave Lab and Learn equations one script and parenthesis style with Greek from IBM Plex Sans, aligned the home hero actions and section rules, art-directed the Learn photographs as detail crops, opened every On this page list, regenerated 11 baselines and replaced three README screenshots (rockets, Learn equations, heights on a phone)"
+    "Design v3 \"Standards manual\": no boxes, no gradients, hard-edged captioned photo plates, open catalogue registries and tables, to-scale vehicle drawings; integration pass fixed the rocket equation at 320px and the lab hero figures at 320px, removed v3 dead code (RegistrationMarks, retired PhotoHero, SectionIndex, VehicleFactsTable and VehicleRecordCard props, feature framing and featureObjectPosition, cardTreatment, legacy caps classes and tokens), updated e2e specs for intended changes, regenerated 27 visual baselines and recaptured all eight README screenshots as JPEG; second integration pass replaced the overlaid aircraft drawing with small multiples, kept designations unbroken, made profile tables full width, moved the Pictured rocket into the hero, unified equation numbers and credit wording, regenerated six baselines and recaptured the README screenshots; third integration pass gave B612 Mono an empty next/font fallback list so Greek in equations falls through to IBM Plex Sans instead of a metric-scaled Arial, regenerated all 24 baselines whose pixels changed (3 were unchanged) and recaptured all eight README screenshots; fourth integration pass drew the aircraft plans as closed schematic planforms with dimension lines, the rocket lineup as labelled bars across the full width, folded secondary table columns under the first cell on phones with a 'Scroll sideways for N more columns' line for wide numeric tables, gave Lab and Learn equations one script and parenthesis style with Greek from IBM Plex Sans, aligned the home hero actions and section rules, art-directed the Learn photographs as detail crops, opened every On this page list, regenerated 11 baselines and replaced three README screenshots (rockets, Learn equations, heights on a phone)",
+    "ORBIX v4: five-link header, /showcase and /showcase-capture/* removed with permanent redirects (to /build-log#structure and /engineering-lab#mission-planner), home rebuilt around the Transfer Explorer, Engineering Lab cut to 14 tools in three groups (13 calculators and the mission planner with the delta-v ledger), Kepler verification case added (36 compared values, 26 within rounding), Learn cut to four pathways, profile galleries and to-scale traced outlines, Compare preloaded with the SR-71, F-22 and B-2; integration pass removed v4 dead code (showcase feature, mission reports and insights, shock pressure loss analysis, orbit diagram, SectionIndex and Readout components, unused vehicle figure components, five pre-v4 photographs), fixed the build log layer figure, the showcase redirects and the Compare lab links, rewrote the e2e specs for v4, regenerated all 22 visual baselines and recaptured all eight README screenshots; second integration pass put the 404 and Open Graph plates on their own slot photographs (F-22 hangar, SR-71 overhead), removed the ledger side stripe, named the explorer's Earth radius beside the home proof row, raised drawing text to 13px or more, labelled burns at their markers, opened the lab explorer on the ISS stop and replaced the Learn explorer with a still figure, sized gallery lead plates to their stack, marked published minimums with + in Compare, rewrote Compare group summaries and the vehicle analysis copy plainly, removed LAB_TOOL_COUNT, added a 404 visual baseline and recaptured four README screenshots"
   ],
   "completedDays": [
     "1-80 (exact early-day mapping partially unavailable; implemented state documented in CLAUDE_HANDOFF.md)",
@@ -46,8 +47,8 @@
   "plannedWork": [
     "Owner review of legal page text before merging to main",
     "Move the root loading.tsx fallback under (site) so the chrome stays visible on first paint",
-    "Sentence-case the Compare tool links and mission preset names",
-    "Give the Compare sheet one labelled, focusable scroll region instead of six non-scrolling focusable regions"
+    "Give the Compare sheet one labelled, focusable scroll region instead of six non-scrolling focusable regions",
+    "Decide whether the deferred lab tools (reentry trajectory, TPS selection and comparison, vehicle reentry evaluation and comparison) return once an entry model reaches orbit"
   ],
   "deferredWork": [
     "New physics or operational-fidelity models",
@@ -58,43 +59,44 @@
   "knownIssues": [
     "Compare: each group table is a focusable role=region that does not scroll, while the element that scrolls sideways on a phone is an unlabelled wrapper",
     "Root src/app/loading.tsx wraps the (site) layout, so first paint can briefly show a 'Loading' main without the header before the streamed page is revealed",
-    "Compare row links use Title Case tool names and mission presets use Title Case names; one demo string reads 'Orbix'",
-    "Full-page screenshots of Mission Control replay paint the sticky header mid-page (capture artifact, stable)",
+    "Next.js does not attach the configured security headers to the 308 responses of the /showcase redirects (empty-body redirects; not asserted)",
     "Engineering Laboratory first-load JavaScript was measured at 232 kB (pre-redesign figure, not re-measured)",
     "Day 1-17 per-day history is not fully recoverable",
-    "Soft 404: /showcase-capture/<unknown> returns 200 with the not-found UI because that route does not set dynamicParams = false; asserted as current behaviour in tests/e2e/smoke/showcase-capture.spec.ts",
-    "Photographs repeat across pages: SR-71 on home, its profile hero and learn, Saturn V on home, the rockets hero and learn, F-15C as the 404 hero, its own profile hero and the /about plate"
+    "Historical design and portfolio docs (docs/design-system/orbix-design-v2.md, orbix-redesign-2026.md, docs/DECISIONS.md, docs/portfolio/*) still describe /showcase and Mission Control as they were"
   ],
   "inventory": {
     "aircraft": 5,
     "rockets": 5,
     "missionPresets": 5,
-    "engineeringLabAnalyzers": 33,
     "calculatorModules": 20,
-    "analysisModules": 23,
-    "prerenderedRoutesTotal": 36,
-    "prerenderedUserFacingPages": 29,
+    "analysisModules": 20,
+    "prerenderedRoutesTotal": 30,
+    "prerenderedUserFacingPages": 23,
     "prerenderedFrameworkOutputs": 7,
-    "dynamicRouteTemplates": 3,
-    "playwrightBrowserTests": 627,
-    "playwrightSkipped": 427,
-    "visualBaselines": 27,
-    "learningPathways": 6,
-    "readmeScreenshots": 8
+    "dynamicRouteTemplates": 2,
+    "playwrightBrowserTests": 595,
+    "playwrightSkipped": 398,
+    "visualBaselines": 23,
+    "learningPathways": 4,
+    "readmeScreenshots": 8,
+    "engineeringLabTools": 14,
+    "engineeringLabCalculatorsShown": 13,
+    "verificationComparedValues": 36,
+    "verificationWithinRounding": 26
   },
   "validation": {
     "auditedAt": "2026-10-01",
     "node": "22.17.0",
     "npm": "10.9.2",
-    "tests": "96 files, 1321 tests passed",
+    "tests": "81 files, 1278 tests passed",
     "format": "passed",
     "lint": "passed with zero warnings",
     "typecheck": "passed",
-    "build": "passed; 29 user-facing prerendered pages (adds /build-log and /verification) plus /compare, which is dynamic by design; 7 framework outputs including /opengraph-image and /twitter-image",
+    "build": "passed; 23 user-facing prerendered pages plus /compare, which is dynamic by design; 7 framework outputs including /opengraph-image and /twitter-image; /showcase and /showcase-capture/* are permanent redirects",
     "fullValidation": "npm run validate passed",
     "npmAudit": "0 vulnerabilities (was 3 high; resolved by the Next 16.3.0 upgrade)",
-    "browserSuite": "npm run test:e2e: 627 passed, 427 skipped (project-conditional), 0 failed; desktop/tablet/mobile plus 28 visual checks",
-    "visualBaselines": "27 committed, platform-specific (win32); all 27 regenerated for design v3 after review on 2026-10-01, six again in the second integration pass, 24 again in the third (the other 3 were pixel-identical), 11 again in the fourth",
+    "browserSuite": "npm run test:e2e: 595 passed, 398 skipped (project-conditional), 0 failed; desktop/tablet/mobile plus 24 visual checks",
+    "visualBaselines": "23 committed, platform-specific (win32); all regenerated for v4 and reviewed on 2026-10-01; second integration pass regenerated 11 and added not-found-desktop",
     "securityHeaders": "guarded by tests/e2e/smoke/security-headers.spec.ts; guard verified by deliberate header removal (10/11 failed) then restored",
     "frameworkVersions": "next 16.3.0, react/react-dom 19.2.0, eslint-config-next 16.3.0, postcss 8.5.23, sharp 0.35.3",
     "productionCommit": "ac1aebce55e487245c25879e9fad9c3d929ad8be",
@@ -103,8 +105,8 @@
   "engineeringBoundaries": [
     "calculators own equations and numerical validation",
     "analysis owns orchestration",
-    "reports format completed outputs",
+    "src/features/orbits draws and animates completed transfer models; it holds no physics",
     "React presentation must not duplicate physics",
-    "vehicle, TPS, mission, report, and engineering contracts are protected during presentation work"
+    "vehicle, TPS, mission and engineering contracts are protected during presentation work"
   ]
 }

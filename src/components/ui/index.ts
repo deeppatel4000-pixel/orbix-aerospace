@@ -31,22 +31,12 @@ export {
   type RecordRowItem,
   type RecordRowProps,
 } from "./record-row";
-export {
-  formatIndexNumber,
-  SectionIndex,
-  type SectionIndexItem,
-  type SectionIndexProps,
-} from "./section-index";
+export { formatIndexNumber } from "./section-index";
 export { SectionNavigation } from "./section-navigation";
 export {
   SpecPanel,
   type SpecPanelItem,
   type SpecPanelProps,
 } from "./spec-panel";
-export {
-  formatCode,
-  formatFigure,
-  Readout,
-  type ReadoutProps,
-} from "./readout";
+export { formatCode, formatFigure } from "./readout";
 export { Tag, type TagProps } from "./tag";

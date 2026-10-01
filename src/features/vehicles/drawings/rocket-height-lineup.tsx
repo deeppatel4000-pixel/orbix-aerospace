@@ -1,5 +1,10 @@
+import {
+  getVehicleDrawing,
+  type VehicleDrawing,
+} from "@/features/vehicles/data/gallery-drawings";
 import type { Rocket } from "@/features/vehicles/types";
 
+import { DrawingSourceNote } from "./drawing-credits";
 import { NumText } from "./num-text";
 import { ScaleFigure } from "./scale-figure";
 import {
@@ -14,19 +19,20 @@ export { splitName } from "./units";
 
 /**
  * The two layouts of the lineup, each one scale for every vehicle.
- * `upright` (from 64rem): the vehicles stand side by side on one ground
- * datum as outlined bars of one nominal width, spread across the full
- * content width, each top carried left by an extension line to a shared
- * column of figures, with the scale bar laid flat under the ground.
- * `level` (below 64rem): the same lineup laid on its side, one vehicle to
- * a row from a common base line, so five heights and their names fit a
- * phone without scrolling. Text sizes are chosen so figures render at
- * 11px or more at every width each layout is shown at (`level` is never
- * drawn narrower than 288px, `upright` never narrower than 960px).
+ * `upright` (from 64rem): the traced side-view outlines stand side by side
+ * on one ground datum, spread across the full content width, each nose
+ * carried left by an extension line to a shared column of figures, with
+ * the scale bar laid flat under the ground. `level` (below 64rem): the
+ * same outlines laid on their sides, nose to the right, one vehicle to a
+ * row from a common base line, each with a dimension line under it, so
+ * five heights and their names fit a phone without scrolling. Text sizes
+ * are chosen so figures render at 13px or more (v4 plan section 5) at
+ * every width each layout is shown at (`level` is never drawn narrower
+ * than 288px, `upright` never narrower than 960px).
  */
 export const LINEUP_LAYOUTS = {
-  level: { figureSize: 12.5, nameSize: 13, unitsPerMetre: 1.7 },
-  upright: { figureSize: 12, nameSize: 13, unitsPerMetre: 3.2 },
+  level: { figureSize: 14, nameSize: 14, unitsPerMetre: 1.7 },
+  upright: { figureSize: 14, nameSize: 14, unitsPerMetre: 3.2 },
 } as const;
 
 export type LineupLayoutName = keyof typeof LINEUP_LAYOUTS;
@@ -38,21 +44,16 @@ const SCALE_TICK_M = 10;
 /* Upright layout. */
 /** The upright drawing's width; the vehicles spread across it. */
 const UPRIGHT_WIDTH = 1000;
-/**
- * The nominal width of every bar. The records give no diameter, so the
- * width is not to scale (said in the caption).
- */
-export const BAR_WIDTH = 36;
 const UPRIGHT_TOP = 14;
 const MARGIN = 8;
 /** From the figure column's right edge to where the extension lines end. */
 const FIGURE_TO_LEADER = 6;
-/** From the end of the extension lines to the first bar's left edge. */
+/** From the end of the extension lines to the first outline's left edge. */
 const LEADER_TO_FIRST = 40;
-/** Room right of the last bar, for its two-line name. */
-const UPRIGHT_RIGHT = 60;
-/** The gap between a bar's left edge and its extension line. */
-const EXT_GAP = 3;
+/** Room right of the last outline's centre, for its two-line name. */
+const UPRIGHT_RIGHT = 78;
+/** The gap between a nose and its extension line. */
+export const EXT_GAP = 6;
 /** From the ground to the scale bar, under the two-line names. */
 const GROUND_TO_SCALE = 62;
 /** Rough advance of B612 Mono, as a share of the size. */
@@ -61,17 +62,19 @@ const MONO_ADVANCE = 0.6;
 /* Level layout. */
 const LEVEL_WIDTH = 300;
 const BASE_X = 10;
-const ROW_PITCH = 50;
 const LEVEL_TOP = 4;
+/** Room for a row's name above its outline, and the gap under the name. */
+const NAME_ROOM = 16;
+const NAME_TO_OUTLINE = 6;
+/** From an outline to its dimension line, and on to the next row. */
+const OUTLINE_TO_DIMENSION = 6;
+const ROW_GAP = 14;
 
 /** The qualifier set after an approximate height, on the same line. */
 const APPROX = " approx.";
 /** Scale bar tick heights: the labelled ends, and the steps between. */
 const SCALE_TICK_MAJOR = 7;
 const SCALE_TICK_MINOR = 3.5;
-
-/** Half-length of the extension line across the top of each height. */
-const EXT_HALF = 10;
 
 export interface LineupVehicle {
   readonly id: string;
@@ -85,9 +88,24 @@ export interface LineupVehicle {
   /** The metre figure, only when the record is in another unit. */
   readonly converted?: string;
   readonly approximate: boolean;
+  /** The traced side-view outline. */
+  readonly drawing: VehicleDrawing;
+  /**
+   * Drawing units per traced metre: the outline's height times this is
+   * the recorded height at the layout's scale.
+   */
+  readonly scale: number;
+  /**
+   * SVG transform that places the outline: base on the ground line, nose
+   * at (x2, y2) upright or at the right end laid level.
+   */
+  readonly outline: string;
+  /** Half the outline's drawn width, in drawing units. */
+  readonly halfWidth: number;
   /**
    * The height's dimension line, from the ground (x1, y1) to the top
-   * (x2, y2). Upright: vertical. Level: horizontal.
+   * (x2, y2). Upright: the outline's centre line. Level: horizontal,
+   * under the outline.
    */
   readonly x1: number;
   readonly y1: number;
@@ -121,11 +139,24 @@ export interface LineupGeometry {
   readonly width: number;
 }
 
+/** A usable recorded height, in metres. */
+function recordedMetres(rocket: Rocket) {
+  const metres = toMetres(rocket.dimensions.height);
+  return Number.isFinite(metres) && metres > 0 ? metres : undefined;
+}
+
+/** Rounded to 1/1000 of a drawing unit, for compact transforms. */
+function r(value: number) {
+  return Math.round(value * 1000) / 1000;
+}
+
 /**
- * The lineup's geometry, built only from `dimensions.height` in each
- * record, converted to metres: every vehicle stands on one ground line at
- * one scale, shortest first. The height is the only dimension drawn; no
- * diameter is recorded, so none is drawn.
+ * The lineup's geometry, built from `dimensions.height` in each record,
+ * converted to metres, and each vehicle's traced side-view outline,
+ * scaled so its height is the recorded height: every vehicle stands on one
+ * ground line at one scale, shortest first. Widths follow the source
+ * drawings at the same scale; the records give no diameter. A record with
+ * no usable height or no outline is left out.
  */
 export function rocketLineupGeometry(
   rockets: readonly Rocket[],
@@ -133,20 +164,29 @@ export function rocketLineupGeometry(
 ): LineupGeometry {
   const u = LINEUP_LAYOUTS[layoutName].unitsPerMetre;
   const measured = rockets
-    .map((rocket) => ({ metres: toMetres(rocket.dimensions.height), rocket }))
-    .filter(({ metres }) => Number.isFinite(metres) && metres > 0)
+    .flatMap((rocket) => {
+      const metres = recordedMetres(rocket);
+      const drawing = getVehicleDrawing(rocket.id);
+      return drawing && metres !== undefined
+        ? [{ drawing, metres, rocket }]
+        : [];
+    })
     .sort((a, b) => a.metres - b.metres);
 
-  const labels = measured.map(({ metres, rocket }) => {
+  const labels = measured.map(({ drawing, metres, rocket }) => {
     const { height } = rocket.dimensions;
+    const scale = (metres * u) / drawing.heightM;
     return {
       approximate: height.qualifier === "approximate",
       converted: height.unit === "m" ? undefined : `${formatMetres(metres)} m`,
+      drawing,
+      halfWidth: (drawing.widthM * scale) / 2,
       id: rocket.id,
       metres,
       name: rocket.name,
       nameLines: splitName(rocket.name),
       recorded: `${formatRecorded(height.value)} ${height.unit}`,
+      scale,
     };
   });
 
@@ -156,17 +196,25 @@ export function rocketLineupGeometry(
   );
 
   if (layoutName === "level") {
-    const vehicles = labels.map((label, index) => {
-      const y = LEVEL_TOP + index * ROW_PITCH + 30;
+    let top = LEVEL_TOP;
+    const vehicles = labels.map((label) => {
+      const axisY = top + NAME_ROOM + NAME_TO_OUTLINE + label.halfWidth;
+      const dimensionY = axisY + label.halfWidth + OUTLINE_TO_DIMENSION;
+      top = dimensionY + ROW_GAP;
+      const x2 = BASE_X + label.metres * u;
+      const k = label.scale;
       return {
         ...label,
+        // Nose to the right: the drawing's y (nose 0, base at the bottom)
+        // runs right to left from the nose, its x down the row.
+        outline: `matrix(0 ${r(k)} ${r(-k)} 0 ${r(x2)} ${r(axisY - label.halfWidth)})`,
         x1: BASE_X,
-        x2: BASE_X + label.metres * u,
-        y1: y,
-        y2: y,
+        x2,
+        y1: dimensionY,
+        y2: dimensionY,
       };
     });
-    const bottom = LEVEL_TOP + vehicles.length * ROW_PITCH;
+    const bottom = top - ROW_GAP + 6;
     const scaleY = bottom + 14;
     return {
       ground: { x1: BASE_X, x2: BASE_X, y1: LEVEL_TOP, y2: bottom },
@@ -194,20 +242,25 @@ export function rocketLineupGeometry(
   );
   const figureX = MARGIN + figureChars * MONO_ADVANCE * figureSize;
   const leaderX = figureX + FIGURE_TO_LEADER;
-  const firstX = leaderX + LEADER_TO_FIRST + BAR_WIDTH / 2;
-  const lastCentre = UPRIGHT_WIDTH - UPRIGHT_RIGHT - BAR_WIDTH / 2;
+  const firstHalf = labels[0]?.halfWidth ?? 0;
+  const firstX = leaderX + LEADER_TO_FIRST + firstHalf;
+  const lastCentre =
+    UPRIGHT_WIDTH -
+    Math.max(UPRIGHT_RIGHT, (labels.at(-1)?.halfWidth ?? 0) + MARGIN);
   const pitch =
     labels.length > 1 ? (lastCentre - firstX) / (labels.length - 1) : 0;
   const tallest = labels.at(-1)?.metres ?? SCALE_BAR_M;
   const groundY = UPRIGHT_TOP + tallest * u;
   const vehicles = labels.map((label, index) => {
     const x = firstX + index * pitch;
+    const topY = groundY - label.metres * u;
     return {
       ...label,
+      outline: `translate(${r(x - label.halfWidth)} ${r(topY)}) scale(${r(label.scale)})`,
       x1: x,
       x2: x,
       y1: groundY,
-      y2: groundY - label.metres * u,
+      y2: topY,
     };
   });
   const width = UPRIGHT_WIDTH;
@@ -221,7 +274,7 @@ export function rocketLineupGeometry(
     leaderX,
     scale: scaleSteps.map((metres) => ({
       metres,
-      x: firstX - BAR_WIDTH / 2 + metres * u,
+      x: firstX - firstHalf + metres * u,
       y: scaleY,
     })),
     vehicles,
@@ -233,19 +286,25 @@ export function rocketLineupGeometry(
  * Whether a vehicle's figure is printed: only the first of a run of equal
  * heights, which share one extension line and one figure.
  */
-function printsFigure(vehicles: readonly LineupVehicle[], index: number) {
+export function printsFigure(
+  vehicles: readonly LineupVehicle[],
+  index: number,
+) {
   const previous = vehicles[index - 1];
   return !previous || previous.metres !== vehicles[index]?.metres;
 }
 
 /**
- * An upright bar: the outline of a vehicle's recorded height at the
- * nominal width, open at the ground line, which closes it.
+ * Laid level, the figure sits beside the nose on the outline's axis, or
+ * just above it when a second line (a conversion or qualifier) follows.
  */
-function barPath(vehicle: Pick<LineupVehicle, "x1" | "y1" | "y2">) {
-  const left = vehicle.x1 - BAR_WIDTH / 2;
-  const right = vehicle.x1 + BAR_WIDTH / 2;
-  return `M${left} ${vehicle.y1}V${vehicle.y2}H${right}V${vehicle.y1}`;
+function levelFigureY(
+  vehicle: LineupVehicle,
+  figureSize: number,
+  hasNote: boolean,
+) {
+  const axisY = vehicle.y1 - OUTLINE_TO_DIMENSION - vehicle.halfWidth;
+  return axisY + figureSize * 0.35 - (hasNote ? (figureSize + 3) / 2 : 0);
 }
 
 function lineupSummary(geometry: LineupGeometry) {
@@ -264,13 +323,13 @@ interface LineupDrawingProps {
 }
 
 /**
- * One layout of the lineup. Upright, each height is a 1.5px bar outline
- * of one nominal width standing on the ground datum, and a 0.75px
- * extension line carries each top to one column of figures at the left;
- * vehicles of equal height share one figure. Laid level, each height is a
- * 0.75px dimension line from the base line with 1.5px oblique end ticks,
- * and each figure sits at its line's end. Strokes do not scale with the
- * drawing.
+ * One layout of the lineup. Upright, each vehicle is its traced 1.5px
+ * outline standing on the ground datum, and a 0.75px extension line
+ * carries each nose to one column of figures at the left; vehicles of
+ * equal height share one figure and one extension line. Laid level, each
+ * outline lies nose right, with a 0.75px dimension line under it from the
+ * base line, 1.5px oblique end ticks and the figure past the nose.
+ * Strokes do not scale with the drawing.
  */
 function LineupDrawing({ className, layoutName, rockets }: LineupDrawingProps) {
   const geometry = rocketLineupGeometry(rockets, layoutName);
@@ -280,6 +339,8 @@ function LineupDrawing({ className, layoutName, rockets }: LineupDrawingProps) {
   const descId = `rocket-lineup-${layoutName}-desc`;
   const [scaleStart] = geometry.scale;
   const scaleEnd = geometry.scale.at(-1);
+  const leaderX = geometry.leaderX ?? 0;
+  const figureX = geometry.figureX ?? 0;
 
   return (
     <svg
@@ -287,7 +348,7 @@ function LineupDrawing({ className, layoutName, rockets }: LineupDrawingProps) {
       className={className}
       data-layout={layoutName}
       role="img"
-      viewBox={`0 0 ${geometry.width} ${geometry.height}`}
+      viewBox={`0 0 ${geometry.width} ${r(geometry.height)}`}
     >
       <title id={titleId}>Launch vehicle heights drawn to one scale</title>
       <desc
@@ -367,8 +428,7 @@ function LineupDrawing({ className, layoutName, rockets }: LineupDrawingProps) {
         const note =
           vehicle.converted ?? (vehicle.approximate ? "approx." : "");
         const inlineNote = vehicle.approximate && !vehicle.converted;
-        const leaderX = geometry.leaderX ?? 0;
-        const figureX = geometry.figureX ?? 0;
+        const printed = printsFigure(geometry.vehicles, index);
         return (
           <g
             aria-hidden="true"
@@ -377,6 +437,14 @@ function LineupDrawing({ className, layoutName, rockets }: LineupDrawingProps) {
             key={vehicle.id}
           >
             <g className="stroke-ink-muted" fill="none">
+              <path
+                d={vehicle.drawing.d}
+                data-outline=""
+                strokeLinejoin="round"
+                strokeWidth={1.5}
+                transform={vehicle.outline}
+                vectorEffect="non-scaling-stroke"
+              />
               {isLevel ? (
                 <>
                   <line
@@ -389,43 +457,30 @@ function LineupDrawing({ className, layoutName, rockets }: LineupDrawingProps) {
                     y2={vehicle.y2}
                   />
                   <path
-                    d={obliqueTicks([
-                      [vehicle.x1, vehicle.y1],
-                      [vehicle.x2, vehicle.y2],
-                    ])}
+                    d={obliqueTicks(
+                      [
+                        [vehicle.x1, vehicle.y1],
+                        [vehicle.x2, vehicle.y2],
+                      ],
+                      3,
+                    )}
                     strokeWidth={1.5}
                     vectorEffect="non-scaling-stroke"
                   />
                 </>
-              ) : (
-                <path
-                  d={barPath(vehicle)}
-                  data-dimension="height"
-                  strokeWidth={1.5}
+              ) : printed ? (
+                /* Carried left from just short of the nose to the figure
+                   column, above every shorter outline. */
+                <line
+                  data-extension=""
+                  strokeWidth={0.75}
                   vectorEffect="non-scaling-stroke"
+                  x1={vehicle.x2 - EXT_GAP}
+                  x2={leaderX}
+                  y1={vehicle.y2}
+                  y2={vehicle.y2}
                 />
-              )}
-              {/* Extension line at the top: across the end when laid
-                  level; upright, carried left from the bar's top-left
-                  corner to the figure column, above every shorter bar. */}
-              <line
-                data-extension=""
-                strokeWidth={0.75}
-                vectorEffect="non-scaling-stroke"
-                {...(isLevel
-                  ? {
-                      x1: vehicle.x2,
-                      x2: vehicle.x2,
-                      y1: vehicle.y2 - EXT_HALF,
-                      y2: vehicle.y2 + EXT_HALF,
-                    }
-                  : {
-                      x1: vehicle.x2 - BAR_WIDTH / 2 - EXT_GAP,
-                      x2: leaderX,
-                      y1: vehicle.y2,
-                      y2: vehicle.y2,
-                    })}
-              />
+              ) : null}
             </g>
 
             {isLevel ? (
@@ -434,7 +489,7 @@ function LineupDrawing({ className, layoutName, rockets }: LineupDrawingProps) {
                   className="fill-ink font-mono"
                   fontSize={figureSize}
                   x={vehicle.x2 + 10}
-                  y={vehicle.y2 + figureSize * 0.35}
+                  y={r(levelFigureY(vehicle, figureSize, Boolean(note)))}
                 >
                   <NumText size={figureSize} text={vehicle.recorded} />
                 </text>
@@ -443,7 +498,9 @@ function LineupDrawing({ className, layoutName, rockets }: LineupDrawingProps) {
                     className="fill-ink-muted font-mono"
                     fontSize={figureSize}
                     x={vehicle.x2 + 10}
-                    y={vehicle.y2 + figureSize * 0.35 + figureSize + 3}
+                    y={r(
+                      levelFigureY(vehicle, figureSize, true) + figureSize + 3,
+                    )}
                   >
                     <NumText size={figureSize} text={note} />
                   </text>
@@ -452,22 +509,28 @@ function LineupDrawing({ className, layoutName, rockets }: LineupDrawingProps) {
                   className="fill-ink font-sans"
                   fontSize={nameSize}
                   fontWeight={500}
-                  x={vehicle.x1 + 8}
-                  y={vehicle.y1 - 12}
+                  x={vehicle.x1 + 6}
+                  y={r(
+                    vehicle.y1 -
+                      OUTLINE_TO_DIMENSION -
+                      2 * vehicle.halfWidth -
+                      NAME_TO_OUTLINE -
+                      3,
+                  )}
                 >
                   {vehicle.name}
                 </text>
               </>
             ) : (
               <>
-                {printsFigure(geometry.vehicles, index) ? (
+                {printed ? (
                   <text
                     className="font-mono"
                     data-figure=""
                     fontSize={figureSize}
                     textAnchor="end"
-                    x={figureX}
-                    y={vehicle.y2 + figureSize * 0.35}
+                    x={r(figureX)}
+                    y={r(vehicle.y2 + figureSize * 0.35)}
                   >
                     <tspan className="fill-ink">
                       <NumText size={figureSize} text={vehicle.recorded} />
@@ -477,8 +540,8 @@ function LineupDrawing({ className, layoutName, rockets }: LineupDrawingProps) {
                     ) : note ? (
                       <tspan
                         className="fill-ink-muted"
-                        x={figureX}
-                        y={vehicle.y2 + figureSize * 1.35 + 3}
+                        x={r(figureX)}
+                        y={r(vehicle.y2 + figureSize * 1.35 + 3)}
                       >
                         <NumText size={figureSize} text={note} />
                       </tspan>
@@ -490,14 +553,14 @@ function LineupDrawing({ className, layoutName, rockets }: LineupDrawingProps) {
                   fontSize={nameSize}
                   fontWeight={500}
                   textAnchor="middle"
-                  x={vehicle.x1}
-                  y={vehicle.y1 + 22}
+                  x={r(vehicle.x1)}
+                  y={r(vehicle.y1 + 22)}
                 >
                   {vehicle.nameLines.map((line, lineIndex) => (
                     <tspan
-                      dy={lineIndex === 0 ? 0 : 15}
+                      dy={lineIndex === 0 ? 0 : 16}
                       key={line}
-                      x={vehicle.x1}
+                      x={r(vehicle.x1)}
                     >
                       {line}
                     </tspan>
@@ -520,32 +583,42 @@ interface RocketHeightLineupProps {
 }
 
 /**
- * The launch vehicles to one scale (spec 8): each recorded height drawn as
- * a labelled bar on a common ground, with a metre scale bar. Linework in
- * the muted ink, figures in B612 Mono, no fills. Below 64rem the lineup is
- * laid on its side. A record with no usable height is left out and named
- * in the caption.
+ * The launch vehicles to one scale (spec 8): each traced outline scaled to
+ * its recorded height on a common ground, with a metre scale bar.
+ * Linework in the muted ink, figures in B612 Mono, no fills. Below 64rem
+ * the lineup is laid on its side. A record with no usable height or no
+ * outline is left out and named in the caption, and every outline's
+ * source is credited there.
  */
 export function RocketHeightLineup({
   className,
   figureNumber,
   rockets,
 }: RocketHeightLineupProps) {
-  const drawn = new Set(
-    rocketLineupGeometry(rockets).vehicles.map((vehicle) => vehicle.id),
-  );
+  const geometry = rocketLineupGeometry(rockets);
+  const drawn = new Set(geometry.vehicles.map((vehicle) => vehicle.id));
   const omitted = rockets.filter((rocket) => !drawn.has(rocket.id));
+  const unmeasured = omitted.filter(
+    (rocket) => recordedMetres(rocket) === undefined,
+  );
+  const undrawn = omitted.filter((rocket) => !unmeasured.includes(rocket));
+  const names = (items: readonly Rocket[]) =>
+    items.map((rocket) => rocket.name).join(", ");
 
   return (
     <ScaleFigure
       caption={
         <>
-          Recorded height of each launch vehicle, to one scale. Width not to
-          scale: the records give no diameter, so every vehicle is drawn at one
-          nominal width.
-          {omitted.length > 0
-            ? ` Not drawn, no height recorded: ${omitted.map((rocket) => rocket.name).join(", ")}.`
+          Each launch vehicle at its recorded height, all to one scale. The
+          records give no diameter, so widths follow the source drawings at the
+          same scale.
+          {unmeasured.length > 0
+            ? ` Not drawn, no height recorded: ${names(unmeasured)}.`
             : ""}
+          {undrawn.length > 0
+            ? ` Not drawn, no outline yet: ${names(undrawn)}.`
+            : ""}{" "}
+          <DrawingSourceNote vehicles={geometry.vehicles} />
         </>
       }
       className={className}

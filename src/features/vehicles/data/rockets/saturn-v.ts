@@ -20,14 +20,14 @@ export const saturnV = {
       id: "saturn-v-staging-placeholder",
       status: "reviewed",
       summary:
-        "Saturn V split the lunar mission across propellants optimized for different phases: the S-IC first stage burned RP-1/LOX for very high liftoff thrust, while the S-II and S-IVB used hydrogen/oxygen for high-efficiency upper-stage work. The S-IVB could restart in orbit for translunar injection.",
+        "Saturn V used different propellants for different phases of the lunar mission. The S-IC first stage burned RP-1/LOX for very high liftoff thrust, and the S-II and S-IVB burned hydrogen and oxygen for efficient upper-stage flight. The S-IVB could restart in orbit for translunar injection.",
       topic: "staging",
     },
     {
       id: "saturn-v-structures-placeholder",
       status: "reviewed",
       summary:
-        "Saturn V’s structure had to carry millions of pounds of propellant and transmit engine, aerodynamic and staging loads while staying light enough to reach the Moon. NASA’s S-IC alone stood 138 feet tall, yet structural mass directly competed with payload and propellant performance.",
+        "Saturn V’s structure carried millions of pounds of propellant and the engine, aerodynamic and staging loads, and still had to be light enough to reach the Moon. The S-IC alone stood 138 feet tall, and structural mass competed directly with payload and propellant.",
       topic: "structures",
     },
   ],

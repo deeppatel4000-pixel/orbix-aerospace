@@ -71,11 +71,12 @@ export function AccessibilityPage() {
       <LegalSection id="limitations" title="Known limitations">
         <ul>
           <li>
-            <strong>Visualizations in the Engineering Lab.</strong> The 3D
-            mission scene, orbit diagrams, ground tracks and mission replay are
-            visual. The values they illustrate are also given as text in the
-            results next to them, but the shapes and positions in the drawings
-            do not have a full text description.
+            <strong>Orbit drawings in the Engineering Lab.</strong> The transfer
+            drawings in the Transfer Explorer, the Hohmann transfer tool and the
+            mission planner each have a short text description, and the values
+            they show are also given as text next to them. The Transfer Explorer
+            can also show its numbers as a table. The shapes and positions in
+            the drawings are not described in full.
           </li>
           <li>
             <strong>Redesign in progress.</strong> ORBIX is being redesigned

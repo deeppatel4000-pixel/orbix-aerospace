@@ -21,7 +21,12 @@ export function RelatedRockets({ rockets }: RelatedRocketsProps) {
       <ul className="border-b border-border [&>li]:border-t [&>li]:border-border">
         {rockets.map((item) => (
           <li key={item.id}>
-            <RocketCard rocket={item} layout="row" variant="compact" />
+            <RocketCard
+              layout="row"
+              media="none"
+              rocket={item}
+              variant="compact"
+            />
           </li>
         ))}
       </ul>

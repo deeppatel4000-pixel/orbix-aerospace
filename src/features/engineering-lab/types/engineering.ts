@@ -545,37 +545,6 @@ export interface InletCompressionAnalysis {
   readonly terminalShockPressureRecoveryRatio: number;
 }
 
-export type ShockPressureLossInputs =
-  | {
-      readonly altitudeMeters?: number;
-      readonly machNumber: number;
-      readonly shockType: "normal";
-    }
-  | {
-      readonly altitudeMeters?: number;
-      readonly deflectionAngleDegrees: number;
-      readonly machNumber: number;
-      readonly shockType: "oblique";
-    };
-
-export type ShockPressureLossAnalysis =
-  | {
-      readonly downstreamMach: number;
-      readonly pressureLossPercentage: number;
-      readonly pressureRecoveryRatio: number;
-      readonly shockType: "normal";
-      readonly upstreamMach: number;
-    }
-  | {
-      readonly downstreamMach: number;
-      readonly normalMachComponent: number;
-      readonly pressureLossPercentage: number;
-      readonly pressureRecoveryRatio: number;
-      readonly shockAngleDegrees: number;
-      readonly shockType: "oblique";
-      readonly upstreamMach: number;
-    };
-
 export const obliqueShockFields = [
   "machNumber",
   "deflectionAngleDegrees",
@@ -1027,80 +996,6 @@ export interface MissionProfileAnalysis {
   };
   readonly totalDeltaVMetresPerSecond?: number;
   readonly tpsRecommendation?: TPSMaterial;
-}
-
-export type MissionInsightCategory =
-  | "mission-overview"
-  | "orbital-analysis"
-  | "vehicle-analysis"
-  | "thermal-analysis"
-  | "engineering-tradeoffs"
-  | "limitations";
-
-export interface MissionInsight {
-  readonly category: MissionInsightCategory;
-  readonly details: readonly string[];
-  readonly id: string;
-  readonly summary: string;
-  readonly title: string;
-}
-
-export interface MissionInsightsAnalysis {
-  readonly assumptions: readonly string[];
-  readonly insights: readonly MissionInsight[];
-  readonly limitations: readonly string[];
-  readonly missionName: string;
-  readonly sourceAvailability: {
-    readonly hasOrbitalAnalysis: boolean;
-    readonly hasThermalAnalysis: boolean;
-    readonly hasVehicleAnalysis: boolean;
-    readonly hasVehicleReentryEvaluation: boolean;
-  };
-  readonly systemsInterpreted: readonly string[];
-}
-
-export interface MissionReportInputs {
-  readonly description: string;
-  readonly missionProfileAnalysis: MissionProfileAnalysis;
-}
-
-export type MissionReportExportFormat = "json" | "markdown";
-
-export interface MissionReport {
-  readonly missionSummary: {
-    readonly description: string;
-    readonly missionName: string;
-    readonly systemsUsed: readonly string[];
-  };
-  readonly orbitalAnalysis?: {
-    readonly hohmannTransfer?: HohmannTransferAnalysisResult;
-    readonly maneuvers: readonly DeltaVBudgetManeuver[];
-    readonly orbitalPlaneChange?: OrbitalPlaneChangeAnalysisResult;
-    readonly totalDeltaVMetresPerSecond: number;
-  };
-  readonly vehicleAnalysis?: {
-    readonly comparisonRecommendation?: VehicleReentryComparisonResult;
-    readonly performanceSummary: {
-      readonly dynamics: VehicleReentryEvaluationAnalysis["summary"]["dynamics"];
-      readonly flight: VehicleReentryEvaluationAnalysis["summary"]["flight"];
-    };
-    readonly selectedVehicle: VehicleReentryConfiguration;
-  };
-  readonly thermalAnalysis?: {
-    readonly thermalSummary: VehicleReentryEvaluationAnalysis["summary"]["thermal"];
-    readonly tpsRecommendation?: {
-      readonly estimatedTPSMassKilograms: number;
-      readonly material: TPSMaterial;
-      readonly requiredThickness: TPSSizingAnalysis["estimatedThickness"];
-      readonly thermalMargin: VehicleReentryEvaluationAnalysis["summary"]["tps"]["thermalMargin"];
-    };
-  };
-  readonly missionAssessment: {
-    readonly educationalSummary: string;
-    readonly limitations: readonly string[];
-    readonly modelAssumptions: readonly string[];
-  };
-  readonly sourceAnalysis: MissionProfileAnalysis;
 }
 
 export type MissionPresetCategory =

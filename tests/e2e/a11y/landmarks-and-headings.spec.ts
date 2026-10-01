@@ -165,7 +165,7 @@ test.describe("Duplicate landmark roles", () => {
 
       // Every <nav> in this app is named, by aria-label or by
       // aria-labelledby pointing at visible text (desktop nav, footer nav,
-      // Learn contents, Engineering Lab tools, mission-control sections,
+      // Learn contents, Engineering Lab tools, legal contents,
       // etc.). An unnamed <nav> would itself be a regression this check
       // should catch, not silently pass through.
       for (const label of navLabels) {

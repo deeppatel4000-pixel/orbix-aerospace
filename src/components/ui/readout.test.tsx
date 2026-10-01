@@ -1,7 +1,7 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 
-import { formatCode, formatFigure, Readout } from "@/components/ui/readout";
+import { formatCode, formatFigure } from "@/components/ui/readout";
 
 function html(node: React.ReactNode) {
   return renderToStaticMarkup(<>{node}</>);
@@ -46,14 +46,6 @@ describe("formatFigure", () => {
     }
     const node = <Figure />;
     expect(formatFigure(node)).toBe(node);
-  });
-});
-
-describe("Readout", () => {
-  it("keeps the text content intact for copy and screen readers", () => {
-    const markup = renderToStaticMarkup(<Readout>12,345.6 km</Readout>);
-    expect(markup.replace(/<[^>]+>/g, "")).toBe("12,345.6 km");
-    expect(markup).toContain('class="orbix-readout-inline"');
   });
 });
 

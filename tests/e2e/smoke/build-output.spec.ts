@@ -35,14 +35,16 @@ import {
  * derives its invariant from the manifest rather than from any number
  * written in prose.
  *
- * Measured from `.next/prerender-manifest.json` (design v2, 2026-09-29):
+ * Shape of `.next/prerender-manifest.json` (v4, 2026-10-01):
  *
- *   36 prerendered routes total
  *    7 framework outputs: /_global-error, /_not-found, /favicon.ico,
  *      /icon.png, /manifest.webmanifest, and the two metadata image routes
  *      /opengraph-image and /twitter-image
- *   29 user-facing pages  <- the meaningful invariant
- *    3 dynamic templates: /aircraft/[id], /rockets/[id], /showcase-capture/[id]
+ *   23 user-facing pages  <- the meaningful invariant
+ *    2 dynamic templates: /aircraft/[id] and /rockets/[id]
+ *
+ * v4 removed `/showcase` and the five `/showcase-capture/[id]` pages; both
+ * now redirect (see removed-routes.spec.ts).
  *
  * `/compare` is intentionally dynamic — it reads `searchParams` — and is
  * therefore not part of the prerendered set at all.
@@ -50,21 +52,12 @@ import {
  * The framework internals are deliberately EXCLUDED. They are Next's own
  * output, they already changed once across a major version, and asserting
  * them would make this test fail on a framework upgrade that lost nothing of
- * ORBIX's. The 29 user-facing pages are what actually represent the product.
+ * ORBIX's. The user-facing pages are what actually represent the product.
  *
  * The expected set is built from the same fixture lists the rest of the suite
  * uses, so adding a vehicle extends this assertion automatically rather than
  * silently leaving the new page unprotected.
  */
-
-/** Mission preset ids that back `/showcase-capture/[id]`. */
-const SHOWCASE_MISSION_IDS = [
-  "leo-satellite-deployment",
-  "iss-style-resupply",
-  "lunar-transfer-concept",
-  "reentry-demonstrator",
-  "mars-transfer-concept",
-] as const;
 
 /** Statically prerendered routes that are not generated from a data list. */
 const STATIC_PAGE_ROUTES = [
@@ -73,7 +66,6 @@ const STATIC_PAGE_ROUTES = [
   "/rockets",
   "/engineering-lab",
   "/learn",
-  "/showcase",
   // About, credits and legal pages (added in the 2026 redesign).
   "/about",
   "/accessibility",
@@ -134,7 +126,6 @@ const EXPECTED_PAGE_ROUTES = [
   ...STATIC_PAGE_ROUTES,
   ...AIRCRAFT_IDS.map((id) => `/aircraft/${id}`),
   ...ROCKET_IDS.map((id) => `/rockets/${id}`),
-  ...SHOWCASE_MISSION_IDS.map((id) => `/showcase-capture/${id}`),
 ].sort();
 
 test.describe("Build output", () => {
@@ -172,7 +163,7 @@ test.describe("Build output", () => {
     expect(generated).toEqual(EXPECTED_PAGE_ROUTES);
   });
 
-  test("generates one page per vehicle and per mission preset", () => {
+  test("generates one page per vehicle and none for removed routes", () => {
     const manifest = readPrerenderManifest();
     const generated = Object.keys(manifest.routes);
 
@@ -188,9 +179,9 @@ test.describe("Build output", () => {
     );
     expect(count("/rockets/"), "one page per rocket").toBe(ROCKET_IDS.length);
     expect(
-      count("/showcase-capture/"),
-      "one capture page per mission preset",
-    ).toBe(SHOWCASE_MISSION_IDS.length);
+      generated.filter((route) => route.startsWith("/showcase")),
+      "removed in v4; they redirect",
+    ).toEqual([]);
   });
 
   test("prerenders the share-card images", () => {
@@ -215,13 +206,12 @@ test.describe("Build output", () => {
     ).not.toContain("/compare");
   });
 
-  test("keeps the three dynamic route templates", () => {
+  test("keeps the two dynamic route templates", () => {
     const manifest = readPrerenderManifest();
 
     expect(Object.keys(manifest.dynamicRoutes).sort()).toEqual([
       "/aircraft/[id]",
       "/rockets/[id]",
-      "/showcase-capture/[id]",
     ]);
   });
 });

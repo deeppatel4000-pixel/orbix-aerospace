@@ -6,9 +6,9 @@ import type { ComparisonCellValue } from "@/features/compare/types";
  * ## Why this is a whole-row decision, not a per-cell one
  *
  * A magnitude track only means anything relative to the other tracks in its
- * row. If even one present value in the row cannot participate — because it is
+ * row. If even one present value in the row cannot participate, because it is
  * stored in a different unit, or because that cell carries no machine-readable
- * magnitude at all — then the tracks that *did* render would silently invite a
+ * magnitude at all, then the tracks that *did* render would silently invite a
  * comparison against a value that has no track. A partly-encoded row is worse
  * than an unencoded one, so the whole row falls back to text.
  *
@@ -21,7 +21,7 @@ import type { ComparisonCellValue } from "@/features/compare/types";
  * That single rule is what keeps the known-unsafe speed row safe. The F-15
  * stores `{ unit: "mph", value: 1875 }` and the F-22 stores
  * `{ unit: "Mach", value: 2 }`. The units differ, so a comparison containing
- * both is rejected and neither cell gets a track — without the speed row being
+ * both is rejected and neither cell gets a track, without the speed row being
  * special-cased anywhere.
  *
  * ## Missing versus uninstrumented
@@ -31,11 +31,11 @@ import type { ComparisonCellValue } from "@/features/compare/types";
  *   unavailable    The dataset genuinely has no value. The cell keeps its
  *                  existing unavailable presentation, renders no track, and is
  *                  excluded from the denominator. It does NOT make the row
- *                  ineligible — the remaining present values are still
+ *                  ineligible: the remaining present values are still
  *                  legitimately comparable to each other.
  *
  *   available with A value the reader can see but that carries no comparable
- *   no magnitude   metadata — a composite cell, a qualitative label. This DOES
+ *   no magnitude   metadata: a composite cell, a qualitative label. This DOES
  *                  make the row ineligible, because the reader would otherwise
  *                  be shown bars next to a number that has none.
  *

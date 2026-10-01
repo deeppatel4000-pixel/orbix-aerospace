@@ -5,7 +5,7 @@ import { listLearningAreas } from "@/features/learn/data";
 
 /**
  * Learn (spec v3 section 11): a typographic hero with a plain contents
- * list, then the six pathways on the page ground.
+ * list, then the pathways on the page ground.
  */
 export function LearnPage() {
   const learningAreas = listLearningAreas();

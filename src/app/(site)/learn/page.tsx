@@ -6,7 +6,7 @@ import { socialOpenGraph, socialTwitter } from "@/lib/social-image";
 
 const title = "Learn";
 const description =
-  "Six reading pathways on the physics behind the ORBIX Engineering Lab: aerodynamics, propulsion, compressible flow, atmospheric entry, orbital mechanics and engineering communication, with links to the Engineering Lab tools and to published references.";
+  "Short readings on the physics behind the ORBIX Engineering Lab: aerodynamics, propulsion, compressible flow and orbital mechanics, with links to the lab tools and to published references.";
 
 export const metadata: Metadata = {
   alternates: { canonical: "/learn" },

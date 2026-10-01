@@ -6,9 +6,9 @@ import {
 } from "../fixtures/orbix";
 
 /**
- * One representative tool per workflow group (33 tools exist in total; this
- * exercises the tool each workflow opens on rather than asserting on all of
- * them). A workflow hash opens that workflow's first tool.
+ * One representative tool per workflow group: the tool each workflow opens
+ * on (the lab's tool count is asserted in engineering-lab-modules.spec.ts).
+ * A workflow hash opens that workflow's first tool.
  */
 const workflows = [
   {
@@ -20,32 +20,14 @@ const workflows = [
   {
     id: "compressible-flow-workflow",
     representativeCardId: "stagnation-condition-analyzer",
-    representativeCardTitle: "Stagnation condition analyzer",
+    representativeCardTitle: "Stagnation condition",
     title: "Compressible flow",
-  },
-  {
-    id: "entry-systems-workflow",
-    representativeCardId: "hypersonic-heating-analyzer",
-    representativeCardTitle: "Hypersonic heating analyzer",
-    title: "Atmospheric entry",
   },
   {
     id: "orbital-mission-workflow",
     representativeCardId: "hohmann-transfer-analyzer",
-    representativeCardTitle: "Hohmann transfer analyzer",
+    representativeCardTitle: "Hohmann transfer",
     title: "Orbits and missions",
-  },
-  {
-    id: "mission-operations-workflow",
-    representativeCardId: "mission-visualization",
-    representativeCardTitle: "Mission diagrams",
-    title: "Mission visualization",
-  },
-  {
-    id: "review-presentation-workflow",
-    representativeCardId: "mission-scenario-builder",
-    representativeCardTitle: "Mission scenario builder",
-    title: "Scenarios and review",
   },
 ] as const;
 

@@ -50,7 +50,6 @@ export const ROUTES = {
   rockets: "/rockets",
   compare: "/compare",
   engineeringLab: "/engineering-lab",
-  showcase: "/showcase",
   learn: "/learn",
 } as const;
 
@@ -75,6 +74,27 @@ export const PROJECT_ROUTES = {
   buildLog: "/build-log",
   verification: "/verification",
 } as const;
+
+/**
+ * Routes removed in v4 (plan section 3) and where each now redirects,
+ * permanently. `/showcase` became the build log's "How it is organised"
+ * section; the capture pages, with or without a mission id, go to the
+ * Engineering Lab's mission planner.
+ */
+export const REMOVED_ROUTE_REDIRECTS = [
+  { from: "/showcase", to: "/build-log#structure" },
+  {
+    from: "/showcase-capture/leo-satellite-deployment",
+    to: "/engineering-lab#mission-planner",
+  },
+  { from: "/showcase-capture", to: "/engineering-lab#mission-planner" },
+] as const;
+
+/**
+ * Learning pathways on `/learn`: v4 (plan section 8) keeps pathways 1, 2, 3
+ * and 5 and defers 4 and 6, so four are shown.
+ */
+export const LEARN_PATHWAY_COUNT = 4;
 
 /** The site's contact address, shown as a mailto: link in the footer. */
 export const CONTACT_EMAIL = "deep.patel4000@gmail.com";

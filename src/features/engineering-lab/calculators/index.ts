@@ -15,6 +15,16 @@ export {
   calculateIsentropicFlow,
   DEFAULT_ISENTROPIC_FLOW_GAMMA,
 } from "./isentropic-flow";
+export {
+  calculateKeplerPosition,
+  KEPLER_EQUATION_TOLERANCE_RADIANS,
+  solveKeplerEquation,
+} from "./kepler-position";
+export type {
+  KeplerEquationSolution,
+  KeplerPositionInputs,
+  KeplerPositionResult,
+} from "./kepler-position";
 export { calculateLiftEquation } from "./lift-equation";
 export { calculateMachNumber, classifyMachNumber } from "./mach-number";
 export {

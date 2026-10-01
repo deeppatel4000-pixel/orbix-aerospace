@@ -19,6 +19,11 @@ import {
 } from "@/features/engineering-lab/components/laboratory-tool-navigation";
 
 interface LaboratoryShellProps {
+  /**
+   * Old anchors mapped to the tool that now covers them, so links to
+   * merged or replaced tools still open something useful.
+   */
+  aliases?: Readonly<Record<string, string>>;
   children: ReactNode;
   /**
    * The workflows in render order, each with its tools in render order.
@@ -48,7 +53,11 @@ export function useActiveLaboratoryTool(): string | null {
  * looking the target up in the document and so a reader's inputs survive a
  * glance at another tool.
  */
-export function LaboratoryShell({ children, workflows }: LaboratoryShellProps) {
+export function LaboratoryShell({
+  aliases,
+  children,
+  workflows,
+}: LaboratoryShellProps) {
   const workflowChildren = useMemo(
     () => Children.toArray(children),
     [children],
@@ -62,6 +71,12 @@ export function LaboratoryShell({ children, workflows }: LaboratoryShellProps) {
 
     if (hashId.length === 0) {
       setActiveToolId(firstToolId);
+      return;
+    }
+
+    const alias = aliases?.[hashId];
+    if (alias !== undefined) {
+      setActiveToolId(alias);
       return;
     }
 
@@ -86,7 +101,7 @@ export function LaboratoryShell({ children, workflows }: LaboratoryShellProps) {
     if (containingTool !== undefined) {
       setActiveToolId(containingTool);
     }
-  }, [firstToolId, workflows]);
+  }, [aliases, firstToolId, workflows]);
 
   useEffect(() => {
     // Reads `window.location.hash` and the DOM, neither of which exists during
@@ -102,7 +117,11 @@ export function LaboratoryShell({ children, workflows }: LaboratoryShellProps) {
     // Once the target is visible, bring it into view. The browser's own jump
     // happens before React reveals a hidden tool, so it cannot do this alone.
     const hashId = decodeURIComponent(window.location.hash.slice(1));
-    const target = hashId.length > 0 ? document.getElementById(hashId) : null;
+    const target =
+      hashId.length > 0
+        ? (document.getElementById(hashId) ??
+          document.getElementById(aliases?.[hashId] ?? ""))
+        : null;
 
     if (target === null || target.closest("[hidden]") !== null) {
       return;
@@ -132,7 +151,7 @@ export function LaboratoryShell({ children, workflows }: LaboratoryShellProps) {
     });
 
     return () => window.cancelAnimationFrame(frame);
-  }, [activeToolId]);
+  }, [activeToolId, aliases]);
 
   const selectTool = useCallback((toolId: string) => {
     setActiveToolId(toolId);

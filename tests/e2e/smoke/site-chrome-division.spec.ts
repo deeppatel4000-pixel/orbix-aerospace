@@ -1,4 +1,4 @@
-import { expect, ROUTES, test } from "../fixtures/orbix";
+import { expect, PROJECT_ROUTES, ROUTES, test } from "../fixtures/orbix";
 
 /**
  * Division propagation and active-navigation coverage for the shared chrome.
@@ -20,18 +20,27 @@ import { expect, ROUTES, test } from "../fixtures/orbix";
  */
 
 const DIVISION_BY_ROUTE = [
-  { division: "space", label: "Home", path: ROUTES.home },
-  { division: "aircraft", label: "Aircraft", path: ROUTES.aircraft },
-  { division: "space", label: "Rockets", path: ROUTES.rockets },
-  { division: "engineering", label: "Compare", path: ROUTES.compare },
-  {
-    division: "engineering",
-    label: "Engineering Lab",
-    path: ROUTES.engineeringLab,
-  },
-  { division: "research", label: "Learn", path: ROUTES.learn },
-  { division: "space", label: "Showcase", path: ROUTES.showcase },
+  { division: "space", path: ROUTES.home },
+  { division: "aircraft", path: ROUTES.aircraft },
+  { division: "space", path: ROUTES.rockets },
+  { division: "engineering", path: ROUTES.compare },
+  { division: "engineering", path: ROUTES.engineeringLab },
+  { division: "research", path: ROUTES.learn },
+  { division: "research", path: PROJECT_ROUTES.verification },
+  { division: "space", path: PROJECT_ROUTES.buildLog },
 ] as const;
+
+/** The header links (v4 plan section 3) and the page each marks current. */
+const NAV_BY_ROUTE = [
+  { label: "Engineering Lab", path: ROUTES.engineeringLab },
+  { label: "Verification", path: PROJECT_ROUTES.verification },
+  { label: "Aircraft", path: ROUTES.aircraft },
+  { label: "Rockets", path: ROUTES.rockets },
+  { label: "How I built it", path: PROJECT_ROUTES.buildLog },
+] as const;
+
+/** Pages reached from the footer or the home page, not from the header. */
+const OFF_NAV_ROUTES = [ROUTES.home, ROUTES.compare, ROUTES.learn] as const;
 
 test.describe("Division propagation", () => {
   test.skip(
@@ -102,7 +111,7 @@ test.describe("Active navigation state", () => {
     "The desktop navigation is only rendered at lg and above.",
   );
 
-  for (const { label, path } of DIVISION_BY_ROUTE) {
+  for (const { label, path } of NAV_BY_ROUTE) {
     test(`${path} marks "${label}" as the current page`, async ({ page }) => {
       await page.goto(path, { waitUntil: "domcontentloaded" });
 
@@ -114,6 +123,16 @@ test.describe("Active navigation state", () => {
       // Exactly one item may claim the current page, otherwise the indicator
       // means nothing.
       await expect(nav.locator('a[aria-current="page"]')).toHaveCount(1);
+    });
+  }
+
+  for (const path of OFF_NAV_ROUTES) {
+    test(`${path} marks no header link as current`, async ({ page }) => {
+      await page.goto(path, { waitUntil: "domcontentloaded" });
+
+      const nav = page.getByRole("navigation", { name: "Primary navigation" });
+      await expect(nav.getByRole("link")).toHaveCount(NAV_BY_ROUTE.length);
+      await expect(nav.locator('a[aria-current="page"]')).toHaveCount(0);
     });
   }
 

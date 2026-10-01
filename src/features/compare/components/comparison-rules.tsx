@@ -9,11 +9,11 @@ import { cn } from "@/lib/cn";
 const comparisonRules = [
   {
     term: "Published units",
-    detail: "Shown as the sources give them, never converted.",
+    detail: "As the sources give them, never converted.",
   },
   {
     term: "No scoring",
-    detail: "The sheet never ranks vehicles or picks a winner.",
+    detail: "No ranking and no winner.",
   },
   {
     term: "Gaps stay visible",
@@ -21,8 +21,7 @@ const comparisonRules = [
   },
   {
     term: "Scale lines need one unit",
-    detail:
-      "Scaled to the row’s largest figure, only when the row shares a unit.",
+    detail: "Drawn only when every figure in the row shares a unit.",
   },
 ] as const;
 

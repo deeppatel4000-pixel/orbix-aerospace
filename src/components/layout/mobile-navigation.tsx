@@ -5,7 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Menu, X } from "lucide-react";
 
-import { legalNavigationItems, navigationItems } from "@/config/navigation";
+import { footerNavigationItems, navigationItems } from "@/config/navigation";
 import { siteLegal } from "@/config/site-legal";
 
 function isCurrentRoute(pathname: string, href: string) {
@@ -14,10 +14,11 @@ function isCurrentRoute(pathname: string, href: string) {
     : pathname === href || pathname.startsWith(`${href}/`);
 }
 
-/** The quieter group anchored to the bottom of the sheet. */
-const secondaryItems = legalNavigationItems.filter((item) =>
-  ["/about", "/build-log", "/credits"].includes(item.href),
-);
+/**
+ * The quieter group anchored to the bottom of the sheet: the pages the
+ * footer lists outside the header (Compare, Learn, About, Image credits).
+ */
+const secondaryItems = footerNavigationItems;
 
 /** Matches the `lg` breakpoint at which the desktop links take over. */
 const DESKTOP_QUERY = "(min-width: 64rem)";
@@ -26,7 +27,7 @@ const DESKTOP_QUERY = "(min-width: 64rem)";
  * Disclosure menu below 1024px (spec 9): a full-height sheet under the
  * header with the links in the condensed display cut at 28px and no rules
  * between them, the current page underlined in the division colour as on
- * desktop, and About, How I built ORBIX,
+ * desktop, and Compare, Learn, About,
  * Image credits and the operator line anchored to the bottom. It opens and
  * closes instantly, with no stagger.
  *

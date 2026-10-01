@@ -1,7 +1,10 @@
 import Link from "next/link";
 
 import { Container } from "@/components/layout/container";
-import { legalNavigationItems, navigationItems } from "@/config/navigation";
+import {
+  footerNavigationItems,
+  legalNavigationItems,
+} from "@/config/navigation";
 import { siteLegal } from "@/config/site-legal";
 
 /**
@@ -11,10 +14,13 @@ import { siteLegal } from "@/config/site-legal";
  * 1. The operator line: what ORBIX is, who runs it and how to reach
  *    them. The header already carries the logo, so the footer does not
  *    repeat it.
- * 2. The site sections at 14px (44px rows) and the about and legal pages
- *    at 13px in the muted ink (36px rows), separated from the operator
- *    line by space, not a second rule.
- * 3. The copyright with the educational-use notice.
+ * 2. The pages outside the header (Compare, Learn, About, Image credits)
+ *    at 14px (44px rows) and the legal pages at 13px in the muted ink
+ *    (36px rows), separated from the operator line by space, not a second
+ *    rule (v4 plan section 3).
+ * 3. One line on how vehicle values are sourced (the home page's sourcing
+ *    paragraph, cut to a line by v4 plan section 4), then the copyright
+ *    with the educational-use notice.
  *
  * The DOM order is the same at every width and no CSS `order` is used, so
  * the keyboard reaches the links in the order they are shown. Below 40rem
@@ -23,8 +29,6 @@ import { siteLegal } from "@/config/site-legal";
  * right. The contact address comes from `src/config/site-legal.ts`.
  */
 export function SiteFooter() {
-  const siteLinks = navigationItems.slice(1);
-
   return (
     <footer className="orbix-site-footer">
       <Container className="py-10 sm:py-12">
@@ -41,7 +45,7 @@ export function SiteFooter() {
         <div className="orbix-footer-navs mt-8">
           <nav aria-label="Footer navigation">
             <ul className="orbix-footer-links">
-              {siteLinks.map((item) => (
+              {footerNavigationItems.map((item) => (
                 <li key={item.href}>
                   <Link className="orbix-footer-link" href={item.href}>
                     {item.label}
@@ -50,7 +54,7 @@ export function SiteFooter() {
               ))}
             </ul>
           </nav>
-          <nav aria-label="About and legal">
+          <nav aria-label="Legal">
             <ul className="orbix-footer-links orbix-footer-links--secondary">
               {legalNavigationItems.map((item) => (
                 <li key={item.href}>
@@ -67,6 +71,10 @@ export function SiteFooter() {
         </div>
 
         <div className="orbix-footer-base">
+          <p>
+            Vehicle figures come from publicly available specifications.{" "}
+            <Link href="/about#sources">How values are sourced</Link>
+          </p>
           <p>
             © {new Date().getFullYear()} {siteLegal.operatorName}. Educational
             use only, not for operational or certification use.

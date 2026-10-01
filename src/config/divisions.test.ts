@@ -18,7 +18,6 @@ describe("resolveDivision", () => {
       ["/compare", "engineering"],
       ["/engineering-lab", "engineering"],
       ["/learn", "research"],
-      ["/showcase", "space"],
     ];
 
     for (const [pathname, division] of expected) {
@@ -78,7 +77,6 @@ describe("accentDivisionFor", () => {
       ["/engineering-lab", "lab"],
       ["/learn", "lab"],
       ["/verification", "lab"],
-      ["/showcase", "space"],
       ["/build-log", "space"],
     ];
 

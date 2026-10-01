@@ -25,14 +25,14 @@ export const f22Raptor = {
       id: "f-22-aerodynamics-placeholder",
       status: "reviewed",
       summary:
-        "The F-22 combines advanced aerodynamic shaping, digital flight controls and two-dimensional thrust vectoring. Together they expand controllability and maneuverability at high angles of attack while preserving the aircraft’s low-observable planform.",
+        "The F-22 combines aerodynamic shaping, digital flight controls and two-dimensional thrust vectoring. These keep it controllable and maneuverable at high angles of attack without giving up its low-observable planform.",
       topic: "aerodynamics",
     },
     {
       id: "f-22-propulsion-placeholder",
       status: "reviewed",
       summary:
-        "Two F119-PW-100 engines, each in the 35,000-pound-thrust class, give the F-22 enough installed thrust to cruise above Mach 1.5 without afterburner. Supercruise extends usable speed and range without the fuel penalty of continuous afterburning.",
+        "Two F119-PW-100 engines, each in the 35,000-pound-thrust class, let the F-22 cruise above Mach 1.5 without afterburner. Supercruise gives it speed and range without the fuel cost of running the afterburner continuously.",
       topic: "propulsion",
     },
   ],

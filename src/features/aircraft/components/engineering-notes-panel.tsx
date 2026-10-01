@@ -9,10 +9,6 @@ interface EngineeringNotesPanelProps {
 /** The aircraft's engineering observations, one titled entry per topic. */
 export function EngineeringNotesPanel({ notes }: EngineeringNotesPanelProps) {
   return (
-    <EngineeringNotesList
-      description="Short notes on the engineering of the aircraft, one for each topic in the record."
-      formatTopic={formatEngineeringDomain}
-      notes={notes}
-    />
+    <EngineeringNotesList formatTopic={formatEngineeringDomain} notes={notes} />
   );
 }

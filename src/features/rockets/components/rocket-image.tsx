@@ -2,6 +2,7 @@ import Image from "next/image";
 import type { CSSProperties } from "react";
 
 import { getRocketVisual } from "@/features/rockets/data/rocket-visuals";
+import { getVehiclePhoto } from "@/features/vehicles/data/gallery";
 import type { Rocket } from "@/features/vehicles/types";
 import { cn } from "@/lib/cn";
 
@@ -28,7 +29,8 @@ interface RocketImageProps {
 }
 
 /**
- * The launch vehicle's photograph from `rocket-visuals.ts`, with the hero's
+ * The launch vehicle's registry photograph (the `card` slot in
+ * `vehicles/data/gallery.ts`), framed by the crops in `rocket-visuals.ts`, with the hero's
  * tonal treatment (spec 7: saturate 0.9 only) so cards and
  * heroes read as one set of photographs.
  * When no photograph is recorded, a plain text panel says so.
@@ -85,7 +87,7 @@ export function RocketImage({
         priority={priority}
         quality={priority ? 90 : 75}
         sizes={cardScale ? scaleSizes(sizes, cardScale) : sizes}
-        src={visual.src}
+        src={getVehiclePhoto(rocket.id, "card")?.src ?? visual.src}
         style={
           framing === "card"
             ? {

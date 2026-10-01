@@ -2,6 +2,7 @@ import Image from "next/image";
 
 import { cn } from "@/lib/cn";
 import { getAircraftVisual } from "@/features/aircraft/data/aircraft-visuals";
+import { getVehiclePhoto } from "@/features/vehicles/data/gallery";
 import type { Aircraft } from "@/features/vehicles/types";
 
 /** Which recorded crop an image uses. */
@@ -27,7 +28,8 @@ interface AircraftImageProps {
 }
 
 /**
- * The aircraft's photograph from `aircraft-visuals.ts`, with the hero's
+ * The aircraft's registry photograph (the `card` slot in
+ * `vehicles/data/gallery.ts`), framed by the crops in `aircraft-visuals.ts`, with the hero's
  * tonal treatment (spec 7: saturate 0.9 only) so cards and
  * heroes read as one set of photographs. When no photograph is recorded, a
  * plain text panel says so instead of a stand-in image.
@@ -75,7 +77,7 @@ export function AircraftImage({
         priority={priority}
         quality={priority ? 90 : 75}
         sizes={sizes}
-        src={visual.src}
+        src={getVehiclePhoto(aircraft.id, "card")?.src ?? visual.src}
         style={{
           objectPosition:
             framing === "card"

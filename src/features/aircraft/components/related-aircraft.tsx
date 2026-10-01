@@ -21,7 +21,12 @@ export function RelatedAircraft({ aircraft }: RelatedAircraftProps) {
       <ul className="border-b border-border [&>li]:border-t [&>li]:border-border">
         {aircraft.map((item) => (
           <li key={item.id}>
-            <AircraftCard aircraft={item} layout="row" variant="compact" />
+            <AircraftCard
+              aircraft={item}
+              layout="row"
+              media="none"
+              variant="compact"
+            />
           </li>
         ))}
       </ul>

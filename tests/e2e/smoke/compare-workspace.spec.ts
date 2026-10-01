@@ -7,7 +7,8 @@ import { expect, ROUTES, test } from "../fixtures/orbix";
  * and the matrix identified its columns by text alone. Design v2 puts an
  * identity strip above the spec sheet (the "Selected aircraft" or "Selected
  * launch vehicles" list): one item per compared vehicle, in column order,
- * with its photograph, name, maker and a "Full profile" link. The sheet
+ * with its outline drawing (v4 plan section 7: Compare uses the drawings
+ * instead of photo thumbnails), name, maker and a "Full profile" link. The sheet
  * itself is one table per engineering group, each with a (visually hidden)
  * column header per vehicle under a decorative name band.
  *
@@ -33,15 +34,12 @@ function vehicleColumnHeaders(page: Page) {
     .locator("thead th[scope=col]:not(:first-child)");
 }
 
-/** The optimised image sources in the identity strip, as their original paths. */
-async function identityImageSources(page: Page) {
+/** The vehicle each identity item draws, in column order. */
+async function identityOutlines(page: Page) {
   return identity(page)
-    .locator("img")
+    .locator("svg[data-outline-of]")
     .evaluateAll((nodes) =>
-      nodes.map((n) => {
-        const src = n.getAttribute("src") ?? "";
-        return new URL(src, "http://127.0.0.1").searchParams.get("url") ?? "";
-      }),
+      nodes.map((n) => n.getAttribute("data-outline-of") ?? ""),
     );
 }
 
@@ -93,28 +91,32 @@ test.describe("Compare workspace", () => {
     ).toHaveAttribute("href", "/rockets/saturn-v");
   });
 
-  test("an aircraft comparison shows aircraft imagery", async ({ page }) => {
+  test("an aircraft comparison draws each aircraft, with no photographs", async ({
+    page,
+  }) => {
     await page.goto(AIRCRAFT_QUERY, { waitUntil: "domcontentloaded" });
 
     await expect(identity(page)).toHaveCount(3);
-    const sources = await identityImageSources(page);
-
-    expect(sources).toHaveLength(3);
-    for (const source of sources) {
-      expect(source).toMatch(/^\/images\/aircraft\//);
-    }
+    expect(await identityOutlines(page)).toEqual([
+      "f-22-raptor",
+      "sr-71-blackbird",
+      "b-2-spirit",
+    ]);
+    await expect(identity(page).locator("img")).toHaveCount(0);
   });
 
-  test("a launch-vehicle comparison shows rocket imagery", async ({ page }) => {
+  test("a launch-vehicle comparison draws each rocket, with no photographs", async ({
+    page,
+  }) => {
     await page.goto(ROCKET_QUERY, { waitUntil: "domcontentloaded" });
 
     await expect(identity(page)).toHaveCount(3);
-    const sources = await identityImageSources(page);
-
-    expect(sources).toHaveLength(3);
-    for (const source of sources) {
-      expect(source).toMatch(/^\/images\/rockets\//);
-    }
+    expect(await identityOutlines(page)).toEqual([
+      "falcon-9",
+      "saturn-v",
+      "starship",
+    ]);
+    await expect(identity(page).locator("img")).toHaveCount(0);
   });
 
   test("the column count follows the selection", async ({ page }) => {

@@ -108,10 +108,11 @@ const aircraftVisuals = {
     cardObjectPosition: "50% 55%",
     cardSummary: "Twin-engine tactical fighter",
     credit: "U.S. Air Force photo by Airman 1st Class Matthew Seefeldt",
-    height: 1345,
+    height: 1626,
     heroObjectPosition: "50% 58%",
     ...PUBLIC_DOMAIN_USAF,
-    modifications: RESIZED,
+    // Same size as the original (2321 x 1626); only the format changed.
+    modifications: "Converted to WebP",
     objectPosition: "50% 50%",
     // The airframe fills 3 to 94 percent of the height, so a wide band
     // cuts the nose and the fin tips; the split plate keeps both, with
@@ -120,15 +121,15 @@ const aircraftVisuals = {
     profileHeroObjectPosition: "80% 50%",
     sourceUrl:
       "https://commons.wikimedia.org/wiki/File:F-15C_Eagle_from_the_44th_Fighter_Squadron_flies_during_a_routine_training_exercise_April_15,_2019.jpg",
-    src: "/images/aircraft/f-15-eagle.webp",
-    width: 1920,
+    src: "/images/aircraft/f-15-eagle-kadena.webp",
+    width: 2321,
   },
   "f-22-raptor": {
     alt: "F-22 Raptor seen from slightly above, flying over dark blue water",
     cardObjectPosition: "50% 50%",
     cardSummary: "Twin-engine stealth fighter",
     credit: "U.S. Air Force photo by Master Sgt. Andy Dunaway",
-    height: 1277,
+    height: 1916,
     heroObjectPosition: "50% 58%",
     ...PUBLIC_DOMAIN_USAF,
     modifications: RESIZED,
@@ -139,33 +140,35 @@ const aircraftVisuals = {
     profileHeroLayout: "split",
     profileHeroObjectPosition: "68% 50%",
     sourceUrl: "https://commons.wikimedia.org/wiki/File:F-22_Raptor.JPG",
-    src: "/images/aircraft/f-22-raptor.webp",
-    width: 1920,
+    src: "/images/aircraft/f-22-raptor-kadena.webp",
+    width: 2880,
   },
   "f-35-lightning-ii": {
-    alt: "F-35A Lightning II in flight against a clear blue sky",
-    cardObjectPosition: "50% 12%",
+    alt: "F-35A Lightning II in flight above the ridges and dry washes of the Mojave Desert",
+    // The airframe spans about 18 to 82 percent of the width and 33 to 55
+    // percent of the height, so every crop centres just above the middle.
+    cardObjectPosition: "50% 44%",
     cardSummary: "Single-engine fighter family",
-    credit: "U.S. Air Force photo by Master Sgt. Donald R. Allen",
-    height: 1271,
-    heroObjectPosition: "50% 62%",
+    credit: "U.S. Air Force photo",
+    height: 1833,
+    heroObjectPosition: "50% 44%",
     ...PUBLIC_DOMAIN_USAF,
-    modifications:
-      "Converted to WebP from the Wikimedia Commons crop of the original",
-    objectPosition: "50% 50%",
-    profileHeroLayout: "split",
-    profileHeroObjectPosition: "55% 50%",
+    modifications: RESIZED,
+    objectPosition: "50% 44%",
+    // A wide band keeps the whole airframe: it fills only the middle
+    // fifth of the height.
+    profileHeroObjectPosition: "50% 44%",
     sourceUrl:
-      "https://commons.wikimedia.org/wiki/File:F-35A_flight_(cropped).jpg",
-    src: "/images/aircraft/f-35-lightning-ii.webp",
-    width: 1772,
+      "https://commons.wikimedia.org/wiki/File:F-35A_Lightning_II_flies_above_the_Mojave_Desert.jpg",
+    src: "/images/aircraft/f-35-lightning-ii-mojave.webp",
+    width: 2880,
   },
   "sr-71-blackbird": {
     alt: "NASA SR-71B Blackbird flying over the snow-covered Sierra Nevada mountains",
     cardObjectPosition: "50% 25%",
     cardSummary: "Twin-engine reconnaissance jet",
     credit: "NASA",
-    height: 1532,
+    height: 2298,
     heroObjectPosition: "50% 62%",
     ...PUBLIC_DOMAIN_NASA,
     modifications: RESIZED,
@@ -174,8 +177,8 @@ const aircraftVisuals = {
     profileHeroObjectPosition: "60% 50%",
     sourceUrl:
       "https://commons.wikimedia.org/wiki/File:SR-71_Over_Snow_Capped_Mountains_-_GPN-2000-000162.jpg",
-    src: "/images/aircraft/sr-71-blackbird.webp",
-    width: 1920,
+    src: "/images/aircraft/sr-71-blackbird-sierra.webp",
+    width: 2880,
   },
 } as const satisfies Record<string, AircraftVisual>;
 

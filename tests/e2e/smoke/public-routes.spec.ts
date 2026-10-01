@@ -2,36 +2,24 @@ import {
   expect,
   expectNoHorizontalOverflow,
   expectNoUnexpectedConsoleErrors,
+  PROJECT_ROUTES,
   ROUTES,
   test,
 } from "../fixtures/orbix";
 
 /**
- * The 7 primary navigation routes, plus the one showcase-capture deep link
- * called out in the brief. Unlike the nav routes, `/showcase-capture/[id]`
- * lives outside the `(site)` route group: it renders its own `<main>`
- * without the shared `id="main-content"`, and without the site header,
- * footer, or skip link. `hasSiteChrome: false` captures that so the shared
- * assertions below stay true for every route instead of asserting something
- * the app doesn't actually do.
+ * The primary routes: the header links (v4 plan section 3) and the pages
+ * the footer and home page link to. Every one shares the site layout.
  */
 const routesUnderTest = [
-  { hasSiteChrome: true, name: "home", path: ROUTES.home },
-  { hasSiteChrome: true, name: "aircraft", path: ROUTES.aircraft },
-  { hasSiteChrome: true, name: "rockets", path: ROUTES.rockets },
-  { hasSiteChrome: true, name: "compare", path: ROUTES.compare },
-  {
-    hasSiteChrome: true,
-    name: "engineering-lab",
-    path: ROUTES.engineeringLab,
-  },
-  { hasSiteChrome: true, name: "showcase", path: ROUTES.showcase },
-  { hasSiteChrome: true, name: "learn", path: ROUTES.learn },
-  {
-    hasSiteChrome: false,
-    name: "showcase-capture",
-    path: "/showcase-capture/leo-satellite-deployment",
-  },
+  { name: "home", path: ROUTES.home },
+  { name: "aircraft", path: ROUTES.aircraft },
+  { name: "rockets", path: ROUTES.rockets },
+  { name: "compare", path: ROUTES.compare },
+  { name: "engineering-lab", path: ROUTES.engineeringLab },
+  { name: "learn", path: ROUTES.learn },
+  { name: "verification", path: PROJECT_ROUTES.verification },
+  { name: "build-log", path: PROJECT_ROUTES.buildLog },
 ] as const;
 
 for (const route of routesUnderTest) {
@@ -48,13 +36,7 @@ for (const route of routesUnderTest) {
 
     await expect(page.getByRole("heading", { level: 1 })).toHaveCount(1);
 
-    if (route.hasSiteChrome) {
-      await expect(page.locator("main#main-content")).toBeVisible();
-    } else {
-      // Outside the (site) layout group: still a <main> landmark, just
-      // without the shared id used by the skip link on the other routes.
-      await expect(page.getByRole("main")).toBeVisible();
-    }
+    await expect(page.locator("main#main-content")).toBeVisible();
 
     await expectNoHorizontalOverflow(page);
     expectNoUnexpectedConsoleErrors(consoleMessages);

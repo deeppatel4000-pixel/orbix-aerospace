@@ -3,12 +3,9 @@ import {
   cloneElement,
   Fragment,
   isValidElement,
-  type ComponentPropsWithoutRef,
   type ReactElement,
   type ReactNode,
 } from "react";
-
-import { cn } from "@/lib/cn";
 
 /**
  * A decimal point or thousands separator between two digits. Only these
@@ -96,24 +93,6 @@ export function formatCode(
       </span>
     );
   });
-}
-
-export type ReadoutProps = ComponentPropsWithoutRef<"span"> & {
-  /** A formatted figure, for example `"Mach 3.2"` or `"50,000"`. */
-  children: ReactNode;
-};
-
-/**
- * Inline B612 Mono figure with tabular numerals and centred separators.
- * Use it wherever a number is set in the data face outside `SpecPanel`,
- * `RecordRow` and `DataTable` numeric columns (which already format).
- */
-export function Readout({ children, className, ...props }: ReadoutProps) {
-  return (
-    <span className={cn("orbix-readout-inline", className)} {...props}>
-      {formatFigure(children)}
-    </span>
-  );
 }
 
 /**

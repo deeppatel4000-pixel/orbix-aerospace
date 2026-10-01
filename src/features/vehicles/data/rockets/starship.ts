@@ -20,14 +20,14 @@ export const starship = {
       id: "starship-full-reuse-placeholder",
       status: "reviewed",
       summary:
-        "Starship’s recovery architecture carries hardware and propellant that an expendable vehicle would not need: thermal protection, aerodynamic flaps and landing reserves. SpaceX’s lunar lander variant removes Earth-return hardware, illustrating how reusability requirements directly shape vehicle mass and configuration.",
+        "Recovering Starship means carrying hardware and propellant an expendable vehicle would not need: thermal protection, aerodynamic flaps and landing reserves. SpaceX’s lunar lander variant leaves out the Earth-return hardware, so reuse directly changes the vehicle’s mass and layout.",
       topic: "reusability",
     },
     {
       id: "starship-orbital-refilling-placeholder",
       status: "reviewed",
       summary:
-        "Starship’s lunar architecture depends on moving cryogenic propellant in orbit. NASA and SpaceX are developing depot-and-tanker operations so a vehicle can launch to low Earth orbit, refill there, and then depart with the propellant needed for lunar or other high-energy missions.",
+        "Starship’s lunar missions depend on moving cryogenic propellant in orbit. NASA and SpaceX are developing depot and tanker flights so a vehicle can launch to low Earth orbit, refill there, and leave with the propellant needed for the Moon or other high-energy missions.",
       topic: "mission-design",
     },
   ],

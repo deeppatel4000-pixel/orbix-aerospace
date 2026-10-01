@@ -33,7 +33,17 @@ describe("build log page", () => {
 
   it("includes the owner's What I learned section", () => {
     expect(text).toContain("What I learned");
-    expect(text).toContain("Across all 33 tools in the lab");
+    expect(text).toContain("Across every tool in the lab");
+    expect(text).not.toMatch(/\b\d+ tools\b/);
+  });
+
+  it("carries the How it is organised section moved from /showcase", () => {
+    expect(markup).toContain('id="structure"');
+    expect(text).toContain("How it is organised");
+    expect(markup).toContain('aria-labelledby="architecture-figure-caption"');
+    expect(text).toContain("npm run validate");
+    expect(text).toContain("Validate workflow");
+    expect(text).toContain("Browser tests workflow");
   });
 
   it("links to verification, the source code and the contact address", () => {

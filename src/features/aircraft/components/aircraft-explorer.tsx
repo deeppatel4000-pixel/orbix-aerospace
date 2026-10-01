@@ -13,13 +13,12 @@ import {
 } from "@/features/aircraft/utils";
 import { AircraftSizeComparison, toMetres } from "@/features/vehicles/drawings";
 import {
-  CONVERSION_NOTE,
-  MINIMUM_NOTE,
   measurementFigure,
   panelSecondary,
 } from "@/features/vehicles/components/measurement-display";
 import { ProfileLink } from "@/features/vehicles/components/profile-link";
 import { VehicleRegistry } from "@/features/vehicles/components/vehicle-registry";
+import { getVehiclePhoto } from "@/features/vehicles/data/gallery";
 import type { Aircraft } from "@/features/vehicles/types";
 import { formatCountWord } from "@/features/vehicles/utils/format-measurement";
 import { keepDesignations } from "@/lib/designations";
@@ -30,9 +29,8 @@ interface AircraftExplorerProps {
 
 /**
  * The aircraft in the hero photograph and the figures under it: the B-2,
- * whose photograph puts the whole airframe across the upper half of the
- * frame, so a wide band keeps both wingtips. Not the SR-71, whose
- * photograph opens the home page.
+ * whose `featured` photograph (on approach at Diego Garcia, seen almost
+ * from below) is as wide as the band, so the band keeps both wingtips.
  */
 const FEATURED_AIRCRAFT_ID = "b-2-spirit";
 
@@ -131,11 +129,42 @@ function spanComparison(aircraft: readonly Aircraft[]) {
   return `The ${widest.name} spans ${phrase} ${narrowest.name}s set wingtip to wingtip. `;
 }
 
+/** "About these figures": what a figure's marks mean, in 30 words or fewer. */
+function FiguresNote() {
+  return (
+    <section
+      aria-labelledby="aircraft-sources-title"
+      className="mt-16 border-t border-border pt-8 pb-16 lg:pb-24"
+    >
+      <h2
+        className="text-base font-semibold text-foreground"
+        id="aircraft-sources-title"
+      >
+        About these figures
+      </h2>
+      <p className="mt-3 max-w-[60ch] text-sm leading-6 text-muted">
+        Figures are published specifications. A plus sign marks a published
+        minimum, and a figure set under another is an ORBIX conversion. See{" "}
+        <Link className="orbix-link" href="/about#sources">
+          sources
+        </Link>{" "}
+        and{" "}
+        <Link className="orbix-link" href="/credits">
+          image credits
+        </Link>
+        .
+      </p>
+    </section>
+  );
+}
+
 /** The `/aircraft` registry page. */
 export function AircraftExplorer({ aircraft }: AircraftExplorerProps) {
   const featured =
     aircraft.find((item) => item.id === FEATURED_AIRCRAFT_ID) ?? aircraft[0];
-  const heroVisual = featured ? getAircraftVisual(featured.id) : undefined;
+  const heroPhoto = featured
+    ? getVehiclePhoto(featured.id, "featured")
+    : undefined;
 
   // From 64rem the H1 and the lead set side by side, so the photograph
   // band starts higher instead of under an empty right half.
@@ -146,9 +175,9 @@ export function AircraftExplorer({ aircraft }: AircraftExplorerProps) {
       </h1>
       <div className="lg:col-span-5">
         <p className="orbix-lead mt-6 lg:mt-0">
-          {capitalise(formatCountWord(aircraft.length))} military aircraft set
-          out from their published specifications: dimensions, weights,
-          propulsion, performance and variants, each with a credited photograph.
+          {capitalise(formatCountWord(aircraft.length))} military aircraft with
+          their published dimensions, weights, engines, performance and
+          variants.
         </p>
         <div className="mt-8 flex flex-wrap items-center gap-x-8 gap-y-3">
           <ButtonLink arrow="down" href="#available-aircraft" size="lg">
@@ -168,17 +197,15 @@ export function AircraftExplorer({ aircraft }: AircraftExplorerProps) {
 
   return (
     <>
-      {heroVisual && featured ? (
+      {heroPhoto && featured ? (
         <PhotoHero
+          caption={heroPhoto.caption.replace(/\.$/, "")}
           // A band under the text at every width: the flying wing spans
           // nearly the whole frame, and a plate beside the text would crop
           // both wingtips.
           className="lg:[&>div:first-child>div]:max-w-none"
           layout="band"
-          visual={{
-            ...heroVisual,
-            objectPosition: heroVisual.heroObjectPosition,
-          }}
+          visual={heroPhoto}
         >
           {heroText}
         </PhotoHero>
@@ -187,7 +214,7 @@ export function AircraftExplorer({ aircraft }: AircraftExplorerProps) {
       )}
 
       <Container>
-        {featured && heroVisual ? (
+        {featured && heroPhoto ? (
           <PicturedAircraft aircraft={featured} />
         ) : null}
 
@@ -198,7 +225,7 @@ export function AircraftExplorer({ aircraft }: AircraftExplorerProps) {
           />
         ) : (
           <VehicleRegistry
-            description="Each entry opens a full profile. Maximum speed and service ceiling are the published figures for the baseline aircraft."
+            description="Maximum speed and service ceiling are the published figures for the baseline aircraft."
             entries={aircraft.map((item) => ({
               card: <AircraftCard aircraft={item} />,
               id: item.id,
@@ -217,21 +244,13 @@ export function AircraftExplorer({ aircraft }: AircraftExplorerProps) {
             aria-labelledby="aircraft-scale-title"
             className="mt-20 border-t border-border pt-12 lg:mt-28"
           >
-            <div className="grid gap-5 lg:grid-cols-12 lg:gap-6">
-              <h2
-                className="orbix-h2 text-foreground lg:col-span-7"
-                id="aircraft-scale-title"
-              >
-                Side by side, to one scale
-              </h2>
-              <p className="max-w-[60ch] text-pretty text-muted lg:col-span-5 lg:col-start-8">
-                {spanComparison(aircraft)}Each aircraft is drawn from the length
-                and wingspan in its record, and nothing else: seen from above
-                with the nose up, an outline as long as the aircraft and as wide
-                as its wings. Every plan uses the same scale, and the noses
-                along each row are level.
-              </p>
-            </div>
+            <h2 className="orbix-h2 text-foreground" id="aircraft-scale-title">
+              Side by side, to one scale
+            </h2>
+            <p className="mt-5 max-w-[60ch] text-pretty text-muted">
+              {spanComparison(aircraft)}Each outline is traced from a published
+              drawing and scaled to the length and wingspan in its record.
+            </p>
             <AircraftSizeComparison
               aircraft={aircraft}
               className="mt-10"
@@ -240,31 +259,7 @@ export function AircraftExplorer({ aircraft }: AircraftExplorerProps) {
           </section>
         ) : null}
 
-        <section
-          aria-labelledby="aircraft-sources-title"
-          className="mt-16 grid gap-3 border-t border-border pt-8 pb-16 lg:grid-cols-12 lg:gap-6 lg:pb-24"
-        >
-          <h2
-            className="text-base font-semibold text-foreground lg:col-span-7"
-            id="aircraft-sources-title"
-          >
-            About these figures
-          </h2>
-          <p className="max-w-[68ch] text-sm leading-6 text-muted lg:col-span-5 lg:col-start-8">
-            Figures are publicly released specifications. Where a source gives a
-            value as approximate, a minimum or a maximum, the profile keeps that
-            qualifier beside the number. {MINIMUM_NOTE} {CONVERSION_NOTE}{" "}
-            Photographs are credited on each profile and on the{" "}
-            <Link className="orbix-link" href="/credits">
-              image credits page
-            </Link>
-            . Read{" "}
-            <Link className="orbix-link" href="/about#sources">
-              how ORBIX sources its values
-            </Link>
-            .
-          </p>
-        </section>
+        <FiguresNote />
       </Container>
     </>
   );

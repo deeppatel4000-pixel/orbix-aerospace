@@ -2,20 +2,22 @@ import {
   CONTACT_EMAIL,
   expect,
   INFO_ROUTES,
+  PROJECT_ROUTES,
   ROUTES,
   test,
 } from "../fixtures/orbix";
 
 /**
- * The statically-linked `(site)` routes, plus the about, credits and legal
- * pages. `/showcase-capture/[id]` is
- * deliberately excluded from this list -- it lives outside the `(site)`
- * route group and has no shared header, footer, skip link, or
- * `id="main-content"` (see the dedicated test below), so asserting the
- * shared-chrome expectations against it would be asserting something the
- * app was never meant to do.
+ * Every statically-linked page: the `(site)` routes, the build log and
+ * verification pages, and the about, credits and legal pages. Since v4 every
+ * page shares the site layout (the chrome-less `/showcase-capture/[id]`
+ * pages were removed), so all of them get the same landmarks.
  */
-const routeEntries = Object.entries({ ...ROUTES, ...INFO_ROUTES });
+const routeEntries = Object.entries({
+  ...ROUTES,
+  ...PROJECT_ROUTES,
+  ...INFO_ROUTES,
+});
 
 test.describe("Landmark structure", () => {
   for (const [name, path] of routeEntries) {
@@ -42,28 +44,6 @@ test.describe("Landmark structure", () => {
       await expect(page.getByRole("contentinfo")).toHaveCount(1);
     });
   }
-
-  test("/showcase-capture/[id] has no header banner, footer, or skip link", async ({
-    page,
-  }) => {
-    const response = await page.goto(
-      "/showcase-capture/leo-satellite-deployment",
-      { waitUntil: "domcontentloaded" },
-    );
-    expect(response?.status()).toBe(200);
-
-    // This route renders its own <main> (still a "main" landmark) but,
-    // being outside the `(site)` layout group, never gets SiteHeader,
-    // SiteFooter, or SkipLink. Asserting the absence here locks in that
-    // documented split so a future refactor that accidentally moves this
-    // route into (or out of) the shared layout group is caught.
-    await expect(page.getByRole("main")).toBeVisible();
-    await expect(page.getByRole("banner")).toHaveCount(0);
-    await expect(page.getByRole("contentinfo")).toHaveCount(0);
-    await expect(
-      page.getByRole("link", { name: "Skip to main content" }),
-    ).toHaveCount(0);
-  });
 });
 
 test.describe("Header", () => {

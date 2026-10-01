@@ -18,6 +18,11 @@ export interface VehiclePageCrumb {
 
 /** The photograph and its crop per layout. */
 export interface VehicleHeroVisual extends VisualRecord {
+  /**
+   * What the photograph shows, for the catalogue caption. Omitted, the
+   * alt text is printed.
+   */
+  readonly caption?: string;
   readonly crop: HeroCrop;
   /** Intrinsic size of the file, for a portrait plate in its own proportions. */
   readonly height?: number;
@@ -115,6 +120,7 @@ export function VehicleProfileHero({
 
   return (
     <PhotoHero
+      caption={visual.caption?.trim().replace(/\.$/, "")}
       // The band's text runs the full container width from 64rem, so the
       // figures can sit beside the lead.
       className={cn(

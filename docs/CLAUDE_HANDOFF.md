@@ -2,7 +2,60 @@
 
 This document records the verified repository state at the end of the Codex development period. It is a handoff, not a substitute for inspecting the repository. Re-run every command in the startup checklist before changing code.
 
-## 0. Current State: Design v3 "Standards manual" (2026-10-01)
+## 0. Current State: ORBIX v4 "built for a five-minute read" (2026-10-01)
+
+Plan: `docs/design-system/orbix-v4-plan.md`. The visual language is still v3 (section 0-v3 below).
+Integrated on `redesign/anti-vibe-legal`, uncommitted after checkpoint `89de67f`, not merged to main.
+
+- Routes: the header has five links (Engineering Lab, Verification, Aircraft, Rockets, How I built
+  it); Compare, Learn, About and Image credits are in the footer. `/showcase` is gone and redirects
+  (308) to `/build-log#structure`; `/showcase-capture/:path*` redirects to
+  `/engineering-lab#mission-planner` (`next.config.ts`). The build prerenders 23 user-facing pages
+  and keeps two dynamic templates (`/aircraft/[id]`, `/rockets/[id]`); `/compare` is dynamic.
+- Home: thesis, author and grade, authorship byline and the compact Transfer Explorer; the
+  verification score with one sample row; three featured tools; one photo plate with the vehicle
+  counts and a preloaded comparison (SR-71, F-22, B-2); three sentences on authorship.
+- Engineering Lab: 14 tools in three groups (13 calculators plus the mission planner with the V3
+  delta-v ledger); the full Transfer Explorer sits in the lab header. Deferred tools keep their
+  code and tests but are off the page; old anchors of merged and removed modules resolve through
+  `LEGACY_ANCHORS` in `engineering-dashboard.tsx`.
+- Shared orbit drawing: `src/features/orbits/` (stretch map, conic sampling, scrubber, canvas,
+  explorer). Physics stays in the calculators; `calculators/kepler-position.ts` is new.
+- Verification: the Kepler case (Braeunig problem 4.14) is listed in the orbital mechanics group,
+  so the page compares 36 values, 26 within rounding; home, build log and verification read the same
+  computed summary.
+- Learn shows four pathways (1, 2, 3 and 5); profiles add a gallery of two or three views; Compare
+  draws traced outlines instead of photo thumbnails.
+- Integration pass (2026-10-01): removed dead code left by v4, each proven unreferenced by an import
+  graph walk from `src/app` and an export scan: `src/features/showcase/`,
+  `engineering-lab/reports/`, `analysis/mission-insights.ts` and `analysis/shock-pressure-loss.ts`
+  with their tests and types, `visualization/orbit-diagram.tsx`, `SectionIndex` (kept
+  `formatIndexNumber`), `Readout` (kept `formatFigure` and `formatCode`), `vehicle-figure.tsx`,
+  `vehicle-photograph.tsx`, `conicPathData`, the `/showcase` division rule and the five pre-v4
+  photographs the e2e warm-up still requested. Fixed: the build log layer figure and copy no longer
+  show the deleted reports layer; Compare lab links point at the mission planner and use the lab's
+  tool titles (unit test added); Compare copy no longer says "validated".
+- e2e: specs for removed features (Mission Control, replay, showcase) were deleted and replaced by
+  `transfer-explorer`, `mission-planner` and `removed-routes` specs; nav, lab, home, Learn, profile
+  and Compare specs follow the v4 structure; the image warm-up reads `public/images`. All 22 visual
+  baselines were regenerated and reviewed. `npm run test:e2e`: 591 passed, 398 skipped, 0 failed.
+- Second integration pass (2026-10-01): the 404 plate is the `not-found` slot photograph (F-22
+  leaving its hangar) and the Open Graph and Twitter plate the `og` slot (SR-71 overhead), both now
+  in `PHOTO_SLOTS_IN_USE` and on `/credits`, so no photograph fills two slots (card and profile share
+  the identity photograph by design). The delta-v ledger marks the current mission by weight and ink
+  colour, not a left rule. The explorer's assumptions line names Earth's mean radius (6,371 km) and
+  the home proof row says the worked example measures from 6,378.14 km. Drawing text is 13px or
+  more (rocket lineup 14 units, aircraft plan labels 13px, build log figure labels 10 units, 13
+  below 40rem). Burn labels sit beside their markers; the drag hint reads "Drag the orbit". The lab
+  explorer opens on the ISS stop; Learn shows a still transfer drawing linking to the lab; the home
+  explorer's own lab link is hidden below 64rem. Gallery lead plates take a width share from the
+  three aspect ratios and fill the stack height. Compare prints "Mach 3+" style minimums and has
+  plain group summaries; the vehicle analysis copy was rewritten plainly without new facts.
+  `LAB_TOOL_COUNT` (unused) was removed. e2e: 595 passed, 398 skipped, 0 failed; 11 visual
+  baselines regenerated and reviewed, `not-found-desktop` added.
+- Known issues: see `docs/project-state.json` (historical docs still describe `/showcase`).
+
+## 0-v3. Previous State: Design v3 "Standards manual" (2026-10-01)
 
 Read this section first. Section 0-v2 below records design v2, which v3 builds on.
 

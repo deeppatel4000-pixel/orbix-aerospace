@@ -4,7 +4,10 @@ import path from "node:path";
 import { describe, expect, it } from "vitest";
 
 import { listAircraft } from "@/features/aircraft/data";
-import { listLearningAreas } from "@/features/learn/data";
+import {
+  listDeferredLearningAreas,
+  listLearningAreas,
+} from "@/features/learn/data";
 import { listRockets } from "@/features/rockets/data";
 
 /**
@@ -20,25 +23,33 @@ import { listRockets } from "@/features/rockets/data";
  * every destination they point at are not.
  */
 
+/** Pathways shown on /learn (v4 plan section 8: 1, 2, 3 and 5). */
 const EXPECTED_PATHWAY_IDS = [
   "aerodynamics-flight-fundamentals",
   "propulsion-vehicle-performance",
   "high-speed-compressible-flow",
-  "atmospheric-entry-thermal-protection",
   "orbital-mechanics-mission-design",
+] as const;
+
+/** Pathways kept in the data but deferred from the page (4 and 6). */
+const EXPECTED_DEFERRED_IDS = [
+  "atmospheric-entry-thermal-protection",
   "mission-operations-engineering-communication",
 ] as const;
 
 describe("learning areas", () => {
   const areas = listLearningAreas();
+  const deferred = listDeferredLearningAreas();
+  const everyArea = [...areas, ...deferred];
 
-  it("keeps its six pathways, in order", () => {
+  it("shows four pathways, in order, and keeps the two deferred ones", () => {
     expect(areas.map((area) => area.id)).toEqual([...EXPECTED_PATHWAY_IDS]);
+    expect(deferred.map((area) => area.id)).toEqual([...EXPECTED_DEFERRED_IDS]);
   });
 
   it("has no duplicate pathway ids or titles", () => {
-    const ids = areas.map((area) => area.id);
-    const titles = areas.map((area) => area.title);
+    const ids = everyArea.map((area) => area.id);
+    const titles = everyArea.map((area) => area.title);
 
     expect(new Set(ids).size).toBe(ids.length);
     expect(new Set(titles).size).toBe(titles.length);
@@ -49,9 +60,9 @@ describe("learning areas", () => {
       area.labAnchors.map((anchor) => anchor.anchorId),
     );
 
-    // Twenty-eight distinct Engineering Laboratory modules are referenced.
-    expect(anchors).toHaveLength(28);
-    expect(new Set(anchors).size).toBe(28);
+    // Thirteen distinct Engineering Lab modules are linked from the page.
+    expect(anchors).toHaveLength(13);
+    expect(new Set(anchors).size).toBe(13);
   });
 
   it("labels every laboratory anchor with the module heading it points at", () => {
@@ -86,7 +97,7 @@ describe("learning areas", () => {
     // B612 Mono has no glyphs for U+2080 to U+2089, so "m₀" falls back to a
     // different face. "_0" renders as a real <sub>, as on /engineering-lab.
     const unicodeSubscript = /[₀-₉]/;
-    for (const idea of areas.flatMap((area) => area.keyIdeas)) {
+    for (const idea of everyArea.flatMap((area) => area.keyIdeas)) {
       const fields = [
         idea.text,
         idea.equation ?? "",
@@ -104,7 +115,7 @@ describe("learning areas", () => {
   it("keeps every exploration link", () => {
     const links = areas.flatMap((area) => area.explorationLinks);
 
-    expect(links).toHaveLength(7);
+    expect(links).toHaveLength(5);
     for (const link of links) {
       expect(link.href.startsWith("/"), `${link.href} should be internal`).toBe(
         true,
@@ -154,7 +165,7 @@ describe("learning areas", () => {
   it("names, voices and explains every equation it shows", () => {
     // Each equation renders as an EquationBlock: a label, a spoken form for
     // screen readers, and a legend that defines every symbol.
-    for (const idea of areas.flatMap((area) => area.keyIdeas)) {
+    for (const idea of everyArea.flatMap((area) => area.keyIdeas)) {
       if (idea.equation === undefined) continue;
       expect(idea.equationLabel?.trim(), idea.equation).toBeTruthy();
       expect(idea.spokenAs?.trim(), idea.equation).toBeTruthy();
@@ -169,7 +180,7 @@ describe("learning areas", () => {
   });
 
   it("links further reading only to https pages and cites a source for each", () => {
-    for (const reference of areas.flatMap((area) => area.furtherReading)) {
+    for (const reference of everyArea.flatMap((area) => area.furtherReading)) {
       expect(reference.title.trim()).not.toBe("");
       expect(reference.source.trim()).not.toBe("");
       if (reference.href !== undefined) {
@@ -181,7 +192,7 @@ describe("learning areas", () => {
   it("keeps copy free of em dashes, en dashes and banned hype words", () => {
     const banned =
       /\u2014|\u2013|\b(elevate|seamless|unleash|unlock|next-gen|cutting-edge|revolutionary|empower|world-class|premium|state-of-the-art|advanced|immersive|journey|powerful|robust)\b/i;
-    const strings = areas.flatMap((area) => [
+    const strings = everyArea.flatMap((area) => [
       area.title,
       area.summary,
       area.whyItMatters,

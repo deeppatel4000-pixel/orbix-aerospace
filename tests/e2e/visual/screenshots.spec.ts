@@ -1,17 +1,21 @@
 import type { Page } from "@playwright/test";
 
-import { expect, expectAllImagesLoaded, ROUTES, test } from "../fixtures/orbix";
+import {
+  expect,
+  expectAllImagesLoaded,
+  PROJECT_ROUTES,
+  ROUTES,
+  test,
+} from "../fixtures/orbix";
 
-const MISSION_CONTROL_HASH = "#mission-control-dashboard";
+const MISSION_PLANNER_HASH = "#mission-planner";
 
 /**
  * Populated Compare captures.
  *
- * The plain `/compare` captures below photograph the empty state — the route
- * renders no matrix until at least two vehicles are selected — so for the whole
- * of the Compare redesign the vehicle column headers, the populated matrix and the
- * magnitude tracks had no visual coverage at all. These two queries fill that
- * gap, and each is chosen because it shows both halves of the magnitude
+ * The plain `/compare` captures below photograph the default comparison the
+ * route opens on (v4: SR-71, F-22 and B-2 preloaded). These two queries add
+ * comparisons chosen because each shows both halves of the magnitude
  * contract in one frame:
  *
  *   aircraft  The F-15 publishes 1,875 mph while the F-22 and SR-71 publish
@@ -55,17 +59,16 @@ const SCREENSHOT_OPTIONS = {
 } as const;
 
 /**
- * Waits for Mission Control's own content. Duplicated in spirit from
- * tests/e2e/smoke/mission-control.spec.ts (not imported: the visual and smoke
- * suites are kept independent). `LaboratoryShell` reveals the tool from a
- * hash-driven effect after hydration, so the section navigation becoming
- * visible is the signal. The 2026 redesign removed the startup overlay, so
- * there is nothing to dismiss before a screenshot.
+ * Waits for a lab tool named by the hash. `LaboratoryShell` reveals it from
+ * a hash-driven effect after hydration, so the server render shows the
+ * first tool until then; capturing before this could photograph the wrong
+ * tool.
  */
-async function waitForMissionControl(page: Page): Promise<void> {
-  await expect(
-    page.getByRole("navigation", { name: "Mission control sections" }),
-  ).toBeVisible();
+function waitForLabTool(id: string): (page: Page) => Promise<void> {
+  return async (page) => {
+    await waitForHeading(page);
+    await expect(page.locator(`[data-laboratory-tool="${id}"]`)).toBeVisible();
+  };
 }
 
 async function waitForHeading(page: Page): Promise<void> {
@@ -78,9 +81,9 @@ async function waitForHeading(page: Page): Promise<void> {
  * under test renders exactly one, confirmed by
  * tests/e2e/smoke/public-routes.spec.ts, so its visibility is a reliable
  * signal that the Suspense fallback in src/app/loading.tsx — the app's one
- * infinite CSS animation — has been replaced by the real page; Mission
- * Control passes `waitForMissionControl` instead, since that waits for its
- * own real content), let lazy images resolve so screenshots never race a
+ * infinite CSS animation — has been replaced by the real page; a lab tool
+ * opened by hash passes `waitForLabTool`, which also waits for that tool),
+ * let lazy images resolve so screenshots never race a
  * still-loading image, then reset scroll to the top so every screenshot
  * starts from the same origin. `fullPage` capture in Chromium is independent
  * of current scroll position, but a consistent starting point keeps this
@@ -144,15 +147,6 @@ test.describe("Visual regression / desktop 1440x900", () => {
     await expect(page).toHaveScreenshot("home-desktop.png", SCREENSHOT_OPTIONS);
   });
 
-  test("showcase", async ({ page }) => {
-    await page.goto(ROUTES.showcase, { waitUntil: "domcontentloaded" });
-    await settle(page);
-    await expect(page).toHaveScreenshot(
-      "showcase-desktop.png",
-      SCREENSHOT_OPTIONS,
-    );
-  });
-
   test("aircraft explorer", async ({ page }) => {
     await page.goto(ROUTES.aircraft, { waitUntil: "domcontentloaded" });
     await settle(page);
@@ -193,13 +187,13 @@ test.describe("Visual regression / desktop 1440x900", () => {
     );
   });
 
-  test("mission control", async ({ page }) => {
-    await page.goto(`${ROUTES.engineeringLab}${MISSION_CONTROL_HASH}`, {
+  test("engineering laboratory / mission planner", async ({ page }) => {
+    await page.goto(`${ROUTES.engineeringLab}${MISSION_PLANNER_HASH}`, {
       waitUntil: "domcontentloaded",
     });
-    await settle(page, waitForMissionControl);
+    await settle(page, waitForLabTool("mission-planner"));
     await expect(page).toHaveScreenshot(
-      "mission-control-desktop.png",
+      "engineering-lab-mission-planner-desktop.png",
       SCREENSHOT_OPTIONS,
     );
   });
@@ -244,64 +238,44 @@ test.describe("Visual regression / desktop 1440x900", () => {
     );
   });
 
-  /**
-   * Presentation modules.
-   *
-   * These four are the Engineering Laboratory's non-calculator surfaces —
-   * briefing, trade study, showcase and demo mode — and until now none of them
-   * appeared in any baseline. Between them they render eighteen of the
-   * laboratory's presentation components, so a colour or hierarchy change in
-   * that grammar had no visual evidence at all. They are captured at desktop
-   * because these are wide reading surfaces; the module workspace's mobile
-   * behaviour is already covered by the geometry sweep.
-   */
-  for (const { id, name } of [
-    { id: "mission-briefing", name: "mission briefing" },
-    { id: "mission-trade-study", name: "mission trade study" },
-    { id: "mission-showcase", name: "mission showcase" },
-    { id: "demo-mode", name: "demo mode" },
-  ]) {
-    test(`engineering laboratory / ${name}`, async ({ page }) => {
-      await page.goto(`${ROUTES.engineeringLab}#${id}`, {
-        waitUntil: "domcontentloaded",
-      });
-      // The server render shows the lab's first tool; the hash is resolved
-      // after hydration. Wait for the requested tool before settling, or the
-      // capture can race hydration and photograph the default tool.
-      await expect(page.locator(`[id="${id}"]`)).toBeVisible();
-      await settle(page);
-      await expect(page).toHaveScreenshot(
-        `engineering-lab-${id}-desktop.png`,
-        SCREENSHOT_OPTIONS,
-      );
-    });
-  }
-
-  // Mission Replay had no visual coverage: the Mission Control captures show
-  // the default Overview workspace, so the transport and phase sequence never
-  // appeared in a baseline. Captured paused at the first phase, which is the
-  // state the reducer starts in, so the frame is deterministic.
-  test("mission control / replay workspace", async ({ page }) => {
-    await page.goto(`${ROUTES.engineeringLab}${MISSION_CONTROL_HASH}`, {
-      waitUntil: "domcontentloaded",
-    });
-    await settle(page, waitForMissionControl);
-    await page.getByRole("tab", { name: "Replay" }).click();
-    await expect(
-      page.getByRole("button", { name: "Play mission replay" }),
-    ).toBeVisible();
-    await resetScroll(page);
-    await expect(page).toHaveScreenshot(
-      "mission-control-replay-desktop.png",
-      SCREENSHOT_OPTIONS,
-    );
-  });
-
   test("learn", async ({ page }) => {
     await page.goto(ROUTES.learn, { waitUntil: "domcontentloaded" });
     await settle(page);
     await expect(page).toHaveScreenshot(
       "learn-desktop.png",
+      SCREENSHOT_OPTIONS,
+    );
+  });
+
+  test("verification", async ({ page }) => {
+    await page.goto(PROJECT_ROUTES.verification, {
+      waitUntil: "domcontentloaded",
+    });
+    await settle(page);
+    await expect(page).toHaveScreenshot(
+      "verification-desktop.png",
+      SCREENSHOT_OPTIONS,
+    );
+  });
+
+  test("build log", async ({ page }) => {
+    await page.goto(PROJECT_ROUTES.buildLog, {
+      waitUntil: "domcontentloaded",
+    });
+    await settle(page);
+    await expect(page).toHaveScreenshot(
+      "build-log-desktop.png",
+      SCREENSHOT_OPTIONS,
+    );
+  });
+
+  test("not found", async ({ page }) => {
+    await page.goto("/no-such-page-visual", {
+      waitUntil: "domcontentloaded",
+    });
+    await settle(page);
+    await expect(page).toHaveScreenshot(
+      "not-found-desktop.png",
       SCREENSHOT_OPTIONS,
     );
   });
@@ -311,10 +285,9 @@ test.describe("Visual regression / desktop 1440x900", () => {
  * Responsive subset: rather than re-shooting all ten desktop surfaces at
  * every breakpoint, this targets the pages most likely to actually break at
  * narrow widths — the ones with the densest layout composition (multi-column
- * grids, side-by-side panels, sticky navigation) — plus the two flows the
- * project brief calls out by name (Mission Control, Engineering Lab). Simple
- * single-column/placeholder pages (Showcase, a vehicle profile, Rockets,
- * Compare's own table, Learn) are lower-risk for responsive regressions and
+ * grids, side-by-side panels, sticky navigation) — plus the Engineering Lab
+ * and its mission planner. Simple single-column pages (a vehicle profile,
+ * Rockets, Learn) are lower-risk for responsive regressions and
  * are left to `expectNoHorizontalOverflow` coverage in the existing smoke
  * suite rather than doubling their pixel-diff surface here.
  *
@@ -369,41 +342,23 @@ test.describe("Visual regression / mobile 390x844", () => {
     );
   });
 
-  // Mission Replay had no mobile baseline. Captured paused at the first phase,
-  // the state the reducer starts in, so the frame is deterministic.
-  test("mission control / replay workspace", async ({ page }) => {
-    await page.goto(`${ROUTES.engineeringLab}${MISSION_CONTROL_HASH}`, {
+  // The planner's delta-v ledger as a table, opened: the widest table in
+  // the lab, contained in its own horizontal scroller at this width. The
+  // geometry test in engineering-lab-modules.spec.ts is the real regression
+  // coverage; this keeps the scroll affordance itself under review.
+  test("engineering laboratory / contained ledger table", async ({ page }) => {
+    await page.goto(`${ROUTES.engineeringLab}${MISSION_PLANNER_HASH}`, {
       waitUntil: "domcontentloaded",
     });
-    await settle(page, waitForMissionControl);
-    await page.getByRole("tab", { name: "Replay" }).click();
+    await settle(page, waitForLabTool("mission-planner"));
+    await page
+      .locator('[data-laboratory-tool="mission-planner"]')
+      .getByText("Show the numbers as a table", { exact: true })
+      .click();
     await expect(
-      page.getByRole("button", { name: "Play mission replay" }),
+      page.getByRole("table", { name: "Delta-v by mission and step" }),
     ).toBeVisible();
     await resetScroll(page);
-    await expect(page).toHaveScreenshot(
-      "mission-control-replay-mobile.png",
-      SCREENSHOT_OPTIONS,
-    );
-  });
-
-  // The widest of the three repaired comparison tables: it clipped 932px at
-  // this viewport before the containment fix. One capture rather than three —
-  // the geometry tests in engineering-lab-modules.spec.ts are the real
-  // regression coverage; this exists so the scroll affordance itself is under
-  // review.
-  test("engineering laboratory / contained comparison table", async ({
-    page,
-  }) => {
-    await page.goto(
-      `${ROUTES.engineeringLab}#vehicle-reentry-comparison-analyzer`,
-      { waitUntil: "domcontentloaded" },
-    );
-    // The hash is resolved after hydration; wait for the requested tool.
-    await expect(
-      page.locator('[id="vehicle-reentry-comparison-analyzer"]'),
-    ).toBeVisible();
-    await settle(page);
     await expect(page).toHaveScreenshot(
       "engineering-lab-table-mobile.png",
       SCREENSHOT_OPTIONS,
@@ -419,13 +374,13 @@ test.describe("Visual regression / mobile 390x844", () => {
     );
   });
 
-  test("mission control", async ({ page }) => {
-    await page.goto(`${ROUTES.engineeringLab}${MISSION_CONTROL_HASH}`, {
+  test("engineering laboratory / mission planner", async ({ page }) => {
+    await page.goto(`${ROUTES.engineeringLab}${MISSION_PLANNER_HASH}`, {
       waitUntil: "domcontentloaded",
     });
-    await settle(page, waitForMissionControl);
+    await settle(page, waitForLabTool("mission-planner"));
     await expect(page).toHaveScreenshot(
-      "mission-control-mobile.png",
+      "engineering-lab-mission-planner-mobile.png",
       SCREENSHOT_OPTIONS,
     );
   });

@@ -17,7 +17,6 @@
  *   /engineering-lab   engineering
  *   /learn             research
  *   /verification      research
- *   /showcase          space
  *   anything else      space (default)
  *
  * `defense` is a valid value with no route.
@@ -43,7 +42,6 @@ const divisionRoutes: ReadonlyArray<readonly [string, OrbixDivision]> = [
   ["/compare", "engineering"],
   ["/engineering-lab", "engineering"],
   ["/learn", "research"],
-  ["/showcase", "space"],
   ["/verification", "research"],
 ];
 

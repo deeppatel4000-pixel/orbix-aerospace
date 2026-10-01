@@ -318,5 +318,14 @@ test.describe("Site integrity", () => {
     await expect(
       page.getByRole("main").getByRole("link", { name: "Go to the home page" }),
     ).toHaveAttribute("href", "/");
+
+    // Its plate is the not-found slot photograph, used on no other page
+    // (v4 plan section 7), with its caption and credit.
+    const plate = page.getByRole("main").locator("figure img");
+    await expect(plate).toHaveCount(1);
+    expect(await plate.getAttribute("src")).toContain("f-22-raptor-hangar");
+    await expect(page.getByRole("main").locator("figcaption")).toContainText(
+      "DeAndre Curtiss",
+    );
   });
 });

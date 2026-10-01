@@ -20,14 +20,14 @@ export const falconHeavy = {
       id: "falcon-heavy-core-loading-placeholder",
       status: "reviewed",
       summary:
-        "Falcon Heavy couples three Falcon-derived first-stage cores into one launch vehicle, so side-booster separation and the longer-burning center core must be managed as a single ascent system. The result is more than five million pounds of liftoff thrust and nearly 64 tonnes of LEO capability.",
+        "Falcon Heavy joins three Falcon first-stage cores into one launch vehicle, so the side-booster separation and the longer burn of the center core have to work as one ascent. It has more than five million pounds of liftoff thrust and can lift nearly 64 tonnes to LEO.",
       topic: "structures",
     },
     {
       id: "falcon-heavy-recovery-placeholder",
       status: "reviewed",
       summary:
-        "Falcon Heavy can recover and refly its side boosters, but recovery strategy depends on mission energy. Some high-energy missions land the side boosters while expending the center core, trading reusable hardware for the velocity needed by demanding payloads.",
+        "Falcon Heavy can recover and refly its side boosters, but what it recovers depends on mission energy. On some high-energy missions the side boosters land and the center core is expended, giving up reusable hardware for the velocity a demanding payload needs.",
       topic: "reusability",
     },
   ],

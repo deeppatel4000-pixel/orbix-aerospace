@@ -139,7 +139,7 @@ export function formatAircraftMeasurement<TUnit extends MeasurementUnit>(
 ) {
   return {
     note: formatMeasurementQualifier(measurement.qualifier),
-    value: formatMeasurement(measurement),
+    value: formatMeasurement(measurement, { markMinimum: true }),
   };
 }
 

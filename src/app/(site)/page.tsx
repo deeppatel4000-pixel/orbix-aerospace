@@ -3,9 +3,9 @@ import type { Metadata } from "next";
 import { HomePage } from "@/features/home/home-page";
 import { socialOpenGraph, socialTwitter } from "@/lib/social-image";
 
-const title = "ORBIX: aircraft, launch vehicles and aerospace engineering";
+const title = "ORBIX: aerospace engineering, explained with real vehicles";
 const description =
-  "An educational project about aircraft, launch vehicles and the engineering behind them, with vehicle records, side-by-side comparison, and calculators for orbital mechanics, compressible flow and atmospheric entry.";
+  "A personal project by Deep Patel, a high school senior who plans to study aerospace engineering: calculators from lift and drag to orbital transfers, with selected results checked against published tables and worked examples.";
 
 export const metadata: Metadata = {
   alternates: { canonical: "/" },

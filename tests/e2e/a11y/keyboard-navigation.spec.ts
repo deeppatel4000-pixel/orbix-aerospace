@@ -55,15 +55,16 @@ function focusStyleDiffers(
 }
 
 /**
- * Mission Control is revealed by `LaboratoryShell` from a hash-driven
- * effect after hydration. Waiting for its section navigation to be visible
- * is enough: the 2026 redesign removed the startup overlay, so there is
- * nothing to dismiss.
+ * The lab shows one tool at a time; `LaboratoryShell` reveals the one the
+ * hash names after hydration. Waiting for the tool to be visible is enough.
  */
-async function waitForMissionControl(page: Page): Promise<void> {
-  await expect(
-    page.getByRole("navigation", { name: "Mission control sections" }),
-  ).toBeVisible();
+async function openLabTool(page: Page, id: string): Promise<Locator> {
+  await page.goto(`${ROUTES.engineeringLab}#${id}`, {
+    waitUntil: "domcontentloaded",
+  });
+  const tool = page.locator(`[data-laboratory-tool="${id}"]`);
+  await expect(tool).toBeVisible({ timeout: 15_000 });
+  return tool;
 }
 
 test.describe("Skip link", () => {
@@ -143,10 +144,11 @@ test.describe("Focus indicators", () => {
 
     if (isDesktop) {
       // Desktop nav only exists at >=1024px (desktop-navigation.tsx's
-      // `hidden lg:block`).
+      // `hidden lg:block`). The wordmark links home, so the first nav link
+      // is the Engineering Lab (v4 plan section 3).
       const homeLink = page
         .getByRole("navigation", { name: "Primary navigation" })
-        .getByRole("link", { name: "Home", exact: true });
+        .getByRole("link", { name: "Engineering Lab", exact: true });
       const homeBaseline = await captureFocusStyle(homeLink);
 
       await page.keyboard.press("Tab");
@@ -190,13 +192,11 @@ test.describe("Primary navigation tab order", () => {
     // decoupled from internal app config and fails loudly -- rather than
     // silently tracking a change -- if the two drift apart.
     const expectedOrder = [
-      "Home",
+      "Engineering Lab",
+      "Verification",
       "Aircraft",
       "Rockets",
-      "Compare",
-      "Engineering Lab",
-      "Showcase",
-      "Learn",
+      "How I built it",
     ];
 
     const nav = page.getByRole("navigation", { name: "Primary navigation" });
@@ -213,107 +213,85 @@ test.describe("Primary navigation tab order", () => {
   });
 });
 
-test.describe("Mission Control workspace tabs", () => {
-  const missionControlUrl = `${ROUTES.engineeringLab}#mission-control-dashboard`;
-
-  test("arrow keys move roving-tabindex focus and immediately activate the newly-focused tab", async ({
+test.describe("Mission planner", () => {
+  test("arrow keys move through the missions and replan at once", async ({
     page,
   }) => {
-    await page.goto(missionControlUrl, { waitUntil: "domcontentloaded" });
-    await waitForMissionControl(page);
+    const tool = await openLabTool(page, "mission-planner");
+    const missions = tool.getByRole("group", { exact: true, name: "Mission" });
+    const radios = missions.getByRole("radio");
+    const plan = tool.getByRole("list", { exact: true, name: "Flight plan" });
 
-    // mission-control-sidebar.tsx implements a genuine roving-tabindex
-    // tablist: only the active tab carries tabIndex 0 (a Tab stop), every
-    // other tab sits at tabIndex -1, and ArrowUp/Down/Left/Right/Home/End
-    // are handled explicitly (resolveWorkspaceNavigationIndex) to move
-    // focus AND activate the newly-focused workspace in the same keypress.
-    const tablist = page
-      .getByRole("navigation", { name: "Mission control sections" })
-      .getByRole("tablist");
+    await expect(radios.first()).toBeChecked();
+    const firstPlan = await plan.textContent();
 
-    const overviewTab = tablist.getByRole("tab", {
-      name: "Overview: mission timeline summary",
-    });
-    const unifiedTab = tablist.getByRole("tab", {
-      name: "Unified view: unified mission presentation",
-    });
-
-    await expect(overviewTab).toHaveAttribute("aria-selected", "true");
-    await expect(overviewTab).toHaveAttribute("tabindex", "0");
-    await expect(unifiedTab).toHaveAttribute("tabindex", "-1");
-
-    // Roving tabindex means only the active tab is a Tab stop; focusing it
-    // directly is how sequential Tab navigation actually reaches this
-    // tablist (the same rationale the existing mission-control smoke suite
-    // uses), rather than simulating every intervening Tab stop on the page.
-    await overviewTab.focus();
-    await expect(overviewTab).toBeFocused();
-
+    // A native radio group: one Tab stop, arrows move and select.
+    await radios.first().focus();
     await page.keyboard.press("ArrowDown");
-
-    await expect(unifiedTab).toBeFocused();
-    await expect(unifiedTab).toHaveAttribute("aria-selected", "true");
-    await expect(unifiedTab).toHaveAttribute("tabindex", "0");
-    await expect(overviewTab).toHaveAttribute("aria-selected", "false");
-    await expect(overviewTab).toHaveAttribute("tabindex", "-1");
+    await expect(radios.nth(1)).toBeFocused();
+    await expect(radios.nth(1)).toBeChecked();
+    await expect(plan).not.toHaveText(firstPlan ?? "");
   });
 
-  test("Home and End jump to the first and last workspace tab", async ({
+  test("Enter and Space pick the step drawn on the transfer", async ({
     page,
   }) => {
-    await page.goto(missionControlUrl, { waitUntil: "domcontentloaded" });
-    await waitForMissionControl(page);
+    const tool = await openLabTool(page, "mission-planner");
+    const steps = tool
+      .getByRole("list", { exact: true, name: "Flight plan" })
+      .getByRole("button");
 
-    const tablist = page
-      .getByRole("navigation", { name: "Mission control sections" })
-      .getByRole("tablist");
-    const tabs = tablist.getByRole("tab");
-    const firstTab = tabs.first();
-    const lastTab = tabs.last();
+    // The first step with a drawing opens selected.
+    await expect(steps.filter({ hasText: "Burn 1" })).toHaveAttribute(
+      "aria-current",
+      "step",
+    );
 
-    await firstTab.focus();
-    await page.keyboard.press("End");
-    await expect(lastTab).toBeFocused();
-    await expect(lastTab).toHaveAttribute("aria-selected", "true");
-
-    await page.keyboard.press("Home");
-    await expect(firstTab).toBeFocused();
-    await expect(firstTab).toHaveAttribute("aria-selected", "true");
-  });
-
-  test("Enter and Space activate whichever tab currently holds DOM focus", async ({
-    page,
-  }) => {
-    await page.goto(missionControlUrl, { waitUntil: "domcontentloaded" });
-    await waitForMissionControl(page);
-
-    // Every workspace tab is a real <button type="button">, which the
-    // browser natively activates (fires `click`) on Enter/Space while
-    // focused -- mission-control-sidebar.tsx's own onKeyDown handler only
-    // intercepts arrow/Home/End, so it never interferes with that native
-    // behaviour. Moving DOM focus directly onto an *inactive* tab (which
-    // `.focus()` can do even though it sits at tabIndex -1, unlike Tab)
-    // isolates and confirms that Enter/Space -- not just a click -- is what
-    // activates the tab currently holding focus.
-    const tablist = page
-      .getByRole("navigation", { name: "Mission control sections" })
-      .getByRole("tablist");
-
-    const reentryTab = tablist.getByRole("tab", {
-      name: "Reentry: reentry view",
-    });
-    await expect(reentryTab).toHaveAttribute("aria-selected", "false");
-    await reentryTab.focus();
+    const coast = steps.filter({ hasText: "Coast" });
+    await coast.focus();
     await page.keyboard.press("Enter");
-    await expect(reentryTab).toHaveAttribute("aria-selected", "true");
+    await expect(coast).toHaveAttribute("aria-current", "step");
+    await expect(tool.locator('[aria-current="step"]')).toHaveCount(1);
 
-    const groundTrackTab = tablist.getByRole("tab", {
-      name: "Ground track: illustrative orbital projection",
-    });
-    await expect(groundTrackTab).toHaveAttribute("aria-selected", "false");
-    await groundTrackTab.focus();
+    const burn2 = steps.filter({ hasText: "Burn 2" });
+    await burn2.focus();
     await page.keyboard.press(" ");
-    await expect(groundTrackTab).toHaveAttribute("aria-selected", "true");
+    await expect(burn2).toHaveAttribute("aria-current", "step");
+    await expect(coast).not.toHaveAttribute("aria-current", "step");
+  });
+});
+
+test.describe("Transfer Explorer target slider", () => {
+  test("Home, End and the arrow keys move the target orbit", async ({
+    page,
+  }) => {
+    await page.goto(ROUTES.home, { waitUntil: "domcontentloaded" });
+    const explorer = page
+      .locator("#home-explorer-title")
+      .locator("xpath=ancestor::section[1]");
+    const slider = explorer.getByRole("slider", {
+      name: "Target orbit altitude",
+    });
+    await expect(slider).toBeVisible();
+    // Wait for hydration: keys on the server-rendered input do nothing.
+    await expect
+      .poll(() =>
+        slider.evaluate((input) =>
+          Object.keys(input).some((key) => key.startsWith("__reactProps")),
+        ),
+      )
+      .toBe(true);
+
+    await slider.focus();
+    await page.keyboard.press("Home");
+    await expect(slider).toHaveAttribute("aria-valuetext", /^160 km/);
+
+    await page.keyboard.press("End");
+    await expect(slider).toHaveAttribute("aria-valuetext", /^400,000 km/);
+
+    const atEnd = await slider.getAttribute("aria-valuetext");
+    await page.keyboard.press("ArrowLeft");
+    await expect(slider).not.toHaveAttribute("aria-valuetext", atEnd ?? "");
   });
 });
 

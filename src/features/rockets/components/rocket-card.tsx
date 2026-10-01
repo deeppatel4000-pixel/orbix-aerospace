@@ -21,6 +21,12 @@ interface RocketCardProps {
    * the related list at the end of a profile.
    */
   layout?: "row" | "stacked";
+  /**
+   * `photo` (default): the registry photograph. `none`: a text row, where
+   * the photograph is already on the page or a page away (the related list
+   * on a profile), so no photograph repeats.
+   */
+  media?: "none" | "photo";
   priority?: boolean;
   rocket: Rocket;
   sizes?: string;
@@ -57,6 +63,7 @@ function entrySpecs(rocket: Rocket): VehicleSpec[] {
 export function RocketCard({
   className,
   layout = "stacked",
+  media = "photo",
   priority = false,
   rocket,
   sizes,
@@ -75,21 +82,23 @@ export function RocketCard({
       href={`/rockets/${rocket.id}`}
       layout={layout}
       media={
-        <VehicleMediaFrame aspect="tall" settle>
-          <RocketImage
-            decorative
-            fillContainer
-            framing="card"
-            priority={priority}
-            rocket={rocket}
-            sizes={
-              sizes ??
-              (layout === "row"
-                ? "(min-width: 48rem) 5.5rem, 4.5rem"
-                : "(max-width: 639px) 4.5rem, (max-width: 1279px) 33vw, 14rem")
-            }
-          />
-        </VehicleMediaFrame>
+        media === "none" ? null : (
+          <VehicleMediaFrame aspect="tall" settle>
+            <RocketImage
+              decorative
+              fillContainer
+              framing="card"
+              priority={priority}
+              rocket={rocket}
+              sizes={
+                sizes ??
+                (layout === "row"
+                  ? "(min-width: 48rem) 5.5rem, 4.5rem"
+                  : "(max-width: 639px) 4.5rem, (max-width: 1279px) 33vw, 14rem")
+              }
+            />
+          </VehicleMediaFrame>
+        )
       }
       name={rocket.name}
       shortName={visual?.cardName}
