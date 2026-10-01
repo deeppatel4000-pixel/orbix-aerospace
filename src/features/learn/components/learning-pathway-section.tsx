@@ -19,12 +19,12 @@ import { cn } from "@/lib/cn";
 
 /**
  * The lab-link rail is quieter than a tertiary button (secondary text,
- * regular weight, underline in the control colour) so a column of links
- * does not compete with the chapter text. It keeps the 44px target and
+ * regular weight, no underline at rest; the arrow and the list mark them
+ * as links) so a column of links does not compete with the chapter text. It keeps the 44px target and
  * turns accent on hover.
  */
 const RAIL_LINK =
-  "justify-start text-left text-[0.9375rem] font-normal text-text-secondary decoration-border-control hover:text-accent hover:decoration-accent";
+  "justify-start text-left text-[0.9375rem] font-normal text-text-secondary decoration-transparent hover:text-accent hover:decoration-accent focus-visible:decoration-accent";
 
 /**
  * The quote and rail headings are plain sentence-case labels (spec 3.6).
@@ -33,12 +33,14 @@ const MINOR_HEADING = "text-[0.8125rem] leading-5 font-medium text-text-muted";
 
 /**
  * One legend entry. A unit written with `^` (a fractional power such as
- * "kg^1/2/m") needs a real superscript, and EquationBlock's `unit` slot
- * takes only a string, so that unit is set at the end of the meaning.
+ * "kg^1/2/m") needs a real superscript, and one with parentheses
+ * ("J/(kg K)") needs them in Plex, since B612 Mono draws them almost
+ * square. EquationBlock's `unit` slot takes only a string, so either unit
+ * is set at the end of the meaning.
  */
 function legendEntry(variable: LearnEquationVariable): EquationVariable {
   const symbol = withSubscripts(variable.symbol);
-  if (!variable.unit?.includes("^")) {
+  if (!variable.unit || !/[\^(]/.test(variable.unit)) {
     return {
       meaning: withSubscripts(variable.meaning),
       symbol,
@@ -55,6 +57,18 @@ function legendEntry(variable: LearnEquationVariable): EquationVariable {
   };
 }
 
+/**
+ * The pathways whose "Why it matters" is set as a display-cut pull quote:
+ * the first, which opens the page, and the entry pathway, which has no
+ * figure. The others set it as a run-in paragraph after the summary, so
+ * the six pathways do not repeat one rhythm (tells: identical section
+ * rhythm).
+ */
+const PULL_QUOTE_AREA_IDS: ReadonlySet<string> = new Set([
+  "aerodynamics-flight-fundamentals",
+  "atmospheric-entry-thermal-protection",
+]);
+
 interface LearningPathwaySectionProps {
   area: LearningArea;
   /** Pathway number, from 1. Used only for the key-idea and equation
@@ -66,8 +80,9 @@ interface LearningPathwaySectionProps {
  * One pathway (spec v3 section 11, Learn). Pathways are separated by
  * space and the 48px division rule above each heading (spec 6); there is
  * no chapter numeral and no "Pathway 0N" label. The heading is followed by
- * the summary, "Why it matters" as a display-cut pull quote, and the
- * figure where the pathway has one. Key ideas keep their real reference numbers (1.1) and
+ * the summary, "Why it matters" (a display-cut pull quote in two pathways,
+ * a run-in paragraph in the rest), and the figure where the pathway has
+ * one. Key ideas keep their real reference numbers (1.1) and
  * each display equation carries the same number at the right margin.
  *
  * DOM order is summary, lab links, key ideas, then further reading, so
@@ -104,12 +119,21 @@ export function LearningPathwaySection({
             {withSubscripts(area.summary)}
           </p>
 
-          <div className="mt-12">
-            <h3 className={MINOR_HEADING}>Why it matters</h3>
-            <p className="font-display mt-3 max-w-[40rem] text-[clamp(1.25rem,1.7vw,1.5rem)] leading-[1.35] tracking-[-0.015em] text-pretty text-text-primary [--font-display-weight:500]">
+          {PULL_QUOTE_AREA_IDS.has(area.id) ? (
+            <div className="mt-12">
+              <h3 className={MINOR_HEADING}>Why it matters</h3>
+              <p className="font-display mt-3 max-w-[40rem] text-[clamp(1.25rem,1.7vw,1.5rem)] leading-[1.35] tracking-[-0.015em] text-pretty text-text-primary [--font-display-weight:500]">
+                {withSubscripts(area.whyItMatters)}
+              </p>
+            </div>
+          ) : (
+            <p className="mt-6 max-w-[38rem] leading-[1.65] text-pretty text-text-secondary">
+              <strong className="font-medium text-text-primary">
+                Why it matters.
+              </strong>{" "}
               {withSubscripts(area.whyItMatters)}
             </p>
-          </div>
+          )}
 
           {wideFigure ? null : <PathwayFigure areaId={area.id} />}
         </div>
@@ -190,7 +214,7 @@ export function LearningPathwaySection({
                   </p>
                   {idea.equation ? (
                     <EquationBlock
-                      className="col-span-2"
+                      className="col-start-2"
                       equation={formatEquation(idea.equation)}
                       label={idea.equationLabel}
                       number={reference}

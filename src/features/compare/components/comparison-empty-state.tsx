@@ -51,14 +51,11 @@ export function ComparisonEmptyState({ result }: ComparisonEmptyStateProps) {
             <p className="mt-1 text-sm leading-5 text-muted max-md:hidden">
               {group.summary}
             </p>
-            <ul
-              aria-label={group.label + " rows"}
-              className="mt-1.5 flex flex-wrap gap-x-4 gap-y-1 text-[0.8125rem] leading-5 text-text-secondary"
-            >
-              {group.rows.map((row) => (
-                <li key={row.id}>{row.label}</li>
-              ))}
-            </ul>
+            {/* One muted sentence, so the row names read as a note on the
+                group, not as a row of tags. */}
+            <p className="mt-1.5 text-[0.8125rem] leading-5 text-muted">
+              {group.rows.map((row) => row.label).join(", ")}
+            </p>
           </li>
         ))}
       </ul>

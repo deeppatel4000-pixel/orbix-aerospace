@@ -54,9 +54,9 @@ describe("SectionIndex", () => {
     );
   });
 
-  it("ignores the retired start prop and uses the requested heading level", () => {
+  it("renders a plain list at the requested heading level", () => {
     const markup = renderToStaticMarkup(
-      <SectionIndex headingAs="h2" items={items} start={4} />,
+      <SectionIndex headingAs="h2" items={items} />,
     );
     expect(markup).toMatch(/^<ul class="orbix-section-index">/);
     expect(markup).not.toContain("start=");

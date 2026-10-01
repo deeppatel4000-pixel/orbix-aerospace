@@ -70,7 +70,7 @@ describe("EquationBlock", () => {
       <EquationBlock equation="F = m a" number="2.1" />,
     );
     expect(markup).toContain(
-      '<span class="orbix-equation__number">(2<span class="orbix-num-sep">.</span>1)</span>',
+      '<span class="orbix-equation__number">(2.1)</span>',
     );
     expect(markup).toMatch(
       /<div class="orbix-equation__line"><p class="orbix-equation__expr">F = m a<\/p><span/,

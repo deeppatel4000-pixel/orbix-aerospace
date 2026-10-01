@@ -43,7 +43,7 @@ export function LabFigure({ children: figure, unit }: LabFigureProps) {
       {unit ? (
         <>
           <span className="lab-figure__gap"> </span>
-          <span className="lab-figure__unit">{unitWithSubscripts(unit)}</span>
+          <span className="lab-figure__unit">{labUnit(unit)}</span>
         </>
       ) : null}
     </span>
@@ -51,24 +51,35 @@ export function LabFigure({ children: figure, unit }: LabFigureProps) {
 }
 
 const SUBSCRIPT_DIGITS = "₀₁₂₃₄₅₆₇₈₉";
+const SUPERSCRIPT_DIGITS = "⁰¹²³⁴⁵⁶⁷⁸⁹";
+
+function plainDigits(part: string, digits: string): string {
+  return Array.from(part, (digit) => digits.indexOf(digit)).join("");
+}
 
 /**
- * A unit with its Unicode subscript digits ("g₀") set as real `<sub>`
- * elements. B612 Mono has no subscript figures, so U+2080 fell back to a
- * glyph about 5px tall at a note's size and "g₀" read as "g.".
+ * A unit with its Unicode subscript and superscript digits ("g₀",
+ * "m³/s²") set as real `<sub>` and `<sup>` elements. B612 Mono has no
+ * subscript figures, so U+2080 fell back to a glyph about 5px tall and
+ * "g₀" read as "g."; its superscripts take a whole mono cell, so "m³/s²"
+ * showed a false space after the "³" and a tiny "²". Copied text reads
+ * "m3/s2".
  */
-function unitWithSubscripts(unit: string): ReactNode {
-  const parts = unit.split(/([₀-₉]+)/u);
+export function labUnit(unit: string): ReactNode {
+  const parts = unit.split(/([₀-₉]+|[⁰¹²³⁴-⁹]+)/u);
   if (parts.length === 1) return formatFigure(unit);
-  return parts.map((part, index) =>
-    index % 2 === 1 ? (
+  return parts.map((part, index) => {
+    if (index % 2 === 0) return part;
+    return SUBSCRIPT_DIGITS.includes(part[0] ?? "") ? (
       <sub className="lab-figure__sub" key={index}>
-        {Array.from(part, (digit) => SUBSCRIPT_DIGITS.indexOf(digit)).join("")}
+        {plainDigits(part, SUBSCRIPT_DIGITS)}
       </sub>
     ) : (
-      part
-    ),
-  );
+      <sup className="lab-figure__sup" key={index}>
+        {plainDigits(part, SUPERSCRIPT_DIGITS)}
+      </sup>
+    );
+  });
 }
 
 /**

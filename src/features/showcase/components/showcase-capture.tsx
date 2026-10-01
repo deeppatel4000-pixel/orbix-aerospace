@@ -44,7 +44,7 @@ function CaptureDetails({ mission }: { mission: ShowcaseMission }) {
         {detailGroups.map((group) => (
           <section aria-labelledby={`capture-${group.key}`} key={group.key}>
             <h2
-              className="orbix-caps whitespace-nowrap text-text-muted"
+              className="orbix-label whitespace-nowrap text-text-muted"
               id={`capture-${group.key}`}
             >
               {group.title}
@@ -90,8 +90,7 @@ export function ShowcaseCapture({ mission }: ShowcaseCaptureProps) {
             <span className="sr-only">ORBIX</span>
             {/* The caption for the whole view, in the title block. */}
             <span className="orbix-label">
-              Educational mission preset. Values are preset inputs converted to
-              display units, except where a caption says otherwise.
+              Preset inputs in display units, unless a caption says otherwise.
             </span>
           </p>
           <ButtonLink

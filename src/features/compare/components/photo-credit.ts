@@ -19,7 +19,8 @@ function unbreakable(text: string): string {
   return text.replace(/ /g, NO_BREAK_SPACE).replace(/-/g, NO_BREAK_HYPHEN);
 }
 
-function shortCreditSource(credit: string): string {
+/** "USAF" or "NASA" for government works, otherwise the credit as given. */
+export function shortCreditSource(credit: string): string {
   if (credit.startsWith("U.S. Air Force")) return "USAF";
   if (credit.startsWith("NASA")) return "NASA";
   return credit;

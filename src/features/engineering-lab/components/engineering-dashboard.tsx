@@ -79,16 +79,16 @@ const EXAMPLE_MISSION = {
   description:
     "A Hohmann transfer from a 200 km to a 408 km circular orbit, then a 5,000 kg entry vehicle's descent from 10 km at 750 m/s. The entry models cover the standard troposphere only (0 to 11 km).",
   id: "lab-example-orbit-raise-and-entry",
-  name: "Orbit Raise and Entry",
+  name: "Orbit raise and entry",
   profile: {
     deltaVBudget: {
       hohmannTransfer: {
         finalAltitudeMetres: 408_000,
         initialAltitudeMetres: 200_000,
       },
-      missionName: "Orbit Raise and Entry Budget",
+      missionName: "Orbit raise and entry budget",
     },
-    missionName: "Orbit Raise and Entry",
+    missionName: "Orbit raise and entry",
     vehicleReentryEvaluation: {
       initialAltitudeMeters: 10_000,
       initialVelocityMetersPerSecond: 750,
@@ -98,7 +98,7 @@ const EXAMPLE_MISSION = {
         massKilograms: 5_000,
         noseRadiusMetres: 1,
         referenceAreaSquareMetres: 12,
-        vehicleName: "Example Entry Vehicle",
+        vehicleName: "Example entry vehicle",
       },
     },
   },
@@ -534,10 +534,10 @@ export function EngineeringDashboard() {
   return (
     <>
       <header>
-        <Container className="grid gap-10 pt-10 pb-12 sm:pt-14 lg:grid-cols-[minmax(0,6fr)_minmax(0,5fr)] lg:grid-rows-[auto_1fr] lg:items-start lg:gap-x-14 lg:gap-y-8 lg:pt-14">
-          {/* Top-aligned with the drawing's inset, so the H1 does not sink
-           * to mid-height. */}
-          <div className="min-w-0 lg:pt-6">
+        <Container className="grid gap-10 pt-10 pb-12 sm:pt-14 lg:grid-cols-[minmax(0,6fr)_minmax(0,5fr)] lg:grid-rows-[auto_1fr] lg:items-start lg:gap-x-14 lg:gap-y-10 lg:pt-14">
+          {/* Top-aligned with the drawing, so the H1 does not sink to
+           * mid-height. */}
+          <div className="min-w-0">
             <h1 className="orbix-display text-foreground">Engineering Lab</h1>
             <p className="orbix-lead mt-6">
               Calculators for rocket propulsion, aerodynamics, compressible
@@ -598,10 +598,10 @@ export function EngineeringDashboard() {
               title="Hohmann transfer from low Earth orbit to geostationary altitude"
             />
             {/* Always three columns; on a phone the readout steps down to
-             * 16px with a tighter inset, so each unit stays on its value's
-             * line rather than wrapping 2 + 1 or under the figure. */}
+             * 16px and the column gap to 12px, so each unit stays on its
+             * value's line rather than wrapping 2 + 1 or under the figure. */}
             <RecordRow
-              className="mt-6 max-[30rem]:[--record-inset:0.75rem] max-[30rem]:[&_dd]:text-base [&_dl]:grid-cols-3"
+              className="mt-6 max-[30rem]:[&_dd]:text-base [&_dl]:grid-cols-3 max-[30rem]:[&_dl]:gap-x-3"
               items={[
                 {
                   label: "First burn",
@@ -627,9 +627,9 @@ export function EngineeringDashboard() {
           </div>
 
           {/* After the figure in the DOM, so a phone reads the one visual
-           * before the fine print; at lg it drops to the foot of the text
-           * column so its last line meets the readout row. */}
-          <p className="max-w-[60ch] text-sm leading-6 text-muted lg:col-start-1 lg:row-start-2 lg:self-end">
+           * before the fine print; at lg it sits in the text column straight
+           * under the actions (the row gap is its top margin). */}
+          <p className="max-w-[60ch] text-sm leading-6 text-muted lg:col-start-1 lg:row-start-2 lg:self-start">
             For education only. The models are simplified and must not be used
             for operational, safety or certification decisions. See the{" "}
             <ButtonLink href="/terms" variant="link">

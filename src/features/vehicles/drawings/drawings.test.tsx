@@ -6,9 +6,10 @@ import type { Aircraft, Rocket } from "@/features/vehicles/types";
 
 import {
   AircraftSizeComparison,
-  aircraftComparisonGeometry,
-  COMPARISON_LAYOUTS,
-  type ComparisonLayoutName,
+  aircraftPlans,
+  PLAN_PAD_M,
+  planViewBox,
+  SCALE_BAR_M as PLAN_SCALE_BAR_M,
 } from "./aircraft-size-comparison";
 import {
   LINEUP_LAYOUTS,
@@ -41,9 +42,6 @@ function layoutMarkup(markup: string, layout: string) {
 }
 
 const lineupLayouts = Object.keys(LINEUP_LAYOUTS) as LineupLayoutName[];
-const comparisonLayouts = Object.keys(
-  COMPARISON_LAYOUTS,
-) as ComparisonLayoutName[];
 
 describe("unit conversion", () => {
   it("uses the exact definitions of the foot and the miles", () => {
@@ -141,6 +139,45 @@ describe.each(lineupLayouts)("rocket height lineup, %s", (layout) => {
 });
 
 describe("rocket height lineup", () => {
+  it("carries each upright top to the figure column, one figure per height", () => {
+    const geometry = rocketLineupGeometry(rocketVehicles, "upright");
+    const svg = layoutMarkup(
+      renderToStaticMarkup(<RocketHeightLineup rockets={rocketVehicles} />),
+      "upright",
+    );
+    for (const vehicle of geometry.vehicles) {
+      const extension = attributes(
+        svg,
+        new RegExp(
+          `data-vehicle="${vehicle.id}"[^]*?<line[^>]*data-extension=""[^>]*>`,
+        ),
+      );
+      expect(Number(extension.y1)).toBe(vehicle.y2);
+      expect(Number(extension.y2)).toBe(vehicle.y2);
+      expect(Number(extension.x2)).toBe(geometry.leaderX);
+    }
+    const distinct = new Set(
+      geometry.vehicles.map((vehicle) => vehicle.metres),
+    );
+    expect(svg.match(/data-figure=""/g)).toHaveLength(distinct.size);
+    // The scale bar lies flat under the ground line.
+    for (const tick of geometry.scale) {
+      expect(tick.y).toBeGreaterThan(geometry.ground.y1);
+    }
+  });
+
+  it("closes up the decimal point in every drawn figure", () => {
+    const svg =
+      renderToStaticMarkup(<RocketHeightLineup rockets={rocketVehicles} />) +
+      renderToStaticMarkup(
+        <AircraftSizeComparison aircraft={aircraftVehicles} />,
+      );
+    expect(svg).toContain('<tspan data-num-sep="" dx="-0.24">.</tspan>');
+    expect(svg).toContain('<span class="orbix-num-sep">.</span>');
+    // No figure keeps a bare point between digits.
+    expect(svg).not.toMatch(/>[^<]*\d\.\d[^<]*<\/(?:text|tspan|span)>/);
+  });
+
   it("leaves out a record with no usable height and names it", () => {
     const [first] = rocketVehicles;
     const broken = {
@@ -165,39 +202,31 @@ describe("rocket height lineup", () => {
   });
 });
 
-describe.each(comparisonLayouts)("aircraft size comparison, %s", (layout) => {
-  const geometry = aircraftComparisonGeometry(aircraftVehicles, layout);
-  const u = COMPARISON_LAYOUTS[layout].unitsPerMetre;
+describe("aircraft size comparison", () => {
+  const plans = aircraftPlans(aircraftVehicles);
+  const markup = () =>
+    renderToStaticMarkup(
+      <AircraftSizeComparison aircraft={aircraftVehicles} />,
+    );
 
   it("draws every aircraft on record, smallest wingspan first", () => {
-    expect(geometry.aircraft.map((item) => item.id).sort()).toEqual(
+    expect(plans.map((item) => item.id).sort()).toEqual(
       aircraftVehicles.map((item) => item.id).sort(),
     );
-    const spans = geometry.aircraft.map((item) => item.wingspanM);
+    const spans = plans.map((item) => item.wingspanM);
     expect(spans).toEqual([...spans].sort((a, b) => a - b));
   });
 
   it.each(aircraftVehicles.map((item) => [item.id, item] as const))(
     "%s is drawn at its recorded length and wingspan",
     (id, aircraft) => {
-      const drawn = geometry.aircraft.find((item) => item.id === id)!;
+      const drawn = plans.find((item) => item.id === id)!;
       const { length, wingspan } = aircraft.dimensions;
       // The records give feet; the drawing is in metres at 0.3048 m/ft.
       expect(length.unit).toBe("ft");
       expect(wingspan.unit).toBe("ft");
-      expect((drawn.tailY - drawn.noseY) / u).toBeCloseTo(
-        length.value * 0.3048,
-        9,
-      );
-      expect((drawn.spanRight - drawn.spanLeft) / u).toBeCloseTo(
-        wingspan.value * 0.3048,
-        9,
-      );
-      // The span line is centred on the centreline.
-      expect((drawn.spanLeft + drawn.spanRight) / 2).toBeCloseTo(
-        drawn.centreX,
-        9,
-      );
+      expect(drawn.lengthM).toBeCloseTo(length.value * 0.3048, 9);
+      expect(drawn.wingspanM).toBeCloseTo(wingspan.value * 0.3048, 9);
       expect(drawn.lengthLabel[0]).toBe(`${length.value} ft`);
       expect(drawn.wingspanLabel[0]).toBe(`${wingspan.value} ft`);
       expect(drawn.lengthLabel[1]).toBe(
@@ -209,69 +238,61 @@ describe.each(comparisonLayouts)("aircraft size comparison, %s", (layout) => {
     },
   );
 
-  it("renders each centreline and span line at the geometry's size", () => {
-    const markup = layoutMarkup(
-      renderToStaticMarkup(
-        <AircraftSizeComparison aircraft={aircraftVehicles} />,
-      ),
-      layout,
-    );
-    for (const aircraft of aircraftVehicles) {
+  it("renders each plan in metres at one shared CSS scale", () => {
+    const svg = markup();
+    for (const item of plans) {
+      const group = new RegExp(`data-vehicle="${item.id}"[^]*?`);
+      const plan = attributes(
+        svg,
+        new RegExp(group.source + `<svg[^>]*data-plan=""[^>]*>`),
+      );
+      const box = planViewBox(item);
+      expect(plan.viewBox).toBe(`${box.x} 0 ${box.width} ${box.height}`);
+      // The rendered width is the box in metres times the shared scale.
+      expect(plan.style).toBe(
+        `width:calc(var(--plan-u) * ${Math.round(box.width * 1000) / 1000})`,
+      );
+
       const length = attributes(
-        markup,
-        new RegExp(
-          `data-vehicle="${aircraft.id}"[^]*?<line[^>]*data-dimension="length"[^>]*>`,
-        ),
+        svg,
+        new RegExp(group.source + `<line[^>]*data-dimension="length"[^>]*>`),
       );
       const span = attributes(
-        markup,
-        new RegExp(
-          `data-vehicle="${aircraft.id}"[^]*?<line[^>]*data-dimension="span"[^>]*>`,
-        ),
+        svg,
+        new RegExp(group.source + `<line[^>]*data-dimension="span"[^>]*>`),
       );
-      expect(length.x1).toBe(length.x2);
-      expect(span.y1).toBe(span.y2);
-      expect((Number(length.y2) - Number(length.y1)) / u).toBeCloseTo(
-        aircraft.dimensions.length.value * 0.3048,
+      expect(Number(length.y2) - Number(length.y1)).toBeCloseTo(
+        item.lengthM,
         9,
       );
-      expect((Number(span.x2) - Number(span.x1)) / u).toBeCloseTo(
-        aircraft.dimensions.wingspan.value * 0.3048,
-        9,
+      expect(Number(span.x2) - Number(span.x1)).toBeCloseTo(item.wingspanM, 9);
+
+      // The envelope: nose on the same pad for every plan, so noses are
+      // level along a row.
+      const envelope = attributes(
+        svg,
+        new RegExp(group.source + `<path[^>]*data-envelope=""[^>]*>`),
+      );
+      const [x1, y1, x2, y2] = envelope
+        .d!.match(/-?[\d.]+(?:e-?\d+)?/g)!
+        .map(Number);
+      expect(x1).toBe(0);
+      expect(y1).toBe(PLAN_PAD_M);
+      expect(x2).toBeCloseTo(item.wingspanM, 9);
+      expect(y2! - y1!).toBeCloseTo(item.lengthM, 9);
+
+      // Each plan is named, with both dimensions, under the drawing.
+      expect(svg).toMatch(
+        new RegExp(`data-vehicle="${item.id}"[^]*?>${item.name}</p>`),
       );
     }
   });
 
-  it("fits every row inside the drawing and levels the tails in a row", () => {
-    for (const item of geometry.aircraft) {
-      expect(item.left).toBeGreaterThanOrEqual(0);
-      expect(item.right).toBeLessThanOrEqual(geometry.width);
-      const row = geometry.aircraft.filter(
-        (other) => Math.abs(other.tailY - item.tailY) < 1e-9,
-      );
-      expect(row.length).toBeGreaterThan(0);
-    }
-    expect(geometry.scaleBar.y).toBeLessThan(geometry.height);
+  it("sizes the scale bar from the same scale", () => {
+    const bar = attributes(markup(), /<div[^>]*data-scale-bar=""[^>]*>/);
+    expect(bar.style).toBe(`width:calc(var(--plan-u) * ${PLAN_SCALE_BAR_M})`);
   });
 
-  it("draws the scale bar ticks at their metre values", () => {
-    const [zero, ...rest] = geometry.scaleBar.ticks;
-    for (const tick of rest) {
-      expect((tick.x - zero!.x) / u).toBeCloseTo(tick.metres, 9);
-    }
-  });
-
-  it("keeps every figure at 11px or more at the narrowest width shown", () => {
-    const narrowest = layout === "narrow" ? 288 : 592;
-    const { figureSize, nameSize } = COMPARISON_LAYOUTS[layout];
-    expect(
-      (Math.min(figureSize, nameSize) * Math.min(narrowest, geometry.width)) /
-        geometry.width,
-    ).toBeGreaterThanOrEqual(11);
-  });
-});
-
-describe("aircraft size comparison", () => {
   it("leaves out an aircraft missing a dimension and names it", () => {
     const [first] = aircraftVehicles;
     const broken = {
@@ -292,7 +313,7 @@ describe("aircraft size comparison", () => {
       renderToStaticMarkup(
         <AircraftSizeComparison aircraft={aircraftVehicles} />,
       ) + renderToStaticMarkup(<RocketHeightLineup rockets={rocketVehicles} />);
-    expect(markup).not.toMatch(/gradient|<image|shadow|<rect|dasharray/i);
+    expect(markup).not.toMatch(/gradient|<image|shadow|<rect|fill="(?!none)/i);
     expect(markup).not.toContain(String.fromCharCode(0x2014));
   });
 

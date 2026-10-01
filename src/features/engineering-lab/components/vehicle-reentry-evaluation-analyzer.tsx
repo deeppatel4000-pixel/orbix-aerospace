@@ -768,7 +768,9 @@ export function VehicleReentryEvaluationAnalyzer() {
                               .heatLoadMarginMegajoulesPerSquareMetre
                           }
                         />{" "}
-                        heat-load margin
+                        <span className="lab-figure-note__words">
+                          heat-load margin
+                        </span>
                       </output>
                     </dd>
                   </div>

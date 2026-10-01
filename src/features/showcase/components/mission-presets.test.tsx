@@ -53,17 +53,21 @@ describe("showcase mission presets", () => {
     expect(textOf(markup)).toContain("5,400");
   });
 
-  it("frames every preset's figure as a plate with registration marks", () => {
+  it("numbers every figure and sets none in a frame", () => {
     const markup = renderToStaticMarkup(<ShowcasePage />);
     const drawn = SHOWCASE_MISSIONS.filter(
       (mission) => mission.diagram.kind !== "none",
     );
 
-    // One plate for the architecture diagram plus one per preset with a
-    // drawing. A reentry-only preset has no figure, so no empty frame: its
-    // entry conditions and vehicle table are plain tables.
+    // One figure for the architecture diagram plus one per preset with a
+    // drawing, numbered in page order. A reentry-only preset has no
+    // figure: its entry conditions and vehicle table are open lists.
     expect(drawn.length).toBeLessThan(SHOWCASE_MISSIONS.length);
-    expect(markup.match(/orbix-reg-marks/g)).toHaveLength(drawn.length + 1);
+    expect(markup.match(/<figure/g)).toHaveLength(drawn.length + 1);
+    for (let n = 1; n <= drawn.length + 1; n += 1) {
+      expect(textOf(markup)).toContain(`Fig. ${n}`);
+    }
+    expect(markup).not.toMatch(/orbix-reg-marks|orbix-surface|rounded-/);
     expect(markup).not.toContain("no transfer drawing");
     expect(markup).toContain("Entry conditions");
   });
@@ -114,7 +118,7 @@ describe("showcase capture view", () => {
       expect(markup.match(/<h1/g)).toHaveLength(1);
       expect(markup).toContain(mission.preset.name);
       expect(textOf(markup)).toContain(
-        "Values are preset inputs converted to display units, except where a caption says otherwise.",
+        "Preset inputs in display units, unless a caption says otherwise.",
       );
       expect(markup).not.toContain("/images/");
       expect(markup).not.toContain(EM_DASH);

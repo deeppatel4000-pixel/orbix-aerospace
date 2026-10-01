@@ -4,6 +4,7 @@ import type {
 } from "@/features/vehicles/types";
 
 import { VehicleProfileSection } from "./vehicle-profile-section";
+import { keepDesignations } from "@/lib/designations";
 
 interface EngineeringNotesListProps {
   /** One sentence under the heading, as on the other sections. */
@@ -39,7 +40,7 @@ export function EngineeringNotesList({
               {formatTopic(note.topic)}
             </h3>
             <p className="max-w-[66ch] leading-7 text-pretty text-foreground">
-              {note.summary}
+              {keepDesignations(note.summary)}
             </p>
           </article>
         ))}

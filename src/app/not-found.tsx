@@ -8,6 +8,7 @@ import { ButtonLink } from "@/components/ui/button-link";
 import { Eyebrow } from "@/components/ui/eyebrow";
 import { PhotoHero } from "@/components/ui/photo-hero";
 import { getAircraftVisual } from "@/features/aircraft/data/aircraft-visuals";
+import { heroCrop } from "@/features/vehicles/components/hero-crop";
 
 export const metadata: Metadata = {
   title: "Page not found",
@@ -15,7 +16,7 @@ export const metadata: Metadata = {
 
 /**
  * 404: "Off course." on the page ground with a way home and into both
- * registries, and the US Air Force F-15C photograph as a hard-edged plate
+ * registries, and the U.S. Air Force F-15C photograph as a hard-edged plate
  * beside it (spec 7). "Off course." is the H1, in one colour; the plain
  * "Page not found" kicker above it (the page's one kicker) and the document
  * title name the page for assistive technology and search.
@@ -25,6 +26,10 @@ export const metadata: Metadata = {
  */
 export default function NotFound() {
   const visual = getAircraftVisual("f-15-eagle");
+  const crop = heroCrop({
+    base: visual?.heroObjectPosition ?? "50% 50%",
+    lg: "84% 60%",
+  });
 
   const content = (
     <>
@@ -60,9 +65,14 @@ export default function NotFound() {
           // The F-15C is not the hero of home or either registry (only of
           // its own profile; the registries lead with the B-2 and the
           // Saturn V, home with the SR-71), so this page reads as its own.
+          // From 64rem the split plate is near square, so the 3:2
+          // photograph is cropped at the sides: the crop holds to the
+          // right, where the nose is, and gives up the trailing wingtip.
           <PhotoHero
             caption="F-15C Eagle of the 44th Fighter Squadron on a training flight, 15 April 2019"
-            visual={{ ...visual, objectPosition: visual.heroObjectPosition }}
+            className={crop.className}
+            style={crop.style}
+            visual={{ ...visual, objectPosition: crop.objectPosition }}
           >
             {content}
           </PhotoHero>

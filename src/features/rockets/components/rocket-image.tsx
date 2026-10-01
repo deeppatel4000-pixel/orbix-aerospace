@@ -6,14 +6,9 @@ import type { Rocket } from "@/features/vehicles/types";
 import { cn } from "@/lib/cn";
 
 /** Which recorded crop an image uses. */
-export type ImageFraming = "card" | "default" | "feature";
+export type ImageFraming = "card" | "default";
 
 interface RocketImageProps {
-  /**
-   * Deprecated and ignored: cards no longer zoom on hover (spec 11). Kept so
-   * existing callers compile.
-   */
-  animateOnHover?: boolean;
   className?: string;
   /**
    * Render with `alt=""` when the surrounding link or caption already
@@ -22,9 +17,8 @@ interface RocketImageProps {
   decorative?: boolean;
   fillContainer?: boolean;
   /**
-   * Which recorded crop to use: `default` (`objectPosition`), `card` (the
-   * registry card frame) or `feature` (the card crop, then the wide first
-   * card's crop from 40rem).
+   * Which recorded crop to use: `default` (`objectPosition`) or `card`
+   * (the registry card frame).
    */
   framing?: ImageFraming;
   imageClassName?: string;
@@ -81,8 +75,6 @@ export function RocketImage({
         alt={decorative ? "" : visual.alt}
         className={cn(
           "object-cover [filter:saturate(0.9)]",
-          framing === "feature" &&
-            "object-(--crop-card) sm:object-(--crop-feature)",
           // A fixed zoom for a photograph whose vehicle is small in the
           // frame. It never changes on hover (spec 10).
           cardScale !== undefined && "[transform:scale(var(--card-scale))]",
@@ -95,22 +87,17 @@ export function RocketImage({
         sizes={cardScale ? scaleSizes(sizes, cardScale) : sizes}
         src={visual.src}
         style={
-          framing === "feature"
-            ? ({
-                "--crop-card": visual.cardObjectPosition,
-                "--crop-feature": visual.featureObjectPosition,
-              } as CSSProperties)
-            : framing === "card"
-              ? {
-                  objectPosition: visual.cardObjectPosition,
-                  ...(cardScale
-                    ? ({
-                        "--card-scale": cardScale,
-                        transformOrigin: visual.cardScaleOrigin,
-                      } as CSSProperties)
-                    : {}),
-                }
-              : { objectPosition: visual.objectPosition }
+          framing === "card"
+            ? {
+                objectPosition: visual.cardObjectPosition,
+                ...(cardScale
+                  ? ({
+                      "--card-scale": cardScale,
+                      transformOrigin: visual.cardScaleOrigin,
+                    } as CSSProperties)
+                  : {}),
+              }
+            : { objectPosition: visual.objectPosition }
         }
       />
     </div>

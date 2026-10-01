@@ -79,12 +79,16 @@ function Figure({
           "orbix-readout-inline " +
           (tone === "primary"
             ? "text-sm text-foreground md:text-[1.0625rem]"
-            : "text-[0.875rem] text-text-secondary md:text-[0.9375rem]")
+            : "text-[0.875rem] text-muted md:text-[0.9375rem]")
         }
       >
         <span className="whitespace-nowrap">
           {formatFigure(number)}
-          {unit ? " " + unit : null}
+          {unit ? (
+            /* Spec 5: the unit a step smaller and muted, held to its
+               figure by a no-break space. */
+            <span className="text-[0.8125em] text-muted">{NBSP + unit}</span>
+          ) : null}
         </span>
       </span>
       {parsed.qualifier ? (
@@ -103,7 +107,7 @@ function DetailLine({ detail }: { detail: string }) {
   return parsed ? (
     <Figure parsed={parsed} tone="detail" />
   ) : (
-    <span className="text-sm text-text-secondary">{detail}</span>
+    <span className="text-sm text-muted">{detail}</span>
   );
 }
 
@@ -180,7 +184,8 @@ function splitDescription(text: string): readonly [string, string | undefined] {
   return match?.[1] && match[2] ? [match[1], match[2]] : [text, undefined];
 }
 
-/** No-break space, so a count and its designation never part. */
+/** No-break space, so a count and its designation, or a figure and its
+ * unit, never part. */
 const NBSP = "\u00A0";
 
 /**
@@ -212,7 +217,7 @@ function Qualifier({ text }: { text: string | undefined }) {
 
 /**
  * One line of a text cell: the designation in ink, and any bracketed
- * description on its own line under it in secondary ink. Both are regular
+ * description on its own line under it in muted ink. Both are regular
  * weight, so the row labels and the figures carry the emphasis. Every
  * line of a text cell (the value and each detail) goes through this, so
  * the first line never differs from the others.
@@ -234,7 +239,7 @@ function TextLine({
         <KeepDesignations text={designation} />
       </span>
       {description ? (
-        <span className="block text-[0.8125rem] leading-5 font-normal text-text-secondary md:text-sm">
+        <span className="block text-[0.8125rem] leading-5 font-normal text-muted md:text-sm">
           {description}
         </span>
       ) : null}

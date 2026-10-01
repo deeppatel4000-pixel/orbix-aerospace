@@ -142,12 +142,6 @@ a {
     line-height: 1.35;
   }
 
-  /* Retired (spec 3.8: headings are one colour). Kept as a no-op so feature
-     markup that still wraps a word in it renders in the heading colour. */
-  .orbix-accent-word {
-    color: inherit;
-  }
-
   /* A 2px division-colour rule, 48px wide, above a section heading
      (spec 6). Put the class on the heading. */
   .orbix-heading-rule::before {
@@ -189,17 +183,6 @@ a {
     margin: 0;
   }
 
-  /* Retired v2 mono-caps label (spec 3.6). Kept under its old name so
-     feature markup renders as a v3 sentence-case sans label. */
-  .orbix-caps {
-    font-family: var(--font-interface);
-    font-size: var(--text-label);
-    font-weight: 500;
-    letter-spacing: 0;
-    line-height: 1.4;
-    text-transform: none;
-  }
-
   /* Small metadata: credits, footnotes. Sans, not mono. */
   .orbix-micro {
     font-family: var(--font-interface);
@@ -221,13 +204,6 @@ a {
 
   .orbix-data--sm {
     font-size: var(--text-label);
-  }
-
-  /* A unit after a figure: a step smaller and muted (spec 5). */
-  .orbix-unit {
-    color: var(--orbix-text-muted);
-    font-size: 0.8em;
-    margin-inline-start: 0.25em;
   }
 
   .orbix-readout-lg {

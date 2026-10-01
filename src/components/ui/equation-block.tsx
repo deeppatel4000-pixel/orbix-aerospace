@@ -27,7 +27,8 @@ export type EquationBlockProps = Omit<
   label?: string;
   /**
    * Equation number printed in parentheses at the right margin, for example
-   * `"2.1"` renders "(2.1)". A real reference number (spec 3.7). Spec 6
+   * `"2.1"` renders "(2.1)", in IBM Plex Sans (spec 6) on every page: B612
+   * Mono draws the parentheses almost square, so they read as brackets. A real reference number (spec 3.7). Spec 6
    * numbers every display equation, so pages should always pass one.
    */
   number?: string;
@@ -73,9 +74,7 @@ export function EquationBlock({
           )}
         </p>
         {number ? (
-          <span className="orbix-equation__number">
-            ({formatFigure(number)})
-          </span>
+          <span className="orbix-equation__number">({number})</span>
         ) : null}
       </div>
       {label ? (

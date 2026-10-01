@@ -36,7 +36,6 @@ export function BuildLogPage() {
 
   return (
     <ReadingPage
-      eyebrow="The project"
       lead={
         <p>
           ORBIX is a personal project by {siteLegal.operatorName}. The idea, the
@@ -44,8 +43,7 @@ export function BuildLogPage() {
           write the software.
         </p>
       }
-      title="How I built"
-      titleAccent="ORBIX"
+      title="How I built ORBIX"
       toc={toc}
     >
       <LegalSection id="why" title="Why I made ORBIX">

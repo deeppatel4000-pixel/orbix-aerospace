@@ -22,8 +22,9 @@ interface VehicleRegistryProps {
   /**
    * `rows` (default): a ruled catalogue list, one rule between rows. Render
    * each card with the `row` layout. `grid`: an open grid of photo plates
-   * with the caption under each, no rules, for portrait photographs; two
-   * across even on a phone, so five portrait plates scan in three rows.
+   * with the caption under each, no rules, for portrait photographs, three
+   * across from 40rem and five from 80rem. Below 40rem it is one ruled
+   * column of rows, so no plate is left alone in a half-empty row.
    */
   layout?: "grid" | "rows";
   /** Id of the results section, kept stable for deep links. */
@@ -127,7 +128,7 @@ export function VehicleRegistry({
         className={cn(
           layout === "rows"
             ? "mt-10 border-b border-border [&>li:not([hidden])]:border-t [&>li:not([hidden])]:border-border"
-            : "mt-12 grid grid-cols-2 gap-x-4 gap-y-10 sm:gap-x-6 sm:gap-y-12 md:grid-cols-3 xl:grid-cols-5",
+            : "mt-10 border-b border-border sm:mt-12 sm:grid sm:grid-cols-3 sm:gap-x-6 sm:gap-y-12 sm:border-b-0 xl:grid-cols-5 max-sm:[&>li:not([hidden])]:border-t max-sm:[&>li:not([hidden])]:border-border",
         )}
         hidden={count === 0}
         id={`${id}-list`}

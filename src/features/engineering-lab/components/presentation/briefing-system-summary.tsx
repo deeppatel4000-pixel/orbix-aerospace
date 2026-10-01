@@ -36,26 +36,29 @@ function SummaryCard({ description, id, metrics, title }: SummaryCardProps) {
         {title}
       </LabHeading>
       <p className="mt-1 text-sm leading-6 text-muted">{description}</p>
-      {/* One row pattern for every metric: label left, value on the same
-       * line, right-aligned. Figures are B612 Mono; words (vehicle,
-       * material, margin) stay in Plex Sans and wrap inside their own
-       * right-aligned cell in a narrow column. */}
-      <dl className="mt-3 self-start">
-        {metrics.map((metric) => (
-          <div
-            className="flex items-baseline justify-between gap-4 border-t border-border-subtle py-2 text-sm"
-            key={metric.label}
-          >
-            <dt className="shrink-0 text-muted">{metric.label}</dt>
-            {typeof metric.value === "number" ? (
+      {/* One rule under the heading block, then rows separated by space
+       * only. Figures (B612 Mono) sit on the label's line, right-aligned;
+       * words (vehicle, material, margin) go on their own line under the
+       * label, left-aligned, so they never wrap ragged against the edge. */}
+      <dl className="mt-3 self-start border-t border-border-subtle pt-2">
+        {metrics.map((metric) =>
+          typeof metric.value === "number" ? (
+            <div
+              className="flex items-baseline justify-between gap-4 py-1.5 text-sm"
+              key={metric.label}
+            >
+              <dt className="shrink-0 text-muted">{metric.label}</dt>
               <dd className="text-right whitespace-nowrap">
                 <output className="orbix-data text-foreground">
                   {formatFigure(formatLabValue(metric.value))}
                   {metric.unit ? <LabUnit unit={metric.unit} /> : null}
                 </output>
               </dd>
-            ) : (
-              <dd className="min-w-0 text-right break-words">
+            </div>
+          ) : (
+            <div className="py-1.5 text-sm" key={metric.label}>
+              <dt className="text-muted">{metric.label}</dt>
+              <dd className="mt-0.5 min-w-0 break-words">
                 <output
                   className={
                     metric.value === undefined
@@ -66,9 +69,9 @@ function SummaryCard({ description, id, metrics, title }: SummaryCardProps) {
                   {metric.value ?? "Not reported"}
                 </output>
               </dd>
-            )}
-          </div>
-        ))}
+            </div>
+          ),
+        )}
       </dl>
     </section>
   );
@@ -101,12 +104,11 @@ export function BriefingSystemSummary({
         Engineering summary
       </LabHeading>
 
-      {/* Three open columns separated by space, with horizontal rules only
-       * between stacked summaries (none under the heading); no vertical
-       * rules and no box (spec 6). From xl each
-       * summary shares the grid's rows through subgrid, so the heading,
-       * the description and the first data row line up across columns. */}
-      <div className="mt-3 grid divide-y divide-border-subtle xl:grid-cols-3 xl:gap-x-10 xl:divide-y-0">
+      {/* Three open groups separated by space; each has one rule under its
+       * heading and no box (spec 6). From xl each group shares the grid's
+       * rows through subgrid, so the heading, the description and the
+       * first data row line up across columns. */}
+      <div className="mt-3 grid gap-y-4 xl:grid-cols-3 xl:gap-x-10">
         <SummaryCard
           description="Reported orbital maneuver and transfer information from the completed mission profile."
           id="orbital"

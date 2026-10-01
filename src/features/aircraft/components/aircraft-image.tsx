@@ -1,12 +1,11 @@
 import Image from "next/image";
-import type { CSSProperties } from "react";
 
 import { cn } from "@/lib/cn";
 import { getAircraftVisual } from "@/features/aircraft/data/aircraft-visuals";
 import type { Aircraft } from "@/features/vehicles/types";
 
 /** Which recorded crop an image uses. */
-export type ImageFraming = "card" | "default" | "feature";
+export type ImageFraming = "card" | "default";
 
 interface AircraftImageProps {
   aircraft: Pick<Aircraft, "id" | "name">;
@@ -18,9 +17,8 @@ interface AircraftImageProps {
   decorative?: boolean;
   fillContainer?: boolean;
   /**
-   * Which recorded crop to use: `default` (`objectPosition`), `card` (the
-   * registry card frame) or `feature` (the card crop, then the wide first
-   * card's crop from 40rem).
+   * Which recorded crop to use: `default` (`objectPosition`) or `card`
+   * (the registry card frame).
    */
   framing?: ImageFraming;
   imageClassName?: string;
@@ -72,30 +70,18 @@ export function AircraftImage({
     >
       <Image
         alt={decorative ? "" : visual.alt}
-        className={cn(
-          "object-cover [filter:saturate(0.9)]",
-          framing === "feature" &&
-            "object-(--crop-card) sm:object-(--crop-feature)",
-          imageClassName,
-        )}
+        className={cn("object-cover [filter:saturate(0.9)]", imageClassName)}
         fill
         priority={priority}
         quality={priority ? 90 : 75}
         sizes={sizes}
         src={visual.src}
-        style={
-          framing === "feature"
-            ? ({
-                "--crop-card": visual.cardObjectPosition,
-                "--crop-feature": visual.featureObjectPosition,
-              } as CSSProperties)
-            : {
-                objectPosition:
-                  framing === "card"
-                    ? visual.cardObjectPosition
-                    : visual.objectPosition,
-              }
-        }
+        style={{
+          objectPosition:
+            framing === "card"
+              ? visual.cardObjectPosition
+              : visual.objectPosition,
+        }}
       />
     </div>
   );

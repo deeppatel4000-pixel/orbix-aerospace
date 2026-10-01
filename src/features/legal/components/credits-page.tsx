@@ -14,7 +14,6 @@ import {
   type ImageCredit,
   type ImageCreditGroup,
 } from "@/features/legal/data/image-credits";
-import { cn } from "@/lib/cn";
 
 const toc: readonly LegalTocItem[] = [
   { id: "photographs", title: "Vehicle photographs" },
@@ -67,50 +66,28 @@ function Missing() {
 
 const creditColumns: readonly DataTableColumn<ImageCredit>[] = [
   {
-    cell: (item) => {
-      const portrait = item.group === "Launch vehicles";
-
-      return (
-        <span className="flex min-w-20 flex-col gap-2 sm:min-w-32 md:min-w-0 lg:flex-row lg:items-start lg:gap-3">
-          <span className="lg:order-last">{item.vehicleName}</span>
-          {/* One 112px slot for every thumbnail from 64rem, so aircraft and
-              launch vehicle names share one left edge across both tables.
-              Aircraft frames fill the slot; launch vehicle frames keep a
-              fixed height with the width taken from the photograph, so each
-              rocket stays whole with no bands, and start at the same left
-              edge as the aircraft frames. Below 40rem the frames shrink
-              (64x40, 60px tall) so the pinned column leaves room for Credit,
-              Licence and Source.
-              loading="eager": these are small thumbnails (1 to 3 KB each),
-              so fetching them with the page costs little. */}
-          <span className="flex shrink-0 justify-start lg:w-[112px]">
-            <Image
-              alt={item.alt}
-              loading="eager"
-              className={cn(
-                "shrink-0 rounded-sm border border-border",
-                portrait
-                  ? "h-[60px] w-auto max-w-[112px] sm:h-[72px]"
-                  : "h-10 w-16 object-cover sm:h-[70px] sm:w-[112px]",
-              )}
-              height={portrait ? 72 : 70}
-              sizes={
-                portrait
-                  ? "(min-width: 40rem) 54px, 45px"
-                  : "(min-width: 40rem) 112px, 64px"
-              }
-              src={item.src}
-              style={
-                portrait
-                  ? undefined
-                  : { objectPosition: item.cardObjectPosition }
-              }
-              width={portrait ? 54 : 112}
-            />
-          </span>
-        </span>
-      );
-    },
+    cell: (item) => (
+      <span className="flex min-w-20 flex-col gap-2 sm:min-w-32 md:min-w-0 lg:flex-row lg:items-start lg:gap-3">
+        <span className="lg:order-last">{item.vehicleName}</span>
+        {/* One fixed 112x70 box for every thumbnail (64x40 below 40rem,
+            so the pinned column leaves room for Credit, Licence and
+            Source), filled with object-fit: cover at each photograph's
+            card crop, so aircraft and launch vehicle rows share one
+            thumbnail column and one left edge for the names.
+            loading="eager": these are small thumbnails (1 to 3 KB each),
+            so fetching them with the page costs little. */}
+        <Image
+          alt={item.alt}
+          className="h-10 w-16 shrink-0 object-cover sm:h-[70px] sm:w-[112px]"
+          height={70}
+          loading="eager"
+          sizes="(min-width: 40rem) 112px, 64px"
+          src={item.src}
+          style={{ objectPosition: item.cardObjectPosition }}
+          width={112}
+        />
+      </span>
+    ),
     header: "Vehicle",
     key: "vehicle",
   },
@@ -209,10 +186,8 @@ export function CreditsPage() {
 
   return (
     <LegalPage
-      eyebrow="The project"
       lead="Who made the photographs, fonts, icons and software that ORBIX uses, and the licence each one is used under."
-      title="Image credits"
-      titleAccent="and licences"
+      title="Image credits and licences"
       toc={toc}
     >
       <LegalSection id="photographs" title="Vehicle photographs">
@@ -266,9 +241,10 @@ export function CreditsPage() {
 
       <LegalSection id="fonts" title="Fonts">
         <p>
-          Text is set in IBM Plex Sans, designed for IBM. Figures and labels are
-          set in B612 Mono, designed by Intactile Design with Airbus for cockpit
-          displays. Both are licensed under the{" "}
+          Text and labels are set in IBM Plex Sans, designed for IBM. Figures,
+          units, equations and code names are set in B612 Mono, designed by
+          Intactile Design with Airbus for cockpit displays. Both are licensed
+          under the{" "}
           <a href="https://openfontlicense.org/open-font-license-official-text/">
             SIL Open Font License 1.1
           </a>

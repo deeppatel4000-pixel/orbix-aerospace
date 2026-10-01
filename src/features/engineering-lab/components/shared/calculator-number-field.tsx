@@ -2,6 +2,8 @@
 
 import { CircleAlert } from "lucide-react";
 
+import { labUnit } from "./lab-figure";
+
 /**
  * One numeric parameter, rendered with the shared field pattern (spec 9).
  *
@@ -76,7 +78,7 @@ export function CalculatorNumberField<Field extends string>({
             className="orbix-field__unit lab-field__unit"
             aria-hidden="true"
           >
-            {unit}
+            {labUnit(unit)}
           </span>
         ) : null}
       </div>

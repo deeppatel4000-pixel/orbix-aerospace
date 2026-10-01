@@ -51,7 +51,26 @@ function QuantityLabel({ row }: { readonly row: VerificationRow }) {
 
 const resultColumns: readonly DataTableColumn<VerificationRow>[] = [
   {
-    cell: (row) => <QuantityLabel row={row} />,
+    // Below 48rem only the first three columns fit, so a row outside
+    // rounding repeats its verdict under the quantity (visual only; the
+    // Rounding check column still states it for screen readers).
+    cell: (row) => {
+      const display = toDisplayRow(row);
+
+      return (
+        <>
+          <QuantityLabel row={row} />
+          {display.withinRounding ? null : (
+            <span
+              aria-hidden="true"
+              className="mt-0.5 block text-[0.8125rem] leading-5 text-text-muted md:hidden"
+            >
+              {display.roundingLabel}
+            </span>
+          )}
+        </>
+      );
+    },
     header: "Quantity",
     key: "quantity",
   },
@@ -102,15 +121,15 @@ const resultColumns: readonly DataTableColumn<VerificationRow>[] = [
 /**
  * Column widths for the results tables. A fixed layout makes every table
  * fit the track from 48rem and lines the columns up down the page; cells
- * use 12px side padding there. From 64rem: Quantity 10.75rem, ORBIX 13.5%,
+ * use 12px side padding there, except the outer edges, so the open table
+ * hangs on the same column edges as the prose and caption. From 64rem: Quantity 10.75rem, ORBIX 13.5%,
  * Published 12.5%, Difference 13.5%, As printed 10.75rem, and Rounding check
  * takes the rest, its header on one line (it wrapped to two lines at
  * 133px, doubling every header row). At the 808px
  * track every figure and the longest As printed value fit their cell's
  * content box on one line; the longest quantity labels wrap once, between
  * words. From 48rem to 64rem the figures get
- * more room (19, 16, 14, 15, 17, 19), the header tracking tightens and
- * headers may wrap between words. Phones keep the natural widths and
+ * more room (19, 16, 14, 15, 17, 19) and headers may wrap between words. Phones keep the natural widths and
  * scroll sideways with the quantity column held in place; there only the
  * quantity column wraps. Figures in a row share one baseline.
  */
@@ -118,7 +137,8 @@ const resultTableClass = [
   "[&_tbody_:is(th,td)]:align-baseline",
   "max-md:[&_td:nth-child(n+2)]:whitespace-nowrap",
   "md:[&_table]:table-fixed md:[&_table]:w-full md:[&_:is(th,td)]:px-3",
-  "md:[&_thead_th]:[overflow-wrap:normal] md:max-lg:[&_thead_th]:whitespace-normal md:max-lg:[&_thead_th]:tracking-[0.06em]",
+  "md:[&_:is(th,td):first-child]:pl-0 md:[&_:is(th,td):last-child]:pr-0",
+  "md:[&_thead_th]:[overflow-wrap:normal] md:max-lg:[&_thead_th]:whitespace-normal",
   "lg:[&_td:nth-child(5)]:whitespace-nowrap lg:[&_thead_th:nth-child(6)]:whitespace-nowrap",
   "md:[&_thead_th:nth-child(1)]:w-[19%] lg:[&_thead_th:nth-child(1)]:w-[10.75rem]",
   "md:[&_thead_th:nth-child(2)]:w-[16%] lg:[&_thead_th:nth-child(2)]:w-[13.5%]",
@@ -190,7 +210,7 @@ function CaseSection({ item }: { readonly item: VerificationCase }) {
   return (
     <section
       aria-labelledby={headingId}
-      className="flex flex-col gap-5 border-t border-border-subtle pt-8 [h2+&]:border-t-0 [h2+&]:pt-4"
+      className="flex flex-col gap-5 pt-10 [h2+&]:pt-4"
     >
       <h3 className="mt-0! max-sm:text-[1.25rem]!" id={headingId}>
         {item.title}
@@ -199,7 +219,7 @@ function CaseSection({ item }: { readonly item: VerificationCase }) {
         items={[
           {
             label: "Function",
-            value: <span className="orbix-data">{item.calculator}</span>,
+            value: <code>{item.calculator}</code>,
           },
           {
             label: "Inputs",
@@ -263,7 +283,6 @@ export function VerificationPage() {
 
   return (
     <ReadingPage
-      eyebrow="Engineering Lab"
       intro={
         <>
           <p className="mt-6 max-w-[38.25rem] text-sm leading-6 text-muted">
@@ -288,8 +307,7 @@ export function VerificationPage() {
           each result.
         </p>
       }
-      title="Checking ORBIX against"
-      titleAccent="published values"
+      title="Checking ORBIX against published values"
       toc={toc}
     >
       <LegalSection id="method" major title="How the comparison works">
@@ -321,6 +339,7 @@ export function VerificationPage() {
           major
           title={group.title}
         >
+          {group.intro ? <p>{group.intro}</p> : null}
           {group.cases.map((item) => (
             <CaseSection item={item} key={item.id} />
           ))}
@@ -343,8 +362,8 @@ export function VerificationPage() {
         </p>
         <ul>
           {uncheckedCalculators.map((name) => (
-            <li className="orbix-data" key={name}>
-              {name}
+            <li key={name}>
+              <code>{name}</code>
             </li>
           ))}
         </ul>

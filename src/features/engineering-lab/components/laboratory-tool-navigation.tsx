@@ -386,7 +386,7 @@ export function LaboratoryToolDirectory({
           <span>Show all tools</span>
           <ChevronDown
             aria-hidden="true"
-            className="transition-transform group-open:rotate-180"
+            className="group-open:rotate-180"
             size={16}
           />
         </summary>

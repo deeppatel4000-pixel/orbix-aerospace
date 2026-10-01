@@ -135,7 +135,7 @@ export function PathwayFigure({ areaId }: PathwayFigureProps) {
       // default scale note, so the legend and one catalogue caption are
       // the only text under the drawing. Placed wide by the section.
       return (
-        <div className="mx-auto w-full lg:max-w-[50rem]">
+        <div className="w-full lg:max-w-[50rem]">
           <OrbitDiagram
             caption={
               <span className="block max-w-[38rem] text-pretty">

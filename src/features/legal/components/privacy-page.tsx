@@ -32,10 +32,8 @@ const usesGmail = siteLegal.contactEmail.toLowerCase().endsWith("@gmail.com");
 export function PrivacyPage() {
   return (
     <LegalPage
-      eyebrow="Policies"
       lead="What information ORBIX handles, where it goes, and how to remove it. The short version: ORBIX itself collects nothing about you."
-      title="Privacy"
-      titleAccent="policy"
+      title="Privacy policy"
       toc={toc}
     >
       <LegalSection id="summary" title="Summary">

@@ -22,10 +22,8 @@ const toc: readonly LegalTocItem[] = [
 export function CookiesPage() {
   return (
     <LegalPage
-      eyebrow="Policies"
       lead="ORBIX does not use cookies. This page explains the one kind of browser storage it does use, and how to clear it."
-      title="Cookies and"
-      titleAccent="local storage"
+      title="Cookies and local storage"
       toc={toc}
     >
       <LegalSection id="no-cookies" title="ORBIX sets no cookies">

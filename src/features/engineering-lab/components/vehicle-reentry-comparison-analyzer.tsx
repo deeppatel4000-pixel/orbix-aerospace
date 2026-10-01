@@ -1070,7 +1070,10 @@ export function VehicleReentryComparisonAnalyzer() {
                                 entry.thermalMargin
                                   .heatLoadMarginMegajoulesPerSquareMetre
                               }
-                            />
+                            />{" "}
+                            <span className="lab-figure-note__words">
+                              heat-load margin
+                            </span>
                           </output>
                         </dd>
                       </div>

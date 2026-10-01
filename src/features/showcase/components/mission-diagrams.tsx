@@ -18,19 +18,27 @@ const POINT_RADIUS = 8;
  * Detail A, the window around the second burn, in kilometres, drawn with
  * one scale on both axes. It runs from 600 km inside the target orbit to
  * 200 km outside it, so a 200 km altitude step is a quarter of its width.
- * It is 500 km tall on the page and 400 km tall in the capture column,
- * where the whole preset has to fit one screen.
+ * It is 280 km tall on the page, a low band under the whole transfer, and
+ * 400 km tall in the capture column, where it fills the width beside the
+ * locator.
  */
 const DETAIL_INSIDE = 600;
 const DETAIL_WIDTH = 800;
-const DETAIL_HEIGHT = { compact: 400, page: 500 } as const;
+const DETAIL_HEIGHT = { compact: 400, page: 280 } as const;
 /** Burn dot radius in the detail, in kilometres of drawing. */
 const DETAIL_DOT = 7;
 /**
  * Offset from the window's centre line, in km, of the direct labels
- * (Surface above, orbits below).
+ * (Surface above, orbits below). It stays inside the shorter page window.
  */
-const DETAIL_LABEL_Y = 150;
+const DETAIL_LABEL_Y = 100;
+/**
+ * Offset below the centre line, in km, of the dimension line between the
+ * initial and target orbits, clear of the transfer, which runs above it.
+ */
+const DETAIL_DIMENSION_Y = 45;
+/** Arrowhead length and half-width on that dimension line, in km. */
+const DIMENSION_HEAD = { half: 6, length: 16 } as const;
 /**
  * Burn dot radius in the locator, in drawing units: about 4px at the
  * locator's 9rem (capture) width and 5px at its 12rem (page) width, so
@@ -54,12 +62,12 @@ const LOCATOR_WIDTH = { compact: 144, page: 192 } as const;
  * Where the window itself is smaller, the box is grown about the window's
  * centre so it stays visible; it always contains the window.
  */
-const LOCATOR_BOX_MIN = 10;
+const LOCATOR_BOX_MIN = 14;
 
 /**
- * How a transfer plate is laid out. Wherever there is a detail, detail A
- * leads at the plate's full width and the whole transfer follows as a
- * 12rem (capture: 9rem) locator beside the key. At point scale there is
+ * How a transfer plate is laid out. Wherever there is a detail, the whole
+ * transfer leads as a 12rem (capture: 9rem) locator beside the key, and
+ * detail A follows at the plate's full width. At point scale there is
  * no detail, and the whole drawing is the figure: large on the page
  * (`feature`), smaller in the capture column (`compact`). `standard` is a
  * page plate that is not at point scale.
@@ -88,7 +96,8 @@ export function LegendSwatch({
   arrow = false,
   dash,
   dot = false,
-  fill,
+  outline = false,
+  square = false,
   stroke,
   width = 2,
 }: {
@@ -97,8 +106,10 @@ export function LegendSwatch({
   dash?: string;
   /** A burn dot instead of a line. */
   dot?: boolean;
-  /** A filled block outlined in `stroke`, for a solid body. */
-  fill?: string;
+  /** An unfilled square-cornered outline in `stroke`, for a body or a node. */
+  outline?: boolean;
+  /** With `outline`, a square 8 units a side instead of a 24 by 8 bar. */
+  square?: boolean;
   stroke: string;
   width?: number;
 }) {
@@ -108,15 +119,15 @@ export function LegendSwatch({
       className="mt-[calc(0.5lh-0.25rem)] h-2 w-6 shrink-0"
       viewBox="0 0 24 8"
     >
-      {fill ? (
+      {outline ? (
         <rect
-          fill={fill}
-          height="7"
+          fill="none"
+          height="6.5"
           stroke={stroke}
-          strokeWidth="1"
-          width="23"
-          x="0.5"
-          y="0.5"
+          strokeWidth={Math.min(width, 1.5)}
+          width={square ? "6.5" : "22.5"}
+          x="0.75"
+          y="0.75"
         />
       ) : dot ? (
         <circle cx="4" cy="4" fill={stroke} r="3.5" />
@@ -177,15 +188,28 @@ function ScaleBar({ widthKilometres }: { widthKilometres: number }) {
       />
       <span className="whitespace-nowrap">
         <span className="sr-only">Scale bar: </span>
-        <Readout>{formatShowcaseNumber(kilometres)}</Readout> km
+        <DimensionText kilometres={kilometres} />
       </span>
     </p>
   );
 }
 
-/** A small label over one panel of a drawing, in the uppercase data face. */
+/**
+ * A length set on a drawing (spec 8): the figure in B612 Mono with
+ * tabular figures, its unit a step smaller and muted.
+ */
+function DimensionText({ kilometres }: { kilometres: number }) {
+  return (
+    <span className="font-mono text-[0.75rem] text-text-secondary tabular-nums">
+      {formatShowcaseNumber(kilometres)}
+      <span className="ml-1 text-[0.6875rem] text-text-muted">km</span>
+    </span>
+  );
+}
+
+/** A small sentence-case label over one panel of a drawing. */
 function PanelLabel({ children }: { children: ReactNode }) {
-  return <p className="orbix-caps mb-3 text-text-muted">{children}</p>;
+  return <p className="orbix-label mb-3 text-text-muted">{children}</p>;
 }
 
 /**
@@ -212,10 +236,13 @@ const line = { vectorEffect: "non-scaling-stroke" } as const;
  */
 export function TransferOrbitDiagram({
   diagram,
+  figureNumber,
   missionId,
   size = "standard",
 }: {
   diagram: TransferDiagram;
+  /** The figure number on the page; the capture view has none. */
+  figureNumber?: number;
   missionId: string;
   size?: TransferDiagramSize;
 }) {
@@ -268,9 +295,10 @@ export function TransferOrbitDiagram({
             <circle
               cx={HALF}
               cy={HALF}
-              fill="var(--orbix-surface-raised)"
+              fill="none"
               r={planet * scale}
-              stroke="var(--orbix-border-strong)"
+              stroke="var(--orbix-data-axis)"
+              strokeWidth="0.75"
               {...line}
             />
             <circle
@@ -310,7 +338,7 @@ export function TransferOrbitDiagram({
             fill="var(--orbix-data-2)"
             key={cx}
             r={dotRadius}
-            stroke="var(--orbix-surface)"
+            stroke="var(--bg-page)"
             strokeWidth="1"
             {...line}
           />
@@ -319,8 +347,8 @@ export function TransferOrbitDiagram({
           <rect
             fill="none"
             height={box.height}
-            stroke="var(--orbix-border-control)"
-            strokeWidth="1"
+            stroke="var(--orbix-data-axis)"
+            strokeWidth="0.75"
             width={box.width}
             x={box.x}
             y={box.y}
@@ -344,8 +372,8 @@ export function TransferOrbitDiagram({
         >
           <svg className="mt-2 block size-[9px]" viewBox="0 0 9 9">
             <line
-              stroke="var(--orbix-border-control)"
-              strokeWidth="1"
+              stroke="var(--orbix-data-axis)"
+              strokeWidth="0.75"
               x1="0"
               x2="9"
               y1="9"
@@ -366,11 +394,37 @@ export function TransferOrbitDiagram({
     (Math.sqrt(radius ** 2 - DETAIL_LABEL_Y ** 2) - windowLeft) / DETAIL_WIDTH;
   // The surface label sits in the upper half and the orbit labels in the
   // lower half, so neighbouring labels never share a line of text.
-  const detailLines = [
+  const detailLines: readonly {
+    kilometres?: number;
+    label: string;
+    radius: number;
+    y: number;
+  }[] = [
     { label: "Surface", radius: planet, y: -DETAIL_LABEL_Y },
-    { label: `${initial} km`, radius: inner, y: DETAIL_LABEL_Y },
-    { label: `${final} km`, radius: outer, y: DETAIL_LABEL_Y },
+    {
+      kilometres: diagram.initialAltitudeKilometres,
+      label: `${initial} km`,
+      radius: inner,
+      y: DETAIL_LABEL_Y,
+    },
+    {
+      kilometres: diagram.finalAltitudeKilometres,
+      label: `${final} km`,
+      radius: outer,
+      y: DETAIL_LABEL_Y,
+    },
   ].filter(({ radius }) => radius > windowLeft && radius < windowRight);
+  // The dimension between the two orbits, drawn where both lie inside the
+  // window; its arrowheads touch each orbit on a line below the centre.
+  const dimension =
+    inner > windowLeft
+      ? {
+          kilometres:
+            diagram.finalAltitudeKilometres - diagram.initialAltitudeKilometres,
+          left: Math.sqrt(inner ** 2 - DETAIL_DIMENSION_Y ** 2),
+          right: Math.sqrt(outer ** 2 - DETAIL_DIMENSION_Y ** 2),
+        }
+      : null;
   const labelTop = (y: number) => (y + detailHeight / 2) / detailHeight;
 
   // Detail A, in kilometres with the planet's centre at the origin; the
@@ -388,9 +442,10 @@ export function TransferOrbitDiagram({
           <circle
             cx="0"
             cy="0"
-            fill="var(--orbix-surface-raised)"
+            fill="none"
             r={planet}
-            stroke="var(--orbix-border-strong)"
+            stroke="var(--orbix-data-axis)"
+            strokeWidth="0.75"
             {...line}
           />
           <circle
@@ -420,16 +475,54 @@ export function TransferOrbitDiagram({
             strokeWidth="2"
             {...line}
           />
+          {dimension ? (
+            <g fill="var(--orbix-data-axis)">
+              <line
+                stroke="var(--orbix-data-axis)"
+                strokeWidth="0.75"
+                x1={dimension.left + DIMENSION_HEAD.length}
+                x2={dimension.right - DIMENSION_HEAD.length}
+                y1={DETAIL_DIMENSION_Y}
+                y2={DETAIL_DIMENSION_Y}
+                {...line}
+              />
+              <path
+                d={`M ${dimension.left} ${DETAIL_DIMENSION_Y} l ${DIMENSION_HEAD.length} ${-DIMENSION_HEAD.half} v ${DIMENSION_HEAD.half * 2} Z`}
+              />
+              <path
+                d={`M ${dimension.right} ${DETAIL_DIMENSION_Y} l ${-DIMENSION_HEAD.length} ${-DIMENSION_HEAD.half} v ${DIMENSION_HEAD.half * 2} Z`}
+              />
+            </g>
+          ) : null}
           <circle
             cx={outer}
             cy="0"
             fill="var(--orbix-data-2)"
             r={DETAIL_DOT}
-            stroke="var(--orbix-surface)"
+            stroke="var(--bg-page)"
             strokeWidth="1"
             {...line}
           />
         </svg>
+        {dimension ? (
+          // The difference between the orbits, centred over its line.
+          <span
+            className={cn(
+              drawingLabel,
+              "-translate-x-1/2 -translate-y-full pb-0.5",
+            )}
+            style={{
+              left: percent(
+                ((dimension.left + dimension.right) / 2 - windowLeft) /
+                  DETAIL_WIDTH,
+              ),
+              top: percent(labelTop(DETAIL_DIMENSION_Y)),
+            }}
+          >
+            <span className="sr-only">Difference between the orbits: </span>
+            <DimensionText kilometres={dimension.kilometres} />
+          </span>
+        ) : null}
         {/* Each label needs up to about 72px ("Surface" and its 8px gap)
             before the next line, a quarter of the panel, so they show once
             the plate is 20.5rem wide: an 18rem panel inside the 20px
@@ -440,7 +533,7 @@ export function TransferOrbitDiagram({
           aria-hidden="true"
           className="hidden @min-[20.5rem]/transfer:block"
         >
-          {detailLines.map(({ label, radius, y }) => (
+          {detailLines.map(({ kilometres, label, radius, y }) => (
             <span
               className={cn(drawingLabel, "ml-2 -translate-y-1/2")}
               key={label}
@@ -449,7 +542,11 @@ export function TransferOrbitDiagram({
                 top: percent(labelTop(y)),
               }}
             >
-              {label}
+              {kilometres === undefined ? (
+                label
+              ) : (
+                <DimensionText kilometres={kilometres} />
+              )}
             </span>
           ))}
           <span
@@ -517,16 +614,12 @@ export function TransferOrbitDiagram({
       aria-label="Diagram key"
       className={cn(
         "grid min-w-0 content-start gap-2 text-sm text-text-secondary",
-        !hasDetail && "border-t border-border-subtle pt-4",
       )}
     >
       {hasDetail ? (
         <li className={narrowOnly}>
-          <LegendSwatch
-            fill="var(--orbix-surface-raised)"
-            stroke="var(--orbix-border-strong)"
-          />
-          <span>Earth, bounded by its surface</span>
+          <LegendSwatch outline stroke="var(--orbix-data-axis)" width={1} />
+          <span>Earth, drawn as its surface</span>
         </li>
       ) : null}
       <li className="flex items-start gap-2">
@@ -558,7 +651,12 @@ export function TransferOrbitDiagram({
       ) : null}
       {hasDetail ? (
         <li className="flex items-start gap-2">
-          <LegendSwatch stroke="var(--orbix-border-control)" width={1} />
+          <LegendSwatch
+            outline
+            square
+            stroke="var(--orbix-data-axis)"
+            width={0.75}
+          />
           <span>Box A marks the window enlarged as detail A</span>
         </li>
       ) : null}
@@ -577,7 +675,7 @@ export function TransferOrbitDiagram({
         aria-labelledby={captionId}
         className={cn(
           "grid content-start",
-          compact ? "gap-5 lg:p-5" : "gap-6",
+          compact ? "gap-5" : "gap-6",
           hasDetail &&
             (compact
               ? "@min-[24rem]/transfer:grid-cols-[10rem_minmax(0,1fr)]"
@@ -586,23 +684,14 @@ export function TransferOrbitDiagram({
         )}
       >
         {hasDetail ? (
+          // The overall view and its key first, then detail A across the
+          // plate, as a drawing manual shows the whole before the detail.
           <>
+            <div className="min-w-0">{whole}</div>
+            {key}
             <div className="min-w-0 @min-[24rem]/transfer:col-span-2">
               {detail}
             </div>
-            <span
-              aria-hidden="true"
-              className="-my-2 block h-px bg-border-subtle @min-[24rem]/transfer:col-span-2"
-            />
-            <div
-              className={cn(
-                "min-w-0",
-                !compact && "@min-[24rem]/transfer:row-span-2",
-              )}
-            >
-              {whole}
-            </div>
-            {key}
           </>
         ) : (
           <>
@@ -612,13 +701,19 @@ export function TransferOrbitDiagram({
         )}
         <figcaption
           className={cn(
-            "orbix-label border-t border-border-subtle pt-4",
-            // The capture's key column is too narrow to hold the caption
-            // as well, so there it runs the full width below.
-            compact && hasDetail && "@min-[24rem]/transfer:col-span-2",
+            "orbix-caption mt-0",
+            // Under the detail the caption runs the plate's full width.
+            hasDetail && "@min-[24rem]/transfer:col-span-2",
           )}
           id={captionId}
         >
+          {figureNumber !== undefined ? (
+            <>
+              <span className="orbix-caption__number">
+                Fig. {figureNumber}
+              </span>{" "}
+            </>
+          ) : null}
           {diagram.planetRadiusSource === "calculator-default"
             ? `Drawn to scale from the preset altitudes. Earth radius ${formatShowcaseNumber(planet)} km is the calculators’ standard value, not a preset input.`
             : `Drawn to scale from the preset altitudes and the preset’s planet radius of ${formatShowcaseNumber(planet)} km.`}
@@ -645,7 +740,7 @@ export function AllowanceSum({
 }) {
   return (
     <p className={cn("grid gap-2", className)}>
-      <span className="orbix-caps text-text-muted">Sum of the allowances</span>
+      <span className="orbix-label text-text-muted">Sum of the allowances</span>
       <span className="text-text-primary">
         <Readout className="orbix-readout-lg">
           {formatShowcaseNumber(diagram.sumMetresPerSecond)}
@@ -666,11 +761,14 @@ export function AllowanceSum({
  */
 export function AllowanceBars({
   diagram,
+  figureNumber,
   fill = false,
   missionId,
   showSum = true,
 }: {
   diagram: AllowanceDiagram;
+  /** The figure number on the page; the capture view has none. */
+  figureNumber?: number;
   fill?: boolean;
   missionId: string;
   showSum?: boolean;
@@ -685,13 +783,11 @@ export function AllowanceBars({
       aria-labelledby={captionId}
       className={cn(fill && "lg:flex lg:flex-1 lg:flex-col")}
     >
-      {/* The plate's label, set like the panel labels on the transfer
-          plates so the figures read as one set of drawings. It names the
-          figure; the note on the values closes the plate as its caption.
-          On a phone it breaks after the comma, so no fragment is left. */}
-      <p className="orbix-caps mb-3 text-text-muted" id={captionId}>
-        Delta-v allowances,
-        <br className="sm:hidden" /> in flight order
+      {/* The figure's label, set like the panel labels on the transfer
+          drawings so the figures read as one set. It names the figure; the
+          note on the values closes it as its caption. */}
+      <p className="orbix-label mb-3 text-text-muted" id={captionId}>
+        Delta-v allowances, in flight order
       </p>
       <ol
         className={cn(
@@ -712,31 +808,34 @@ export function AllowanceBars({
             </div>
             <span
               aria-hidden="true"
-              className="orbix-magnitude mt-2.5 h-1.5 max-w-none"
+              // Data ink only: the measured bar, with no track behind it.
+              className="orbix-magnitude mt-2.5 h-1.5 max-w-none bg-transparent!"
               style={
                 {
                   "--orbix-magnitude": maneuver.deltaVMetresPerSecond / largest,
                 } as CSSProperties
               }
             >
-              <span className="orbix-magnitude__fill" />
+              <span className="orbix-magnitude__fill bg-text-muted!" />
             </span>
           </li>
         ))}
       </ol>
-      {showSum ? (
-        <AllowanceSum
-          className="mt-6 border-t border-border-subtle pt-4"
-          diagram={diagram}
-        />
-      ) : null}
+      {showSum ? <AllowanceSum className="mt-8" diagram={diagram} /> : null}
       <figcaption
         className={cn(
-          "orbix-label mt-3",
-          !showSum && "mt-6 border-t border-border-subtle pt-4",
+          "orbix-caption mt-4",
+          !showSum && "mt-8",
           fill && "lg:mt-auto",
         )}
       >
+        {figureNumber !== undefined ? (
+          <>
+            <span className="orbix-caption__number">
+              Fig. {figureNumber}
+            </span>{" "}
+          </>
+        ) : null}
         Allowances are preset inputs, not optimized trajectory values. Their sum
         is the only derived number.
       </figcaption>

@@ -2,9 +2,8 @@ import { ButtonLink } from "@/components/ui/button-link";
 import type { ReadingTocItem } from "@/features/legal/components/reading-page";
 
 /**
- * The page's sections in order, for the shared "On this page" list. The
- * section numbers come from the reading layout's counter, so they always
- * match this order.
+ * The page's sections in order, for the shared "On this page" list.
+ * The list follows this order, so it always matches the sections.
  */
 export const SHOWCASE_CONTENTS: readonly ReadingTocItem[] = [
   { id: "architecture", title: "Architecture" },

@@ -22,6 +22,7 @@ import { ProfileLink } from "@/features/vehicles/components/profile-link";
 import { VehicleRegistry } from "@/features/vehicles/components/vehicle-registry";
 import type { Aircraft } from "@/features/vehicles/types";
 import { formatCountWord } from "@/features/vehicles/utils/format-measurement";
+import { keepDesignations } from "@/lib/designations";
 
 interface AircraftExplorerProps {
   aircraft: readonly Aircraft[];
@@ -76,13 +77,17 @@ function PicturedAircraft({ aircraft }: { aircraft: Aircraft }) {
         >
           {aircraft.name}
         </h2>
-        {summary ? <p className="mt-3 text-muted">{summary}</p> : null}
+        {summary ? (
+          <p className="mt-3 text-muted">{keepDesignations(summary)}</p>
+        ) : null}
         <div className="mt-5">
           <ProfileLink href={`/aircraft/${aircraft.id}`} name={aircraft.name} />
         </div>
       </div>
+      {/* Right-aligned from 64rem, so the last figure ends on the
+          container edge. */}
       <SpecPanel
-        className="lg:col-span-8"
+        className="lg:col-span-8 lg:[&_dl>div]:text-right"
         columns={3}
         items={[
           { label: "Maximum speed", measurement: maxSpeed },
@@ -135,27 +140,33 @@ export function AircraftExplorer({ aircraft }: AircraftExplorerProps) {
     aircraft.find((item) => item.id === FEATURED_AIRCRAFT_ID) ?? aircraft[0];
   const heroVisual = featured ? getAircraftVisual(featured.id) : undefined;
 
+  // From 64rem the H1 and the lead set side by side, so the photograph
+  // band starts higher instead of under an empty right half.
   const heroText = (
-    <>
-      <h1 className="orbix-h1 text-foreground">Aircraft registry</h1>
-      <p className="orbix-lead mt-6">
-        {capitalise(formatCountWord(aircraft.length))} military aircraft set out
-        from their published specifications: dimensions, weights, propulsion,
-        performance and variants, each with a credited photograph.
-      </p>
-      <div className="mt-8 flex flex-wrap items-center gap-x-8 gap-y-3">
-        <ButtonLink arrow="down" href="#available-aircraft" size="lg">
-          Browse the registry
-        </ButtonLink>
-        <ButtonLink
-          arrow="right"
-          href="/compare?category=aircraft"
-          variant="tertiary"
-        >
-          Compare aircraft
-        </ButtonLink>
+    <div className="lg:grid lg:grid-cols-12 lg:items-end lg:gap-6">
+      <h1 className="orbix-h1 text-foreground lg:col-span-7">
+        Aircraft registry
+      </h1>
+      <div className="lg:col-span-5">
+        <p className="orbix-lead mt-6 lg:mt-0">
+          {capitalise(formatCountWord(aircraft.length))} military aircraft set
+          out from their published specifications: dimensions, weights,
+          propulsion, performance and variants, each with a credited photograph.
+        </p>
+        <div className="mt-8 flex flex-wrap items-center gap-x-8 gap-y-3">
+          <ButtonLink arrow="down" href="#available-aircraft" size="lg">
+            Browse the registry
+          </ButtonLink>
+          <ButtonLink
+            arrow="right"
+            href="/compare?category=aircraft"
+            variant="tertiary"
+          >
+            Compare aircraft
+          </ButtonLink>
+        </div>
       </div>
-    </>
+    </div>
   );
 
   return (
@@ -165,6 +176,7 @@ export function AircraftExplorer({ aircraft }: AircraftExplorerProps) {
           // A band under the text at every width: the flying wing spans
           // nearly the whole frame, and a plate beside the text would crop
           // both wingtips.
+          className="lg:[&>div:first-child>div]:max-w-none"
           layout="band"
           visual={{
             ...heroVisual,
@@ -206,23 +218,26 @@ export function AircraftExplorer({ aircraft }: AircraftExplorerProps) {
         {aircraft.length > 0 ? (
           <section
             aria-labelledby="aircraft-scale-title"
-            className="mt-20 grid gap-10 border-t border-border pt-12 lg:mt-28 lg:grid-cols-12 lg:gap-6"
+            className="mt-20 border-t border-border pt-12 lg:mt-28"
           >
-            <div className="lg:col-span-4">
+            <div className="grid gap-5 lg:grid-cols-12 lg:gap-6">
               <h2
-                className="orbix-h2 text-foreground"
+                className="orbix-h2 text-foreground lg:col-span-4"
                 id="aircraft-scale-title"
               >
-                Side by side, to scale
+                Side by side, to one scale
               </h2>
-              <p className="mt-5 max-w-[46ch] text-pretty text-muted">
+              <p className="max-w-[60ch] text-pretty text-muted lg:col-span-7 lg:col-start-6">
                 {spanComparison(aircraft)}Each aircraft is drawn from the length
-                and wingspan in its record, and nothing else, at one scale.
+                and wingspan in its record, and nothing else: a dashed outline
+                as long as the aircraft and as wide as its wings, seen from
+                above with the nose up on its own centreline. Every plan uses
+                the same scale, and the noses along each row are level.
               </p>
             </div>
             <AircraftSizeComparison
               aircraft={aircraft}
-              className="lg:col-span-8 lg:col-start-5"
+              className="mt-10"
               figureNumber="1"
             />
           </section>

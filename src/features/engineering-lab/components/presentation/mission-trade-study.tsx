@@ -1,4 +1,3 @@
-import { cn } from "@/lib/cn";
 import { EmptyState } from "@/components/ui/empty-state";
 import type { MissionScenario } from "@/features/engineering-lab/missions";
 import type {
@@ -54,23 +53,9 @@ export function MissionTradeStudy({
               <LabHeading id="trade-study-scenarios-title">
                 Mission architectures
               </LabHeading>
-              {/* Open hairline grid: each architecture sits on a top
-               * rule; no outer box inside the tool frame. */}
-              <div
-                className={cn(
-                  // Rows: label, title, description, systems. Each card
-                  // spans them through subgrid; the description row takes
-                  // the slack so the systems rules share one line.
-                  "mt-3 grid items-stretch gap-x-8 @[30rem]/trade:grid-rows-[auto_auto_1fr_auto]",
-                  // One column per architecture up to three, matching the
-                  // mission columns of the table below, with no orphan.
-                  entries.length % 3 === 0
-                    ? "@[44rem]/trade:grid-cols-3"
-                    : entries.length % 2 === 0
-                      ? "@[30rem]/trade:grid-cols-2"
-                      : "@[30rem]/trade:grid-cols-2 @[44rem]/trade:grid-cols-3",
-                )}
-              >
+              {/* A ruled catalogue list, one architecture per row, in the
+               * order the table below uses for its mission columns. */}
+              <ol className="mt-3">
                 {entries.map(({ scenario }, index) => (
                   <TradeStudyCard
                     index={index}
@@ -78,7 +63,7 @@ export function MissionTradeStudy({
                     scenario={scenario}
                   />
                 ))}
-              </div>
+              </ol>
             </section>
 
             <div className="border-t border-border-subtle pt-8">

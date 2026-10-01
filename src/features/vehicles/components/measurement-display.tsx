@@ -201,28 +201,6 @@ function QualifierLine({ children }: { children: string }) {
 }
 
 /**
- * A card or record-row figure with a qualifier line under it, for example
- * a payload figure and the configuration it was published for. The figure
- * and its unit stay on one line.
- */
-export function qualifiedFigure(
-  figure: ReactNode,
-  measurement: Measurement<MeasurementUnit> | undefined,
-  extraNote?: string,
-) {
-  const note = joinNotes(
-    measurement ? qualifierNote(measurement) : undefined,
-    extraNote,
-  );
-  return (
-    <>
-      <span className="whitespace-nowrap">{figure}</span>
-      {note ? <QualifierLine>{note}</QualifierLine> : null}
-    </>
-  );
-}
-
-/**
  * Said once per page, under the first table: where the second unit comes
  * from.
  */

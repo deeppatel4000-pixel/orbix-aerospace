@@ -11,11 +11,10 @@ interface ShowcaseSectionProps {
 }
 
 /**
- * One numbered section of the showcase, set as a major section of the
- * shared editorial reading layout (`LegalSection` inside `ReadingPage`, as
- * on /verification): the number comes from the page's section counter, so
- * it always matches the "On this page" list. The lead keeps the reading
- * measure; figures and tables in `children` take the full reading track.
+ * One section of the showcase, set as a major section of the shared
+ * editorial reading layout (`LegalSection` inside `ReadingPage`, as on
+ * /verification). The lead keeps the reading measure; figures and tables
+ * in `children` take the full reading track.
  */
 export function ShowcaseSection({
   children,

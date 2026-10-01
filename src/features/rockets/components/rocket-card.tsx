@@ -86,7 +86,7 @@ export function RocketCard({
               sizes ??
               (layout === "row"
                 ? "(min-width: 48rem) 5.5rem, 4.5rem"
-                : "(max-width: 767px) 50vw, (max-width: 1279px) 33vw, 14rem")
+                : "(max-width: 639px) 4.5rem, (max-width: 1279px) 33vw, 14rem")
             }
           />
         </VehicleMediaFrame>

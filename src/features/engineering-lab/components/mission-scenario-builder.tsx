@@ -4,6 +4,7 @@ import { useState, type FormEvent } from "react";
 import { ChevronDown, CircleAlert, CircleCheck } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/cn";
 
 import { MissionProfileAnalyzer } from "@/features/engineering-lab/components/mission-profile-analyzer";
 import {
@@ -66,6 +67,13 @@ type IdentityErrors = Readonly<
   Partial<Record<"category" | "description" | "missionName" | "form", string>>
 >;
 
+/**
+ * Text fields and selects stop where the number fields' inputs do, short of
+ * the lab's fixed 4.5rem unit column, so every field edge in the form lines
+ * up.
+ */
+const TEXT_FIELD_WIDTH = "w-[calc(100%-4.5rem)]";
+
 const initialValues: MissionScenarioFormValues = {
   category: "orbital-logistics",
   description:
@@ -82,12 +90,12 @@ const initialValues: MissionScenarioFormValues = {
   initialFlightPathAngleDegrees: "-6",
   initialVelocityMetersPerSecond: "1200",
   massKilograms: "6000",
-  missionName: "Custom Mission Scenario",
+  missionName: "Custom mission scenario",
   noseRadiusMetres: "1.2",
   referenceAreaSquareMetres: "14",
   safetyFactor: "1.5",
   targetAltitudeKilometres: "400",
-  vehicleName: "Educational Reentry Vehicle",
+  vehicleName: "Educational reentry vehicle",
 };
 
 const categoryOptions: ReadonlyArray<{
@@ -340,7 +348,7 @@ export function MissionScenarioBuilder({
                     : undefined
                 }
                 aria-invalid={Boolean(errors.missionName)}
-                className="orbix-input"
+                className={cn("orbix-input", TEXT_FIELD_WIDTH)}
                 id="mission-scenario-missionName"
                 onChange={(event) =>
                   updateTextField("missionName", event.target.value)
@@ -373,7 +381,7 @@ export function MissionScenarioBuilder({
               >
                 Mission category
               </label>
-              <div className="orbix-field__control">
+              <div className={cn("orbix-field__control", TEXT_FIELD_WIDTH)}>
                 <select
                   aria-describedby={
                     errors.category
@@ -445,7 +453,7 @@ export function MissionScenarioBuilder({
                     : undefined
                 }
                 aria-invalid={Boolean(errors.description)}
-                className="orbix-input h-auto min-h-28"
+                className={cn("orbix-input h-auto min-h-28", TEXT_FIELD_WIDTH)}
                 id="mission-scenario-description"
                 onChange={(event) =>
                   updateTextField("description", event.target.value)
@@ -571,7 +579,7 @@ export function MissionScenarioBuilder({
                   </label>
                   <input
                     aria-describedby="mission-scenario-vehicleName-hint"
-                    className="orbix-input"
+                    className={cn("orbix-input", TEXT_FIELD_WIDTH)}
                     id="mission-scenario-vehicleName"
                     onChange={(event) =>
                       updateTextField("vehicleName", event.target.value)

@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button";
 import { buttonClass } from "@/components/ui/button-class";
 import { ButtonLink } from "@/components/ui/button-link";
 import { Eyebrow } from "@/components/ui/eyebrow";
-import { RegistrationMarks } from "@/components/ui/registration-marks";
 import { Tag } from "@/components/ui/tag";
 
 describe("buttonClass", () => {
@@ -114,9 +113,5 @@ describe("small primitives", () => {
     expect(renderToStaticMarkup(<Tag tone="accent">LEO</Tag>)).toBe(
       '<span class="orbix-tag orbix-tag--accent">LEO</span>',
     );
-  });
-
-  it("RegistrationMarks is retired and renders nothing (spec 3.2)", () => {
-    expect(renderToStaticMarkup(<RegistrationMarks inset="1rem" />)).toBe("");
   });
 });

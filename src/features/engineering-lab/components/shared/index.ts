@@ -38,6 +38,7 @@ export {
   LabSymbol,
   LabValueText,
   TpsFigure,
+  labUnit,
   tpsColumn,
   tpsFigure,
   withMinusSign,

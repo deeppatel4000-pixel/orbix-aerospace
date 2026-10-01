@@ -104,7 +104,10 @@ describe.each(PANELS)("engineering notes presentation ($name)", ({ Panel }) => {
 
   it("still renders every note it is given", () => {
     for (const note of ALL_NOTES.slice(0, 3)) {
-      expect(markup).toContain(note.summary.slice(0, 60));
+      // Text only: designations such as "F-22" sit in no-wrap spans.
+      expect(markup.replace(/<[^>]+>/g, "")).toContain(
+        note.summary.slice(0, 60),
+      );
     }
   });
 });

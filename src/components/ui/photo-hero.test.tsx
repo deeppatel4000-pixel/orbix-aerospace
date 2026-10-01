@@ -90,20 +90,23 @@ describe("PhotoHero", () => {
       .match(/<figcaption[^>]*>(.*)<\/figcaption>/)?.[1]
       ?.replace(/<[^>]+>/g, "");
     expect(text).toBe(
-      "F-15C Eagle. US Air Force photo by Master Sgt. A. Public domain. Source file.",
+      "F-15C Eagle. U.S. Air Force photo by Master Sgt. A. Public domain. Source file.",
     );
   });
 
   it("shortens a public-domain licence and keeps the full wording in the name", () => {
     const markup = render();
-    expect(markup).toContain('aria-label="Public domain (US government work)"');
+    expect(markup).toContain(
+      'aria-label="Public domain (U.S. government work)"',
+    );
     expect(markup).toContain(">Public domain</a>");
-    expect(markup).not.toContain("U.S.");
   });
 
   it("prints the licence as text when no licence page is known", () => {
     const markup = render({ visual: { ...visual, licenseUrl: undefined } });
-    expect(markup).toContain("<span>Public domain (US government work)</span>");
+    expect(markup).toContain(
+      "<span>Public domain (U.S. government work)</span>",
+    );
   });
 
   it("shows other licences whole, without a redundant label", () => {
@@ -131,7 +134,7 @@ describe("PhotoHero", () => {
   });
 
   it("puts the heading before the photograph and never animates it", () => {
-    const markup = render({ entrance: true });
+    const markup = render();
     expect(markup.indexOf("<h1>")).toBeLessThan(markup.indexOf("<figure"));
     expect(markup).not.toContain("orbix-rise");
   });
@@ -141,9 +144,8 @@ describe("PhotoHero", () => {
     expect(markup).not.toMatch(/scrim|reg-marks|marks/);
   });
 
-  it("maps the v2 right placement to a portrait plate", () => {
+  it("defaults to a landscape split plate", () => {
     expect(render()).toContain('data-plate="landscape"');
-    expect(render({ placement: "right" })).toContain('data-plate="portrait"');
     expect(render({ plate: "portrait" })).toContain('data-plate="portrait"');
     expect(render()).toContain('data-layout="split"');
     expect(render({ layout: "band" })).toContain('data-layout="band"');

@@ -81,7 +81,7 @@ export function ComparePage({ category, options, result }: ComparePageProps) {
 
   return (
     <>
-      <header className="pt-12 pb-10 sm:pt-16 sm:pb-12 lg:pt-20 lg:pb-14">
+      <header className="pt-12 pb-10 sm:pt-16 sm:pb-12 lg:pt-16 lg:pb-10">
         <Container>
           <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_26rem] lg:items-end lg:gap-16">
             <h1 className="orbix-display text-foreground">Compare vehicles</h1>

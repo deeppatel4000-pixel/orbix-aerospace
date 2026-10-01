@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 
 import styles from "./calculator-card.module.css";
+import { LabToolNumberProvider } from "./shared/lab-equation";
 
 interface CalculatorCardProps {
   children: ReactNode;
@@ -60,7 +61,10 @@ export function CalculatorCard({
           {description}
         </p>
       </header>
-      <div className={styles.workspace}>{children}</div>
+      <div className={styles.workspace}>
+        {/* Numbers each display equation after this tool (spec 6: "(3.1)"). */}
+        <LabToolNumberProvider value={number}>{children}</LabToolNumberProvider>
+      </div>
     </article>
   );
 }

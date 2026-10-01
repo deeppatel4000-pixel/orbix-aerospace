@@ -6,9 +6,8 @@
  * the only infinite animation.
  *
  * Not allowed: entrance animation, hover scale or lift, scroll effects,
- * parallax, looping decoration. `.orbix-rise`, the v2 hero entrance, is
- * retired and draws nothing. Under `prefers-reduced-motion: reduce` every
- * transition and animation is removed.
+ * parallax, looping decoration. Under `prefers-reduced-motion: reduce`
+ * every transition and animation is removed.
  */
 
 @keyframes orbix-spin {

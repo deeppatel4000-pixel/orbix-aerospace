@@ -47,11 +47,6 @@ export type PhotoHeroProps = Omit<
   /** Sets `data-division` on the hero, overriding the route's accent. */
   division?: AccentDivision;
   /**
-   * @deprecated v3 has no entrance animation (spec 10). Accepted and
-   * ignored so existing calls compile.
-   */
-  entrance?: boolean;
-  /**
    * Figure number printed before the caption in ink, for example `"1"`
    * renders "Fig. 1". Only for a page that numbers its figures.
    */
@@ -64,12 +59,6 @@ export type PhotoHeroProps = Omit<
    * band.
    */
   layout?: "band" | "split";
-  /**
-   * @deprecated v2 placement. `right` now means a portrait plate
-   * (`plate="portrait"`); `behind` is the default split. No text is ever
-   * set on the photograph.
-   */
-  placement?: "behind" | "right";
   /**
    * Plate shape. `landscape` (default): 3:2 in the band, full height beside
    * the text. `portrait`: 4:5 in the band (capped at `min(70svh, 34rem)`)
@@ -113,10 +102,8 @@ export function PhotoHero({
   children,
   className,
   division,
-  entrance,
   figureNumber,
   layout = "split",
-  placement,
   plate,
   priority = true,
   sizes,
@@ -124,9 +111,8 @@ export function PhotoHero({
   wide = false,
   ...props
 }: PhotoHeroProps) {
-  void entrance; // retired prop, accepted for compatibility
   const licence = licenceLabel(visual.license);
-  const shape = plate ?? (placement === "right" ? "portrait" : "landscape");
+  const shape = plate ?? "landscape";
 
   return (
     <section
@@ -162,7 +148,8 @@ export function PhotoHero({
           {figureNumber ? (
             <span className="orbix-caption__number">Fig. {figureNumber}</span>
           ) : null}
-          {caption ?? altCaption(visual.alt)}. {creditLine(visual.credit)}.{" "}
+          {caption ?? altCaption(visual.alt)}.{" "}
+          {withStop(creditLine(visual.credit))}{" "}
           {visual.licenseUrl ? (
             <a
               aria-label={licence.isShortened ? licence.full : undefined}
@@ -187,11 +174,16 @@ export function PhotoHero({
 }
 
 /**
- * The credit line reads "US" rather than "U.S." so the sentence full stops
- * that follow it are not doubled. The record itself keeps its wording.
+ * The credit or licence as recorded, keeping "U.S." as the rest of the
+ * site writes it.
  */
 function plainCredit(text: string) {
-  return text.replace(/U\.S\./g, "US").replace(/\.$/, "");
+  return text.trim();
+}
+
+/** The text with one closing full stop, never two ("U.S." stays "U.S."). */
+function withStop(text: string) {
+  return /[.!?]$/.test(text) ? text : `${text}.`;
 }
 
 /**
@@ -205,7 +197,7 @@ function altCaption(alt: string) {
 /**
  * "Photo: NASA", but a credit that already names the photograph ("U.S. Air
  * Force photo by ...") is printed as it stands, so it never reads
- * "Photo: US Air Force photo by".
+ * "Photo: U.S. Air Force photo by".
  */
 export function creditLine(credit: string) {
   const text = plainCredit(credit);

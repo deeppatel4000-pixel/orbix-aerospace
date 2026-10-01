@@ -187,6 +187,21 @@
   margin-inline-end: 4.5rem;
 }
 
+/* A select or a text field given the full row of a two-column field grid
+ * (TPS material, vehicle name) is held to one column's width, so its
+ * right edge meets the number fields' unit column instead of running
+ * twice as far. Its hint below keeps the full row. */
+@container col (min-width: 36rem) {
+  .workspace
+    :global(
+      .grid > [class*="col-span-2"] > .orbix-field__control:has(> .orbix-select)
+    ),
+  .workspace
+    :global(.grid > [class*="col-span-2"] > .orbix-input:not([type="number"])) {
+    max-width: calc((100% - 1.25rem) / 2);
+  }
+}
+
 /* A list of checkbox or radio choices (`LAB_CHOICE_*`): one hairline
  * rule between rows and above and below the list, no outline per row, so
  * the native control alone shows the state. */
@@ -267,7 +282,7 @@
  * apart. A stacked fraction already carries its own air above and below
  * its rule, so its line adds no padding. */
 .workspace :global(.lab-eq-line + .lab-eq-line) {
-  margin-block-start: 0.75em;
+  margin-block-start: var(--lab-eq-gap, 0.75em);
 }
 
 .workspace :global(.lab-eq-line:has(.lab-eq-frac)) {
@@ -403,6 +418,19 @@
 .workspace :global(.orbix-equation__expr) {
   font-size: clamp(1.25rem, 5vw, 1.75rem);
   line-height: 1.3;
+}
+
+/* A tool showing three or more relations (Hohmann transfer, TPS sizing,
+ * flight condition, reentry trajectory) sets them a step smaller with
+ * half the row gap, so the stack does not push the form and results
+ * below the fold or read as a code listing. A one- or two-line relation
+ * keeps the 1.75rem size above. */
+.workspace
+  :global(
+    .orbix-equation__expr:has(.lab-eq-line ~ .lab-eq-line ~ .lab-eq-line)
+  ) {
+  --lab-eq-gap: 0.5em;
+  font-size: clamp(1.125rem, 4.5vw, 1.375rem);
 }
 
 /* The total-pressure relation (`lab-equation--long` on its EquationBlock)
@@ -594,6 +622,14 @@
   );
 }
 
+/* A headline figure in a results list still read as two numbers
+ * ("16. 36") with the site-wide large-readout separator correction; in
+ * the lab's larger sizes the mark gives up more of its cell. */
+.workspace :global(.lab-readout-grid .orbix-readout-lg .orbix-num-sep) {
+  left: 0;
+  margin-inline: -0.08em -0.32em;
+}
+
 .workspace :global(.lab-readout-grid .orbix-data) {
   font-size: max(
     0.875rem,
@@ -770,6 +806,16 @@
   vertical-align: -0.2em;
 }
 
+/* A superscript figure in a unit (m³/s²), drawn as a real <sup>: B612
+ * Mono's ² and ³ take a whole cell, so "m³/s²" showed a false space. As
+ * with the subscript, vertical-align replaces preflight's offset. */
+.workspace :global(.lab-figure__sup) {
+  font-size: 0.8em;
+  line-height: 1;
+  position: static;
+  vertical-align: 0.45em;
+}
+
 .workspace :global(.orbix-readout-lg .lab-figure__unit) {
   font-size: max(0.55em, 0.75rem);
   letter-spacing: 0;
@@ -782,6 +828,14 @@
   font-size: 0.8125rem;
   letter-spacing: 0;
   line-height: 1.4;
+}
+
+/* Words after a figure inside a figure note ("12.4 MJ/m² heat-load
+ * margin"): the figure stays in the data face, the words go back to sans
+ * (spec 5: mono only for figures and units). */
+.workspace :global(.lab-figure-note__words) {
+  font-family: var(--font-interface);
+  font-size: 0.875rem;
 }
 
 /* A note in words under a figure (a margin classification such as

@@ -32,10 +32,6 @@ export {
   type RecordRowProps,
 } from "./record-row";
 export {
-  RegistrationMarks,
-  type RegistrationMarksProps,
-} from "./registration-marks";
-export {
   formatIndexNumber,
   SectionIndex,
   type SectionIndexItem,

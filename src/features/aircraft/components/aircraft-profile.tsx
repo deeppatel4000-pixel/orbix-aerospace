@@ -154,10 +154,7 @@ export function AircraftProfile({ aircraft }: AircraftProfileProps) {
     >
       {/* The hero shows the photograph large, so it is not repeated. */}
       <VehicleProfileSection id="overview" title="Overview">
-        <VehicleFactsTable
-          caption={`${aircraft.name} record`}
-          facts={overviewFacts(aircraft)}
-        />
+        <VehicleFactsTable facts={overviewFacts(aircraft)} />
       </VehicleProfileSection>
 
       <VehicleProfileSection

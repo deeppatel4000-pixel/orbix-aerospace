@@ -42,13 +42,15 @@ function tableCaption(visible: string, mission: ShowcaseMission): ReactNode {
  * Below 48rem the showcase tables use 10px cell padding in place of 16px,
  * so the two-vehicle table fits a 390px screen without scrolling.
  */
-const phoneCells = "max-md:[&_:is(th,td)]:px-2.5";
+const phoneCells =
+  "max-md:[&_:is(th,td)]:px-2.5 [&_:is(th,td):first-child]:ps-0! [&_:is(th,td):last-child]:pe-0!";
 
 /**
  * Paired tables in the capture view, the vehicle table included: 10px
  * cells from 1024px, so the preset fits one 1440x900 screen.
  */
-const pairedCells = "lg:gap-x-6 lg:[&_:is(th,td)]:p-2.5";
+const pairedCells =
+  "lg:gap-x-6 lg:[&_:is(th,td)]:p-2.5 [&_:is(th,td):first-child]:ps-0! [&_:is(th,td):last-child]:pe-0!";
 
 /** One input group as a two-column table, Input and Value, captioned with
  * the group title. The unit is set after the figure in the value cell, so
@@ -72,7 +74,16 @@ function InputGroupTable({
             <>
               {formatShowcaseNumber(row.value)}
               {row.unit ? (
-                <span className="orbix-table-unit ml-1.5">{row.unit}</span>
+                // A degree sign sets tight to the figure (5°); other units
+                // keep their space.
+                <span
+                  className={cn(
+                    "orbix-table-unit",
+                    row.unit === "°" ? null : "ml-1.5",
+                  )}
+                >
+                  {row.unit}
+                </span>
               ) : null}
             </>
           ),
@@ -253,12 +264,15 @@ function VehicleInputsTable({ mission }: { mission: ShowcaseMission }) {
 }
 
 function MissionDiagramView({
+  figureNumber,
   fill = false,
   mission,
   showSum = true,
   size,
 }: {
-  /** Let a plate that can grow fill the height of its column. */
+  /** The figure number on the page; the capture view has none. */
+  figureNumber?: number;
+  /** Let a figure that can grow fill the height of its column. */
   fill?: boolean;
   mission: ShowcaseMission;
   /** Close the allowance plate with the sum (the page). */
@@ -271,6 +285,7 @@ function MissionDiagramView({
     return (
       <TransferOrbitDiagram
         diagram={diagram}
+        figureNumber={figureNumber}
         missionId={mission.preset.id}
         size={size}
       />
@@ -281,6 +296,7 @@ function MissionDiagramView({
     return (
       <AllowanceBars
         diagram={diagram}
+        figureNumber={figureNumber}
         fill={fill}
         missionId={mission.preset.id}
         showSum={showSum}
@@ -292,11 +308,10 @@ function MissionDiagramView({
 }
 
 /**
- * The input groups of a preset without a drawing (reentry only) as spec
- * panels, one large readout per input, in the place a drawing takes on
- * the other presets. `stacked` (the capture's first column) sets the
- * readouts one above the other from 1024px and stretches the panel to the
- * column's height.
+ * The input groups of a preset without a drawing (reentry only) as open
+ * definition lists (label above value, no enclosure), in the place a
+ * drawing takes on the other presets. `stacked` (the capture's first
+ * column) sets the figures one above the other from 1024px.
  */
 function EntryPanels({
   mission,
@@ -310,11 +325,7 @@ function EntryPanels({
       {mission.inputGroups.map((group) => (
         <SpecPanel
           aria-label={`${group.title}, ${mission.preset.name}`}
-          className={cn(
-            "[&_.orbix-spec-cell]:justify-between max-sm:[&_.orbix-spec-grid]:grid-cols-1",
-            stacked &&
-              "lg:flex lg:h-full lg:flex-col lg:[&_.orbix-spec-grid]:flex-1 lg:[&_.orbix-spec-grid]:auto-rows-fr lg:[&_.orbix-spec-grid]:grid-cols-1",
-          )}
+          className={cn(stacked && "lg:[&_.orbix-spec__list]:grid-cols-1!")}
           columns={3}
           items={group.rows.map((row) => ({
             label: row.label,
@@ -378,6 +389,8 @@ interface MissionBodyProps {
   /** Content set last, after the tables (the page). */
   readonly after?: ReactNode;
   readonly className?: string;
+  /** The figure number of the preset's drawing on the page. */
+  readonly figureNumber?: number;
   /** Content set last, across both columns (the capture view). */
   readonly footer?: ReactNode;
   /** The preset's title block. */
@@ -400,6 +413,7 @@ interface MissionBodyProps {
 function PageMissionBody({
   after,
   className,
+  figureNumber,
   header,
   mission,
 }: Omit<MissionBodyProps, "footer" | "variant">) {
@@ -414,6 +428,7 @@ function PageMissionBody({
       <div className="min-w-0">
         {drawn ? (
           <MissionDiagramView
+            figureNumber={figureNumber}
             mission={mission}
             size={
               isPointScaleTransfer(mission.diagram) ? "feature" : "standard"
@@ -464,7 +479,7 @@ function CaptureMissionBody({
   footer,
   header,
   mission,
-}: Omit<MissionBodyProps, "after" | "variant">) {
+}: Omit<MissionBodyProps, "after" | "figureNumber" | "variant">) {
   const { diagram } = mission;
   const hasInputs = mission.inputGroups.length > 0;
   const vehicles =
@@ -516,6 +531,7 @@ function CaptureMissionBody({
 export function MissionBody({
   after,
   className,
+  figureNumber,
   footer,
   header,
   mission,
@@ -532,19 +548,30 @@ export function MissionBody({
     <PageMissionBody
       after={after}
       className={className}
+      figureNumber={figureNumber}
       header={header}
       mission={mission}
     />
   );
 }
 
-function MissionPreset({ mission }: { mission: ShowcaseMission }) {
+function MissionPreset({
+  figureNumber,
+  mission,
+}: {
+  figureNumber?: number;
+  mission: ShowcaseMission;
+}) {
   const titleId = `mission-${mission.preset.id}-title`;
   const header = (
     <div className="max-w-[68ch]">
-      <p className="orbix-caps text-accent">{mission.categoryLabel}</p>
-      <h3 className="orbix-h3 mt-2 text-balance text-text-primary" id={titleId}>
-        {mission.preset.name}
+      {/* The category follows the name on its line, so the page keeps a
+          single kicker (spec 3.8). */}
+      <h3 className="orbix-h3 text-balance text-text-primary" id={titleId}>
+        {mission.preset.name}{" "}
+        <span className="text-base leading-none font-normal tracking-normal whitespace-nowrap text-text-muted [font-stretch:100%]">
+          {mission.categoryLabel}
+        </span>
       </h3>
       <p className="orbix-prose mt-3">
         {keepCompounds(mission.preset.description)}
@@ -554,7 +581,7 @@ function MissionPreset({ mission }: { mission: ShowcaseMission }) {
   // A secondary aside, after the tables: the one-screen view of this
   // preset used for screenshots.
   const captureLink = (
-    <p className="border-t border-border-subtle pt-4">
+    <p>
       <ButtonLink
         arrow="right"
         href={`/showcase-capture/${mission.preset.id}`}
@@ -566,25 +593,49 @@ function MissionPreset({ mission }: { mission: ShowcaseMission }) {
   );
 
   return (
-    <article
-      aria-labelledby={titleId}
-      className="border-t border-border-subtle pt-10 first:border-t-0 first:pt-0"
-    >
-      <MissionBody after={captureLink} header={header} mission={mission} />
+    <article aria-labelledby={titleId} className="pt-16 first:pt-0 sm:pt-20">
+      <MissionBody
+        after={captureLink}
+        figureNumber={figureNumber}
+        header={header}
+        mission={mission}
+      />
     </article>
   );
 }
 
+/**
+ * Figure numbers for the presets that have a drawing, in page order, after
+ * the architecture drawing (Fig. 1).
+ */
+function presetFigureNumbers(
+  missions: readonly ShowcaseMission[],
+): ReadonlyMap<string, number> {
+  const numbers = new Map<string, number>();
+  for (const mission of missions) {
+    if (mission.diagram.kind !== "none") {
+      numbers.set(mission.preset.id, numbers.size + 2);
+    }
+  }
+  return numbers;
+}
+
 export function MissionPresets({ missions }: MissionPresetsProps) {
+  const figureNumbers = presetFigureNumbers(missions);
+
   return (
     <ShowcaseSection
       id="mission-presets"
       lead="The Engineering Lab ships five educational mission presets. Each one is a typed set of inputs, shown here converted to display units such as km; the diagrams are drawn from those numbers, with the calculators’ standard Earth radius setting the scale of the transfer drawings."
       title="Mission presets"
     >
-      <div className="grid grid-cols-1 gap-16 sm:gap-20">
+      <div className="grid grid-cols-1">
         {missions.map((mission) => (
-          <MissionPreset key={mission.preset.id} mission={mission} />
+          <MissionPreset
+            figureNumber={figureNumbers.get(mission.preset.id)}
+            key={mission.preset.id}
+            mission={mission}
+          />
         ))}
       </div>
     </ShowcaseSection>

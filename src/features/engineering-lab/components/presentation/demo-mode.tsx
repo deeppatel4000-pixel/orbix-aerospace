@@ -94,7 +94,7 @@ function DemoMetric({
   readonly value?: number | string;
 }) {
   return (
-    <div className="flex items-baseline justify-between gap-4 border-t border-border-subtle py-2 text-sm">
+    <div className="flex items-baseline justify-between gap-4 py-1.5 text-sm">
       <dt className="text-muted">{label}</dt>
       <dd className="text-right">
         <output
@@ -255,7 +255,7 @@ export function DemoMode({
               >
                 Orbital design
               </LabHeading>
-              <dl className="mt-2">
+              <dl className="mt-2 border-t border-border-subtle pt-1.5">
                 <DemoMetric
                   label="Initial altitude"
                   {...altitudeReadout(transfer?.initialOrbit.altitudeMetres)}
@@ -274,7 +274,7 @@ export function DemoMode({
               >
                 Vehicle configuration
               </LabHeading>
-              <dl className="mt-2">
+              <dl className="mt-2 border-t border-border-subtle pt-1.5">
                 <DemoMetric label="Vehicle" value={vehicle?.vehicleName} />
                 <DemoMetric
                   label="Vehicle mass"

@@ -34,11 +34,12 @@ interface LabSegmentedProps<T extends string> {
 }
 
 /**
- * A short either-or choice as a square segmented control, the same control
- * as the vehicle type switch on /compare: one 1px outline at the 2px
- * control radius (spec 3.3), hairline
- * dividers, and the chosen segment filled with the accent. Native radios
- * keep the group semantics and arrow-key behaviour.
+ * A short either-or choice as a square segmented control: one 1px outline
+ * at the 2px control radius (spec 3.3) and hairline dividers. The chosen
+ * segment is shown by ink colour, weight and a 2px accent underline, never
+ * a fill (spec 3.9), so the Calculate button stays the one solid accent
+ * element in the tool. Native radios keep the group semantics and
+ * arrow-key behaviour.
  *
  * There is no shared segmented primitive in `src/components/ui` yet; this
  * repeats the /compare markup for the lab.
@@ -66,7 +67,7 @@ export function LabSegmented<T extends string>({
         <label
           className={cn(
             "relative inline-flex min-h-11 cursor-pointer items-center px-4 text-sm font-medium text-text-secondary transition-colors duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] select-none hover:text-foreground",
-            "has-[:checked]:bg-accent has-[:checked]:text-on-accent",
+            "has-[:checked]:font-semibold has-[:checked]:text-foreground has-[:checked]:underline has-[:checked]:decoration-accent has-[:checked]:decoration-2 has-[:checked]:underline-offset-[6px]",
             "first:rounded-l-[1px] last:rounded-r-[1px] has-[:focus-visible]:z-10 has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-3 has-[:focus-visible]:outline-[var(--orbix-focus)]",
             index > 0 && "border-l border-border-control",
           )}

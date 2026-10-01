@@ -13,6 +13,16 @@ const EARTH_RADIUS_METRES = 6_371_000;
 const VIEW_SIZE = 400;
 const CENTRE = VIEW_SIZE / 2;
 const MAXIMUM_DRAWN_RADIUS = 180;
+/**
+ * The large drawing's viewBox is trimmed to the outer ring plus the 6-unit
+ * burn tick that crosses it, so the linework meets the column's edges and
+ * lines up with the legend, caption and readout below it.
+ */
+const LARGE_VIEW_INSET = 7;
+const LARGE_VIEW_MIN = CENTRE - MAXIMUM_DRAWN_RADIUS - LARGE_VIEW_INSET;
+const LARGE_VIEW_SIZE = 2 * (MAXIMUM_DRAWN_RADIUS + LARGE_VIEW_INSET);
+/** B612 Mono advance per character, em (measured about 0.65). */
+const MONO_ADVANCE = 0.66;
 
 export interface OrbitDiagramProps {
   /** Altitude of the starting circular orbit, metres. */
@@ -85,12 +95,14 @@ const ANNOTATION_TEXT = {
 } as const;
 
 /**
- * The large drawing's label size before it is measured, by the figure's
- * width: 11 x 400 / (figure width less the 2rem drawing inset), rounded up,
- * so the labels never render under 11 CSS px on a phone before hydration.
+ * The large drawing's label size before it is measured: 11 x 374 / drawn
+ * width, rounded up, so the labels never render under 11 CSS px before
+ * hydration. Below 48rem the drawing is capped at 18rem (288px); from 48rem
+ * it fills the figure.
  */
+const ANNOTATION_FLOOR_MAX = 16.25;
 const ANNOTATION_FLOOR_CLASS =
-  "text-[17.25px] @[20rem]:text-[15.5px] @[22.5rem]:text-[13.5px] @[25rem]:text-[12.25px] @[28rem]:text-[11px]";
+  "text-[16.25px] @[18rem]:text-[14.5px] md:@[22.5rem]:text-[11.5px] md:@[25.5rem]:text-[11px]";
 
 /**
  * B612 Mono has no subscript digits (U+2081, U+2082), so subscripts are
@@ -307,7 +319,7 @@ function LimbView({
           })}
         </g>
       </svg>
-      <p className="mt-2 text-center text-[0.8125rem] leading-5 font-medium text-muted">
+      <p className="mt-2 text-[0.8125rem] leading-5 font-medium text-muted">
         {stretchLabel}
       </p>
     </div>
@@ -400,7 +412,10 @@ export function OrbitDiagram({
     fontSize: annotationFontSize,
     measured,
     svgRef,
-  } = useAnnotationFontSize(annotated, VIEW_SIZE);
+  } = useAnnotationFontSize(
+    annotated,
+    size === "large" ? LARGE_VIEW_SIZE : VIEW_SIZE,
+  );
   // Until the drawing is measured, stepped container-query sizes (in user
   // units, set on the class) keep the labels at 11 CSS px or more; once it
   // is measured the inline size, which wins over the class, takes over.
@@ -411,39 +426,66 @@ export function OrbitDiagram({
     style: measured ? { fontSize: annotationFontSize } : undefined,
   };
   const subscriptShift = annotationFontSize * 0.25;
-  // The r2 label is centred on the dimension line, pulled in from 62
-  // percent of the radius when needed so its far end (B612 Mono, about
-  // 0.62em a character) stays clear of the dotted target ring at every
-  // drawing size, and never reaches back over Earth.
+  // The r2 label runs along the dimension line, centred at half the
+  // radius where it fits, with at least 0.5em clear of Earth and the
+  // initial orbit and 1.5em clear of the dotted target ring. Where the
+  // drawing is too small for that (a phone), it is set level instead, just
+  // below and left of the line's inner end, where the lower half of the
+  // drawing is empty.
+  // Until the drawing is measured the text renders at the CSS floor
+  // (up to 16.25px), so the layout assumes that size, not the 11-unit
+  // default, and the label cannot overlap Earth before hydration.
+  const labelSize = measured ? annotationFontSize : ANNOTATION_FLOOR_MAX;
   const dimensionText = `r2 = ${kilometres.format((r2 ?? 0) / 1000)} km`;
-  const dimensionHalfWidth =
-    (dimensionText.length * annotationFontSize * 0.62) / 2;
-  const dimensionDistance = Math.max(
-    earthRadius + dimensionHalfWidth + 4,
-    Math.min(
-      (drawnR2 ?? 0) * 0.62,
-      (drawnR2 ?? 0) - dimensionHalfWidth - annotationFontSize - 8,
-    ),
+  const dimensionLength = dimensionText.length * labelSize * MONO_ADVANCE;
+  const innerClear = Math.max(earthRadius, drawnR1 ?? 0) + labelSize * 0.5;
+  const outerClear = (drawnR2 ?? 0) - labelSize * 1.5;
+  const dimensionAlong = innerClear + dimensionLength <= outerClear;
+  const dimensionDistance = Math.min(
+    Math.max((drawnR2 ?? 0) * 0.5, innerClear + dimensionLength / 2),
+    outerClear - dimensionLength / 2,
   );
-  const dimensionLabel = {
-    x: CENTRE + dimensionDistance * Math.cos(dimensionAngle),
-    y: CENTRE + dimensionDistance * Math.sin(dimensionAngle),
-  };
+  // Level placement: the text's top sits at the height where the line
+  // passes, and its end stops 0.5em left of the line.
+  const levelOffset = Math.max(
+    innerClear + labelSize * 0.1,
+    (drawnR2 ?? 0) * 0.25,
+  );
+  const dimensionLabel = dimensionAlong
+    ? {
+        anchor: "middle" as const,
+        transform: `rotate(45 ${CENTRE + dimensionDistance * Math.SQRT1_2} ${CENTRE + dimensionDistance * Math.SQRT1_2})`,
+        x: CENTRE + dimensionDistance * Math.SQRT1_2,
+        y: CENTRE + dimensionDistance * Math.SQRT1_2 - 5,
+      }
+    : {
+        anchor: "end" as const,
+        transform: undefined,
+        x: CENTRE + levelOffset - labelSize * 0.5,
+        y: CENTRE + levelOffset + labelSize * 0.8,
+      };
 
   const drawing = (
     <svg
       ref={svgRef}
       aria-labelledby={`${titleId} ${descriptionId}`}
       className={cn(
-        "mx-auto block h-auto w-full",
+        "block h-auto w-full",
         size === "default" &&
-          (withLimb ? "max-w-[8rem] @[40rem]:max-w-[10rem]" : "max-w-md"),
+          (withLimb
+            ? "mx-auto max-w-[8rem] @[40rem]:max-w-[10rem]"
+            : "mx-auto max-w-md"),
         // Below 48rem the large drawing is capped at 18rem square, so on a
-        // phone the hero reaches the tool index sooner.
+        // phone the hero reaches the tool index sooner. It keeps the left
+        // edge of the legend and caption below it.
         size === "large" && "max-md:max-w-[18rem]",
       )}
       role="img"
-      viewBox={`0 0 ${VIEW_SIZE} ${VIEW_SIZE}`}
+      viewBox={
+        size === "large"
+          ? `${LARGE_VIEW_MIN} ${LARGE_VIEW_MIN} ${LARGE_VIEW_SIZE} ${LARGE_VIEW_SIZE}`
+          : `0 0 ${VIEW_SIZE} ${VIEW_SIZE}`
+      }
     >
       <title id={titleId}>{title}</title>
       <desc id={descriptionId}>{description}</desc>
@@ -535,10 +577,10 @@ export function OrbitDiagram({
           />
           <text
             {...annotationText}
-            textAnchor="middle"
-            transform={`rotate(45 ${dimensionLabel.x} ${dimensionLabel.y})`}
+            textAnchor={dimensionLabel.anchor}
+            transform={dimensionLabel.transform}
             x={dimensionLabel.x}
-            y={dimensionLabel.y - 5}
+            y={dimensionLabel.y}
           >
             r<Subscript shift={subscriptShift}>2</Subscript>
             <tspan dy={-subscriptShift}>
@@ -573,13 +615,12 @@ export function OrbitDiagram({
   return (
     <figure className="@container m-0">
       {size === "large" ? (
-        // Unframed linework on the ground (spec 8); the legend and caption
-        // sit below it.
-        <div className="mx-auto p-4 max-md:max-w-[20.5rem] sm:p-5">
-          {drawing}
-        </div>
+        // Unframed linework on the ground (spec 8), edge to edge in its
+        // column; the legend and caption sit below it on the same left edge.
+        drawing
       ) : withLimb ? (
-        <div className="max-w-xl">
+        // Full column width, left edge shared with the legend and caption.
+        <div>
           <LimbView
             finalAltitudeMetres={finalAltitudeMetres}
             initialAltitudeMetres={

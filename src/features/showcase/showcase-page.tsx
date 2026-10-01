@@ -13,7 +13,7 @@ import { ReadingPage } from "@/features/legal/components/reading-page";
 
 /**
  * The architecture page (`/showcase`), on the shared editorial reading
- * layout of /verification (design v2, spec 9): from 80rem a sticky numbered
+ * layout of /verification (design v3): from 80rem a sticky
  * "On this page" list in the left rail and the sections in the reading
  * track beside it; running text keeps the reading measure, diagrams and
  * tables take the full track. There is no screenshots section: only
@@ -26,8 +26,7 @@ export function ShowcasePage() {
       eyebrow="Project notes"
       intro={<ShowcaseActions />}
       lead={<ShowcaseLead />}
-      title="Inside"
-      titleAccent="ORBIX"
+      title="Inside ORBIX"
       toc={SHOWCASE_CONTENTS}
     >
       <ArchitectureSection />

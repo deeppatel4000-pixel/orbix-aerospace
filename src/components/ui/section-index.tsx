@@ -22,11 +22,6 @@ export type SectionIndexProps = ComponentPropsWithoutRef<"ul"> & {
   /** Heading element for each row title. Default `h3`. */
   headingAs?: "h2" | "h3" | "h4";
   items: readonly SectionIndexItem[];
-  /**
-   * @deprecated v3 drops the decorative row numbers (spec 3.7). Accepted
-   * and ignored so existing calls compile.
-   */
-  start?: number;
 };
 
 /**
@@ -49,10 +44,8 @@ export function SectionIndex({
   className,
   headingAs: Heading = "h3",
   items,
-  start,
   ...props
 }: SectionIndexProps) {
-  void start; // retired prop, accepted for compatibility
   return (
     <ul className={cn("orbix-section-index", className)} {...props}>
       {items.map((item) => (

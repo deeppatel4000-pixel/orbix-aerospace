@@ -150,7 +150,9 @@ test.describe("Vehicle profile structure", () => {
       ).toBeGreaterThan(10);
       const heroCaption = hero.locator("figcaption");
       await expect(heroCaption).toContainText(/public domain|CC BY/i);
-      await expect(heroCaption).toContainText(/Photo: /);
+      // The credit: "Photo: NASA", or a credit that already names the
+      // photograph ("U.S. Air Force photo by ...") as it stands.
+      await expect(heroCaption).toContainText(/\bphoto(graph)?\b/i);
       await expect(
         heroCaption.getByRole("link", { name: "Source file" }),
       ).toHaveAttribute("href", /^https:\/\//);

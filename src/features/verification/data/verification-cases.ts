@@ -63,6 +63,8 @@ export interface VerificationCase {
 
 export interface VerificationGroup {
   readonly id: string;
+  /** A note that applies to every case in the group, said once above them. */
+  readonly intro?: string;
   readonly title: string;
   readonly cases: readonly VerificationCase[];
 }
@@ -220,7 +222,7 @@ function atmosphereRows(
  * ------------------------------------------------------------------ */
 
 const USSA_GEOPOTENTIAL_NOTE =
-  "ORBIX treats gravity as constant (9.80665 m/s²). In the 1976 standard that form applies to geopotential altitude H, so these rows are compared with the geopotential columns of Table I.";
+  "ORBIX treats gravity as constant (9.80665 m/s²). In the 1976 standard that form applies to geopotential altitude H, so the cases below are compared with the geopotential columns of Table I, except the last, which reads the same input as geometric altitude to show the size of that error.";
 
 export const verificationGroups: readonly VerificationGroup[] = [
   {
@@ -232,7 +234,6 @@ export const verificationGroups: readonly VerificationGroup[] = [
         location:
           "Table I, geopotential altitude, metric units, page 52, row H = 1000 m",
         notes: [
-          USSA_GEOPOTENTIAL_NOTE,
           "Density is just outside the table's rounding. ORBIX divides by the rounded gas constant 287.05 J/(kg·K); the standard's value is R*/M₀ = 8,314.32 / 28.9644 = 287.053 J/(kg·K) (pages 3 and 9). With that value and the same pressure and temperature, the density is 1.11164 kg/m³, which rounds to the printed 1.1116.",
         ],
         rows: atmosphereRows("atmosphere-1000", atmosphere1000, {
@@ -258,7 +259,6 @@ export const verificationGroups: readonly VerificationGroup[] = [
         location:
           "Table I, geopotential altitude, metric units, page 54, row H = 5000 m",
         notes: [
-          USSA_GEOPOTENTIAL_NOTE,
           "Pressure is 0.55 Pa above the table value, about 0.001 percent. The table itself sits low of its own equation here: the standard's pressure equation for this layer, with its constants R*/M₀ = 8,314.32 / 28.9644, g₀ = 9.80665 m/s² and P₀ = 101,325 Pa, gives 54,019.9 Pa at H = 5,000 m, while the table prints 5.4019 + 2 mb (54,019 Pa). The same happens at 1,000 m, where the equation gives 89,874.6 Pa and the table prints 8.9874 + 2 mb. ORBIX, at 54,019.55 Pa, lies between the table and the equation, so the gap is not an ORBIX error. Why the table's last digit falls low has not been confirmed here.",
         ],
         rows: atmosphereRows("atmosphere-5000", atmosphere5000, {
@@ -284,7 +284,6 @@ export const verificationGroups: readonly VerificationGroup[] = [
         location:
           "Table I, geopotential altitude, metric units, page 58, row H = 11000 m",
         notes: [
-          USSA_GEOPOTENTIAL_NOTE,
           "11,000 m is the top of the constant-lapse-rate layer and the highest altitude the ORBIX calculator accepts. Above it the standard holds temperature at 216.65 K, which ORBIX does not model, so no higher altitude is compared.",
         ],
         rows: atmosphereRows("atmosphere-11000", atmosphere11000, {
@@ -330,6 +329,7 @@ export const verificationGroups: readonly VerificationGroup[] = [
       },
     ],
     id: "atmosphere",
+    intro: USSA_GEOPOTENTIAL_NOTE,
     title: "Atmosphere",
   },
   {

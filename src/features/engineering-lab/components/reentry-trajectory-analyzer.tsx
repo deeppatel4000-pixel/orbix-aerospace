@@ -34,6 +34,8 @@ import type {
 } from "@/features/engineering-lab/types";
 
 const MAXIMUM_VISIBLE_TRAJECTORY_POINTS = 50;
+/** Rows shown before "Show all": the first, the last and evenly between. */
+const COMPACT_TRAJECTORY_POINTS = 12;
 
 type ReentryTrajectoryField =
   | "initialAltitudeMeters"
@@ -186,8 +188,9 @@ function deriveViewState(
 
 function sampleTrajectoryPoints(
   trajectoryPoints: readonly ReentryTrajectoryPoint[],
+  maximumPoints: number,
 ): readonly SampledTrajectoryPoint[] {
-  if (trajectoryPoints.length <= MAXIMUM_VISIBLE_TRAJECTORY_POINTS) {
+  if (trajectoryPoints.length <= maximumPoints) {
     return trajectoryPoints.map((point, originalIndex) => ({
       originalIndex,
       point,
@@ -195,14 +198,10 @@ function sampleTrajectoryPoints(
   }
 
   const lastIndex = trajectoryPoints.length - 1;
-  const lastVisibleIndex = MAXIMUM_VISIBLE_TRAJECTORY_POINTS - 1;
+  const lastVisibleIndex = maximumPoints - 1;
   const sampledPoints: SampledTrajectoryPoint[] = [];
 
-  for (
-    let visibleIndex = 0;
-    visibleIndex < MAXIMUM_VISIBLE_TRAJECTORY_POINTS;
-    visibleIndex += 1
-  ) {
+  for (let visibleIndex = 0; visibleIndex < maximumPoints; visibleIndex += 1) {
     const originalIndex = Math.round(
       (visibleIndex * lastIndex) / lastVisibleIndex,
     );
@@ -298,10 +297,28 @@ export function ReentryTrajectoryAnalyzer() {
   const [values, setValues] =
     useState<ReentryTrajectoryFormValues>(initialFormValues);
   const { errors, result } = useMemo(() => deriveViewState(values), [values]);
-  const visibleTrajectoryPoints = useMemo(
-    () => sampleTrajectoryPoints(result?.trajectoryPoints ?? []),
+  const [showAllRows, setShowAllRows] = useState(false);
+  const allTrajectoryRows = useMemo(
+    () =>
+      sampleTrajectoryPoints(
+        result?.trajectoryPoints ?? [],
+        MAXIMUM_VISIBLE_TRAJECTORY_POINTS,
+      ),
     [result],
   );
+  // The short view samples the same simulated points, so a row keeps its
+  // values when the full table is opened.
+  const compactTrajectoryRows = useMemo(
+    () =>
+      sampleTrajectoryPoints(
+        result?.trajectoryPoints ?? [],
+        COMPACT_TRAJECTORY_POINTS,
+      ),
+    [result],
+  );
+  const canExpandRows = allTrajectoryRows.length > compactTrajectoryRows.length;
+  const visibleTrajectoryPoints =
+    showAllRows || !canExpandRows ? allTrajectoryRows : compactTrajectoryRows;
   const allOutputIds =
     "reentry-trajectory-initialAltitudeMeters reentry-trajectory-initialVelocityMetersPerSecond reentry-trajectory-vehicleMassKilograms reentry-trajectory-dragCoefficient reentry-trajectory-referenceAreaSquareMetres reentry-trajectory-timeStepSeconds reentry-trajectory-initialFlightPathAngleDegrees";
 
@@ -605,120 +622,135 @@ export function ReentryTrajectoryAnalyzer() {
           </CalculatorResultSection>
 
           {result ? (
-            <DataTable
-              className="lab-trajectory-table"
-              caption={
-                visibleTrajectoryPoints.length ===
-                result.trajectoryPoints.length
-                  ? "Trajectory, all " +
-                    result.trajectoryPoints.length +
-                    " simulated points"
-                  : "Trajectory, " +
-                    visibleTrajectoryPoints.length +
-                    " evenly sampled points of " +
-                    result.trajectoryPoints.length +
-                    " simulated"
-              }
-              columns={[
-                {
-                  key: "time",
-                  header: <span className="block">Time</span>,
-                  unit: "s",
-                  numeric: true,
-                  cell: ({ point }) => (
-                    <output htmlFor={allOutputIds}>
-                      {stateFormatter.format(point.timeSeconds)}
-                    </output>
-                  ),
-                },
-                {
-                  key: "altitude",
-                  header: <span className="block">Altitude</span>,
-                  unit: "m",
-                  numeric: true,
-                  cell: ({ point }) => (
-                    <output htmlFor={allOutputIds}>
-                      {stateFormatter.format(point.altitudeMeters)}
-                    </output>
-                  ),
-                },
-                {
-                  key: "velocity",
-                  header: <span className="block">Velocity</span>,
-                  unit: "m/s",
-                  numeric: true,
-                  cell: ({ point }) => (
-                    <output htmlFor={allOutputIds}>
-                      {stateFormatter.format(point.velocityMetersPerSecond)}
-                    </output>
-                  ),
-                },
-                {
-                  key: "density",
-                  header: <span className="block">Density</span>,
-                  unit: "kg/m³",
-                  numeric: true,
-                  cell: ({ point }) => (
-                    <output htmlFor={allOutputIds}>
-                      {densityFormatter.format(
-                        point.densityKilogramsPerCubicMetre,
-                      )}
-                    </output>
-                  ),
-                },
-                {
-                  key: "dynamic-pressure",
-                  // Two lines, with the unit on the second, so the widest
-                  // header does not set the column width.
-                  header: (
-                    <>
-                      <span className="block">Dynamic</span> pressure
-                    </>
-                  ),
-                  unit: "Pa",
-                  numeric: true,
-                  cell: ({ point }) => (
-                    <output htmlFor={allOutputIds}>
-                      {stateFormatter.format(point.dynamicPressurePascals)}
-                    </output>
-                  ),
-                },
-                {
-                  key: "deceleration",
-                  header: <span className="block">Deceleration</span>,
-                  unit: "m/s²",
-                  numeric: true,
-                  cell: ({ point }) => (
-                    <output htmlFor={allOutputIds}>
-                      {stateFormatter.format(
-                        point.decelerationMetersPerSecondSquared,
-                      )}
-                    </output>
-                  ),
-                },
-                {
-                  key: "g-load",
-                  // The unit is written here, not as `unit`, so its
-                  // subscript is a real <sub> (B612 Mono has no U+2080).
-                  header: (
-                    <>
-                      <span className="block">G-load</span>
-                      <span className="orbix-table-unit">
-                        (g<sub className="lab-figure__sub">0</sub>)
-                      </span>
-                    </>
-                  ),
-                  numeric: true,
-                  cell: ({ point }) => (
-                    <output htmlFor={allOutputIds}>
-                      {loadFormatter.format(point.decelerationGs)}
-                    </output>
-                  ),
-                },
-              ]}
-              getRowKey={({ originalIndex }) => String(originalIndex)}
-              rows={visibleTrajectoryPoints}
-            />
+            <div id="reentry-trajectory-table">
+              <DataTable
+                className="lab-trajectory-table"
+                caption={
+                  visibleTrajectoryPoints.length ===
+                  result.trajectoryPoints.length
+                    ? "Trajectory, all " +
+                      result.trajectoryPoints.length +
+                      " simulated points"
+                    : "Trajectory, " +
+                      visibleTrajectoryPoints.length +
+                      " evenly sampled points of " +
+                      result.trajectoryPoints.length +
+                      " simulated"
+                }
+                columns={[
+                  {
+                    key: "time",
+                    header: <span className="block">Time</span>,
+                    unit: "s",
+                    numeric: true,
+                    cell: ({ point }) => (
+                      <output htmlFor={allOutputIds}>
+                        {stateFormatter.format(point.timeSeconds)}
+                      </output>
+                    ),
+                  },
+                  {
+                    key: "altitude",
+                    header: <span className="block">Altitude</span>,
+                    unit: "m",
+                    numeric: true,
+                    cell: ({ point }) => (
+                      <output htmlFor={allOutputIds}>
+                        {stateFormatter.format(point.altitudeMeters)}
+                      </output>
+                    ),
+                  },
+                  {
+                    key: "velocity",
+                    header: <span className="block">Velocity</span>,
+                    unit: "m/s",
+                    numeric: true,
+                    cell: ({ point }) => (
+                      <output htmlFor={allOutputIds}>
+                        {stateFormatter.format(point.velocityMetersPerSecond)}
+                      </output>
+                    ),
+                  },
+                  {
+                    key: "density",
+                    header: <span className="block">Density</span>,
+                    unit: "kg/m³",
+                    numeric: true,
+                    cell: ({ point }) => (
+                      <output htmlFor={allOutputIds}>
+                        {densityFormatter.format(
+                          point.densityKilogramsPerCubicMetre,
+                        )}
+                      </output>
+                    ),
+                  },
+                  {
+                    key: "dynamic-pressure",
+                    // Two lines, with the unit on the second, so the widest
+                    // header does not set the column width.
+                    header: (
+                      <>
+                        <span className="block">Dynamic</span> pressure
+                      </>
+                    ),
+                    unit: "Pa",
+                    numeric: true,
+                    cell: ({ point }) => (
+                      <output htmlFor={allOutputIds}>
+                        {stateFormatter.format(point.dynamicPressurePascals)}
+                      </output>
+                    ),
+                  },
+                  {
+                    key: "deceleration",
+                    header: <span className="block">Deceleration</span>,
+                    unit: "m/s²",
+                    numeric: true,
+                    cell: ({ point }) => (
+                      <output htmlFor={allOutputIds}>
+                        {stateFormatter.format(
+                          point.decelerationMetersPerSecondSquared,
+                        )}
+                      </output>
+                    ),
+                  },
+                  {
+                    key: "g-load",
+                    // The unit is written here, not as `unit`, so its
+                    // subscript is a real <sub> (B612 Mono has no U+2080).
+                    header: (
+                      <>
+                        <span className="block">G-load</span>
+                        <span className="orbix-table-unit">
+                          (g<sub className="lab-figure__sub">0</sub>)
+                        </span>
+                      </>
+                    ),
+                    numeric: true,
+                    cell: ({ point }) => (
+                      <output htmlFor={allOutputIds}>
+                        {loadFormatter.format(point.decelerationGs)}
+                      </output>
+                    ),
+                  },
+                ]}
+                getRowKey={({ originalIndex }) => String(originalIndex)}
+                rows={visibleTrajectoryPoints}
+              />
+            </div>
+          ) : null}
+          {result && canExpandRows ? (
+            <Button
+              aria-controls="reentry-trajectory-table"
+              aria-expanded={showAllRows}
+              className="mt-4"
+              onClick={() => setShowAllRows((current) => !current)}
+              variant="secondary"
+            >
+              {showAllRows
+                ? "Show " + compactTrajectoryRows.length + " rows"
+                : "Show all " + allTrajectoryRows.length + " rows"}
+            </Button>
           ) : null}
         </div>
 

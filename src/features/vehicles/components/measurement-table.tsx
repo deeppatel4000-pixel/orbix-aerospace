@@ -29,8 +29,9 @@ interface MeasurementTableProps {
  * gives the published value and its ORBIX conversion on a second line.
  * From 48rem the source's qualifier ("Approximate", "Published minimum",
  * never "Nominal", which the note under the table defines) sits in a muted
- * Basis column at 40/30/30, so the figures end on the 70 percent line
- * instead of the far edge of the track. Below 48rem the Basis column is
+ * Basis column at 35/25/40 across the full content column, so the figures
+ * end on the 60 percent line and the table ends where the profile's other
+ * tables end. Below 48rem the Basis column is
  * hidden and the qualifier is a third line under the figure, so the figure
  * stays the second column and in view on a phone. When no row has a
  * qualifier the Basis column is left out: Parameter | Figure at 40/60.
@@ -54,14 +55,15 @@ export function MeasurementTable({
   return (
     <DataTable
       singleLineCells
-      // Fills the section track like every other profile table (one right
-      // edge per page); from 48rem a fixed layout with the label column at
-      // 40 percent, matching the facts sheets.
+      // The full content column, like every other profile table, so the
+      // tables on a profile end on one edge. From 48rem a fixed layout:
+      // Parameter 35 percent and Figure 25 percent, with Basis taking the
+      // rest; without a Basis column, Parameter 40 percent.
       className={
-        "md:[&_table]:table-fixed md:[&_tbody_th]:w-2/5 md:[&_thead_th:first-child]:w-2/5" +
+        "md:[&_table]:table-fixed" +
         (hasBasis
-          ? " max-md:[&_td:nth-child(3)]:hidden max-md:[&_th:nth-child(3)]:hidden md:[&_thead_th:nth-child(n+2)]:w-[30%]"
-          : "")
+          ? " max-md:[&_td:nth-child(3)]:hidden md:[&_td:nth-child(3)]:pl-8 max-md:[&_th:nth-child(3)]:hidden md:[&_th:nth-child(3)]:pl-8 md:[&_thead_th:first-child]:w-[35%] md:[&_thead_th:nth-child(2)]:w-1/4"
+          : " md:[&_thead_th:first-child]:w-2/5")
       }
       caption={caption}
       columns={[

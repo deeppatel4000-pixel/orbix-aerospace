@@ -67,24 +67,14 @@ const browserChecks: readonly QualityCheck[] = [
 ];
 
 /**
- * One command argument, kept on one line except at safe points: after a `/`
- * in a path such as `tests/e2e/smoke`, and before the `=` of a flag such as
- * `--project=desktop`.
+ * One command argument, kept on one line except after a `/` in a path such
+ * as `tests/e2e/smoke`. A flag such as `--project=desktop` never breaks, so
+ * the command wraps only at spaces and path slashes.
  */
 function CommandArgument({ part }: { part: string }) {
-  const flag = /^(--[\w-]+)(=.+)$/.exec(part);
-
   return (
     <span className="whitespace-nowrap">
-      {flag ? (
-        <>
-          {flag[1]}
-          <wbr />
-          {flag[2]}
-        </>
-      ) : (
-        formatCode(part, { breakAfterSlash: part.includes("/") })
-      )}
+      {formatCode(part, { breakAfterSlash: part.includes("/") })}
     </span>
   );
 }
@@ -100,7 +90,7 @@ function Command({
   return (
     <code
       className={cn(
-        "orbix-data orbix-data--sm block bg-transparent! p-0! text-[length:var(--text-caps)]! leading-[1.4rem] font-normal text-text-secondary",
+        "orbix-data orbix-data--sm block bg-transparent! p-0! text-[length:var(--text-label)]! leading-[1.4rem] font-normal text-text-secondary",
         className,
       )}
     >
@@ -120,7 +110,7 @@ function Command({
  * Below 40rem the Command column is hidden too and each command follows
  * its tool in the one remaining column, so a check reads as one short
  * block instead of a narrow column several lines deep. Long arguments
- * break after a path `/` or before a flag's `=`, so both tables fit a
+ * break only after a path `/` (a flag stays whole), so both tables fit a
  * 320px screen without scrolling.
  */
 const columns: readonly DataTableColumn<QualityCheck>[] = [
@@ -157,13 +147,23 @@ const columns: readonly DataTableColumn<QualityCheck>[] = [
 /**
  * From 48rem both tables share fixed column widths, so the two workflows
  * line up as one list; the Command column takes the largest share, so
- * long commands break as rarely as possible. Below that the third (Tool)
+ * long commands break as rarely as possible (38, 40 and 22 percent). Below that the third (Tool)
  * column is hidden, and below 40rem the second (Command) column too, and
  * the cells take 12px side padding instead of 16px.
  */
 const alignedColumns = cn(
   "max-md:[&_tr>:nth-child(3)]:hidden max-sm:[&_tr>:nth-child(2)]:hidden max-sm:[&_:is(th,td)]:px-3",
-  "md:[&_table]:table-fixed md:[&_thead_th:nth-child(1)]:w-[36%] md:[&_thead_th:nth-child(2)]:w-[46%]",
+  // A fixed layout needs a set width; `min-width: 100%` alone leaves the
+  // width auto and each table sizes its own columns.
+  "md:[&_table]:w-full md:[&_table]:table-fixed md:[&_thead_th:nth-child(1)]:w-[38%] md:[&_thead_th:nth-child(2)]:w-[40%] md:[&_thead_th:nth-child(3)]:w-[22%]",
+  // Wrapped check sentences at 500, not a heavy 600 block.
+  "[&_tbody_th]:font-medium",
+  // Below 40rem one column remains and it carries check, tool and command,
+  // so its lone "Check" header says less than nothing: hide the header row
+  // visually and keep it for assistive technology.
+  "max-sm:[&_thead]:sr-only",
+  // Text starts and ends flush with the caption and the rules.
+  "[&_:is(th,td):first-child]:ps-0! [&_:is(th,td):last-child]:pe-0!",
   // Check, command and tool share one baseline in each row.
   "[&_tbody_:is(th,td)]:align-baseline",
 );

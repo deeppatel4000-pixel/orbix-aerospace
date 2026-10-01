@@ -66,7 +66,7 @@ export function LearnIntro({ areas }: LearnIntroProps) {
             {areas.map((area) => (
               <li key={area.id}>
                 <Link
-                  className="font-display inline-flex min-h-11 items-center py-1 text-[1.25rem] leading-[1.15] tracking-[-0.02em] text-text-primary underline decoration-transparent decoration-1 underline-offset-[3px] transition-colors hover:text-accent hover:decoration-accent focus-visible:decoration-accent sm:text-[1.375rem]"
+                  className="inline-flex min-h-11 items-center py-1 text-[1.0625rem] leading-[1.3] font-medium text-text-secondary underline decoration-transparent decoration-1 underline-offset-[3px] transition-colors hover:text-accent hover:decoration-accent focus-visible:decoration-accent sm:text-[1.125rem]"
                   href={`#${area.id}`}
                 >
                   {area.title}

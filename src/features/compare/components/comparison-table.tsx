@@ -15,7 +15,11 @@ import {
   ComparisonRowEducation,
 } from "@/features/compare/components/comparison-row-education";
 import { ComparisonRules } from "@/features/compare/components/comparison-rules";
-import { groupedCredits } from "@/features/compare/components/photo-credit";
+import {
+  groupedCredits,
+  shortCreditSource,
+  shortLicense,
+} from "@/features/compare/components/photo-credit";
 import { getRowEducation } from "@/features/compare/education";
 import type {
   ComparisonCategory,
@@ -109,10 +113,14 @@ const joinedTables = cn(
   // No hyphenation: the column widths above fit whole words, and
   // break-word only guards against an unforeseen long token.
   "max-md:[&_tbody_th]:pr-2.5 max-md:[&_td]:px-2 [&_tbody_:is(th,td)]:[overflow-wrap:break-word]",
-  // The caption and the scroll-cue frame are the root's two children; the
-  // scroll region sits in the frame.
-  "[&>*>[role=region]]:overflow-visible [&>*>[role=region]]:rounded-none [&>*>[role=region]]:border-0",
-  "[&>p:first-child]:mb-0 [&>p:first-child]:pt-10 [&>p:first-child]:pb-4",
+  // The caption and the scroll region are the root's two children. The
+  // region never scrolls here: the group's outer box does, so the region
+  // must not clip (overflow-x would make it the sticky column's containing
+  // block and the column would scroll away with it). Its focus ring is
+  // drawn on the outer box instead, which is what the arrow keys scroll
+  // (important: the global focus ring rule is unlayered).
+  "[&>[role=region]]:overflow-visible [&>[role=region]]:rounded-none [&>[role=region]]:border-0 [&>[role=region]:focus-visible]:outline-none!",
+  "[&>p:first-child]:mb-0 [&>p:first-child]:pt-6 [&>p:first-child]:pb-3",
   "max-md:[&>p:first-child]:sticky max-md:[&>p:first-child]:left-0 max-md:[&>p:first-child]:max-w-[100cqw]",
 );
 
@@ -165,13 +173,13 @@ export function ComparisonTable({ result }: ComparisonTableProps) {
       header: "Characteristic",
       cell: (row) => {
         // Below 48rem the 6.25rem sticky column is too narrow for a
-        // paragraph, so a row's description and its "About"
+        // paragraph, so a row's description and its "About this row"
         // note move to the full-width list under the group there. A row
         // without a note keeps its description in the cell.
         const hasEducation =
           getRowEducation(result.category, row.id) !== undefined;
         return (
-          /* The label, its description, then the "About"
+          /* The label, its description, then the "About this row"
              disclosure on its own line, so the labels in the column share
              one left edge and read as a list. */
           <span className="flex flex-col items-start">
@@ -282,8 +290,12 @@ export function ComparisonTable({ result }: ComparisonTableProps) {
                maker, link), so a name that wraps to two lines moves the
                maker and link lines of every column together. */
           >
-            {result.vehicles.map((vehicle) => {
+            {result.vehicles.map((vehicle, index) => {
               const visual = getVisual(result.category, vehicle.id);
+              const licenseUrl =
+                visual && !visual.license.startsWith("Public domain")
+                  ? visual.licenseUrl
+                  : undefined;
 
               return (
                 <li
@@ -291,27 +303,52 @@ export function ComparisonTable({ result }: ComparisonTableProps) {
                   key={vehicle.id}
                 >
                   {visual ? (
-                    <span
-                      className={cn(
-                        "relative block max-w-full shrink-0 overflow-hidden bg-background",
-                        isAircraft
-                          ? "aspect-[16/10] h-[4.375rem] sm:h-auto sm:w-full"
-                          : "aspect-[3/4] h-24 sm:aspect-[4/5] sm:h-auto sm:max-h-[22rem] sm:w-full",
-                      )}
-                    >
-                      <Image
-                        alt={visual.alt}
-                        className="object-cover saturate-[0.9]"
-                        fill
-                        sizes={
+                    /* The plate with its catalogue caption (spec 7). The
+                       name follows as the column's title, so the caption
+                       carries the figure number and the credit. On a phone
+                       the plate is a thumbnail and the credits are pooled
+                       under the strip instead. */
+                    <figure className="shrink-0">
+                      <span
+                        className={cn(
+                          "relative block max-w-full shrink-0 overflow-hidden bg-background",
                           isAircraft
-                            ? "(min-width: 64rem) 24rem, (min-width: 40rem) 33vw, 7rem"
-                            : "(min-width: 64rem) 28rem, (min-width: 40rem) 33vw, 4.5rem"
-                        }
-                        src={visual.src}
-                        style={{ objectPosition: visual.objectPosition }}
-                      />
-                    </span>
+                            ? "aspect-[16/10] h-[4.375rem] sm:h-auto sm:w-full"
+                            : "aspect-[3/4] h-24 sm:aspect-[4/5] sm:h-auto sm:max-h-[22rem] sm:w-full",
+                        )}
+                      >
+                        <Image
+                          alt={visual.alt}
+                          className="object-cover saturate-[0.9]"
+                          fill
+                          sizes={
+                            isAircraft
+                              ? "(min-width: 64rem) 24rem, (min-width: 40rem) 33vw, 7rem"
+                              : "(min-width: 64rem) 28rem, (min-width: 40rem) 33vw, 4.5rem"
+                          }
+                          src={visual.src}
+                          style={{ objectPosition: visual.objectPosition }}
+                        />
+                      </span>
+                      <figcaption className="orbix-caption mt-2 text-[0.75rem] max-sm:hidden">
+                        <span className="orbix-caption__number">
+                          Fig. {index + 1}
+                        </span>
+                        Photo: {shortCreditSource(visual.credit)},{" "}
+                        {licenseUrl ? (
+                          <a
+                            href={licenseUrl}
+                            rel="license noreferrer"
+                            target="_blank"
+                          >
+                            {shortLicense(visual.license)}
+                          </a>
+                        ) : (
+                          shortLicense(visual.license)
+                        )}
+                        .
+                      </figcaption>
+                    </figure>
                   ) : null}
                   <div className="min-w-0 lg:contents">
                     <p className="font-display text-[1.375rem] leading-[1.02] tracking-[-0.03em] text-foreground sm:mt-3 lg:text-[1.75rem]">
@@ -338,7 +375,7 @@ export function ComparisonTable({ result }: ComparisonTableProps) {
           </ul>
 
           {credits.length > 0 ? (
-            <p className="orbix-micro mt-4 text-[0.75rem] text-muted lg:px-4">
+            <p className="orbix-micro mt-4 text-[0.75rem] text-muted sm:hidden">
               Photographs:{" "}
               {credits.map((group, index) => (
                 <Fragment key={group.license}>
@@ -389,7 +426,12 @@ export function ComparisonTable({ result }: ComparisonTableProps) {
                 visible width of the group (100cqw) while it scrolls
                 sideways, whatever the scrollbar takes. The scrollbar is the
                 overflow cue (spec 3.1). */}
-            <div className="orbix-data-table__scroll @container overflow-x-auto lg:overflow-visible">
+            <div
+              className={cn(
+                "orbix-data-table__scroll @container overflow-x-auto lg:overflow-visible",
+                "has-[[role=region]:focus-visible]:outline-2 has-[[role=region]:focus-visible]:outline-offset-2 has-[[role=region]:focus-visible]:outline-[var(--orbix-focus)]",
+              )}
+            >
               <div
                 className={cn(
                   "flex flex-col",
@@ -404,14 +446,17 @@ export function ComparisonTable({ result }: ComparisonTableProps) {
                 <DataTable
                   caption={
                     <>
+                      {/* One caption line per group, so the groups read as
+                          parts of one sheet. Below 48rem the summary moves
+                          into the group's "About these rows" note. */}
                       <span
                         aria-level={3}
-                        className="font-display block text-[1.625rem] leading-none tracking-[-0.03em] text-foreground"
+                        className="font-display block text-[1.25rem] leading-none tracking-[-0.03em] text-foreground"
                         role="heading"
                       >
                         {group.label}
                       </span>
-                      <span className="mt-2 block text-sm font-normal text-muted">
+                      <span className="mt-1.5 block text-[0.8125rem] leading-5 font-normal text-muted max-md:hidden">
                         {group.summary}
                       </span>
                     </>
@@ -431,6 +476,7 @@ export function ComparisonTable({ result }: ComparisonTableProps) {
               className="pt-2 md:hidden"
               groupLabel={group.label}
               rows={group.rows}
+              summary={group.summary}
             />
           </div>
         ))}

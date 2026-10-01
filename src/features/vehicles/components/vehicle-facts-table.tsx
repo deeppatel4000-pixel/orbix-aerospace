@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { keepDesignations } from "@/lib/designations";
 
 export interface VehicleFact {
   readonly label: string;
@@ -7,11 +8,6 @@ export interface VehicleFact {
 }
 
 interface VehicleFactsTableProps {
-  /**
-   * @deprecated The section heading names the list; a `dl` takes no
-   * accessible name. Accepted and ignored.
-   */
-  caption?: string;
   facts: readonly VehicleFact[];
 }
 
@@ -26,7 +22,9 @@ export function VehicleFactsTable({ facts }: VehicleFactsTableProps) {
       {facts.map((fact) => (
         <div className="contents" key={fact.label}>
           <dt className="orbix-label pt-0.5">{fact.label}</dt>
-          <dd className="-mt-3 text-foreground sm:mt-0">{fact.value}</dd>
+          <dd className="-mt-3 text-foreground sm:mt-0">
+            {keepDesignations(fact.value)}
+          </dd>
         </div>
       ))}
     </dl>

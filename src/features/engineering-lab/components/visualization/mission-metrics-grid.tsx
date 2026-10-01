@@ -50,7 +50,7 @@ function MissionMetricReadout({ label, unit, value }: MissionMetric) {
      * `mission-telemetry-legibility.spec.ts`, which checks label fit, value
      * fit, intersection, row containment and word-boundary wrapping together.
      */
-    <div className="border-t border-border-subtle py-2">
+    <div className="py-1.5">
       <dt className="text-sm text-muted">{label}</dt>
       <dd className="mt-0.5">
         <output
@@ -186,7 +186,7 @@ export function MissionMetricsGrid({
             >
               {group.label}
             </LabHeading>
-            <dl className="mt-1">
+            <dl className="mt-2 border-t border-border-subtle pt-1.5">
               {group.metrics.map((metric) => (
                 <MissionMetricReadout key={metric.label} {...metric} />
               ))}

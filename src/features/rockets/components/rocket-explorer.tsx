@@ -5,6 +5,7 @@ import { ButtonLink } from "@/components/ui/button-link";
 import { EmptyState } from "@/components/ui/empty-state";
 import { PhotoHero } from "@/components/ui/photo-hero";
 import { SpecPanel, type SpecPanelItem } from "@/components/ui/spec-panel";
+import { cn } from "@/lib/cn";
 import { RocketCard } from "@/features/rockets/components/rocket-card";
 import {
   maxPayloadTo,
@@ -18,7 +19,10 @@ import {
   formatRocketClassification,
   formatRocketEngineCycle,
 } from "@/features/rockets/utils";
-import { heroCrop } from "@/features/vehicles/components/hero-crop";
+import {
+  heroCrop,
+  portraitPlate,
+} from "@/features/vehicles/components/hero-crop";
 import {
   CONVERSION_NOTE,
   MINIMUM_NOTE,
@@ -30,6 +34,7 @@ import { VehicleRegistry } from "@/features/vehicles/components/vehicle-registry
 import { RocketHeightLineup, toMetres } from "@/features/vehicles/drawings";
 import type { Rocket } from "@/features/vehicles/types";
 import { formatCountWord } from "@/features/vehicles/utils/format-measurement";
+import { keepDesignations } from "@/lib/designations";
 
 interface RocketExplorerProps {
   rockets: readonly Rocket[];
@@ -63,9 +68,10 @@ function capitalise(text: string) {
 }
 
 /**
- * The pictured launch vehicle, named on the ground under the hero, with
- * three published figures as an open definition list (the same form as
- * the aircraft registry) and a link to its profile. Each figure keeps its
+ * The pictured launch vehicle, set in the hero's text column under the
+ * actions (beside the tall portrait plate from 64rem, so the column is not
+ * left empty below the buttons), with three published figures as an open
+ * definition list and a link to its profile. Each figure keeps its
  * conversion and qualifier; thrust is shown in the published unit.
  */
 function PicturedRocket({ rocket }: { rocket: Rocket }) {
@@ -97,11 +103,8 @@ function PicturedRocket({ rocket }: { rocket: Rocket }) {
   }
 
   return (
-    <section
-      aria-labelledby="pictured-rocket-title"
-      className="grid gap-8 pb-16 lg:grid-cols-12 lg:gap-6 lg:pb-20"
-    >
-      <div className="lg:col-span-4">
+    <section aria-labelledby="pictured-rocket-title">
+      <div>
         <p className="orbix-kicker">Pictured</p>
         <h2
           className="font-display mt-2 text-[2rem] leading-none tracking-[-0.035em] text-foreground"
@@ -109,12 +112,14 @@ function PicturedRocket({ rocket }: { rocket: Rocket }) {
         >
           {rocket.name}
         </h2>
-        {summary ? <p className="mt-3 text-muted">{summary}</p> : null}
-        <div className="mt-5">
-          <ProfileLink href={`/rockets/${rocket.id}`} name={rocket.name} />
-        </div>
+        {summary ? (
+          <p className="mt-3 text-muted">{keepDesignations(summary)}</p>
+        ) : null}
       </div>
-      <SpecPanel className="lg:col-span-8" columns={3} items={items} />
+      <SpecPanel className="mt-6" columns={3} items={items} />
+      <div className="mt-6">
+        <ProfileLink href={`/rockets/${rocket.id}`} name={rocket.name} />
+      </div>
     </section>
   );
 }
@@ -150,6 +155,8 @@ export function RocketExplorer({ rockets }: RocketExplorerProps) {
       })
     : undefined;
 
+  const plate = portraitPlate(heroVisual ?? { height: 3, width: 2 });
+
   const heroText = (
     <>
       <h1 className="orbix-h1 text-foreground">Launch vehicle registry</h1>
@@ -177,9 +184,10 @@ export function RocketExplorer({ rockets }: RocketExplorerProps) {
     <>
       {heroVisual && crop && featured ? (
         <PhotoHero
-          className={crop.className}
+          aside={<PicturedRocket rocket={featured} />}
+          className={cn(crop.className, plate.className)}
           plate="portrait"
-          style={crop.style}
+          style={{ ...crop.style, ...plate.style }}
           visual={{ ...heroVisual, objectPosition: crop.objectPosition }}
         >
           {heroText}
@@ -189,8 +197,6 @@ export function RocketExplorer({ rockets }: RocketExplorerProps) {
       )}
 
       <Container>
-        {featured && heroVisual ? <PicturedRocket rocket={featured} /> : null}
-
         {rockets.length === 0 ? (
           <EmptyState
             description="No launch vehicle records are available right now."

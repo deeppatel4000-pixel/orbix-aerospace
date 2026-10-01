@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 
-import { licenceLabel } from "@/components/ui/photo-hero";
+import { creditLine, licenceLabel } from "@/components/ui/photo-hero";
 import { siteLegal } from "@/config/site-legal";
 import { getAircraftVisual, listAircraft } from "@/features/aircraft/data";
 import { ContactEmailLink } from "@/features/legal/components/contact-email-link";
@@ -20,24 +20,16 @@ const toc: readonly LegalTocItem[] = [
   { id: "contact", title: "Contact" },
 ];
 
-/** Visual "/" between credit items, not read out. */
-function Separator() {
-  return (
-    <span aria-hidden="true" className="text-muted">
-      /
-    </span>
-  );
-}
-
 const PLATE_AIRCRAFT_ID = "f-15-eagle";
 
 /**
- * The page's one photograph: a framed plate at the photo's native
- * 1920:1345 ratio, so the whole aircraft shows, on the wide track with
- * the credit, licence and source underneath in B612 Mono (spec 8). It has
- * no registration marks: those are for hero plates below 48rem and
- * showcase diagrams (spec 6). Renders nothing if the visual record is
- * missing.
+ * The page's one photograph, set under the intro rule as its art-directed
+ * image (spec 7): a hard-edged plate at the photo's native 1920:1345 ratio,
+ * so the whole aircraft shows. Below 80rem it takes the full container
+ * width; from 80rem it starts at the text column and bleeds to the right
+ * viewport edge (the wrapper clips the scrollbar's width). The catalogue
+ * caption sits on the ground below, in the text column (spec 6). Renders
+ * nothing if the visual record is missing.
  */
 function AboutPlate() {
   const aircraft = listAircraft().find((item) => item.id === PLATE_AIRCRAFT_ID);
@@ -47,22 +39,23 @@ function AboutPlate() {
   const licence = licenceLabel(visual.license);
 
   return (
-    <figure className="mt-6! mb-0">
-      <div className="relative">
-        <div className="aspect-[1920/1345] overflow-hidden rounded-md border border-border-subtle">
-          <Image
-            alt={visual.alt}
-            className="h-full w-full object-cover saturate-[0.85]"
-            height={visual.height}
-            sizes="(min-width: 80rem) 54rem, (min-width: 40rem) 90vw, 100vw"
-            src={visual.src}
-            style={{ objectPosition: visual.objectPosition }}
-            width={visual.width}
-          />
-        </div>
+    <figure className="m-0 xl:grid xl:grid-cols-12 xl:gap-x-6">
+      <div className="aspect-[1920/1345] overflow-hidden xl:col-span-9 xl:col-start-4 xl:mr-[calc((min(100vw,72rem)_-_100vw)/2_-_2rem)]">
+        <Image
+          alt={visual.alt}
+          className="h-full w-full object-cover saturate-[0.9]"
+          fetchPriority="high"
+          height={visual.height}
+          loading="eager"
+          sizes="(min-width: 80rem) calc(50vw + 17rem), 100vw"
+          src={visual.src}
+          style={{ objectPosition: visual.objectPosition }}
+          width={visual.width}
+        />
       </div>
-      <figcaption className="orbix-micro mt-4 text-muted [&_a]:text-text-secondary [&_a]:decoration-border-control [&_a]:underline-offset-3 [&_a:hover]:text-text-primary">
-        {aircraft.name}. Photo: {visual.credit} <Separator />{" "}
+      <figcaption className="orbix-caption xl:col-span-9 xl:col-start-4">
+        <span className="orbix-caption__number">Fig. 1</span>
+        F-15C Eagle banking over the ocean. {creditLine(visual.credit)}.{" "}
         {visual.licenseUrl ? (
           <a
             aria-label={licence.isShortened ? licence.full : undefined}
@@ -73,8 +66,8 @@ function AboutPlate() {
           </a>
         ) : (
           licence.full
-        )}{" "}
-        <Separator /> <a href={visual.sourceUrl}>Source file</a>
+        )}
+        . <a href={visual.sourceUrl}>Source file</a>.
       </figcaption>
     </figure>
   );
@@ -90,10 +83,9 @@ export function AboutPage() {
 
   return (
     <LegalPage
-      eyebrow="The project"
+      plate={<AboutPlate />}
       lead={`ORBIX is an educational website about aircraft, launch vehicles and the engineering behind them. It is a personal project created by ${siteLegal.operatorName}, a high school student who plans to study aerospace engineering.`}
-      title="About"
-      titleAccent="ORBIX"
+      title="About ORBIX"
       toc={toc}
     >
       <LegalSection id="what-orbix-is" title="What ORBIX is">
@@ -131,7 +123,6 @@ export function AboutPage() {
             built.
           </li>
         </ul>
-        <AboutPlate />
       </LegalSection>
 
       <LegalSection id="what-orbix-is-not" title="What ORBIX is not">

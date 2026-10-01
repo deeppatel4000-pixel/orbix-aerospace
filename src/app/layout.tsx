@@ -11,7 +11,8 @@ import "./globals.css";
  * this origin, so there is no runtime request to a third party and no extra
  * dependency. Both families are licensed under the SIL Open Font License 1.1.
  *
- * IBM Plex Sans carries display, headings, body, labels and interface text.
+ * IBM Plex Sans carries display, headings, body, labels and interface text,
+ * and the Greek letters and fractions B612 Mono lacks.
  * The `wdth` axis is loaded for the condensed display cut (`font-stretch:
  * 84%`, see `.orbix-h1` in `src/styles/orbix-foundations.css`). There is no
  * serif: the long-form serif question is decided in spec 5.
@@ -19,7 +20,11 @@ import "./globals.css";
 const plexSans = IBM_Plex_Sans({
   axes: ["wdth"],
   display: "swap",
-  subsets: ["latin"],
+  // Greek for the symbols in equations (ρ, γ, Δ): B612 Mono has no Greek,
+  // so the telemetry stack falls back to Plex Sans for them (see
+  // `--font-telemetry`). Its unicode-range keeps the file off pages
+  // without Greek.
+  subsets: ["latin", "greek"],
   variable: "--font-plex-sans",
 });
 

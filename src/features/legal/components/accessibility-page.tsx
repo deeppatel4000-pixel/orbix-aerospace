@@ -16,10 +16,8 @@ const toc: readonly LegalTocItem[] = [
 export function AccessibilityPage() {
   return (
     <LegalPage
-      eyebrow="Policies"
       lead="ORBIX aims to be usable by everyone, including people who use a keyboard, a screen reader, magnification or reduced motion settings."
-      title="Accessibility"
-      titleAccent="statement"
+      title="Accessibility statement"
       toc={toc}
     >
       <LegalSection id="target" title="Target standard">

@@ -19,34 +19,38 @@ function getIncludedSystems(scenario: MissionScenario): readonly string[] {
   ].filter((system): system is string => system !== null);
 }
 
+/**
+ * One row of the ruled architecture list: name and category, description,
+ * and included systems side by side from 44rem, stacked below it. A single
+ * rule above each row separates them; there is no per-row chrome.
+ */
 export function TradeStudyCard({ index, scenario }: TradeStudyCardProps) {
   const systems = getIncludedSystems(scenario);
 
   return (
-    <article
+    <li
       aria-labelledby={`trade-study-scenario-${scenario.id}-title`}
-      // From two columns each card spans four rows of the parent grid
-      // (label, title, description, systems) through subgrid, so every row,
-      // and with it every "Included systems" rule, starts on one line.
-      className="min-w-0 border-t border-border-subtle py-4 @[30rem]/trade:row-span-4 @[30rem]/trade:grid @[30rem]/trade:grid-rows-subgrid"
+      className="grid min-w-0 gap-x-8 gap-y-2 border-t border-border-subtle py-4 @[44rem]/trade:grid-cols-[minmax(0,15rem)_minmax(0,1fr)_minmax(0,11rem)]"
     >
-      <p className="orbix-label">
-        Architecture {index + 1}: {formatCategory(scenario.category)}
-      </p>
-      <LabHeading
-        offset={1}
-        className="mt-1"
-        id={`trade-study-scenario-${scenario.id}-title`}
-      >
-        {scenario.name}
-      </LabHeading>
-      <p className="mt-2 mb-3 text-sm leading-6 text-muted">
+      <div className="min-w-0">
+        <p className="orbix-label">
+          Architecture {index + 1}, {formatCategory(scenario.category)}
+        </p>
+        <LabHeading
+          offset={1}
+          className="mt-1"
+          id={`trade-study-scenario-${scenario.id}-title`}
+        >
+          {scenario.name}
+        </LabHeading>
+      </div>
+      <p className="min-w-0 text-sm leading-6 text-muted">
         {scenario.description}
       </p>
-      <p className="border-t border-border-subtle pt-3 text-sm text-text-secondary">
+      <p className="min-w-0 text-sm leading-6 text-text-secondary">
         <span className="text-muted">Included systems: </span>
         {systems.length > 0 ? systems.join(", ") : "Mission identity only"}
       </p>
-    </article>
+    </li>
   );
 }

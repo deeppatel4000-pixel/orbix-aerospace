@@ -14,11 +14,26 @@ import { expect, ROUTES, test } from "../fixtures/orbix";
  */
 
 /**
- * Design v2 (spec 9, Home): after the hero, the two registries as an
- * asymmetric split of two cards, one per registry, each picturing a vehicle
- * (F-22 Raptor, Saturn V) and opening its registry.
+ * Design v3 (spec 6 and 11, Home): after the hero, the two registries as
+ * two open catalogue columns, aircraft then launch vehicles, each with a
+ * pictured vehicle (F-22 Raptor, Saturn V), a table of every vehicle in
+ * the registry and a link to the registry. No card chrome.
  */
-const REGISTRY_CARDS = ["/aircraft", "/rockets"] as const;
+const REGISTRY_LINKS = ["/aircraft", "/rockets"] as const;
+const AIRCRAFT_PROFILES = [
+  "/aircraft/b-2-spirit",
+  "/aircraft/f-15-eagle",
+  "/aircraft/f-22-raptor",
+  "/aircraft/f-35-lightning-ii",
+  "/aircraft/sr-71-blackbird",
+] as const;
+const ROCKET_PROFILES = [
+  "/rockets/falcon-9",
+  "/rockets/falcon-heavy",
+  "/rockets/saturn-v",
+  "/rockets/space-launch-system",
+  "/rockets/starship",
+] as const;
 
 /** Every primary destination the homepage must expose. */
 const REQUIRED_DESTINATIONS = [
@@ -65,10 +80,10 @@ test.describe("Homepage", () => {
     // section happens to link there. Each section owns its outbound routes.
     const sections = [
       { expected: ["/aircraft", "/engineering-lab"], id: "home-title" },
-      { expected: [...REGISTRY_CARDS], id: "home-registries-title" },
+      { expected: [...REGISTRY_LINKS], id: "home-registries-title" },
       {
-        // The numbered section index (spec 9): Compare, Engineering Lab,
-        // Learn, Verification, How I built ORBIX, Showcase.
+        // The plain section list (spec 11, no numbers): Compare,
+        // Engineering Lab, Learn, Verification, How I built ORBIX, Showcase.
         expected: [
           "/compare",
           "/engineering-lab",
@@ -100,50 +115,75 @@ test.describe("Homepage", () => {
     }
   });
 
-  test("presents both registries as one card each", async ({ page }) => {
-    await page.goto(ROUTES.home, { waitUntil: "domcontentloaded" });
-
-    const cards = page.locator(
-      "section:has(#home-registries-title) .orbix-vehicle-card",
-    );
-    await expect(cards).toHaveCount(REGISTRY_CARDS.length);
-
-    const hrefs = await cards.evaluateAll((nodes) =>
-      nodes.map((n) => n.getAttribute("href") ?? ""),
-    );
-    expect(hrefs).toEqual([...REGISTRY_CARDS]);
-
-    // Each card names the vehicle it pictures.
-    await expect(cards.nth(0)).toContainText("F-22 Raptor");
-    await expect(cards.nth(1)).toContainText("Saturn V");
-  });
-
-  test("the registry split is asymmetric, not two equal cards", async ({
+  test("presents both registries as open catalogue columns", async ({
     page,
   }) => {
-    // Spec 9 and 3: a large aircraft card beside a tall launch-vehicle card,
-    // at different sizes. Uses the shared discovery card, not a local one.
     await page.goto(ROUTES.home, { waitUntil: "domcontentloaded" });
 
-    const cards = page.locator(
-      "section:has(#home-registries-title) .orbix-vehicle-card",
-    );
-    await expect(cards).toHaveCount(2);
-    // Polled: the boxes are only meaningful once the stylesheet and the
-    // photographs have laid the section out.
-    const shape = () =>
-      cards.evaluateAll((nodes) => {
-        const [aircraft, rocket] = nodes.map((n) => n.getBoundingClientRect());
-        if (!aircraft || !rocket) return "missing";
-        return [
-          aircraft.width > rocket.width
-            ? "aircraft wider"
-            : "aircraft narrower",
-          rocket.height > aircraft.height ? "rocket taller" : "rocket shorter",
-        ].join(", ");
-      });
+    const section = page.locator("section:has(#home-registries-title)");
+    await expect(
+      section.getByRole("heading", { level: 3, name: "Aircraft" }),
+    ).toBeVisible();
+    await expect(
+      section.getByRole("heading", { level: 3, name: "Launch vehicles" }),
+    ).toBeVisible();
 
-    await expect.poll(shape).toBe("aircraft wider, rocket taller");
+    // One pictured vehicle per column, credited on the ground.
+    const plates = section.locator("figure");
+    await expect(plates).toHaveCount(2);
+    await expect(plates.nth(0).locator("img")).toHaveAttribute("alt", /F-22/);
+    await expect(plates.nth(1).locator("img")).toHaveAttribute(
+      "alt",
+      /Saturn V/,
+    );
+    await expect(plates.nth(0).locator("figcaption")).toContainText(
+      "Source file",
+    );
+
+    // Each table lists every vehicle in its registry.
+    const tables = section.locator("table");
+    await expect(tables).toHaveCount(2);
+    const rowHrefs = (table: number) =>
+      tables
+        .nth(table)
+        .locator("tbody a[href]")
+        .evaluateAll((nodes) =>
+          nodes.map((n) => n.getAttribute("href") ?? "").sort(),
+        );
+    expect(await rowHrefs(0)).toEqual([...AIRCRAFT_PROFILES]);
+    expect(await rowHrefs(1)).toEqual([...ROCKET_PROFILES]);
+  });
+
+  test("the registry columns carry no card chrome", async ({ page }) => {
+    // Spec 3.2: no bordered or filled container around content. The
+    // columns are structured by type, a 2px heading rule and the tables'
+    // horizontal rules only.
+    await page.goto(ROUTES.home, { waitUntil: "domcontentloaded" });
+
+    const columns = page.locator(
+      "section:has(#home-registries-title) [data-division]",
+    );
+    await expect(columns).toHaveCount(2);
+    const chrome = await columns.evaluateAll((nodes) =>
+      nodes.map((n) => {
+        const style = getComputedStyle(n);
+        return {
+          background: style.backgroundColor,
+          border: [
+            style.borderTopWidth,
+            style.borderRightWidth,
+            style.borderBottomWidth,
+            style.borderLeftWidth,
+          ].join(" "),
+          radius: style.borderRadius,
+        };
+      }),
+    );
+    for (const column of chrome) {
+      expect(column.background).toBe("rgba(0, 0, 0, 0)");
+      expect(column.border).toBe("0px 0px 0px 0px");
+      expect(column.radius).toBe("0px");
+    }
   });
 
   test("every homepage link resolves", async ({ page, request }) => {

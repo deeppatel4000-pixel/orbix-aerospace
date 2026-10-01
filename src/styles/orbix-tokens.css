@@ -140,8 +140,12 @@
   --font-interface:
     var(--font-plex-sans), "Segoe UI", system-ui, -apple-system, sans-serif;
   --font-display: var(--font-interface);
+  /* B612 Mono has Latin only: Greek symbols (ρ, γ, Δ) and glyphs it lacks
+     come from IBM Plex Sans, the site's own face, instead of a system
+     monospace that sets them larger and heavier. */
   --font-telemetry:
-    var(--font-b612-mono), ui-monospace, "Cascadia Mono", Consolas, monospace;
+    var(--font-b612-mono), var(--font-plex-sans), ui-monospace, "Cascadia Mono",
+    Consolas, monospace;
 
   /* The condensed display cut. */
   --font-display-stretch: 84%;
@@ -162,12 +166,6 @@
   --text-label: 0.8125rem; /* 13px sans labels, sentence case */
   --text-caption: 0.875rem; /* 14px figure captions */
   --text-data: 0.9375rem;
-
-  /* v2 names for the retired mono-caps labels. Feature code still reads
-     them; they now resolve to the sans label size with no tracking. */
-  --text-caps: var(--text-label);
-  --text-micro: var(--text-label);
-  --tracking-caps: 0;
 
   --tracking-tight: -0.01em;
   --tracking-normal: 0;
@@ -204,7 +202,6 @@
   --radius-1: 2px; /* controls */
   --radius-2: 2px; /* controls: buttons, inputs, selects */
   --radius-photo: 0; /* photographs are square-cut plates */
-  --radius-3: 0; /* retired v2 panel radius */
   --radius-circle: 50%; /* non-interactive circular shapes only */
 
   /* ------------------------------------------------------------------ *

@@ -434,7 +434,8 @@ export function ComparisonControls({
             keyboard user back to the top of the page (WCAG 2.4.3). */}
         <Button
           aria-disabled={selection.length === 0 ? true : undefined}
-          className="self-start"
+          /* Stacked on a phone, the label lines up with the left edge. */
+          className="self-start max-sm:border-x-0 max-sm:px-0"
           onClick={clearSelection}
           variant="ghost"
         >

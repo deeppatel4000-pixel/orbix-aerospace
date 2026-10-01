@@ -203,7 +203,7 @@ function getInputGroups(preset: MissionPreset): readonly PresetInputGroup[] {
       rows: [
         {
           label: "Inclination change",
-          unit: "deg",
+          unit: "°",
           value: planeChange.inclinationChangeDegrees,
         },
         {

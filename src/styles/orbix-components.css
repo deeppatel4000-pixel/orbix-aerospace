@@ -973,9 +973,30 @@
     padding-inline-start: clamp(0rem, 4vw, 2.5rem);
   }
 
+  /* On a phone the equation number gives up its column when the
+   * expression needs the width: it drops to the next line, still at the
+   * right margin, so a one-line relation keeps its line down to 320px. */
+  @media (width < 30rem) {
+    .orbix-equation__line {
+      display: flex;
+      flex-wrap: wrap;
+    }
+
+    .orbix-equation__expr {
+      flex: 1 1 auto;
+      max-width: 100%;
+      min-width: 0;
+    }
+
+    .orbix-equation__number {
+      margin-inline-start: auto;
+    }
+  }
+
+  /* In Plex Sans everywhere (spec 6): B612 Mono draws ( ) almost square. */
   .orbix-equation__number {
     color: var(--orbix-text-muted);
-    font-family: var(--font-telemetry);
+    font-family: var(--font-interface);
     font-size: var(--text-body-sm);
     font-variant-numeric: tabular-nums;
     white-space: nowrap;
@@ -1708,16 +1729,6 @@
   .orbix-vehicle-card:focus-visible {
     outline: 2px solid var(--orbix-focus);
     outline-offset: 4px;
-  }
-
-  .orbix-vehicle-card__classification {
-    color: var(--orbix-text-muted);
-    font-family: var(--font-interface);
-    font-size: var(--text-label);
-    font-weight: 500;
-    letter-spacing: 0;
-    line-height: 1.4;
-    text-transform: none;
   }
 
   .orbix-vehicle-card__name {

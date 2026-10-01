@@ -152,10 +152,7 @@ export function RocketProfile({ rocket }: RocketProfileProps) {
     >
       {/* The hero shows the whole rocket, so it is not repeated. */}
       <VehicleProfileSection id="overview" title="Overview">
-        <VehicleFactsTable
-          caption={`${rocket.name} record`}
-          facts={overviewFacts(rocket)}
-        />
+        <VehicleFactsTable facts={overviewFacts(rocket)} />
       </VehicleProfileSection>
 
       <VehicleProfileSection

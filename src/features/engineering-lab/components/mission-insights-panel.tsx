@@ -67,7 +67,7 @@ export function MissionInsightsPanel({ analysis }: MissionInsightsPanelProps) {
                 {insight.title}
                 <ChevronDown
                   aria-hidden="true"
-                  className="shrink-0 text-muted transition-transform group-open:rotate-180"
+                  className="shrink-0 text-muted group-open:rotate-180"
                   size={16}
                 />
               </summary>

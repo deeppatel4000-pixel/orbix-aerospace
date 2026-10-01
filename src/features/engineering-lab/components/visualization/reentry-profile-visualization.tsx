@@ -190,14 +190,24 @@ export function ReentryProfileChart({
     peakHeating !== undefined &&
     Math.abs(peakHeatingX - peakDecelerationX) < mergeDistance &&
     Math.abs(peakHeatingY - peakDecelerationY) < mergeDistance;
+  // Merged peaks at the same reported time state that time once, on its
+  // own line ("Both at 0 s"), instead of repeating it on each.
+  const sharedTime =
+    peaksMerged &&
+    formatLabValue(peakHeating.timeSeconds) ===
+      formatLabValue(peakDeceleration.timeSeconds)
+      ? formatLabValue(peakDeceleration.timeSeconds)
+      : undefined;
+  const timeSuffix = (seconds: number) =>
+    sharedTime === undefined ? `, ${formatLabValue(seconds)} s` : "";
   const decelerationLine: CalloutLine = {
     label: "Peak deceleration",
-    value: `${formatLabValue(peakDeceleration.decelerationGs)} g, ${formatLabValue(peakDeceleration.timeSeconds)} s`,
+    value: `${formatLabValue(peakDeceleration.decelerationGs)} g${timeSuffix(peakDeceleration.timeSeconds)}`,
   };
   const heatingLine: CalloutLine | undefined = peakHeating
     ? {
         label: "Peak heating",
-        value: `${formatLabValue(peakHeating.heatFluxKilowattsPerSquareMetre)} kW/m², ${formatLabValue(peakHeating.timeSeconds)} s`,
+        value: `${formatLabValue(peakHeating.heatFluxKilowattsPerSquareMetre)} kW/m²${timeSuffix(peakHeating.timeSeconds)}`,
       }
     : undefined;
   const lineWidth = (line: CalloutLine) =>
@@ -246,7 +256,13 @@ export function ReentryProfileChart({
     peakDecelerationX,
     peakDecelerationY,
     peaksMerged && heatingLine
-      ? [heatingLine, decelerationLine]
+      ? [
+          heatingLine,
+          decelerationLine,
+          ...(sharedTime === undefined
+            ? []
+            : [{ label: "Both at", value: `${sharedTime} s` }]),
+        ]
       : [decelerationLine],
   );
   let heatingCallout: Callout | undefined;
@@ -526,9 +542,11 @@ export function ReentryProfileChart({
                 y="1"
               />
             </svg>
-            Peak deceleration
+            {peaksMerged
+              ? "Peak heating and peak deceleration (one mark)"
+              : "Peak deceleration"}
           </li>
-          {peakHeating ? (
+          {peakHeating && !peaksMerged ? (
             <li className="flex items-center gap-2">
               <svg aria-hidden="true" height="12" width="12">
                 <circle

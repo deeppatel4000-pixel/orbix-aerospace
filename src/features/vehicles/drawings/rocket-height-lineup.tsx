@@ -1,5 +1,6 @@
 import type { Rocket } from "@/features/vehicles/types";
 
+import { NumText } from "./num-text";
 import { ScaleFigure } from "./scale-figure";
 import {
   formatMetres,
@@ -14,7 +15,8 @@ export { splitName } from "./units";
 /**
  * The two layouts of the lineup, each one scale for every vehicle.
  * `upright` (from 40rem): the vehicles stand side by side on one ground
- * line. `level` (below 40rem): the same lineup laid on its side, one
+ * datum, each top carried left by an extension line to a shared column of
+ * figures, with the scale bar laid flat under the ground. `level` (below 40rem): the same lineup laid on its side, one
  * vehicle to a row from a common base line, so five heights and their
  * names fit a phone without scrolling. Text sizes are chosen so figures
  * render at 11px or more at every width each layout is shown at (`level`
@@ -33,12 +35,20 @@ export const SCALE_BAR_M = 50;
 const SCALE_TICK_M = 10;
 
 /* Upright layout. */
-const UPRIGHT_TOP = 44;
-const UPRIGHT_BOTTOM = 48;
-const SCALE_X = 34;
-const FIRST_X = SCALE_X + 72;
-const PITCH = 96;
-const UPRIGHT_RIGHT = 44;
+const UPRIGHT_TOP = 14;
+const MARGIN = 8;
+/** From the figure column's right edge to where the extension lines end. */
+const FIGURE_TO_LEADER = 6;
+/** From the end of the extension lines to the first vehicle. */
+const LEADER_TO_FIRST = 34;
+const PITCH = 100;
+const UPRIGHT_RIGHT = 48;
+/** From the ground to the scale bar, under the two-line names. */
+const GROUND_TO_SCALE = 62;
+/** How far an extension line runs past its dimension line. */
+const EXT_OVER = 4;
+/** Rough advance of B612 Mono, as a share of the size. */
+const MONO_ADVANCE = 0.6;
 
 /* Level layout. */
 const LEVEL_WIDTH = 300;
@@ -72,6 +82,12 @@ export interface LineupVehicle {
 }
 
 export interface LineupGeometry {
+  /**
+   * Upright only: the right edge of the figure column (figures are set
+   * flush right here) and the x where every extension line ends.
+   */
+  readonly figureX?: number;
+  readonly leaderX?: number;
   readonly layout: LineupLayoutName;
   readonly height: number;
   /** The ground line (upright) or base line (level). */
@@ -81,7 +97,7 @@ export interface LineupGeometry {
     readonly x2: number;
     readonly y2: number;
   };
-  /** Scale bar ticks from 0 to `SCALE_BAR_M`, as points on the bar. */
+  /** Scale bar ticks from 0 to `SCALE_BAR_M`, as points on the bar, which lies flat in both layouts. */
   readonly scale: readonly {
     readonly metres: number;
     readonly x: number;
@@ -152,10 +168,23 @@ export function rocketLineupGeometry(
     };
   }
 
+  const { figureSize } = LINEUP_LAYOUTS.upright;
+  const figureChars = Math.max(
+    0,
+    ...labels.map((label) =>
+      Math.max(
+        label.recorded.length,
+        (label.converted ?? (label.approximate ? "approx." : "")).length,
+      ),
+    ),
+  );
+  const figureX = MARGIN + figureChars * MONO_ADVANCE * figureSize;
+  const leaderX = figureX + FIGURE_TO_LEADER;
+  const firstX = leaderX + LEADER_TO_FIRST;
   const tallest = labels.at(-1)?.metres ?? SCALE_BAR_M;
   const groundY = UPRIGHT_TOP + tallest * u;
   const vehicles = labels.map((label, index) => {
-    const x = FIRST_X + index * PITCH;
+    const x = firstX + index * PITCH;
     return {
       ...label,
       x1: x,
@@ -164,21 +193,33 @@ export function rocketLineupGeometry(
       y2: groundY - label.metres * u,
     };
   });
-  const lastX = vehicles.at(-1)?.x1 ?? FIRST_X;
+  const lastX = vehicles.at(-1)?.x1 ?? firstX;
   const width = lastX + UPRIGHT_RIGHT;
+  const scaleY = groundY + GROUND_TO_SCALE;
 
   return {
-    ground: { x1: SCALE_X - 12, x2: width - 8, y1: groundY, y2: groundY },
-    height: groundY + UPRIGHT_BOTTOM,
+    figureX,
+    ground: { x1: leaderX, x2: width - MARGIN, y1: groundY, y2: groundY },
+    height: scaleY + 6 + figureSize + 8,
     layout: layoutName,
+    leaderX,
     scale: scaleSteps.map((metres) => ({
       metres,
-      x: SCALE_X,
-      y: groundY - metres * u,
+      x: firstX + metres * u,
+      y: scaleY,
     })),
     vehicles,
     width,
   };
+}
+
+/**
+ * Whether a vehicle's figure is printed: only the first of a run of equal
+ * heights, which share one extension line and one figure.
+ */
+function printsFigure(vehicles: readonly LineupVehicle[], index: number) {
+  const previous = vehicles[index - 1];
+  return !previous || previous.metres !== vehicles[index]?.metres;
 }
 
 function lineupSummary(geometry: LineupGeometry) {
@@ -197,9 +238,12 @@ interface LineupDrawingProps {
 }
 
 /**
- * One layout of the lineup. Each height is a 1.5px dimension line with an
- * oblique tick at both ends and a 0.75px extension line across its top;
- * the value sits at the top end. Strokes do not scale with the drawing.
+ * One layout of the lineup. Each height is a 0.75px dimension line from
+ * the ground datum with a 1.5px oblique tick at both ends and a 0.75px
+ * extension line at its top. Upright, the extension lines carry each top
+ * to one column of figures at the left, and vehicles of equal height share
+ * one figure; laid level, each figure sits at its line's end. Strokes do
+ * not scale with the drawing.
  */
 function LineupDrawing({ className, layoutName, rockets }: LineupDrawingProps) {
   const geometry = rocketLineupGeometry(rockets, layoutName);
@@ -244,11 +288,7 @@ function LineupDrawing({ className, layoutName, rockets }: LineupDrawingProps) {
             />
             <path
               d={geometry.scale
-                .map((tick) =>
-                  isLevel
-                    ? `M${tick.x} ${tick.y}v-5`
-                    : `M${tick.x} ${tick.y}h5`,
-                )
+                .map((tick) => `M${tick.x} ${tick.y}v-5`)
                 .join("")}
               strokeWidth={0.75}
               vectorEffect="non-scaling-stroke"
@@ -263,53 +303,34 @@ function LineupDrawing({ className, layoutName, rockets }: LineupDrawingProps) {
           className="fill-ink-muted font-mono"
           fontSize={figureSize}
         >
-          {isLevel ? (
-            <>
-              <text
-                textAnchor="middle"
-                x={scaleStart.x}
-                y={scaleStart.y + 6 + figureSize * 0.8}
-              >
-                0
-              </text>
-              <text
-                textAnchor="middle"
-                x={scaleEnd.x}
-                y={scaleEnd.y + 6 + figureSize * 0.8}
-              >
-                {SCALE_BAR_M}
-              </text>
-              <text
-                x={scaleEnd.x + figureSize * 1.4}
-                y={scaleEnd.y + 6 + figureSize * 0.8}
-              >
-                m
-              </text>
-            </>
-          ) : (
-            <>
-              {geometry.scale.map((tick) => (
-                <text
-                  dominantBaseline="middle"
-                  key={tick.metres}
-                  textAnchor="end"
-                  x={tick.x - 6}
-                  y={tick.y}
-                >
-                  {tick.metres}
-                </text>
-              ))}
-              <text textAnchor="end" x={scaleEnd.x - 6} y={scaleEnd.y - 16}>
-                m
-              </text>
-            </>
-          )}
+          <text
+            textAnchor="middle"
+            x={scaleStart.x}
+            y={scaleStart.y + 6 + figureSize * 0.8}
+          >
+            0
+          </text>
+          <text
+            textAnchor="middle"
+            x={scaleEnd.x}
+            y={scaleEnd.y + 6 + figureSize * 0.8}
+          >
+            {SCALE_BAR_M}
+          </text>
+          <text
+            x={scaleEnd.x + figureSize * 1.4}
+            y={scaleEnd.y + 6 + figureSize * 0.8}
+          >
+            m
+          </text>
         </g>
       ) : null}
 
-      {geometry.vehicles.map((vehicle) => {
+      {geometry.vehicles.map((vehicle, index) => {
         const note =
           vehicle.converted ?? (vehicle.approximate ? "approx." : "");
+        const leaderX = geometry.leaderX ?? 0;
+        const figureX = geometry.figureX ?? 0;
         return (
           <g
             aria-hidden="true"
@@ -320,7 +341,7 @@ function LineupDrawing({ className, layoutName, rockets }: LineupDrawingProps) {
             <g className="stroke-ink-muted" fill="none">
               <line
                 data-dimension="height"
-                strokeWidth={1.5}
+                strokeWidth={0.75}
                 vectorEffect="non-scaling-stroke"
                 x1={vehicle.x1}
                 x2={vehicle.x2}
@@ -335,7 +356,11 @@ function LineupDrawing({ className, layoutName, rockets }: LineupDrawingProps) {
                 strokeWidth={1.5}
                 vectorEffect="non-scaling-stroke"
               />
+              {/* Extension line at the top: across the end when laid
+                  level; upright, carried left from just past the top to
+                  the figure column, above every shorter vehicle. */}
               <line
+                data-extension=""
                 strokeWidth={0.75}
                 vectorEffect="non-scaling-stroke"
                 {...(isLevel
@@ -346,8 +371,8 @@ function LineupDrawing({ className, layoutName, rockets }: LineupDrawingProps) {
                       y2: vehicle.y2 + EXT_HALF,
                     }
                   : {
-                      x1: vehicle.x2 - EXT_HALF,
-                      x2: vehicle.x2 + EXT_HALF,
+                      x1: vehicle.x2 + EXT_OVER,
+                      x2: leaderX,
                       y1: vehicle.y2,
                       y2: vehicle.y2,
                     })}
@@ -362,7 +387,7 @@ function LineupDrawing({ className, layoutName, rockets }: LineupDrawingProps) {
                   x={vehicle.x2 + 10}
                   y={vehicle.y2 + figureSize * 0.35}
                 >
-                  {vehicle.recorded}
+                  <NumText size={figureSize} text={vehicle.recorded} />
                 </text>
                 {note ? (
                   <text
@@ -371,7 +396,7 @@ function LineupDrawing({ className, layoutName, rockets }: LineupDrawingProps) {
                     x={vehicle.x2 + 10}
                     y={vehicle.y2 + figureSize * 0.35 + figureSize + 3}
                   >
-                    {note}
+                    <NumText size={figureSize} text={note} />
                   </text>
                 ) : null}
                 <text
@@ -386,24 +411,27 @@ function LineupDrawing({ className, layoutName, rockets }: LineupDrawingProps) {
               </>
             ) : (
               <>
-                <text
-                  className="fill-ink font-mono"
-                  fontSize={figureSize}
-                  textAnchor="middle"
-                  x={vehicle.x2}
-                  y={vehicle.y2 - (note ? 10 + figureSize + 2 : 10)}
-                >
-                  {vehicle.recorded}
-                </text>
-                {note ? (
+                {printsFigure(geometry.vehicles, index) ? (
                   <text
-                    className="fill-ink-muted font-mono"
+                    className="font-mono"
+                    data-figure=""
                     fontSize={figureSize}
-                    textAnchor="middle"
-                    x={vehicle.x2}
-                    y={vehicle.y2 - 10}
+                    textAnchor="end"
+                    x={figureX}
+                    y={vehicle.y2 + figureSize * 0.35}
                   >
-                    {note}
+                    <tspan className="fill-ink">
+                      <NumText size={figureSize} text={vehicle.recorded} />
+                    </tspan>
+                    {note ? (
+                      <tspan
+                        className="fill-ink-muted"
+                        x={figureX}
+                        y={vehicle.y2 + figureSize * 1.35 + 3}
+                      >
+                        <NumText size={figureSize} text={note} />
+                      </tspan>
+                    ) : null}
                   </text>
                 ) : null}
                 <text
@@ -414,8 +442,12 @@ function LineupDrawing({ className, layoutName, rockets }: LineupDrawingProps) {
                   x={vehicle.x1}
                   y={vehicle.y1 + 22}
                 >
-                  {vehicle.nameLines.map((line, index) => (
-                    <tspan dy={index === 0 ? 0 : 15} key={line} x={vehicle.x1}>
+                  {vehicle.nameLines.map((line, lineIndex) => (
+                    <tspan
+                      dy={lineIndex === 0 ? 0 : 15}
+                      key={line}
+                      x={vehicle.x1}
+                    >
                       {line}
                     </tspan>
                   ))}
@@ -457,10 +489,8 @@ export function RocketHeightLineup({
     <ScaleFigure
       caption={
         <>
-          Launch vehicle heights to one scale, drawn from the height in each
-          record, with a 50 m scale bar. Only the height is drawn: the records
-          give no diameter, so each vehicle is a dimension line, not an outline.
-          On a narrow screen the lineup is laid on its side.
+          Recorded height of each launch vehicle, to one scale. The records give
+          no diameter, so each is drawn as its height alone.
           {omitted.length > 0
             ? ` Not drawn, no height recorded: ${omitted.map((rocket) => rocket.name).join(", ")}.`
             : ""}

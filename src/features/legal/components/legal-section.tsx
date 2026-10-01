@@ -15,28 +15,21 @@ interface LegalSectionProps {
 }
 
 /**
- * One numbered h2 section of a reading page, addressable by `#id`.
+ * One h2 section of a reading page, addressable by `#id`. No number (spec
+ * 3.7): the heading and the space above it carry the break.
  *
- * A hairline rule separates it from the section before. The number above
- * the heading comes from the `orbix-section` counter that `ReadingPage`
- * resets, set in B612 Mono accent like the "On this page" list. It uses the
- * `content: ... / ""` form so assistive technology does not read it into the
- * heading name (the list already conveys the order). Paragraphs and lists
- * share one absolute measure, 38.25rem (60ch of 17px Plex, about 612px),
- * so small notes and table captions end on the same right edge as the
- * running text; tables and figures take the full width of the column.
- *
- * Ordinary sections set the H2 at 2rem so a heading over one or two short
- * paragraphs does not outweigh them. Major sections set the H2 at 2rem to
- * 2.5rem (never below 2rem, so it stays clearly above the h3 cases inside
- * on phones) and a control-weight rule. Above that rule sit the previous section's
- * 1.5rem bottom padding plus a 3.5rem (4rem from 40rem up) top margin, about
- * 80 to 88px. Below it sit 3 to 3.5rem of padding before the number, so the
- * rule sits nearer the section it opens and a break between groups reads larger
- * than a break between the h3 cases inside. The margin is `!important`
- * because `.orbix-prose > * + *` sets `margin-top: 1em` at equal
- * specificity later in the cascade; `not-first:` keeps the first section
- * flush with the top of the column and the "On this page" rail.
+ * Ordinary sections are separated by whitespace alone and set the H2 at
+ * 1.75rem to 2rem, so a heading over one or two short paragraphs does not
+ * outweigh them. Major sections (verification, the manual-like page) open
+ * with a 2px, 48px lab-colour rule above the heading (spec 4 and 6), more
+ * space and a larger H2 of 2rem to 2.5rem, so the break between groups
+ * reads larger than the break between the h3 cases inside. The legal pages
+ * stay plain. The
+ * margin is `!important` because `.orbix-prose > * + *` sets `margin-top:
+ * 1em` at equal specificity later in the cascade; `not-first:` keeps the
+ * first section flush with the top of the column and the "On this page"
+ * rail. Paragraphs and lists share one absolute measure, 38.25rem (60ch of
+ * 17px Plex, about 612px); tables and figures take the full column width.
  */
 export function LegalSection({
   children,
@@ -50,19 +43,22 @@ export function LegalSection({
     <section
       aria-labelledby={headingId}
       className={cn(
-        "flex scroll-mt-24 flex-col gap-4 border-t [counter-increment:orbix-section] first:border-t-0 first:pt-0 [&_:is(p,ul,ol)]:max-w-[38.25rem]",
+        "flex scroll-mt-24 flex-col gap-4 [&_:is(p,ul,ol)]:max-w-[38.25rem]",
         major
-          ? "border-border-control pt-12 pb-6 not-first:mt-14! sm:pt-14 sm:not-first:mt-16!"
-          : "border-border-subtle pt-10 pb-6",
+          ? "pb-6 not-first:mt-20! sm:not-first:mt-24!"
+          : "pb-6 not-first:mt-10! sm:not-first:mt-12!",
       )}
       id={id}
     >
+      {major ? (
+        <span aria-hidden="true" className="block h-0.5 w-12 bg-accent-lab" />
+      ) : null}
       <h2
         className={cn(
-          "mt-0! before:mb-4 before:block before:font-mono before:text-[0.75rem] before:font-normal before:tracking-[0.12em] before:text-accent before:content-[counter(orbix-section,decimal-leading-zero)_/_'']",
+          "mt-0!",
           major
             ? "text-[length:clamp(2rem,4vw,2.5rem)]!"
-            : "text-[length:clamp(1.75rem,3vw,2rem)]! leading-[1.08]! font-semibold! tracking-[-0.03em]!",
+            : "text-[length:clamp(1.75rem,3vw,2rem)]! leading-[1.08]!",
         )}
         id={headingId}
       >

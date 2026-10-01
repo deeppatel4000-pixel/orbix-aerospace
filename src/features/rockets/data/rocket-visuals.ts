@@ -1,9 +1,6 @@
-export type RocketCardTreatment = "flagship" | "standard" | "wide";
-
 export interface RocketVisual {
   /** Plain description of what the photograph shows. */
   readonly alt: string;
-  readonly cardTreatment: RocketCardTreatment;
   /**
    * `object-position` for the 3:4 portrait registry card, chosen so the
    * whole vehicle stays in frame. Other surfaces keep `objectPosition`.
@@ -27,7 +24,7 @@ export interface RocketVisual {
   /**
    * One factual line for the registry card, taken only from the stage
    * records: the engines and propellants ("Merlin engines on RP-1 and
-   * LOX"), which the classification line above it (stage count and
+   * LOX"), which the classification before it on the line (stage count and
    * reusability) does not give. At most 31 characters
    * (CARD_SUMMARY_MAX_LENGTH), so it sets on one line in a row entry and
    * on two at most in the two-across phone grid. Shown whole, never
@@ -43,12 +40,6 @@ export interface RocketVisual {
   readonly reuseLabel?: string;
   /** Photographer or agency, as the licence asks to be credited. */
   readonly credit: string;
-  /**
-   * `object-position` for the first registry card from 40rem: the left
-   * half of a two-column card, as tall as the card (narrower than 3:4,
-   * so the crop only trims the sides).
-   */
-  readonly featureObjectPosition: string;
   /** Intrinsic height of the file in pixels. */
   readonly height: number;
   /** `object-position` for the full-bleed profile and registry hero. */
@@ -88,9 +79,7 @@ const rocketVisuals = {
     cardScale: 1.5,
     cardScaleOrigin: "49% 17%",
     cardSummary: "Merlin engines on RP-1 and LOX",
-    cardTreatment: "flagship",
     credit: "NASA/Tony Gray and Tim Powers",
-    featureObjectPosition: "50% 0%",
     height: 1920,
     heroObjectPosition: "50% 13%",
     heroPhoneObjectPosition: "50% 15%",
@@ -109,9 +98,7 @@ const rocketVisuals = {
     cardScale: 1.4,
     cardScaleOrigin: "48% 46%",
     cardSummary: "Three Merlin-powered cores",
-    cardTreatment: "standard",
     credit: "NASA/Kim Shiflett",
-    featureObjectPosition: "40% 50%",
     height: 1920,
     heroObjectPosition: "50% 29%",
     heroPhoneObjectPosition: "50% 30%",
@@ -127,9 +114,7 @@ const rocketVisuals = {
     alt: "Saturn V lifting off beside its launch umbilical tower at Launch Complex 39A during the Apollo 11 launch",
     cardObjectPosition: "45% 50%",
     cardSummary: "F-1 and J-2 engines",
-    cardTreatment: "wide",
     credit: "NASA",
-    featureObjectPosition: "54% 50%",
     height: 1920,
     heroObjectPosition: "50% 21%",
     heroPhoneObjectPosition: "50% 55%",
@@ -148,9 +133,7 @@ const rocketVisuals = {
     cardScale: 1.25,
     cardScaleOrigin: "55% 10%",
     cardSummary: "Solid boosters and four RS-25s",
-    cardTreatment: "standard",
     credit: "NASA/Michael DeMocker",
-    featureObjectPosition: "78% 50%",
     height: 1920,
     heroObjectPosition: "50% 6%",
     heroPhoneObjectPosition: "50% 0%",
@@ -170,9 +153,7 @@ const rocketVisuals = {
     cardScale: 1.3,
     cardScaleOrigin: "57% 20%",
     cardSummary: "Raptor engines on methane",
-    cardTreatment: "wide",
     credit: "Steve Jurvetson",
-    featureObjectPosition: "72% 50%",
     height: 1920,
     heroObjectPosition: "50% 12%",
     heroPhoneObjectPosition: "57% 50%",

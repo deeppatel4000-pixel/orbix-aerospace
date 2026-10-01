@@ -2,6 +2,7 @@ import { useId, type ReactNode } from "react";
 
 import { formatFigure } from "@/components/ui/readout";
 import { cn } from "@/lib/cn";
+import { keepDesignations } from "@/lib/designations";
 
 /** One column of a `DataTable`. */
 export interface DataTableColumn<Row> {
@@ -130,7 +131,7 @@ export function DataTable<Row>({
                     ) || undefined;
                   const content = column.numeric
                     ? formatFigure(column.cell(row))
-                    : column.cell(row);
+                    : keepDesignations(column.cell(row));
                   return columnIndex === 0 ? (
                     <th className={cellClass} key={column.key} scope="row">
                       {content}

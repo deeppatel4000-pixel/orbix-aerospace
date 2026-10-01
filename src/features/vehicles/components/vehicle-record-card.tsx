@@ -4,6 +4,7 @@ import type { ReactNode } from "react";
 
 import { formatFigure } from "@/components/ui/readout";
 import { cn } from "@/lib/cn";
+import { keepDesignations } from "@/lib/designations";
 
 /** One key figure on an entry. */
 export interface VehicleSpec {
@@ -32,20 +33,19 @@ export type VehicleRecordCardVariant = "compact" | "default";
  * The entry's arrangement (spec 6: open catalogue, no card chrome).
  *
  * - `stacked`: an open grid entry, the photograph as a hard-edged plate
- *   and the caption block under it on the ground.
+ *   and the caption block under it on the ground; below 40rem a row with
+ *   a portrait thumbnail, for the one-column phone registry.
  * - `row`: a catalogue row: thumbnail, name and one-line summary, two key
  *   figures right-aligned and an arrow. The list around it draws the rule
  *   between rows.
- * - `feature`, `feature-portrait`: v2 names, now drawn as `stacked`.
  */
-export type VehicleRecordCardLayout =
-  "feature" | "feature-portrait" | "row" | "stacked";
+export type VehicleRecordCardLayout = "row" | "stacked";
 
 interface VehicleRecordCardProps {
   className?: string;
   /**
-   * The classification line, sentence case. An array is joined into one
-   * line with commas.
+   * The classification, sentence case, set before the summary on the line
+   * under the name. An array is joined with commas.
    */
   classification: string | readonly string[];
   /**
@@ -57,12 +57,8 @@ interface VehicleRecordCardProps {
   headingLevel?: 3 | 4;
   href: string;
   layout?: VehicleRecordCardLayout;
-  /** @deprecated v2 grid option; ignored. */
-  leadRow?: boolean;
   /** Rendered as the entry's photograph, normally a `VehicleMediaFrame`. */
   media: ReactNode;
-  /** @deprecated v2 grid option; ignored. */
-  mediaStretch?: boolean;
   /**
    * The row thumbnail's shape: `landscape` (default) for a 16:10 airframe,
    * `portrait` for a 3:4 launch vehicle, set narrower so the row keeps
@@ -97,12 +93,17 @@ function classificationText(classification: string | readonly string[]) {
     .join(", ");
 }
 
+/** "Multirole" to "Multirole.": a phrase closed as a sentence. */
+function withStop(text: string) {
+  return /[.!?]$/.test(text) ? text : `${text}.`;
+}
+
 /**
  * A registry entry (spec 6, 11): the photograph is the only rectangle; no
  * fill, no outline, no radius, no hover lift or zoom. Hover underlines the
  * name. The whole entry is one link, so each is one tab stop with no nested
- * controls. The name comes first in the source so the link's accessible
- * name starts with it; the classification is drawn above it with `order`.
+ * controls. Under the name, one muted line gives the classification and
+ * the summary as two short sentences.
  * Registry photographs are decorative (`alt=""`) because the entry text
  * already names the vehicle.
  */
@@ -132,7 +133,7 @@ export function VehicleRecordCard({
 
   const heading = (
     <div className="flex min-w-0 flex-col">
-      <Heading className="orbix-vehicle-card__name mt-1">
+      <Heading className="orbix-vehicle-card__name mt-0">
         {nameRest !== undefined ? (
           <>
             {shortName}
@@ -142,15 +143,16 @@ export function VehicleRecordCard({
           name
         )}
       </Heading>
-      <p className="orbix-vehicle-card__classification -order-1">
-        {classificationText(classification)}
+      {/* One muted line after the name: the classification, then the
+          summary or description (spec 6; no kicker above the name). */}
+      <p className="mt-2 text-[0.9375rem] leading-normal text-pretty text-muted">
+        {withStop(classificationText(classification))}
+        {summary ? keepDesignations(` ${withStop(summary)}`) : ""}
       </p>
-      {summary ? (
-        <p className="mt-2 text-[0.9375rem] leading-normal text-muted">
-          {summary}
+      {!summary && description ? (
+        <p className="orbix-vehicle-card__description">
+          {keepDesignations(description)}
         </p>
-      ) : description ? (
-        <p className="orbix-vehicle-card__description">{description}</p>
       ) : null}
     </div>
   );
@@ -161,9 +163,6 @@ export function VehicleRecordCard({
         className={cn(
           "grid grid-cols-2 gap-x-6 gap-y-3",
           isRow && "md:flex md:gap-x-8 md:justify-self-end",
-          // A stacked entry in the two-across phone grid is about 8.5rem
-          // wide: one figure to a line there.
-          !isRow && "max-[30rem]:grid-cols-1",
         )}
       >
         {visibleSpecs.map((spec) => (
@@ -227,7 +226,12 @@ export function VehicleRecordCard({
   return (
     <article className={cn("h-full", className)}>
       <Link
-        className="orbix-vehicle-card relative gap-5"
+        className={cn(
+          "orbix-vehicle-card relative gap-5",
+          // Below 40rem the registry is one column: the entry sets as a
+          // catalogue row, portrait thumbnail beside the text.
+          "max-sm:grid max-sm:grid-cols-[4.5rem_minmax(0,1fr)] max-sm:items-start max-sm:gap-x-5 max-sm:py-5",
+        )}
         data-layout={layout}
         data-variant={variant}
         href={href}

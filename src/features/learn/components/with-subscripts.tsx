@@ -101,6 +101,26 @@ const NBSP = " ";
  * the cell centre, so a dot hugs the term before it whatever the margins.
  * Every equation carries a `spokenAs` that says "times".
  */
+/**
+ * B612 Mono draws ( and ) nearly square, so "ln(m0/mf)" reads as
+ * "ln[m0/mf]". Parentheses are set in Plex Sans, the textbook shape.
+ */
+const PAREN_SPLIT = /([()])/;
+
+function setParentheses(value: string, key: string): ReactNode {
+  const parts = value.split(PAREN_SPLIT);
+  if (parts.length === 1) return withSubscripts(value);
+  return parts.map((part, index) =>
+    index % 2 === 0 ? (
+      <Fragment key={`${key}-p${index}`}>{withSubscripts(part)}</Fragment>
+    ) : (
+      <span className="font-sans" key={`${key}-p${index}`}>
+        {part}
+      </span>
+    ),
+  );
+}
+
 const OPERATOR_SPLIT = / ([=≈]) | ([·/]) /;
 
 function setOperators(value: string, key: string): ReactNode[] {
@@ -111,7 +131,9 @@ function setOperators(value: string, key: string): ReactNode[] {
     const text = parts[index];
     if (text) {
       nodes.push(
-        <Fragment key={`${key}-t${index}`}>{withSubscripts(text)}</Fragment>,
+        <Fragment key={`${key}-t${index}`}>
+          {setParentheses(text, `${key}-t${index}`)}
+        </Fragment>,
       );
     }
     const relation = parts[index + 1];

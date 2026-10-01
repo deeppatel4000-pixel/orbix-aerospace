@@ -11,12 +11,10 @@ export type LegalTocItem = ReadingTocItem;
 
 interface LegalPageProps {
   readonly children: ReactNode;
-  /** Label above the H1, for example "Policies". */
-  readonly eyebrow: string;
   readonly lead: string;
+  /** Optional art-directed photograph under the intro rule. */
+  readonly plate?: ReactNode;
   readonly title: string;
-  /** Trailing words of the H1, drawn in the accent. */
-  readonly titleAccent?: string;
   /** Sections listed in the "On this page" list. Omit on short pages. */
   readonly toc?: readonly LegalTocItem[];
 }
@@ -27,28 +25,26 @@ interface LegalPageProps {
  */
 export function LegalPage({
   children,
-  eyebrow,
   lead,
+  plate,
   title,
-  titleAccent,
   toc,
 }: LegalPageProps) {
   return (
     <ReadingPage
-      eyebrow={eyebrow}
       lead={lead}
       meta={[
         {
           label: "Last updated",
           value: (
-            <time className="orbix-data" dateTime={siteLegal.lastUpdated}>
+            <time dateTime={siteLegal.lastUpdated}>
               {formatLegalDate(siteLegal.lastUpdated)}
             </time>
           ),
         },
       ]}
+      plate={plate}
       title={title}
-      titleAccent={titleAccent}
       toc={toc}
     >
       {children}

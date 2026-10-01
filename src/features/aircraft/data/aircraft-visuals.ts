@@ -1,9 +1,6 @@
-export type AircraftCardTreatment = "flagship" | "standard" | "wide";
-
 export interface AircraftVisual {
   /** Plain description of what the photograph shows. */
   readonly alt: string;
-  readonly cardTreatment: AircraftCardTreatment;
   /**
    * `object-position` for the 16:10 registry card. The profile hero and the
    * other surfaces keep using `objectPosition`.
@@ -19,11 +16,6 @@ export interface AircraftVisual {
   readonly cardSummary: string;
   /** Photographer or agency, as the licence asks to be credited. */
   readonly credit: string;
-  /**
-   * `object-position` for the wide first registry card from 40rem: the
-   * photograph across a two-column card at 2:1.
-   */
-  readonly featureObjectPosition: string;
   /** Intrinsic height of the file in pixels. */
   readonly height: number;
   /**
@@ -85,9 +77,7 @@ const aircraftVisuals = {
     alt: "B-2 Spirit flying over the Pacific Ocean with scattered clouds far below",
     cardObjectPosition: "50% 50%",
     cardSummary: "Four-engine flying-wing bomber",
-    cardTreatment: "wide",
     credit: "U.S. Air Force photo by Staff Sgt. Bennie J. Davis III",
-    featureObjectPosition: "50% 35%",
     height: 1202,
     heroObjectPosition: "50% 40%",
     ...PUBLIC_DOMAIN_USAF,
@@ -116,9 +106,7 @@ const aircraftVisuals = {
     alt: "F-15C Eagle banking toward the camera over the ocean",
     cardObjectPosition: "50% 55%",
     cardSummary: "Twin-engine tactical fighter",
-    cardTreatment: "wide",
     credit: "U.S. Air Force photo by Airman 1st Class Matthew Seefeldt",
-    featureObjectPosition: "60% 50%",
     height: 1345,
     heroObjectPosition: "50% 58%",
     ...PUBLIC_DOMAIN_USAF,
@@ -134,11 +122,7 @@ const aircraftVisuals = {
     alt: "F-22 Raptor seen from slightly above, flying over dark blue water",
     cardObjectPosition: "50% 50%",
     cardSummary: "Twin-engine stealth fighter",
-    cardTreatment: "flagship",
     credit: "U.S. Air Force photo by Master Sgt. Andy Dunaway",
-    // The 2:1 wide first registry card: the tail tip at 12 percent and the
-    // nose at 78 percent of the height fit the 75 percent band this keeps.
-    featureObjectPosition: "50% 30%",
     height: 1277,
     heroObjectPosition: "50% 58%",
     ...PUBLIC_DOMAIN_USAF,
@@ -153,9 +137,7 @@ const aircraftVisuals = {
     alt: "F-35A Lightning II in flight against a clear blue sky",
     cardObjectPosition: "50% 12%",
     cardSummary: "Single-engine fighter family",
-    cardTreatment: "standard",
     credit: "U.S. Air Force photo by Master Sgt. Donald R. Allen",
-    featureObjectPosition: "50% 40%",
     height: 1271,
     heroObjectPosition: "50% 62%",
     ...PUBLIC_DOMAIN_USAF,
@@ -173,9 +155,7 @@ const aircraftVisuals = {
     alt: "NASA SR-71B Blackbird flying over the snow-covered Sierra Nevada mountains",
     cardObjectPosition: "50% 25%",
     cardSummary: "Twin-engine reconnaissance jet",
-    cardTreatment: "wide",
     credit: "NASA",
-    featureObjectPosition: "55% 50%",
     height: 1532,
     heroObjectPosition: "50% 62%",
     ...PUBLIC_DOMAIN_NASA,
