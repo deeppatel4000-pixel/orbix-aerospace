@@ -39,7 +39,8 @@ function describeEngines(name: string, engines: readonly AircraftEngine[]) {
  * Propulsion (spec 9): one sentence, then the engine spec sheet. The
  * quantity and manufacturer sit under the engine name and the thrust
  * columns come straight after it, so on a phone the figures are in view
- * without scrolling; the engine type follows.
+ * without scrolling; the engine type follows (below 40rem, under the
+ * engine name).
  */
 export function PropulsionPanel({ name, propulsion }: PropulsionPanelProps) {
   const engines = propulsion.engines;
@@ -89,6 +90,8 @@ export function PropulsionPanel({ name, propulsion }: PropulsionPanelProps) {
           })),
           {
             cell: (engine) => formatAircraftEngineType(engine.type),
+            // On a phone the type is set under the engine name.
+            foldInto: "name",
             header: "Type",
             key: "type",
           },

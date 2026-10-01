@@ -18,60 +18,6 @@
  * here; the lab only adds its own classes beside them.
  */
 
-/* ==================================================================== *
- * GREEK IN THE DATA FACE. B612 Mono has no Greek, so β, θ, γ, ρ, μ, Δ
- * and π fell through to next/font's metric-matched fallback, a
- * proportional face scaled for the Latin cell: each Greek glyph drew
- * about 1.4 times the Latin x-height and up to 1.55 cells wide. These
- * faces cover the Greek block only (and U+2206, the increment sign) with
- * a local monospace face scaled so its x-height matches B612 Mono
- * (measured at 100px: B612 x-height 56 and cell 65, Consolas 49 and 55,
- * Menlo and DejaVu Sans Mono about 55 and 60). Latin text never reaches
- * them. The first face whose local font exists is used; with none, the
- * stack falls back as before. Scoped to the lab: the site-wide token
- * belongs to the foundation.
- * ==================================================================== */
-
-@font-face {
-  font-display: swap;
-  font-family: "B612 Mono Greek";
-  font-weight: 400;
-  size-adjust: 114%;
-  src: local("Consolas");
-  unicode-range: U+0370-03FF, U+2206;
-}
-
-@font-face {
-  font-display: swap;
-  font-family: "B612 Mono Greek";
-  font-weight: 700;
-  size-adjust: 114%;
-  src: local("Consolas Bold"), local("Consolas-Bold");
-  unicode-range: U+0370-03FF, U+2206;
-}
-
-@font-face {
-  font-display: swap;
-  font-family: "B612 Mono Greek Alt";
-  font-weight: 400;
-  size-adjust: 103%;
-  src:
-    local("Menlo-Regular"), local("Menlo"), local("DejaVu Sans Mono"),
-    local("DejaVuSansMono");
-  unicode-range: U+0370-03FF, U+2206;
-}
-
-@font-face {
-  font-display: swap;
-  font-family: "B612 Mono Greek Alt";
-  font-weight: 700;
-  size-adjust: 103%;
-  src:
-    local("Menlo-Bold"), local("DejaVu Sans Mono Bold"),
-    local("DejaVuSansMono-Bold");
-  unicode-range: U+0370-03FF, U+2206;
-}
-
 .card {
   border-top: 1px solid var(--orbix-border);
   min-width: 0;
@@ -89,10 +35,9 @@
   margin-top: var(--space-4);
 }
 
+/* Greek in the data face comes from IBM Plex Sans, as everywhere on the
+ * site (`--font-telemetry`; B612 Mono has no Greek). */
 .workspace {
-  --font-telemetry:
-    "B612 Mono Greek", "B612 Mono Greek Alt", var(--font-b612-mono),
-    ui-monospace, "Cascadia Mono", Consolas, monospace;
   padding: var(--space-6) 0 0;
 }
 
@@ -294,7 +239,8 @@
 }
 
 .workspace :global(.lab-eq-sup) {
-  font-size: 0.6em;
+  /* The one script size of every equation (`.orbix-equation`). */
+  font-size: 0.62em;
   line-height: 1;
   /* Tailwind preflight also sets `sup { position: relative; top: -0.5em }`.
    * That offset reserves no line-box space, so it would lift the exponent
@@ -355,7 +301,7 @@
  * two are stacked in one column rather than set side by side. */
 .workspace :global(.lab-eq-subsup) {
   display: inline-grid;
-  font-size: 0.6em;
+  font-size: 0.62em;
   grid-template-rows: auto auto;
   line-height: 1;
   /* The line's hanging indent is inherited; the stack must not take it. */
@@ -402,6 +348,9 @@
  * symbols beside it), and the transform leaves the line box unchanged. */
 .workspace :global(.lab-eq-paren) {
   display: inline-block;
+  /* Plex Sans, like every parenthesis in an equation: B612 Mono draws
+   * ( and ) nearly square. */
+  font-family: var(--font-interface);
   line-height: 1;
   margin-inline: 0.08em;
   text-align: center;

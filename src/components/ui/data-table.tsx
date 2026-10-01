@@ -1,5 +1,6 @@
 import { useId, type ReactNode } from "react";
 
+import { DataTableScroll } from "@/components/ui/data-table-scroll";
 import { formatFigure } from "@/components/ui/readout";
 import { cn } from "@/lib/cn";
 import { keepDesignations } from "@/lib/designations";
@@ -24,6 +25,17 @@ export interface DataTableColumn<Row> {
    * column is set 18rem wide there so it reads as a short paragraph.
    */
   readonly wrap?: boolean;
+  /**
+   * Below 40rem, hide this column and set its content on a line of its
+   * own in the cell of the column with this key, so a phone reads the row
+   * without scrolling. For text columns only (a type, a date, a link).
+   */
+  readonly foldInto?: string;
+  /**
+   * The folded line's content, when it should read differently from the
+   * cell (for example "First flight December 22, 1964"). Default: the cell.
+   */
+  readonly foldCell?: (row: Row) => ReactNode;
 }
 
 export interface DataTableProps<Row> {
@@ -58,8 +70,10 @@ export interface DataTableProps<Row> {
  * right-aligned tabular figures with the unit in the header. The caption
  * sits above the scroll box and names both the table and its scrollable
  * region; the region is focusable so keyboard users can scroll it
- * sideways, and shows a visible scrollbar when the table overflows (no
- * fade). Below 48rem the first column stays in view, on the page ground.
+ * sideways, and shows a visible scrollbar and a line of text saying how
+ * many columns are out of view when the table overflows (no fade). Below
+ * 48rem the first column stays in view, on the page ground. Below 40rem a
+ * column with `foldInto` is set under another column's cell instead.
  */
 export function DataTable<Row>({
   caption,
@@ -72,6 +86,13 @@ export function DataTable<Row>({
   stickyFirstColumn = true,
 }: DataTableProps<Row>) {
   const captionId = useId();
+  // With folded columns, a wrap column takes the room they leave on a
+  // phone instead of a fixed 18rem.
+  const folded = columns.some((column) => column.foldInto);
+  const cellContent = (column: DataTableColumn<Row>, row: Row) =>
+    column.numeric
+      ? formatFigure(column.cell(row))
+      : keepDesignations(column.cell(row));
 
   return (
     <div
@@ -81,27 +102,32 @@ export function DataTable<Row>({
       <p className="orbix-data-table__caption" id={captionId}>
         {caption}
       </p>
-      <div
-        aria-labelledby={captionId}
-        className="orbix-data-table__scroll"
-        role="region"
-        tabIndex={0}
-      >
+      <DataTableScroll captionId={captionId}>
         {/* With `singleLineCells`, below 48rem the table fills its frame
             and is at least as wide as its content, so figures and labels
-            never wrap mid-phrase, and the box scrolls sideways instead. */}
+            never wrap mid-phrase, and the box scrolls sideways instead.
+            With folded columns, below 40rem it only fills its frame, so a
+            wrap column takes the room the folded columns leave. */}
         <table
           aria-labelledby={captionId}
           className={cn(
             "orbix-table",
-            singleLineCells && "max-md:w-full max-md:min-w-max",
+            singleLineCells &&
+              (folded
+                ? "max-md:w-full sm:max-md:min-w-max"
+                : "max-md:w-full max-md:min-w-max"),
           )}
         >
           <thead>
             <tr>
               {columns.map((column) => (
                 <th
-                  className={column.numeric ? "orbix-num" : undefined}
+                  className={
+                    cn(
+                      column.numeric && "orbix-num",
+                      column.foldInto && "max-sm:hidden",
+                    ) || undefined
+                  }
                   key={column.key}
                   scope="col"
                 >
@@ -122,16 +148,37 @@ export function DataTable<Row>({
                       column.numeric && "orbix-num",
                       singleLineCells &&
                         columnIndex === 0 &&
-                        "max-md:w-[8.5rem] max-md:min-w-[8.5rem] max-[22.5rem]:w-[7.5rem] max-[22.5rem]:min-w-[7.5rem]",
+                        (folded
+                          ? "sm:max-md:w-[8.5rem] sm:max-md:min-w-[8.5rem] max-sm:min-w-[7rem]"
+                          : "max-md:w-[8.5rem] max-md:min-w-[8.5rem] max-[22.5rem]:w-[7.5rem] max-[22.5rem]:min-w-[7.5rem]"),
                       singleLineCells &&
                         columnIndex > 0 &&
                         (column.wrap
-                          ? "max-md:w-[18rem] max-md:min-w-[18rem]"
+                          ? folded
+                            ? "sm:max-md:w-[18rem] sm:max-md:min-w-[18rem]"
+                            : "max-md:w-[18rem] max-md:min-w-[18rem]"
                           : "max-md:whitespace-nowrap"),
+                      column.foldInto && "max-sm:hidden",
                     ) || undefined;
-                  const content = column.numeric
-                    ? formatFigure(column.cell(row))
-                    : keepDesignations(column.cell(row));
+                  const foldedHere = columns.filter(
+                    (other) => other.foldInto === column.key,
+                  );
+                  const content = (
+                    <>
+                      {cellContent(column, row)}
+                      {foldedHere.map((other) => (
+                        <span
+                          className="mt-1 block text-sm font-normal whitespace-normal text-muted sm:hidden"
+                          data-folded={other.key}
+                          key={other.key}
+                        >
+                          {other.foldCell
+                            ? keepDesignations(other.foldCell(row))
+                            : cellContent(other, row)}
+                        </span>
+                      ))}
+                    </>
+                  );
                   return columnIndex === 0 ? (
                     <th className={cellClass} key={column.key} scope="row">
                       {content}
@@ -146,7 +193,7 @@ export function DataTable<Row>({
             ))}
           </tbody>
         </table>
-      </div>
+      </DataTableScroll>
       {note ? <p className="orbix-data-table__note">{note}</p> : null}
     </div>
   );

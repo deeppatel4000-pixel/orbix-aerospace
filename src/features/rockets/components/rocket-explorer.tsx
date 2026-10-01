@@ -68,13 +68,23 @@ function capitalise(text: string) {
 }
 
 /**
- * The pictured launch vehicle, set in the hero's text column under the
- * actions (beside the tall portrait plate from 64rem, so the column is not
- * left empty below the buttons), with three published figures as an open
- * definition list and a link to its profile. Each figure keeps its
- * conversion and qualifier; thrust is shown in the published unit.
+ * The pictured launch vehicle, with three published figures as an open
+ * definition list and a link to its profile. From 64rem it sits in the
+ * hero's text column under the actions, beside the tall portrait plate, so
+ * the column is not left empty below the buttons; below 64rem it follows
+ * the plate and its caption, so the photograph comes first. Each figure
+ * keeps its conversion and qualifier; thrust is shown in the published
+ * unit.
  */
-function PicturedRocket({ rocket }: { rocket: Rocket }) {
+function PicturedRocket({
+  className,
+  headingId,
+  rocket,
+}: {
+  className?: string;
+  headingId: string;
+  rocket: Rocket;
+}) {
   const leo = maxPayloadTo(rocket, "LEO");
   const { height } = rocket.dimensions;
   const thrust = rocket.performance.liftoffThrust;
@@ -103,20 +113,24 @@ function PicturedRocket({ rocket }: { rocket: Rocket }) {
   }
 
   return (
-    <section aria-labelledby="pictured-rocket-title">
-      <div>
-        <p className="orbix-kicker">Pictured</p>
-        <h2
-          className="font-display mt-2 text-[2rem] leading-none tracking-[-0.035em] text-foreground"
-          id="pictured-rocket-title"
-        >
-          {rocket.name}
-        </h2>
-        {summary ? (
-          <p className="mt-3 text-muted">{keepDesignations(summary)}</p>
-        ) : null}
-      </div>
-      <SpecPanel className="mt-6" columns={3} items={items} />
+    <section aria-labelledby={headingId} className={className}>
+      <p className="orbix-kicker">Pictured</p>
+      <h2
+        className="font-display mt-2 text-[2rem] leading-none tracking-[-0.035em] text-foreground"
+        id={headingId}
+      >
+        {rocket.name}
+      </h2>
+      {summary ? (
+        <p className="mt-3 text-muted">{keepDesignations(summary)}</p>
+      ) : null}
+      {/* From 64rem each figure takes its own width, so the payload figure
+          never runs past its column toward the plate. */}
+      <SpecPanel
+        className="mt-6 lg:[&_dl]:grid-cols-[repeat(3,auto)] lg:[&_dl]:justify-start lg:[&_dl]:gap-x-10"
+        columns={3}
+        items={items}
+      />
       <div className="mt-6">
         <ProfileLink href={`/rockets/${rocket.id}`} name={rocket.name} />
       </div>
@@ -184,8 +198,20 @@ export function RocketExplorer({ rockets }: RocketExplorerProps) {
     <>
       {heroVisual && crop && featured ? (
         <PhotoHero
-          aside={<PicturedRocket rocket={featured} />}
-          className={cn(crop.className, plate.className)}
+          aside={
+            <PicturedRocket
+              className="hidden lg:block lg:pr-8"
+              headingId="pictured-rocket-title"
+              rocket={featured}
+            />
+          }
+          className={cn(
+            crop.className,
+            plate.className,
+            // The facts slot is empty below 64rem (the pictured line follows
+            // the plate there), so it adds no gap.
+            "max-lg:[&>div:first-child>div+div]:hidden",
+          )}
           plate="portrait"
           style={{ ...crop.style, ...plate.style }}
           visual={{ ...heroVisual, objectPosition: crop.objectPosition }}
@@ -197,6 +223,14 @@ export function RocketExplorer({ rockets }: RocketExplorerProps) {
       )}
 
       <Container>
+        {heroVisual && crop && featured ? (
+          <PicturedRocket
+            className="pb-16 lg:hidden"
+            headingId="pictured-rocket-title-narrow"
+            rocket={featured}
+          />
+        ) : null}
+
         {rockets.length === 0 ? (
           <EmptyState
             description="No launch vehicle records are available right now."
@@ -222,19 +256,22 @@ export function RocketExplorer({ rockets }: RocketExplorerProps) {
         {rockets.length > 0 ? (
           <section
             aria-labelledby="rocket-scale-title"
-            className="mt-20 grid gap-10 border-t border-border pt-12 lg:mt-28 lg:grid-cols-12 lg:gap-6"
+            className="mt-20 border-t border-border pt-12 lg:mt-28"
           >
-            <div className="lg:col-span-4">
-              <h2 className="orbix-h2 text-foreground" id="rocket-scale-title">
+            <div className="grid gap-5 lg:grid-cols-12 lg:gap-6">
+              <h2
+                className="orbix-h2 text-foreground lg:col-span-7"
+                id="rocket-scale-title"
+              >
                 Heights to one scale
               </h2>
-              <p className="mt-5 max-w-[46ch] text-pretty text-muted">
+              <p className="max-w-[60ch] text-pretty text-muted lg:col-span-5 lg:col-start-8">
                 {heightSpread(rockets)}Each launch vehicle is drawn from the
                 height in its record, on one ground line at one scale.
               </p>
             </div>
             <RocketHeightLineup
-              className="lg:col-span-8 lg:col-start-5"
+              className="mt-10"
               figureNumber="1"
               rockets={rockets}
             />
@@ -246,12 +283,12 @@ export function RocketExplorer({ rockets }: RocketExplorerProps) {
           className="mt-16 grid gap-3 border-t border-border pt-8 pb-16 lg:grid-cols-12 lg:gap-6 lg:pb-24"
         >
           <h2
-            className="text-base font-semibold text-foreground lg:col-span-4"
+            className="text-base font-semibold text-foreground lg:col-span-7"
             id="rocket-sources-title"
           >
             About these figures
           </h2>
-          <p className="max-w-[68ch] text-sm leading-6 text-muted lg:col-span-8">
+          <p className="max-w-[68ch] text-sm leading-6 text-muted lg:col-span-5 lg:col-start-8">
             Figures are publicly released specifications. Payload figures are
             tied to a destination orbit and to whether boosters are recovered,
             and a qualifier such as approximate or maximum stays beside the

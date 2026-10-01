@@ -274,11 +274,11 @@ export function ComparisonControls({
         {/* Below 40rem each vehicle is a ruled catalogue row: checkbox,
             thumbnail, name, maker and credit. From 40rem the rows become
             open tiles, three across and five from 64rem: a hard-edged
-            photo plate with its one-line credit under it as the catalogue
-            caption (so every tile's text starts on one line), then the name
-            with the checkbox at its right end, the maker and the column
-            number, all flush with the plate's left edge. The checkbox is
-            the only boxed element. */}
+            photo plate, then the name with the checkbox at its right end,
+            the maker, the one-line photo credit (after the name and maker,
+            as in the catalogue captions elsewhere, so it never reads as an
+            eyebrow) and the column number, all flush with the plate's left
+            edge. The checkbox is the only boxed element. */}
         <ul className="grid grid-cols-1 max-sm:border-b max-sm:border-border-subtle sm:grid-cols-3 sm:gap-x-5 sm:gap-y-8 lg:grid-cols-5">
           {vehicleOptions.map((option, index) => {
             const thumbnail = categoryThumbnails[option.id];
@@ -304,7 +304,7 @@ export function ComparisonControls({
                   )}
                   aria-labelledby={nameId + " " + makerId}
                   aria-pressed={isSelected}
-                  className="group grid w-full cursor-pointer grid-cols-[auto_auto_minmax(0,1fr)] items-center gap-x-4 py-3 text-left focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--orbix-focus)] sm:grid-cols-[minmax(0,1fr)_auto] sm:items-start sm:gap-x-3 sm:py-0 sm:[grid-template-areas:'plate_plate'_'credit_credit'_'name_box'_'maker_maker'_'column_column']"
+                  className="group grid w-full cursor-pointer grid-cols-[auto_auto_minmax(0,1fr)] items-center gap-x-4 py-3 text-left focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--orbix-focus)] sm:grid-cols-[minmax(0,1fr)_auto] sm:items-start sm:gap-x-3 sm:py-0 sm:[grid-template-areas:'plate_plate'_'name_box'_'maker_maker'_'credit_credit'_'column_column']"
                   onClick={() => toggleVehicle(option.id, option.name)}
                   type="button"
                 >
@@ -394,7 +394,7 @@ export function ComparisonControls({
                     </span>
                     {thumbnail ? (
                       <span
-                        className="orbix-micro text-[0.75rem] text-muted sm:mt-2 sm:[grid-area:credit]"
+                        className="orbix-micro text-[0.75rem] text-muted sm:mt-1 sm:[grid-area:credit]"
                         id={creditId}
                       >
                         <span className="sr-only">Photo: </span>

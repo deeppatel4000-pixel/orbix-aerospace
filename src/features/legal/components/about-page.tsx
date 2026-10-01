@@ -25,8 +25,9 @@ const PLATE_AIRCRAFT_ID = "f-15-eagle";
 /**
  * The page's one photograph, set under the intro rule as its art-directed
  * image (spec 7): a hard-edged plate at the photo's native 1920:1345 ratio,
- * so the whole aircraft shows. Below 80rem it takes the full container
- * width; from 80rem it starts at the text column and bleeds to the right
+ * so the whole aircraft shows. Below 40rem it bleeds across the 16px page
+ * gutters, like the profile and Learn plates; to 80rem it takes the full
+ * container width; from 80rem it starts at the text column and bleeds to the right
  * viewport edge (the wrapper clips the scrollbar's width). The catalogue
  * caption sits on the ground below, in the text column (spec 6). Renders
  * nothing if the visual record is missing.
@@ -40,7 +41,7 @@ function AboutPlate() {
 
   return (
     <figure className="m-0 xl:grid xl:grid-cols-12 xl:gap-x-6">
-      <div className="aspect-[1920/1345] overflow-hidden xl:col-span-9 xl:col-start-4 xl:mr-[calc((min(100vw,72rem)_-_100vw)/2_-_2rem)]">
+      <div className="aspect-[1920/1345] overflow-hidden max-sm:-mx-4 xl:col-span-9 xl:col-start-4 xl:mr-[calc((min(100vw,72rem)_-_100vw)/2_-_2rem)]">
         <Image
           alt={visual.alt}
           className="h-full w-full object-cover saturate-[0.9]"

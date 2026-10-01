@@ -56,6 +56,14 @@ export interface RocketVisual {
   /** What was changed from the original file. */
   readonly modifications: string;
   readonly objectPosition: string;
+  /**
+   * The profile hero's portrait plate from 64rem, when it should be wider
+   * than the photograph's own 2:3: a 4:5 frame takes the plate to about 42
+   * percent of a 1440 by 900 screen (with Saturn V and Starship) instead
+   * of 35, trimming only sky and ground. Set only where the whole vehicle
+   * stays in frame at the `heroObjectPosition` crop.
+   */
+  readonly profilePlate?: { readonly height: number; readonly width: number };
   /** Human-readable file page for the original, not the raw image URL. */
   readonly sourceUrl: string;
   readonly src: string;
@@ -86,6 +94,7 @@ const rocketVisuals = {
     ...PUBLIC_DOMAIN_NASA,
     modifications: RESIZED,
     objectPosition: "50% 35%",
+    profilePlate: { height: 5, width: 4 },
     sourceUrl:
       "https://commons.wikimedia.org/wiki/File:SpaceX_Falcon_9_rocket_soars_upward_after_lifting_off_from_historic_Launch_Complex_39A.jpg",
     src: "/images/rockets/falcon-9.webp",
@@ -105,6 +114,7 @@ const rocketVisuals = {
     ...PUBLIC_DOMAIN_NASA,
     modifications: RESIZED,
     objectPosition: "50% 45%",
+    profilePlate: { height: 5, width: 4 },
     sourceUrl:
       "https://commons.wikimedia.org/wiki/File:NASA%27s_SpaceX_Europa_Clipper_Liftoff_(KSC-20241014-PH-KLS01_0008).jpg",
     src: "/images/rockets/falcon-heavy.webp",
@@ -140,6 +150,7 @@ const rocketVisuals = {
     ...PUBLIC_DOMAIN_NASA,
     modifications: RESIZED,
     objectPosition: "55% 35%",
+    profilePlate: { height: 5, width: 4 },
     sourceUrl:
       "https://commons.wikimedia.org/wiki/File:Artemis_II_launch_(SLS_MAF_20260401_ArtemisIILaunch_02).jpg",
     src: "/images/rockets/space-launch-system.webp",

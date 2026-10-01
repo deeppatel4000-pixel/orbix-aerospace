@@ -12,6 +12,8 @@ import {
 } from "@/features/aircraft/utils";
 import {
   CONVERSION_NOTE,
+  joinTableNotes,
+  UNMARKED_NOTE,
   measurementFigure,
   measurementParts,
 } from "@/features/vehicles/components/measurement-display";
@@ -164,7 +166,7 @@ export function AircraftProfile({ aircraft }: AircraftProfileProps) {
       >
         <MeasurementTable
           caption={`${aircraft.name} dimensions and weights`}
-          note={CONVERSION_NOTE}
+          note={joinTableNotes(CONVERSION_NOTE, UNMARKED_NOTE)}
           rows={[
             { label: "Length", measurement: aircraft.dimensions.length },
             { label: "Wingspan", measurement: aircraft.dimensions.wingspan },

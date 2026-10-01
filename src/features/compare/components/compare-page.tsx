@@ -110,37 +110,41 @@ export function ComparePage({ category, options, result }: ComparePageProps) {
 
       <section
         aria-labelledby="compare-results-title"
-        className="scroll-mt-20 border-t border-border-subtle py-14 sm:py-20"
+        className="scroll-mt-20 pb-14 sm:pb-20"
         id="comparison-results"
       >
+        {/* The rule above the spec sheet runs at the content width, like
+            every section rule; only the header and footer rules bleed. */}
         <Container>
-          <h2 className="orbix-h2 text-foreground" id="compare-results-title">
-            Spec sheet
-          </h2>
+          <div className="border-t border-border-subtle pt-14 sm:pt-20">
+            <h2 className="orbix-h2 text-foreground" id="compare-results-title">
+              Spec sheet
+            </h2>
 
-          <div className="mt-8">
-            {canCompare ? (
-              <ComparisonTable result={result} />
-            ) : (
-              <ComparisonEmptyState result={result} />
-            )}
-          </div>
+            <div className="mt-8">
+              {canCompare ? (
+                <ComparisonTable result={result} />
+              ) : (
+                <ComparisonEmptyState result={result} />
+              )}
+            </div>
 
-          <nav
-            aria-label="Related sections"
-            className="mt-14 flex flex-wrap gap-x-10 gap-y-2 lg:mt-20"
-          >
-            <ButtonLink
-              arrow="right"
-              href="/engineering-lab"
-              variant="tertiary"
+            <nav
+              aria-label="Related sections"
+              className="mt-14 flex flex-wrap gap-x-10 gap-y-2 lg:mt-20"
             >
-              Open the Engineering Lab
-            </ButtonLink>
-            <ButtonLink arrow="right" href="/learn" variant="tertiary">
-              Read the Learn pathways
-            </ButtonLink>
-          </nav>
+              <ButtonLink
+                arrow="right"
+                href="/engineering-lab"
+                variant="tertiary"
+              >
+                Open the Engineering Lab
+              </ButtonLink>
+              <ButtonLink arrow="right" href="/learn" variant="tertiary">
+                Read the Learn pathways
+              </ButtonLink>
+            </nav>
+          </div>
         </Container>
       </section>
     </>

@@ -19,6 +19,8 @@ import {
 } from "@/features/rockets/utils";
 import {
   CONVERSION_NOTE,
+  joinTableNotes,
+  UNMARKED_NOTE,
   measurementParts,
 } from "@/features/vehicles/components/measurement-display";
 import { MeasurementTable } from "@/features/vehicles/components/measurement-table";
@@ -138,6 +140,7 @@ export function RocketProfile({ rocket }: RocketProfileProps) {
             visual
               ? {
                   ...visual,
+                  ...visual.profilePlate,
                   crop: {
                     base: visual.heroPhoneObjectPosition,
                     lg: visual.heroObjectPosition,
@@ -162,7 +165,7 @@ export function RocketProfile({ rocket }: RocketProfileProps) {
       >
         <MeasurementTable
           caption={`${rocket.name} key specifications`}
-          note={CONVERSION_NOTE}
+          note={joinTableNotes(CONVERSION_NOTE, UNMARKED_NOTE)}
           rows={[
             { label: "Height", measurement: rocket.dimensions.height },
             { label: "Liftoff mass", measurement: rocket.mass.liftoff },

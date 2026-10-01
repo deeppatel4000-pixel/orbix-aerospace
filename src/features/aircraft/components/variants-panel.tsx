@@ -79,6 +79,9 @@ export function VariantsPanel({ name, variants }: VariantsPanelProps) {
                 {formatAircraftVariantStatus(variant.status)}
               </span>
             ),
+            // On a phone status and first flight are set under the
+            // designation, so the notes keep the rest of the width.
+            foldInto: "designation",
             header: "Status",
             key: "status",
           },
@@ -94,6 +97,21 @@ export function VariantsPanel({ name, variants }: VariantsPanelProps) {
               ) : (
                 <span className="text-muted">Not published</span>
               ),
+            foldCell: (variant) =>
+              variant.firstFlight ? (
+                <>
+                  First flight{" "}
+                  <time
+                    className="whitespace-nowrap"
+                    dateTime={variant.firstFlight}
+                  >
+                    {formatFirstFlight(variant.firstFlight)}
+                  </time>
+                </>
+              ) : (
+                "First flight not published"
+              ),
+            foldInto: "designation",
             header: "First flight",
             key: "first-flight",
           },

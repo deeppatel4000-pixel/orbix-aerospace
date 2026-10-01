@@ -19,9 +19,10 @@ export interface AircraftVisual {
   /** Intrinsic height of the file in pixels. */
   readonly height: number;
   /**
-   * `object-position` for the profile hero banner: the y value keeps the
-   * nose and the fins in frame where a wide window crops the photograph
-   * top and bottom, and clear of the bottom fade under the heading.
+   * `object-position` for the profile hero below 64rem, where the
+   * photograph is a band under the text: the y value keeps the nose and
+   * the fins in frame where a wide window crops the photograph top and
+   * bottom.
    */
   readonly heroObjectPosition: string;
   /** Licence name, for example "Public domain (U.S. government work)" or "CC BY 2.0". */
@@ -86,8 +87,8 @@ const aircraftVisuals = {
     profileHeroObjectPosition: "85% 40%",
     // The featured aircraft on /aircraft (see aircraft-explorer.tsx). The
     // airframe spans 4.7 to 96.1 percent of the width and 25 to 48 percent
-    // of the height, leaving open ocean across the lower half, so the spec
-    // panel at the bottom right never covers it. From 64rem x = 58% keeps
+    // of the height, leaving open ocean across the lower half. The plate
+    // sits beside the text and carries no overlay. From 64rem x = 58% keeps
     // both wingtips in frame wherever the hero is cropped at the sides
     // (1024x768 and 1152x864: x from 41 to 71 percent works). From 48rem to
     // 64rem (portrait tablet) the photograph is a banner above the text, so
@@ -112,7 +113,11 @@ const aircraftVisuals = {
     ...PUBLIC_DOMAIN_USAF,
     modifications: RESIZED,
     objectPosition: "50% 50%",
-    profileHeroObjectPosition: "50% 50%",
+    // The airframe fills 3 to 94 percent of the height, so a wide band
+    // cuts the nose and the fin tips; the split plate keeps both, with
+    // x = 80% so the nose at the lower right stays whole.
+    profileHeroLayout: "split",
+    profileHeroObjectPosition: "80% 50%",
     sourceUrl:
       "https://commons.wikimedia.org/wiki/File:F-15C_Eagle_from_the_44th_Fighter_Squadron_flies_during_a_routine_training_exercise_April_15,_2019.jpg",
     src: "/images/aircraft/f-15-eagle.webp",
@@ -128,7 +133,11 @@ const aircraftVisuals = {
     ...PUBLIC_DOMAIN_USAF,
     modifications: RESIZED,
     objectPosition: "50% 48%",
-    profileHeroObjectPosition: "50% 50%",
+    // Fin tip at 12 percent and nose at 78 percent of the height: a wide
+    // band grazes one or the other, so the split plate is used; x = 68%
+    // keeps both wingtips clear of the plate edges.
+    profileHeroLayout: "split",
+    profileHeroObjectPosition: "68% 50%",
     sourceUrl: "https://commons.wikimedia.org/wiki/File:F-22_Raptor.JPG",
     src: "/images/aircraft/f-22-raptor.webp",
     width: 1920,

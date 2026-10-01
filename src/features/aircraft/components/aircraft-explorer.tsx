@@ -57,8 +57,9 @@ function capitalise(text: string) {
 
 /**
  * The pictured aircraft, named on the ground under the photograph's
- * caption, with three published figures as an open definition list and a
- * link to its profile.
+ * caption, in the same order as the pictured launch vehicle on /rockets:
+ * name and summary, three published figures as an open definition list,
+ * then a link to its profile.
  */
 function PicturedAircraft({ aircraft }: { aircraft: Aircraft }) {
   const { maxSpeed, range, serviceCeiling } = aircraft.performance;
@@ -67,27 +68,20 @@ function PicturedAircraft({ aircraft }: { aircraft: Aircraft }) {
   return (
     <section
       aria-labelledby="pictured-aircraft-title"
-      className="grid gap-8 pb-16 lg:grid-cols-12 lg:gap-6 lg:pb-20"
+      className="pb-16 lg:pb-20"
     >
-      <div className="lg:col-span-4">
-        <p className="orbix-kicker">Pictured above</p>
-        <h2
-          className="font-display mt-2 text-[2rem] leading-none tracking-[-0.035em] text-foreground"
-          id="pictured-aircraft-title"
-        >
-          {aircraft.name}
-        </h2>
-        {summary ? (
-          <p className="mt-3 text-muted">{keepDesignations(summary)}</p>
-        ) : null}
-        <div className="mt-5">
-          <ProfileLink href={`/aircraft/${aircraft.id}`} name={aircraft.name} />
-        </div>
-      </div>
-      {/* Right-aligned from 64rem, so the last figure ends on the
-          container edge. */}
+      <p className="orbix-kicker">Pictured</p>
+      <h2
+        className="font-display mt-2 text-[2rem] leading-none tracking-[-0.035em] text-foreground"
+        id="pictured-aircraft-title"
+      >
+        {aircraft.name}
+      </h2>
+      {summary ? (
+        <p className="mt-3 text-muted">{keepDesignations(summary)}</p>
+      ) : null}
       <SpecPanel
-        className="lg:col-span-8 lg:[&_dl>div]:text-right"
+        className="mt-6 lg:[&_dl]:grid-cols-[repeat(3,auto)] lg:[&_dl]:justify-start lg:[&_dl]:gap-x-10"
         columns={3}
         items={[
           { label: "Maximum speed", measurement: maxSpeed },
@@ -100,6 +94,9 @@ function PicturedAircraft({ aircraft }: { aircraft: Aircraft }) {
           ...measurementFigure(measurement),
         }))}
       />
+      <div className="mt-6">
+        <ProfileLink href={`/aircraft/${aircraft.id}`} name={aircraft.name} />
+      </div>
     </section>
   );
 }
@@ -222,17 +219,17 @@ export function AircraftExplorer({ aircraft }: AircraftExplorerProps) {
           >
             <div className="grid gap-5 lg:grid-cols-12 lg:gap-6">
               <h2
-                className="orbix-h2 text-foreground lg:col-span-4"
+                className="orbix-h2 text-foreground lg:col-span-7"
                 id="aircraft-scale-title"
               >
                 Side by side, to one scale
               </h2>
-              <p className="max-w-[60ch] text-pretty text-muted lg:col-span-7 lg:col-start-6">
+              <p className="max-w-[60ch] text-pretty text-muted lg:col-span-5 lg:col-start-8">
                 {spanComparison(aircraft)}Each aircraft is drawn from the length
-                and wingspan in its record, and nothing else: a dashed outline
-                as long as the aircraft and as wide as its wings, seen from
-                above with the nose up on its own centreline. Every plan uses
-                the same scale, and the noses along each row are level.
+                and wingspan in its record, and nothing else: seen from above
+                with the nose up, an outline as long as the aircraft and as wide
+                as its wings. Every plan uses the same scale, and the noses
+                along each row are level.
               </p>
             </div>
             <AircraftSizeComparison
@@ -248,12 +245,12 @@ export function AircraftExplorer({ aircraft }: AircraftExplorerProps) {
           className="mt-16 grid gap-3 border-t border-border pt-8 pb-16 lg:grid-cols-12 lg:gap-6 lg:pb-24"
         >
           <h2
-            className="text-base font-semibold text-foreground lg:col-span-4"
+            className="text-base font-semibold text-foreground lg:col-span-7"
             id="aircraft-sources-title"
           >
             About these figures
           </h2>
-          <p className="max-w-[68ch] text-sm leading-6 text-muted lg:col-span-8">
+          <p className="max-w-[68ch] text-sm leading-6 text-muted lg:col-span-5 lg:col-start-8">
             Figures are publicly released specifications. Where a source gives a
             value as approximate, a minimum or a maximum, the profile keeps that
             qualifier beside the number. {MINIMUM_NOTE} {CONVERSION_NOTE}{" "}

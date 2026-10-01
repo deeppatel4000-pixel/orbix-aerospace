@@ -7,11 +7,13 @@ import type { Aircraft, Rocket } from "@/features/vehicles/types";
 import {
   AircraftSizeComparison,
   aircraftPlans,
-  PLAN_PAD_M,
+  NOSE_Y_M,
   planViewBox,
   SCALE_BAR_M as PLAN_SCALE_BAR_M,
+  SPAN_STATION,
 } from "./aircraft-size-comparison";
 import {
+  BAR_WIDTH,
   LINEUP_LAYOUTS,
   type LineupLayoutName,
   RocketHeightLineup,
@@ -90,18 +92,39 @@ describe.each(lineupLayouts)("rocket height lineup, %s", (layout) => {
       layout,
     );
     for (const rocket of rocketVehicles) {
-      const line = attributes(
-        markup,
-        new RegExp(
-          `data-vehicle="${rocket.id}"[^]*?<line[^>]*data-dimension="height"[^>]*>`,
-        ),
-      );
-      const drawn =
-        Math.hypot(
-          Number(line.x2) - Number(line.x1),
-          Number(line.y2) - Number(line.y1),
-        ) / u;
-      expect(drawn).toBeCloseTo(rocket.dimensions.height.value, 9);
+      if (layout === "level") {
+        const line = attributes(
+          markup,
+          new RegExp(
+            `data-vehicle="${rocket.id}"[^]*?<line[^>]*data-dimension="height"[^>]*>`,
+          ),
+        );
+        const drawn =
+          Math.hypot(
+            Number(line.x2) - Number(line.x1),
+            Number(line.y2) - Number(line.y1),
+          ) / u;
+        expect(drawn).toBeCloseTo(rocket.dimensions.height.value, 9);
+      } else {
+        // Upright, each height is a bar outline of the nominal width,
+        // standing on the ground line: M left ground V top H right V ground.
+        const bar = attributes(
+          markup,
+          new RegExp(
+            `data-vehicle="${rocket.id}"[^]*?<path[^>]*data-dimension="height"[^>]*>`,
+          ),
+        );
+        const [left, ground, top, right, end] = bar
+          .d!.match(/-?[\d.]+/g)!
+          .map(Number);
+        expect(ground).toBeCloseTo(geometry.ground.y1, 9);
+        expect(end).toBeCloseTo(geometry.ground.y1, 9);
+        expect(right! - left!).toBeCloseTo(BAR_WIDTH, 9);
+        expect((ground! - top!) / u).toBeCloseTo(
+          rocket.dimensions.height.value,
+          9,
+        );
+      }
     }
   });
 
@@ -129,7 +152,7 @@ describe.each(lineupLayouts)("rocket height lineup, %s", (layout) => {
   });
 
   it("keeps every figure at 11px or more at the narrowest width shown", () => {
-    const narrowest = layout === "level" ? 288 : 592;
+    const narrowest = layout === "level" ? 288 : 960;
     const rendered = Math.min(narrowest, geometry.width);
     const { figureSize, nameSize } = LINEUP_LAYOUTS[layout];
     expect(
@@ -174,8 +197,11 @@ describe("rocket height lineup", () => {
       );
     expect(svg).toContain('<tspan data-num-sep="" dx="-0.24">.</tspan>');
     expect(svg).toContain('<span class="orbix-num-sep">.</span>');
-    // No figure keeps a bare point between digits.
-    expect(svg).not.toMatch(/>[^<]*\d\.\d[^<]*<\/(?:text|tspan|span)>/);
+    // No figure keeps a bare point between digits (screen-reader text,
+    // which is not set, is left as written).
+    expect(svg.replace(/<span class="sr-only">[^<]*<\/span>/g, "")).not.toMatch(
+      />[^<]*\d\.\d[^<]*<\/(?:text|tspan|span)>/,
+    );
   });
 
   it("leaves out a record with no usable height and names it", () => {
@@ -267,23 +293,45 @@ describe("aircraft size comparison", () => {
       );
       expect(Number(span.x2) - Number(span.x1)).toBeCloseTo(item.wingspanM, 9);
 
-      // The envelope: nose on the same pad for every plan, so noses are
-      // level along a row.
-      const envelope = attributes(
-        svg,
-        new RegExp(group.source + `<path[^>]*data-envelope=""[^>]*>`),
-      );
-      const [x1, y1, x2, y2] = envelope
-        .d!.match(/-?[\d.]+(?:e-?\d+)?/g)!
-        .map(Number);
-      expect(x1).toBe(0);
-      expect(y1).toBe(PLAN_PAD_M);
-      expect(x2).toBeCloseTo(item.wingspanM, 9);
-      expect(y2! - y1!).toBeCloseTo(item.lengthM, 9);
+      // The length line runs beside the plan from the nose, on the same
+      // pad for every plan so noses are level along a row, to the tail;
+      // the span line runs above the plan from wingtip to wingtip.
+      expect(Number(length.y1)).toBe(NOSE_Y_M);
+      expect(Number(span.x1)).toBe(0);
 
-      // Each plan is named, with both dimensions, under the drawing.
+      // The schematic planform is closed through the nose, the right
+      // wingtip at the stated station, the tail and the left wingtip.
+      const outline = attributes(
+        svg,
+        new RegExp(group.source + `<path[^>]*data-outline=""[^>]*>`),
+      );
+      const points = outline.d!.match(/-?[\d.]+/g)!.map(Number);
+      const station = NOSE_Y_M + item.lengthM * SPAN_STATION;
+      const expected = [
+        item.wingspanM / 2,
+        NOSE_Y_M,
+        item.wingspanM,
+        station,
+        item.wingspanM / 2,
+        NOSE_Y_M + item.lengthM,
+        0,
+        station,
+      ];
+      expect(points).toHaveLength(expected.length);
+      points.forEach((value, index) =>
+        expect(value).toBeCloseTo(expected[index]!, 9),
+      );
+      expect(outline.d).toMatch(/Z$/);
+
+      // Each plan is named, with both dimensions in text, under the
+      // drawing, and both dimensions label their lines.
       expect(svg).toMatch(
-        new RegExp(`data-vehicle="${item.id}"[^]*?>${item.name}</p>`),
+        new RegExp(`data-vehicle="${item.id}"[^]*?>${item.name}<span`),
+      );
+      expect(svg).toMatch(
+        new RegExp(
+          `data-vehicle="${item.id}"[^]*?data-label="span"[^]*?${item.wingspanLabel[0].split(".")[0]}`,
+        ),
       );
     }
   });

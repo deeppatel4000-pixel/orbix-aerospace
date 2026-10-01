@@ -33,6 +33,11 @@ const plexSans = IBM_Plex_Sans({
  * equations only (spec 5). Never labels.
  */
 const b612Mono = B612_Mono({
+  // B612 Mono has no Greek. An empty fallback list stops next/font adding its
+  // "B612 Mono Fallback" face (local Arial, no unicode-range), which would
+  // draw ρ, Δ and μ before IBM Plex in `--font-telemetry`.
+  adjustFontFallback: false,
+  fallback: [],
   display: "swap",
   subsets: ["latin"],
   variable: "--font-b612-mono",

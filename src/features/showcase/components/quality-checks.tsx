@@ -67,15 +67,30 @@ const browserChecks: readonly QualityCheck[] = [
 ];
 
 /**
- * One command argument, kept on one line except after a `/` in a path such
- * as `tests/e2e/smoke`. A flag such as `--project=desktop` never breaks, so
- * the command wraps only at spaces and path slashes.
+ * One command argument, kept on one line. Below 48rem, where the command
+ * shares a narrow column, a path such as `tests/e2e/smoke` may also break
+ * after a `/`; from 48rem it stays whole, so a wrapped line never splits
+ * one argument into what reads as two. A flag such as `--project=desktop`
+ * never breaks, so the command wraps only at spaces (and, on a phone, at
+ * path slashes).
  */
 function CommandArgument({ part }: { part: string }) {
+  if (!part.includes("/")) {
+    return (
+      <span className="whitespace-nowrap">
+        {formatCode(part, { breakAfterSlash: false })}
+      </span>
+    );
+  }
   return (
-    <span className="whitespace-nowrap">
-      {formatCode(part, { breakAfterSlash: part.includes("/") })}
-    </span>
+    <>
+      <span className="whitespace-nowrap md:hidden">
+        {formatCode(part, { breakAfterSlash: true })}
+      </span>
+      <span className="whitespace-nowrap max-md:hidden">
+        {formatCode(part, { breakAfterSlash: false })}
+      </span>
+    </>
   );
 }
 

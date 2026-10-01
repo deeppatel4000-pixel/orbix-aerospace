@@ -4,17 +4,23 @@ import type { Aircraft, DistanceMeasurement } from "@/features/vehicles/types";
 import { ScaleFigure } from "./scale-figure";
 import { formatMetres, formatRecorded, obliqueTicks, toMetres } from "./units";
 
+/** Space around each plan's drawing, in metres. */
+const PLAN_PAD_M = 1;
 /**
- * Space around each plan, in metres: above it for the span dimension
- * line, right of it for the length dimension line. Drawn at the shared
- * scale, so every plan's nose sits the same distance below the top of its
- * drawing and the noses along a row are level.
+ * From each plan to its dimension lines, in metres: the span line runs
+ * this far above the nose, the length line this far right of the right
+ * wingtip.
  */
-export const PLAN_PAD_M = 3;
-/** The dimension lines' offset from the plan, in metres. */
-const DIMENSION_OFFSET_M = 1.6;
-/** Half-length of a dimension end tick, in metres. */
-const TICK_M = 0.7;
+const DIM_OFFSET_M = 2.5;
+/** The gap between the outline and an extension line, and the overshoot. */
+const EXT_GAP_M = 0.6;
+/** Half-length of a dimension line's oblique end tick, in metres. */
+const TICK_M = 0.8;
+/**
+ * Where the nose sits, in metres from the top of every plan's drawing:
+ * the same for every plan, so the noses along a row are level.
+ */
+export const NOSE_Y_M = PLAN_PAD_M + DIM_OFFSET_M;
 
 /** The scale bar's length, tick step and labelled step, in metres. */
 export const SCALE_BAR_M = 20;
@@ -24,14 +30,18 @@ const SCALE_LABEL_M = 10;
 /**
  * The shared scale, as CSS lengths per metre at each width. Every plan and
  * the scale bar are sized from `--plan-u`, so all of them use one scale at
- * any width: 4.5px per metre on a phone (the widest plan, 52 m, then fits
- * a 288px column) and 5px from 40rem, where all five plans and their
- * figures fit one row of the 72rem container.
+ * any width: 4.5px per metre on a phone, where the plans stand in one
+ * column (the widest, 52 m, with its labels then fits the 328px column at
+ * 360px; 3.75px below 22.5rem, so it fits the 288px column at 320px),
+ * and 5px from 40rem, where the plans wrap in rows (all five fit one row
+ * of the 72rem container).
  */
-const SCALE_CLASSES = "[--plan-u:4.5px] sm:[--plan-u:5px]" as const;
+const SCALE_CLASSES =
+  "[--plan-u:3.75px] min-[22.5rem]:[--plan-u:4.5px] sm:[--plan-u:5px]" as const;
 
-/** Room left of each plan, in metres, for the span line's end tick. */
-const LEFT_PAD_M = 1;
+/** Room above each plan for the span label, and the gap before the length label. */
+const SPAN_LABEL_ROOM = "2.5rem";
+const LENGTH_LABEL_GAP = "0.5rem";
 
 export interface PlanAircraft {
   readonly id: string;
@@ -82,14 +92,15 @@ export function aircraftPlans(
 }
 
 /**
- * One plan's drawing box in metres: the plan plus its padding. The plan's
- * left wingtip is at x = 0, so the box starts at `x` (negative).
+ * One plan's drawing box in metres: the plan, its two dimension lines and
+ * padding. The plan's left wingtip is at x = 0, so the box starts at `x`
+ * (negative).
  */
 export function planViewBox(item: Pick<PlanAircraft, "lengthM" | "wingspanM">) {
   return {
-    height: item.lengthM + PLAN_PAD_M + 0.5,
-    width: LEFT_PAD_M + item.wingspanM + PLAN_PAD_M,
-    x: -LEFT_PAD_M,
+    height: NOSE_Y_M + item.lengthM + PLAN_PAD_M,
+    width: PLAN_PAD_M + item.wingspanM + DIM_OFFSET_M + PLAN_PAD_M,
+    x: -PLAN_PAD_M,
   };
 }
 
@@ -98,95 +109,157 @@ function atScale(metres: number) {
   return `calc(var(--plan-u) * ${Math.round(metres * 1000) / 1000})`;
 }
 
+/** Dimension, extension and scale-bar tick lines. */
 const thin = {
   strokeWidth: 0.75,
   vectorEffect: "non-scaling-stroke",
 } as const;
 
+/** The plan outline, the dimension end ticks and the scale bar. */
+const object = {
+  strokeWidth: 1.5,
+  vectorEffect: "non-scaling-stroke",
+} as const;
+
 /**
- * One aircraft seen from above, nose up: the recorded length and wingspan
- * as a dashed envelope (nothing else about the shape is recorded, so no
- * outline is drawn), its centreline, and a dimension line for each.
+ * Where the wingtips sit, as a share of the length from the nose. The
+ * records give no planform, so the station is a fixed schematic choice,
+ * stated in the caption.
+ */
+export const SPAN_STATION = 0.45;
+
+/** The four points of a plan's outline, in drawing metres. */
+function planOutline(item: Pick<PlanAircraft, "lengthM" | "wingspanM">) {
+  const centre = item.wingspanM / 2;
+  const station = NOSE_Y_M + item.lengthM * SPAN_STATION;
+  return {
+    left: [0, station],
+    nose: [centre, NOSE_Y_M],
+    right: [item.wingspanM, station],
+    tail: [centre, NOSE_Y_M + item.lengthM],
+  } as const;
+}
+
+/**
+ * One aircraft seen from above, nose up, as a schematic planform: a closed
+ * 1.5px outline from the nose to each wingtip at the stated station and
+ * back to the tail on the centreline, built only from the recorded length
+ * and wingspan. A 0.75px span dimension line runs above the plan and a
+ * length dimension line to its right, each with extension lines and
+ * oblique end ticks, labelled in B612 Mono. The labels are HTML, so they
+ * set at one size whatever the plan's scale.
  */
 function Plan({ item }: { item: PlanAircraft }) {
   const box = planViewBox(item);
-  const left = 0;
-  const right = item.wingspanM;
-  const nose = PLAN_PAD_M;
-  const tail = PLAN_PAD_M + item.lengthM;
-  const spanY = nose - DIMENSION_OFFSET_M;
-  const lengthX = right + DIMENSION_OFFSET_M;
+  const { left, nose, right, tail } = planOutline(item);
+  const spanY = PLAN_PAD_M;
+  const lengthX = item.wingspanM + DIM_OFFSET_M;
+  const extTop = spanY - EXT_GAP_M;
+  const extRight = lengthX + EXT_GAP_M;
 
   return (
-    <svg
+    <div
       aria-hidden="true"
-      className="block h-auto overflow-visible"
-      data-plan=""
-      style={{ width: atScale(box.width) }}
-      viewBox={`${box.x} 0 ${box.width} ${box.height}`}
+      className="relative"
+      style={{
+        paddingRight: `calc(${LENGTH_LABEL_GAP} + 3.25rem)`,
+        paddingTop: SPAN_LABEL_ROOM,
+      }}
     >
-      <g className="stroke-ink-muted" fill="none" strokeLinecap="butt">
-        <path
-          {...thin}
-          d={`M${left} ${nose}H${right}V${tail}H${left}Z`}
-          data-envelope=""
-          strokeDasharray="4 3"
-        />
-        <line
-          {...thin}
-          data-centreline=""
-          strokeDasharray="10 3 2 3"
-          x1={item.wingspanM / 2}
-          x2={item.wingspanM / 2}
-          y1={nose - 0.6}
-          y2={tail + 0.4}
-        />
-        <line
-          {...thin}
-          data-dimension="span"
-          x1={left}
-          x2={right}
-          y1={spanY}
-          y2={spanY}
-        />
-        <line
-          {...thin}
-          data-dimension="length"
-          x1={lengthX}
-          x2={lengthX}
-          y1={nose}
-          y2={tail}
-        />
-        <path
-          d={obliqueTicks(
-            [
-              [left, spanY],
-              [right, spanY],
-              [lengthX, nose],
-              [lengthX, tail],
-            ],
-            TICK_M,
-          )}
-          strokeWidth={1.5}
-          vectorEffect="non-scaling-stroke"
-        />
-      </g>
-    </svg>
+      <span
+        className="absolute top-0 -translate-x-1/2 text-center font-mono text-xs leading-[1.1rem] tabular-nums sm:text-[0.8125rem]"
+        data-label="span"
+        style={{ left: atScale(PLAN_PAD_M + item.wingspanM / 2) }}
+      >
+        <FigureLines label={item.wingspanLabel} />
+      </span>
+      <svg
+        className="block h-auto overflow-visible"
+        data-plan=""
+        style={{ width: atScale(box.width) }}
+        viewBox={`${box.x} 0 ${box.width} ${box.height}`}
+      >
+        <g className="stroke-ink-muted" fill="none" strokeLinecap="butt">
+          <path
+            {...object}
+            d={`M${nose.join(" ")}L${right.join(" ")}L${tail.join(" ")}L${left.join(" ")}Z`}
+            data-outline=""
+          />
+          {/* Span: extension lines up from both wingtips, past the
+              dimension line above the nose. */}
+          <path
+            {...thin}
+            d={`M${left[0]} ${left[1] - EXT_GAP_M}V${extTop}M${right[0]} ${right[1] - EXT_GAP_M}V${extTop}`}
+          />
+          <line
+            {...thin}
+            data-dimension="span"
+            x1={left[0]}
+            x2={right[0]}
+            y1={spanY}
+            y2={spanY}
+          />
+          {/* Length: extension lines right from the nose and the tail,
+              past the dimension line beside the plan. */}
+          <path
+            {...thin}
+            d={`M${nose[0] + EXT_GAP_M} ${nose[1]}H${extRight}M${tail[0] + EXT_GAP_M} ${tail[1]}H${extRight}`}
+          />
+          <line
+            {...thin}
+            data-dimension="length"
+            x1={lengthX}
+            x2={lengthX}
+            y1={nose[1]}
+            y2={tail[1]}
+          />
+          <path
+            {...object}
+            d={obliqueTicks(
+              [
+                [left[0], spanY],
+                [right[0], spanY],
+                [lengthX, nose[1]],
+                [lengthX, tail[1]],
+              ],
+              TICK_M,
+            )}
+          />
+        </g>
+      </svg>
+      <span
+        className="absolute -translate-y-1/2 font-mono text-xs leading-[1.1rem] tabular-nums sm:text-[0.8125rem]"
+        data-label="length"
+        style={{
+          left: `calc(${atScale(PLAN_PAD_M + lengthX)} + ${LENGTH_LABEL_GAP})`,
+          top: `calc(${SPAN_LABEL_ROOM} + ${atScale(nose[1] + item.lengthM / 2)})`,
+        }}
+      >
+        <FigureLines label={item.lengthLabel} />
+      </span>
+    </div>
   );
 }
 
-/** A recorded figure in ink, then its metre conversion muted. */
-function FigurePair({ label }: { label: readonly [string, string] }) {
+/** A recorded figure in ink, with its metre conversion muted under it. */
+function FigureLines({ label }: { label: readonly [string, string] }) {
   return (
-    <span className="whitespace-nowrap">
-      <span className="text-ink">{formatFigure(label[0])}</span>
+    <>
+      <span className="block whitespace-nowrap text-ink">
+        {formatFigure(label[0])}
+      </span>
       {label[1] ? (
-        <span className="ml-[1ch] text-ink-muted">
+        <span className="block whitespace-nowrap text-ink-muted">
           {formatFigure(label[1])}
         </span>
       ) : null}
-    </span>
+    </>
   );
+}
+
+/** A figure and its conversion as one spoken phrase. */
+function spokenFigures(label: readonly [string, string]) {
+  return label[1] ? `${label[0]} (${label[1]})` : label[0];
 }
 
 /** The metre scale bar, at the shared scale. */
@@ -209,8 +282,8 @@ function ScaleBar() {
       >
         <g className="stroke-ink-muted" fill="none">
           <line
-            strokeWidth={1.5}
-            vectorEffect="non-scaling-stroke"
+            {...object}
+            data-scale-line=""
             x1={0}
             x2={SCALE_BAR_M}
             y1={2}
@@ -254,10 +327,11 @@ interface AircraftSizeComparisonProps {
 
 /**
  * The aircraft to one scale (spec 8), as small multiples: each recorded
- * length and wingspan drawn from above, nose up, side by side at one shared
- * scale, with the name and both dimensions under each plan and one metre
- * scale bar. Linework in the muted ink, figures in B612 Mono, no fills. An
- * aircraft missing either dimension is left out and named in the caption.
+ * length and wingspan drawn from above, nose up, as a schematic planform
+ * with its two dimension lines, at one shared scale, with the name under
+ * each plan and one metre scale bar. Linework in the muted ink, figures
+ * in B612 Mono, no fills. An aircraft missing either dimension is left
+ * out and named in the caption.
  */
 export function AircraftSizeComparison({
   aircraft,
@@ -273,7 +347,10 @@ export function AircraftSizeComparison({
       caption={
         <>
           Recorded length and wingspan of each aircraft, seen from above with
-          the nose up, all to one scale, feet converted at 0.3048 m.
+          the nose up, all to one scale, feet converted at 0.3048 m. Each plan
+          is schematic, an outline from the nose to wingtips at{" "}
+          {SPAN_STATION * 100} percent of the length and back to the tail, since
+          the records give no wing position or shape.
           {omitted.length > 0
             ? ` Not drawn, a dimension is missing: ${omitted.map((item) => item.name).join(", ")}.`
             : ""}
@@ -283,27 +360,28 @@ export function AircraftSizeComparison({
       figureNumber={figureNumber}
     >
       <div className={SCALE_CLASSES}>
-        <ul className="flex flex-wrap items-start gap-x-6 gap-y-10 sm:gap-x-8">
+        {/* One column on a phone, every plan from the same left edge.
+            From 40rem each row stretches to its deepest plan and every
+            plan grows to fill its item, so the names along a row share one
+            baseline under the plans while the noses stay level. */}
+        <ul className="flex flex-col gap-y-10 sm:flex-row sm:flex-wrap sm:items-stretch sm:gap-x-8">
           {plans.map((item) => (
             <li
-              className="min-w-0"
+              className="flex min-w-0 flex-col"
               data-length-m={item.lengthM}
               data-vehicle={item.id}
               data-wingspan-m={item.wingspanM}
               key={item.id}
             >
-              <Plan item={item} />
-              <p className="mt-3 text-sm font-medium text-ink">{item.name}</p>
-              <dl className="mt-1 grid grid-cols-[auto_auto] justify-start gap-x-3 text-xs leading-6 sm:text-[0.8125rem]">
-                <dt className="text-ink-muted">Length</dt>
-                <dd className="font-mono tabular-nums">
-                  <FigurePair label={item.lengthLabel} />
-                </dd>
-                <dt className="text-ink-muted">Span</dt>
-                <dd className="font-mono tabular-nums">
-                  <FigurePair label={item.wingspanLabel} />
-                </dd>
-              </dl>
+              <div className="flex-1">
+                <Plan item={item} />
+              </div>
+              <p className="mt-3 text-sm font-medium text-ink">
+                {item.name}
+                <span className="sr-only">
+                  {`: length ${spokenFigures(item.lengthLabel)}, wingspan ${spokenFigures(item.wingspanLabel)}.`}
+                </span>
+              </p>
             </li>
           ))}
         </ul>

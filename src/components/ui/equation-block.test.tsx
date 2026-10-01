@@ -4,6 +4,9 @@ import { describe, expect, it } from "vitest";
 import { EquationBlock } from "@/components/ui/equation-block";
 
 const rocketEquation = "Δv = Isp g0 ln(m0 / mf)";
+/** The same equation with its parentheses set in Plex Sans. */
+const rocketEquationSet =
+  'Δv = Isp g0 ln<span class="orbix-equation__paren">(</span>m0 / mf<span class="orbix-equation__paren">)</span>';
 
 describe("EquationBlock", () => {
   it("names the relation under the equation, not above it", () => {
@@ -28,7 +31,7 @@ describe("EquationBlock", () => {
       '<figcaption class="orbix-equation__where">Newton&#x27;s second law, where</figcaption><dl',
     );
     expect(markup).toContain(
-      `<p class="orbix-equation__expr">${rocketEquation}</p>`,
+      `<p class="orbix-equation__expr">${rocketEquationSet}</p>`,
     );
     expect(markup).not.toContain("<dl");
   });
@@ -38,9 +41,24 @@ describe("EquationBlock", () => {
       <EquationBlock equation={rocketEquation} spokenAs="delta v equals" />,
     );
     expect(markup).toContain(
-      `<span aria-hidden="true">${rocketEquation}</span>`,
+      `<span aria-hidden="true">${rocketEquationSet}</span>`,
     );
     expect(markup).toContain('<span class="sr-only">delta v equals</span>');
+  });
+
+  it("sets parentheses in a JSX equation the same way, inside scripts too", () => {
+    const markup = renderToStaticMarkup(
+      <EquationBlock
+        equation={
+          <>
+            ln(m<sub>0</sub>/m<sub>f</sub>)
+          </>
+        }
+      />,
+    );
+    expect(markup).toContain(
+      '<p class="orbix-equation__expr">ln<span class="orbix-equation__paren">(</span>m<sub>0</sub>/m<sub>f</sub><span class="orbix-equation__paren">)</span></p>',
+    );
   });
 
   it("lists the variables with their units", () => {

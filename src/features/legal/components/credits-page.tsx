@@ -115,6 +115,8 @@ const creditColumns: readonly DataTableColumn<ImageCredit>[] = [
         )}
       </span>
     ),
+    // On a phone licence and source are set under the credit.
+    foldInto: "credit",
     header: "Licence",
     key: "licence",
   },
@@ -137,6 +139,7 @@ const creditColumns: readonly DataTableColumn<ImageCredit>[] = [
         </span>
       </span>
     ),
+    foldInto: "credit",
     header: "Source",
     key: "source",
   },

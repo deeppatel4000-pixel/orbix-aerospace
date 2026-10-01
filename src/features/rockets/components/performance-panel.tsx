@@ -85,6 +85,8 @@ export function PerformancePanel({ name, performance }: PerformancePanelProps) {
             {
               cell: (capability) =>
                 formatLaunchConfiguration(capability.configuration),
+              // On a phone the configuration is set under the destination.
+              foldInto: "destination",
               header: "Configuration",
               key: "configuration",
             },

@@ -9,12 +9,13 @@ import { AllowanceBars } from "@/features/showcase/components/mission-diagrams";
 import { getShowcaseMissionById } from "@/features/showcase/data/mission-showcase";
 import { formatImageCredit } from "@/features/vehicles/components/vehicle-figure";
 import type { VehiclePhotographRecord } from "@/features/vehicles/components/vehicle-photograph";
-import { cn } from "@/lib/cn";
 
 /**
  * One figure for each pathway that has an honest one (spec v3 sections 6,
  * 7 and 11): credited public-domain photographs from `public/images`, shown
- * whole as hard-edged plates (no frame, radius or fill), and diagrams drawn
+ * as hard-edged detail crops (no frame, radius or fill) so Learn does not
+ * repeat the whole frames the home page, registries and profiles show,
+ * and diagrams drawn
  * by the Engineering Lab and Showcase components from preset inputs, as
  * linework on the ground. The entry pathway has none: no entry photograph
  * is in `public/images` and no lab preset starts from orbit, so its
@@ -22,8 +23,7 @@ import { cn } from "@/lib/cn";
  *
  * One catalogue caption below each figure (spec 6): "Fig. 1  An F-22
  * Raptor in flight. ... U.S. Air Force, public domain. Source." in 14px
- * muted Plex Sans with the figure number in ink. The portrait photograph
- * alone sets its caption beside it from 640px. The two diagrams carry no
+ * muted Plex Sans with the figure number in ink. The two diagrams carry no
  * note of their own: their scale and preset facts are folded into the one
  * catalogue caption. Every caption states what is shown and where it
  * comes from; none states a vehicle figure that is not already in the
@@ -41,14 +41,6 @@ const FIGURE_AREA_IDS = [
   "orbital-mechanics-mission-design",
   "mission-operations-engineering-communication",
 ] as const;
-
-/**
- * Photograph sizes, measured: the figure track renders about 44.3rem wide
- * at 1440px (8 of 12 columns), the portrait about 27rem.
- */
-const TRACK_SIZES = "(min-width: 72rem) 45rem, (min-width: 64rem) 62vw, 100vw";
-const PORTRAIT_SIZES =
-  "(min-width: 72rem) 27rem, (min-width: 40rem) 60vw, 100vw";
 
 /**
  * The one pathway whose figure leaves the 8-column track: from 1024px the
@@ -81,6 +73,12 @@ export function PathwayFigure({ areaId }: PathwayFigureProps) {
       return (
         <PhotoFigure
           captionId={captionId}
+          detail={{
+            alt: "Detail of a U.S. Air Force F-22 Raptor in flight over open water, its wings and tail seen from above",
+            aspect: "16 / 9",
+            focus: "52% 46%",
+            zoom: 1.35,
+          }}
           name="F-22 Raptor"
           visual={visual}
           label={label}
@@ -99,8 +97,13 @@ export function PathwayFigure({ areaId }: PathwayFigureProps) {
       return (
         <PhotoFigure
           captionId={captionId}
+          detail={{
+            alt: "Detail of the Saturn V first stage lifting off beside its launch umbilical tower, its engine exhaust and smoke spreading across the pad",
+            aspect: "3 / 2",
+            focus: "45% 74%",
+            zoom: 1.5,
+          }}
           name="Saturn V"
-          portrait
           visual={visual}
           label={label}
         >
@@ -118,14 +121,20 @@ export function PathwayFigure({ areaId }: PathwayFigureProps) {
       return (
         <PhotoFigure
           captionId={captionId}
+          detail={{
+            alt: "Detail of NASA's SR-71B Blackbird over snow-covered mountains: an engine nacelle with the conical spike at its inlet",
+            aspect: "16 / 9",
+            focus: "76% 62%",
+            zoom: 1.9,
+          }}
           name="SR-71 Blackbird"
           visual={visual}
           label={label}
         >
-          NASA&apos;s SR-71B. Each engine inlet carries a conical spike that
-          moves fore and aft with Mach number. The spike&apos;s conical shock,
-          followed by a normal shock inside the inlet, slows the air to subsonic
-          speed before it reaches the engine.
+          NASA&apos;s SR-71B, detail. Each engine inlet carries a conical spike
+          that moves fore and aft with Mach number. The spike&apos;s conical
+          shock, followed by a normal shock inside the inlet, slows the air to
+          subsonic speed before it reaches the engine.
         </PhotoFigure>
       );
     }
@@ -188,48 +197,67 @@ export function PathwayFigure({ areaId }: PathwayFigureProps) {
   }
 }
 
+/**
+ * A detail crop of a photograph the site also shows whole (home, the
+ * registries, the profiles), so Learn does not repeat the same frame: the
+ * plate is cut to `aspect` and the photograph enlarged `zoom` times about
+ * `focus` (a CSS position, the point that stays fixed).
+ */
+interface PhotoDetail {
+  readonly alt: string;
+  readonly aspect: string;
+  readonly focus: string;
+  readonly zoom: number;
+}
+
+/**
+ * Image sizes for a detail crop: the figure track (about 44.3rem at
+ * 1440px, 8 of 12 columns; 62vw from 64rem; the full width below) times
+ * the zoom.
+ */
+function detailSizes(zoom: number) {
+  const z = (value: number) => Math.round(value * zoom);
+  return `(min-width: 72rem) ${z(45)}rem, (min-width: 64rem) ${z(62)}vw, ${z(100)}vw`;
+}
+
 function PhotoFigure({
   captionId,
   children,
+  detail,
   label,
   name,
-  portrait = false,
   visual,
 }: {
   captionId: string;
   /** Caption text. */
   children: ReactNode;
+  detail: PhotoDetail;
   label: string;
   name: string;
-  /** A tall subject: 5 of 8 columns, caption beside it from 640px. */
-  portrait?: boolean;
   visual: VehiclePhotographRecord;
 }) {
   return (
-    <figure
-      aria-labelledby={captionId}
-      className={cn(
-        "m-0 mt-14",
-        portrait && "grid gap-6 sm:grid-cols-8 sm:gap-x-8",
-      )}
-    >
+    <figure aria-labelledby={captionId} className="m-0 mt-14">
       {/* A hard-edged plate: no frame, radius or fill (spec 3.2, 7). The
           tonal treatment matches the vehicle profile photographs. */}
-      <div className={cn("max-sm:-mx-4", portrait && "sm:col-span-5")}>
+      <div
+        className="relative overflow-hidden max-sm:-mx-4"
+        style={{ aspectRatio: detail.aspect }}
+      >
         <Image
-          alt={visual.alt}
-          className="block h-auto w-full rounded-none [filter:saturate(0.9)]"
-          height={visual.height}
-          sizes={portrait ? PORTRAIT_SIZES : TRACK_SIZES}
+          alt={detail.alt}
+          className="rounded-none object-cover [filter:saturate(0.9)]"
+          fill
+          sizes={detailSizes(detail.zoom)}
           src={visual.src}
-          width={visual.width}
+          style={{
+            objectPosition: detail.focus,
+            transform: `scale(${detail.zoom})`,
+            transformOrigin: detail.focus,
+          }}
         />
       </div>
-      <Caption
-        className={portrait ? "sm:col-span-3 sm:mt-0 sm:self-end" : undefined}
-        id={captionId}
-        label={label}
-      >
+      <Caption id={captionId} label={label}>
         {children}
         <PhotoCredit name={name} visual={visual} />
       </Caption>
@@ -286,21 +314,15 @@ function PhotoCredit({
 
 function Caption({
   children,
-  className,
   id,
   label,
 }: {
   children: ReactNode;
-  /** Placement. Default: below the plate. */
-  className?: string;
   id: string;
   label: string;
 }) {
   return (
-    <figcaption
-      className={cn("orbix-caption max-w-[38rem] text-pretty", className)}
-      id={id}
-    >
+    <figcaption className="orbix-caption max-w-[38rem] text-pretty" id={id}>
       <span className="orbix-caption__number">{label}</span> {children}
     </figcaption>
   );

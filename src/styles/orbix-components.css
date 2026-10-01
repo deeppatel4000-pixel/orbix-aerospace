@@ -993,6 +993,31 @@
     }
   }
 
+  /* One script rule for every equation, in the Lab and on Learn: scripts
+   * at 0.62em on fixed offsets (a subscript dropped 0.3em, an exponent
+   * raised 0.55em), set by vertical-align so the line box makes room for
+   * them (preflight's relative offset reserves none). */
+  .orbix-equation :where(sub, sup) {
+    font-size: 0.62em;
+    line-height: 0;
+    position: static;
+  }
+
+  .orbix-equation :where(sub) {
+    vertical-align: -0.3em;
+  }
+
+  .orbix-equation :where(sup) {
+    vertical-align: 0.55em;
+  }
+
+  /* Parentheses in an equation are set in Plex Sans, the textbook shape:
+   * B612 Mono draws ( and ) nearly square, so "ln(m0/mf)" read as
+   * "ln[m0/mf]". `typesetEquation` wraps each one. */
+  .orbix-equation__paren {
+    font-family: var(--font-interface);
+  }
+
   /* In Plex Sans everywhere (spec 6): B612 Mono draws ( ) almost square. */
   .orbix-equation__number {
     color: var(--orbix-text-muted);
@@ -1183,6 +1208,14 @@
       position: sticky;
       z-index: 1;
     }
+  }
+
+  /* Says how many columns are out of view while the table overflows. */
+  .orbix-data-table__hint {
+    color: var(--orbix-text-muted);
+    font-size: var(--text-label);
+    line-height: 1.5;
+    margin-top: 0.5rem;
   }
 
   .orbix-data-table__note {

@@ -226,23 +226,22 @@ export function minimumNote(
 }
 
 /**
- * The notes for a table's figures: `MINIMUM_NOTE` when one is a published
- * minimum, and, when one is published as nominal, what an unmarked figure
- * is (spec sheets drop the "Nominal" line under each figure, so the
- * definition is said once here instead).
+ * What an unmarked figure is. Spec sheets drop the "Nominal" line under
+ * each figure, so the definition is said once per profile, in the
+ * Specifications note, beside `CONVERSION_NOTE`.
+ */
+export const UNMARKED_NOTE =
+  "A figure with no qualifier is a published or nominal value.";
+
+/**
+ * The note for a table's figures: `MINIMUM_NOTE` when one is a published
+ * minimum, otherwise undefined. What an unmarked figure is
+ * (`UNMARKED_NOTE`) is said once per page, not under every table.
  */
 export function basisNote(
   measurements: readonly (Measurement<MeasurementUnit> | undefined)[],
 ) {
-  const qualifiers = new Set(
-    measurements.map((measurement) => measurement?.qualifier ?? "exact"),
-  );
-  // One wording for every table, true whether the sheet mixes exact and
-  // nominal figures or has only nominal ones.
-  const unmarked = qualifiers.has("nominal")
-    ? "A figure with no qualifier is a published or nominal value."
-    : undefined;
-  return joinTableNotes(unmarked, minimumNote(measurements));
+  return minimumNote(measurements);
 }
 
 /** Notes for under a table, joined as sentences, or undefined if none. */

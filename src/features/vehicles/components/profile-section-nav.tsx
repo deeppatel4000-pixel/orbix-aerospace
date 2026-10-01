@@ -117,7 +117,7 @@ export function ProfileSectionNav({ items }: ProfileSectionNavProps) {
   return (
     <nav
       aria-labelledby="profile-contents-label"
-      className="lg:sticky lg:top-24"
+      className="lg:sticky lg:top-[calc(var(--header-height)_+_2rem)]"
     >
       <p className="orbix-label" id="profile-contents-label">
         On this page

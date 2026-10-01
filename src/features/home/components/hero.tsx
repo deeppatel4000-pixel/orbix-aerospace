@@ -26,7 +26,9 @@ export function Hero() {
 
   // From 64rem an asymmetric lockup: the H1 runs across the full text
   // measure, so it sets in two lines ("Aerospace engineering, / explained
-  // with real vehicles."), and the lead and actions share one row under it.
+  // with real vehicles."), and the lead and actions share one row under it,
+  // on the same two columns as the registries below (64px gap), so the
+  // primary action starts on the launch vehicle column's edge.
   // That keeps the text block short and brings the photograph up into the
   // first screen (the band starts about 450px down at 1440 by 900). The
   // hero's 46rem lede cap is lifted for this ([&>div>div]:max-w-none).
@@ -35,13 +37,13 @@ export function Hero() {
       <h1 className="orbix-h1 max-w-[12em]" id="home-title">
         Aerospace engineering, explained with real vehicles.
       </h1>
-      <div className="mt-6 grid gap-8 lg:mt-8 lg:grid-cols-12 lg:items-end lg:gap-6">
-        <p className="orbix-lead lg:col-span-6">
+      <div className="mt-6 grid gap-8 lg:mt-8 lg:grid-cols-2 lg:items-end lg:gap-x-16 lg:gap-y-0">
+        <p className="orbix-lead">
           Records of {vehicleCount} aircraft and launch vehicles, a side-by-side
           comparison, and calculators for orbital mechanics, compressible flow
           and atmospheric entry.
         </p>
-        <div className="flex flex-wrap items-center gap-x-8 gap-y-4 lg:col-span-6 lg:justify-end">
+        <div className="flex flex-wrap items-center gap-x-8 gap-y-4">
           <ButtonLink
             arrow="right"
             href="/aircraft"

@@ -34,7 +34,8 @@ function thrustCell(measurement: ForceMeasurement | undefined) {
  * Propulsion (spec 9): one row per engine type on each stage element. The
  * engine count and manufacturer sit under the engine name, and the thrust
  * columns come straight after it, so on a phone the figures are in view
- * without scrolling; the stage and cycle follow. Each thrust cell gives the
+ * without scrolling; the stage and cycle follow (below 40rem, under the
+ * engine name). Each thrust cell gives the
  * published figure, its conversion and the source's qualifier.
  */
 export function PropulsionPanel({ name, stages }: PropulsionPanelProps) {
@@ -79,9 +80,16 @@ export function PropulsionPanel({ name, stages }: PropulsionPanelProps) {
             key: "vacuum",
             numeric: true,
           },
-          { cell: ({ stage }) => stage.name, header: "Stage", key: "stage" },
+          {
+            cell: ({ stage }) => stage.name,
+            // On a phone stage and cycle are set under the engine name.
+            foldInto: "engine",
+            header: "Stage",
+            key: "stage",
+          },
           {
             cell: ({ engine }) => formatRocketEngineCycle(engine.cycle),
+            foldInto: "engine",
             header: "Cycle",
             key: "cycle",
           },

@@ -114,7 +114,7 @@ function setParentheses(value: string, key: string): ReactNode {
     index % 2 === 0 ? (
       <Fragment key={`${key}-p${index}`}>{withSubscripts(part)}</Fragment>
     ) : (
-      <span className="font-sans" key={`${key}-p${index}`}>
+      <span className="orbix-equation__paren" key={`${key}-p${index}`}>
         {part}
       </span>
     ),

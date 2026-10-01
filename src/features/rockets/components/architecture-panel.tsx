@@ -40,6 +40,9 @@ export function ArchitecturePanel({ name, stages }: ArchitecturePanelProps) {
           },
           {
             cell: (stage) => formatRocketPropellant(stage.propellant),
+            // On a phone propellants, engines and recovery are set under
+            // the element name.
+            foldInto: "element",
             header: "Propellants",
             key: "propellants",
           },
@@ -48,12 +51,14 @@ export function ArchitecturePanel({ name, stages }: ArchitecturePanelProps) {
               stage.engines
                 .map((engine) => `${engine.quantity} × ${engine.name}`)
                 .join(", "),
+            foldInto: "element",
             header: "Engines",
             key: "engines",
           },
           {
             cell: (stage) =>
               stage.reusable ? "Designed for recovery" : "Expended",
+            foldInto: "element",
             header: "Recovery",
             key: "recovery",
           },

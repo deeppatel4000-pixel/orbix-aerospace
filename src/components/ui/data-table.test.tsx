@@ -114,6 +114,48 @@ describe("DataTable", () => {
     );
   });
 
+  it("folds a column under another column's cell below 40rem", () => {
+    const markup = renderToStaticMarkup(
+      <DataTable
+        caption="Engines"
+        columns={[
+          ...columns,
+          {
+            cell: () => "Gas generator",
+            foldInto: "name",
+            header: "Cycle",
+            key: "cycle",
+          },
+          {
+            cell: () => "Not published",
+            foldCell: () => "Stage not published",
+            foldInto: "name",
+            header: "Stage",
+            key: "stage",
+          },
+        ]}
+        getRowKey={(row) => row.name}
+        rows={rows}
+        singleLineCells
+      />,
+    );
+    // The folded columns are hidden on a phone, header and cells.
+    expect(markup).toContain(
+      '<th class="max-sm:hidden" scope="col">Cycle</th>',
+    );
+    expect(markup).toContain(
+      '<td class="max-md:whitespace-nowrap max-sm:hidden">Gas generator</td>',
+    );
+    // Their content rides under the first cell there, and only there.
+    expect(markup).toMatch(
+      /<th[^>]*scope="row">Falcon 9<span class="[^"]*sm:hidden" data-folded="cycle">Gas generator<\/span><span class="[^"]*sm:hidden" data-folded="stage">Stage not published<\/span><\/th>/,
+    );
+    // Below 40rem the table only fills its frame.
+    expect(markup).toContain(
+      'class="orbix-table max-md:w-full sm:max-md:min-w-max"',
+    );
+  });
+
   it("renders the note under the table", () => {
     expect(render()).toContain(
       '<p class="orbix-data-table__note">Sea-level figures.</p>',

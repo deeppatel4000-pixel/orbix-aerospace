@@ -152,9 +152,6 @@ export function ReadingPage({
   const heading = titleAccent ? `${title} ${titleAccent}` : title;
   const hasToc = toc !== undefined && toc.length > 0;
   const hasMeta = meta !== undefined && meta.length > 0;
-  // A long contents list folds behind a disclosure on phones, so the first
-  // section is not a full screen away.
-  const foldToc = hasToc && toc.length > 6;
   const tocStyle = hasToc
     ? ({ "--toc-rows": Math.ceil(toc.length / 2) } as CSSProperties)
     : undefined;
@@ -199,25 +196,13 @@ export function ReadingPage({
               aria-labelledby="reading-toc-heading"
               className="mb-12 sm:mb-16 xl:sticky xl:top-24 xl:col-span-3 xl:mb-0 xl:max-h-[calc(100svh-8rem)] xl:overflow-y-auto xl:pb-4"
             >
-              <h2
-                className={cn("orbix-label", foldToc && "max-sm:hidden")}
-                id="reading-toc-heading"
-              >
+              {/* Open at every width, like the profiles' list: one rule
+                  for every "On this page". */}
+              <h2 className="orbix-label" id="reading-toc-heading">
                 On this page
               </h2>
-              {foldToc ? (
-                <details className="sm:hidden">
-                  <summary className="orbix-label cursor-pointer py-3 hover:text-text-primary">
-                    On this page
-                  </summary>
-                  <TocList items={toc} />
-                </details>
-              ) : null}
               <TocList
-                className={cn(
-                  "mt-3 sm:grid-flow-col sm:grid-cols-2 sm:grid-rows-[repeat(var(--toc-rows),auto)] sm:gap-x-6 xl:grid-flow-row xl:grid-cols-1 xl:grid-rows-none",
-                  foldToc && "max-sm:hidden",
-                )}
+                className="mt-3 sm:grid-flow-col sm:grid-cols-2 sm:grid-rows-[repeat(var(--toc-rows),auto)] sm:gap-x-6 xl:grid-flow-row xl:grid-cols-1 xl:grid-rows-none"
                 items={toc}
                 style={tocStyle}
               />

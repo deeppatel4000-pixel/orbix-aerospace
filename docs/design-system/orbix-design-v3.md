@@ -133,6 +133,9 @@ pretty`; headings `text-wrap: balance`.
 - A hero is: solid ground with the H1, lead and actions in the text column; the photograph as a
   hard-edged plate beside it (desktop, 50 to 60 percent width, bleeding to the viewport edge) or
   below it (full-bleed band). The caption sits under the plate on the ground.
+- Portrait plates (launch vehicles) use the photograph's own ratio, or a 4:5 crop where the
+  vehicle stays whole, height-capped at `min(100svh - header - 5rem, 56rem)`; they settle near 42
+  to 46 percent width at 1440 (orchestrator decision, v3 finish).
 - Crops are art-directed per image and breakpoint (`objectPosition` per image) so the vehicle reads.
 - No overlays, no saturation filters beyond the existing mild ones (`saturate(0.9)` allowed), no
   masks, no feathered edges.

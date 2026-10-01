@@ -71,7 +71,7 @@ export function VehicleProfileHero({
       <Breadcrumbs items={breadcrumbs} />
       <div
         className={cn(
-          isBand && "lg:grid lg:grid-cols-12 lg:items-end lg:gap-x-6",
+          isBand && "lg:grid lg:grid-cols-12 lg:items-start lg:gap-x-6",
         )}
       >
         <div className={cn(isBand && "lg:col-span-7")}>
