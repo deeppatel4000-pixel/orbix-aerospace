@@ -1,11 +1,12 @@
 "use client";
 
-import { Button, EquationBlock } from "@/components/ui";
+import { Button } from "@/components/ui";
 import { useMemo, useState, type FormEvent } from "react";
 
 import { analyzeShockPressureLoss } from "@/features/engineering-lab/analysis";
 import {
   EQ_CONT,
+  EQ_JOIN,
   EQ_LINE,
   EQ_TERM,
   CalculatorNumberField,
@@ -27,6 +28,7 @@ import {
   LAB_CHOICE_INPUT,
   LAB_CHOICE_LIST,
   LAB_CHOICE_ROW,
+  LabEquation,
 } from "@/features/engineering-lab/components/shared";
 import type {
   ShockPressureLossAnalysis,
@@ -161,11 +163,11 @@ const shockTypeOptions: readonly {
 ];
 
 const toolEquation = (
-  <EquationBlock
+  <LabEquation
     className="lab-equation--long"
     equation={
       <>
-        <span className={EQ_LINE}>
+        <span className={EQ_JOIN}>
           <span className={EQ_TERM}>
             <EqFrac
               den={
@@ -180,7 +182,7 @@ const toolEquation = (
               }
             />
           </span>
-        </span>
+        </span>{" "}
         {/* Stacked fractions in tall parentheses, so one bracket family
             is used: B612 Mono draws "(" and "[" almost alike. */}
         <span className={EQ_CONT}>

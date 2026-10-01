@@ -20,7 +20,6 @@ import {
 import {
   CONVERSION_NOTE,
   measurementParts,
-  qualifiedFigure,
 } from "@/features/vehicles/components/measurement-display";
 import { MeasurementTable } from "@/features/vehicles/components/measurement-table";
 import {
@@ -47,25 +46,14 @@ const navigation = [
 
 /**
  * The payload figure for the hero record row, with the configuration it was
- * published for on a line under the value, so the label stays "Payload to
- * LEO" on one line. STOPGAP: `RecordRow` has no second line under a value
- * (raised with T1), so the value and unit are passed as one node, the unit
- * set as `RecordRow` sets its own units.
+ * published for on the line under the value, so the label stays "Payload
+ * to LEO" on one line.
  */
 function payloadRecord(leo: PayloadCapability) {
-  const { unit, value } = measurementParts(leo.mass);
   return {
     label: payloadLabel(leo),
-    value: qualifiedFigure(
-      <>
-        {value}
-        {unit ? (
-          <span className="ml-[0.3em] text-[0.8em] text-muted">{unit}</span>
-        ) : null}
-      </>,
-      undefined,
-      payloadConfiguration(leo),
-    ),
+    ...measurementParts(leo.mass),
+    secondary: payloadConfiguration(leo),
   };
 }
 
@@ -98,7 +86,7 @@ function overviewFacts(rocket: Rocket): VehicleFact[] {
   ];
 }
 
-/** The `/rockets/[id]` profile (spec 9). */
+/** The `/rockets/[id]` profile (spec 11). */
 export function RocketProfile({ rocket }: RocketProfileProps) {
   const visual = getRocketVisual(rocket.id);
   const leo = maxPayloadTo(rocket, "LEO");
@@ -136,7 +124,7 @@ export function RocketProfile({ rocket }: RocketProfileProps) {
           classification={rocketClassification(rocket)}
           lead={rocket.description}
           name={rocket.name}
-          photoPlacement="right"
+          photo="portrait"
           record={[
             { label: "Height", ...measurementParts(rocket.dimensions.height) },
             {
@@ -150,10 +138,9 @@ export function RocketProfile({ rocket }: RocketProfileProps) {
             visual
               ? {
                   ...visual,
-                  position: {
+                  crop: {
                     base: visual.heroPhoneObjectPosition,
                     lg: visual.heroObjectPosition,
-                    md: visual.heroObjectPosition,
                   },
                 }
               : undefined
@@ -163,18 +150,8 @@ export function RocketProfile({ rocket }: RocketProfileProps) {
       navigation={navigation}
       related={<RelatedRockets rockets={related} />}
     >
-      {/*
-       * The hero already shows the whole rocket, large and unobscured, so
-       * the Overview does not repeat the photograph. It is a short spec
-       * sheet of the record's facts, in the same split as every section
-       * after it.
-       */}
-      <VehicleProfileSection
-        className="border-t-0"
-        id="overview"
-        index={1}
-        title="Overview"
-      >
+      {/* The hero shows the whole rocket, so it is not repeated. */}
+      <VehicleProfileSection id="overview" title="Overview">
         <VehicleFactsTable
           caption={`${rocket.name} record`}
           facts={overviewFacts(rocket)}
@@ -184,7 +161,6 @@ export function RocketProfile({ rocket }: RocketProfileProps) {
       <VehicleProfileSection
         description="Size, mass and thrust at liftoff as published, with the basis of each figure."
         id="specifications"
-        index={2}
         title="Specifications"
       >
         <MeasurementTable
@@ -201,14 +177,10 @@ export function RocketProfile({ rocket }: RocketProfileProps) {
         />
       </VehicleProfileSection>
 
-      <ArchitecturePanel index={3} name={rocket.name} stages={rocket.stages} />
-      <PropulsionPanel index={4} name={rocket.name} stages={rocket.stages} />
-      <PerformancePanel
-        index={5}
-        name={rocket.name}
-        performance={rocket.performance}
-      />
-      <EngineeringNotesPanel index={6} notes={rocket.engineeringAnalysis} />
+      <ArchitecturePanel name={rocket.name} stages={rocket.stages} />
+      <PropulsionPanel name={rocket.name} stages={rocket.stages} />
+      <PerformancePanel name={rocket.name} performance={rocket.performance} />
+      <EngineeringNotesPanel notes={rocket.engineeringAnalysis} />
     </VehicleProfileLayout>
   );
 }

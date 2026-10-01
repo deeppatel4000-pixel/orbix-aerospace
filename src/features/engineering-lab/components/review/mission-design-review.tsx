@@ -95,7 +95,7 @@ export function MissionDesignReview({
       aria-labelledby="mission-design-review-title"
       className="min-w-0 text-foreground"
     >
-      <header className="border-b border-border-subtle pb-4">
+      <header className="pb-4">
         <p className="orbix-label">Mission design review</p>
         <LabHeading className="mt-1" id="mission-design-review-title">
           {missionName}

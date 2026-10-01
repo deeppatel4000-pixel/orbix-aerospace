@@ -1,6 +1,6 @@
 "use client";
 
-import { Button, DataTable, EquationBlock } from "@/components/ui";
+import { Button, DataTable } from "@/components/ui";
 import { useMemo, useState, type FormEvent } from "react";
 import { CircleAlert } from "lucide-react";
 
@@ -32,6 +32,7 @@ import {
   tpsColumn,
   withMinusSign,
   EqFrac,
+  LabEquation,
 } from "@/features/engineering-lab/components/shared";
 import { listTPSMaterials } from "@/features/engineering-lab/materials";
 import type {
@@ -183,7 +184,7 @@ function deriveViewState(
 }
 
 const toolEquation = (
-  <EquationBlock
+  <LabEquation
     equation={
       <>
         <span className={EQ_LINE}>
@@ -802,8 +803,8 @@ export function TPSMaterialComparisonAnalyzer() {
             >
               Reading the trade space
             </h3>
-            <div className="mt-4 border-t border-border">
-              <article className="border-b border-border py-4">
+            <div className="mt-3 divide-y divide-border">
+              <article className="py-4">
                 <h4 className="text-sm font-semibold text-foreground">
                   Vehicle mass
                 </h4>
@@ -812,7 +813,7 @@ export function TPSMaterialComparisonAnalyzer() {
                   carried by the vehicle.
                 </p>
               </article>
-              <article className="border-b border-border py-4">
+              <article className="py-4">
                 <h4 className="text-sm font-semibold text-foreground">
                   Layer thickness
                 </h4>
@@ -821,7 +822,7 @@ export function TPSMaterialComparisonAnalyzer() {
                   may also add mass and integration complexity.
                 </p>
               </article>
-              <article className="border-b border-border py-4">
+              <article className="py-4">
                 <h4 className="text-sm font-semibold text-foreground">
                   Ranking priority
                 </h4>

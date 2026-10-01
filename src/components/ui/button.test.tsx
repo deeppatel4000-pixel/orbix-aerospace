@@ -107,7 +107,7 @@ describe("small primitives", () => {
     ).toBe('<span class="orbix-eyebrow">Page not found</span>');
   });
 
-  it("Tag is square-cornered text with an optional accent tone", () => {
+  it("Tag is plain text with an optional accent tone", () => {
     expect(renderToStaticMarkup(<Tag>LEO</Tag>)).toBe(
       '<span class="orbix-tag">LEO</span>',
     );
@@ -116,9 +116,7 @@ describe("small primitives", () => {
     );
   });
 
-  it("RegistrationMarks draws four hidden corner ticks at the given inset", () => {
-    expect(renderToStaticMarkup(<RegistrationMarks inset="1rem" />)).toBe(
-      '<span aria-hidden="true" class="orbix-reg-marks" style="--reg-inset:1rem"><span></span><span></span><span></span><span></span></span>',
-    );
+  it("RegistrationMarks is retired and renders nothing (spec 3.2)", () => {
+    expect(renderToStaticMarkup(<RegistrationMarks inset="1rem" />)).toBe("");
   });
 });

@@ -3,15 +3,10 @@
 }
 
 /* ==================================================================== *
- * GROUND AND TEXTURE (spec 4, 6)
+ * GROUND (spec 3, 4)
  *
- * Layers, back to front:
- *   1. body background: page ground plus one static blue light field
- *   2. body::before     72px blueprint grid, fixed, fading toward the bottom
- *   3. body::after      grain, fixed, full screen
- *   4. content
- * Both pseudo-elements are fixed, static and `pointer-events: none`, and
- * sit at z-index -1 so they never cover content or scrolling containers.
+ * One flat page ground. No light field, no blueprint grid, no grain, no
+ * pseudo-element layers behind the content.
  * ==================================================================== */
 
 html {
@@ -25,55 +20,17 @@ html {
 
 body {
   background-color: var(--orbix-bg-page);
-  background-image: radial-gradient(
-    60rem 40rem at 85% -10%,
-    var(--light-field-tint),
-    transparent 70%
-  );
-  background-repeat: no-repeat;
   color: var(--orbix-text-primary);
   font-family: var(--font-interface);
   font-feature-settings:
     "kern" 1,
     "liga" 1;
-  isolation: isolate;
+  font-size: var(--text-body);
+  hanging-punctuation: first;
   line-height: 1.6;
   margin: 0;
   min-height: 100vh;
-  position: relative;
   text-rendering: optimizeLegibility;
-}
-
-body::before,
-body::after {
-  content: "";
-  inset: 0;
-  pointer-events: none;
-  position: fixed;
-  z-index: -1;
-}
-
-body::before {
-  background-image:
-    linear-gradient(to right, var(--grid-line) 1px, transparent 1px),
-    linear-gradient(to bottom, var(--grid-line) 1px, transparent 1px);
-  /* 72rem = 16 cells: at >= 72rem a line lands exactly on the container
-     text edge. round() snaps the offset to a whole pixel when the layout
-     width is odd (a classic scrollbar leaves 1425px at a 1440 window), so
-     each line is one crisp column instead of two half-lit ones. The plain
-     calc() is the fallback for browsers without round(). Vertically the
-     origin is the 64px header height, so horizontal lines fall at
-     64 + 72n px and the first one sits on the header's bottom edge. */
-  background-position: calc(50% - 4px) var(--header-height);
-  background-position: round(down, calc(50% - 4px), 1px) var(--header-height);
-  background-size: var(--grid-cell) var(--grid-cell);
-  mask-image: linear-gradient(to bottom, #fff 0%, #fff 30%, transparent 85%);
-}
-
-body::after {
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 1 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-  background-size: 160px 160px;
-  opacity: var(--grain-opacity);
 }
 
 ::selection {
@@ -133,10 +90,8 @@ a {
   /* ------------------------------------------------------------------ *
    * TYPE ROLES (spec 5)
    *
-   * Display cut: Plex Sans at 84% width, weight 600 to 650, tight
-   * tracking, line-height under 1. Sentence or title case, never forced
-   * uppercase at large sizes. Wrap the second word of a two-word heading
-   * in `.orbix-accent-word` to set it in the division accent.
+   * Display cut: Plex Sans at 84% width, weight 620 to 650, tracking
+   * -0.035em to -0.045em, line-height 0.95 to 1. Sentence case, one colour.
    * ------------------------------------------------------------------ */
 
   .font-display {
@@ -145,23 +100,19 @@ a {
     font-weight: var(--font-display-weight);
   }
 
-  .orbix-display {
-    font-family: var(--font-display);
-    font-size: var(--text-display);
-    font-stretch: var(--font-display-stretch);
-    font-weight: 650;
-    letter-spacing: -0.05em;
-    line-height: 0.92;
-    text-wrap: balance;
-  }
-
+  /* v2's larger display line. In v3 the page H1 is the largest size, so
+     this is the H1 under its old name. */
+  .orbix-display,
   .orbix-h1 {
     font-family: var(--font-display);
-    font-size: var(--text-h1);
+    /* A layout may narrow the H1 by setting --h1-size (the split hero). */
+    font-size: var(--h1-size, var(--text-h1));
     font-stretch: var(--font-display-stretch);
     font-weight: var(--font-display-weight);
-    letter-spacing: var(--tracking-display);
-    line-height: 0.94;
+    letter-spacing: -0.045em;
+    /* 1.0, not 0.95: at 0.95 a descender on one line meets an ascender on
+       the next (spec 5 allows 0.95 to 1.0). */
+    line-height: 1;
     text-wrap: balance;
   }
 
@@ -170,8 +121,8 @@ a {
     font-size: var(--text-h2);
     font-stretch: var(--font-display-stretch);
     font-weight: 620;
-    letter-spacing: -0.04em;
-    line-height: 0.98;
+    letter-spacing: -0.035em;
+    line-height: 1;
     text-wrap: balance;
   }
 
@@ -191,20 +142,32 @@ a {
     line-height: 1.35;
   }
 
-  /* The accent half of a two-tone heading ("Aircraft Explorer"). */
+  /* Retired (spec 3.8: headings are one colour). Kept as a no-op so feature
+     markup that still wraps a word in it renders in the heading colour. */
   .orbix-accent-word {
-    color: var(--orbix-accent);
+    color: inherit;
+  }
+
+  /* A 2px division-colour rule, 48px wide, above a section heading
+     (spec 6). Put the class on the heading. */
+  .orbix-heading-rule::before {
+    background: var(--orbix-accent);
+    content: "";
+    display: block;
+    height: 2px;
+    margin-bottom: 1.25rem;
+    width: 3rem;
   }
 
   .orbix-lead {
-    color: var(--orbix-text-secondary);
+    color: var(--orbix-text-primary);
     font-size: var(--text-lead);
-    line-height: 1.6;
-    max-width: 60ch;
+    line-height: 1.55;
+    max-width: 58ch;
     text-wrap: pretty;
   }
 
-  /* Form labels and captions. Sentence case, interface face. */
+  /* Labels (spec 5): Plex Sans 500, 13px, sentence case, muted. */
   .orbix-label {
     color: var(--orbix-text-muted);
     font-family: var(--font-interface);
@@ -214,24 +177,39 @@ a {
     line-height: 1.4;
   }
 
-  /* Small uppercase data labels (spec 5): B612 Mono, 11 to 12px, 0.12em. */
+  /* The one plain kicker a page may carry (spec 3.8): no rule, no
+     uppercase, no accent. */
+  .orbix-kicker {
+    color: var(--orbix-text-muted);
+    font-family: var(--font-interface);
+    font-size: 0.875rem;
+    font-weight: 500;
+    letter-spacing: 0;
+    line-height: 1.4;
+    margin: 0;
+  }
+
+  /* Retired v2 mono-caps label (spec 3.6). Kept under its old name so
+     feature markup renders as a v3 sentence-case sans label. */
   .orbix-caps {
-    font-family: var(--font-telemetry);
-    font-size: var(--text-caps);
-    font-weight: 400;
-    letter-spacing: var(--tracking-caps);
-    line-height: 1.3;
-    text-transform: uppercase;
+    font-family: var(--font-interface);
+    font-size: var(--text-label);
+    font-weight: 500;
+    letter-spacing: 0;
+    line-height: 1.4;
+    text-transform: none;
   }
 
+  /* Small metadata: credits, footnotes. Sans, not mono. */
   .orbix-micro {
-    font-family: var(--font-telemetry);
-    font-size: var(--text-micro);
+    font-family: var(--font-interface);
+    font-size: var(--text-label);
     font-weight: 400;
-    letter-spacing: 0.04em;
-    line-height: 1.45;
+    letter-spacing: 0;
+    line-height: 1.5;
   }
 
+  /* Figures (spec 5): B612 Mono, tabular. Numbers and units only. */
   .orbix-data {
     font-family: var(--font-telemetry);
     font-size: var(--text-data);
@@ -242,10 +220,16 @@ a {
   }
 
   .orbix-data--sm {
-    font-size: var(--text-caps);
+    font-size: var(--text-label);
   }
 
-  /* Instrument readout (spec 5, readout-lg). Spec panels and records. */
+  /* A unit after a figure: a step smaller and muted (spec 5). */
+  .orbix-unit {
+    color: var(--orbix-text-muted);
+    font-size: 0.8em;
+    margin-inline-start: 0.25em;
+  }
+
   .orbix-readout-lg {
     font-family: var(--font-telemetry);
     font-size: var(--text-readout-lg);
@@ -257,7 +241,7 @@ a {
 
   /* Reading measure for prose pages. */
   .orbix-prose {
-    color: var(--orbix-text-secondary);
+    color: var(--orbix-text-primary);
     font-size: var(--text-body);
     line-height: 1.6;
     max-width: var(--measure-copy);
@@ -265,7 +249,7 @@ a {
 
   @media (min-width: 768px) {
     .orbix-prose {
-      font-size: 1.0625rem;
+      font-size: 1.125rem;
     }
   }
 
@@ -280,7 +264,7 @@ a {
     font-stretch: var(--font-display-stretch);
     font-weight: 620;
     letter-spacing: -0.035em;
-    line-height: 1.02;
+    line-height: 1;
     margin-top: var(--space-7);
   }
 
@@ -310,20 +294,17 @@ a {
     color: var(--orbix-accent);
     text-decoration: underline;
     text-decoration-thickness: 1px;
-    text-underline-offset: 4px;
+    text-underline-offset: 3px;
+    transition: color var(--motion-fast) var(--motion-ease);
   }
 
   .orbix-prose :where(a):hover {
     color: var(--orbix-accent-hover);
-    text-decoration-thickness: 2px;
   }
 
   .orbix-prose :where(code) {
-    background: var(--orbix-surface-raised);
-    border-radius: var(--radius-1);
     font-family: var(--font-telemetry);
     font-size: 0.875em;
-    padding: 0.1em 0.3em;
   }
 
   /* ------------------------------------------------------------------ *
@@ -340,16 +321,12 @@ a {
     }
   }
 
-  .text-balance {
-    text-wrap: balance;
+  /* A 1px rule between major sections (spec 6). */
+  .orbix-rule-top {
+    border-top: 1px solid var(--orbix-border);
   }
 
-  /* Hero-only minor blueprint grid (spec 6): 12px cells at 1.2 percent,
-   * inside a `position: relative` hero. Static. */
-  .orbix-blueprint-minor {
-    background-image:
-      linear-gradient(to right, var(--grid-line-minor) 1px, transparent 1px),
-      linear-gradient(to bottom, var(--grid-line-minor) 1px, transparent 1px);
-    background-size: var(--grid-cell-minor) var(--grid-cell-minor);
+  .text-balance {
+    text-wrap: balance;
   }
 }

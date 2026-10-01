@@ -1,32 +1,47 @@
 import type { ComponentPropsWithoutRef, ReactNode } from "react";
 
-import { formatFigure } from "@/components/ui/readout";
+import { formatFigure, isFigureValue } from "@/components/ui/readout";
 import { cn } from "@/lib/cn";
 
-/** One compartment of a spec panel. */
+/** One key figure. */
 export interface SpecPanelItem {
-  /** Uppercase B612 Mono label, for example "Maximum speed". */
+  /** Sentence-case label, for example "Maximum speed". */
   readonly label: string;
-  /** Formatted value, set as the large readout. Never fabricated. */
+  /** Formatted value, set in B612 Mono. Never fabricated. */
   readonly value: ReactNode;
-  /** Unit shown after the value in muted text, for example "ft". */
+  /** Unit after the value, a step smaller and muted, for example "ft". */
   readonly unit?: string;
   /** Second unit system or a qualifier, for example "15,240 m". */
   readonly secondary?: ReactNode;
+  /**
+   * `figure`: B612 Mono, tabular. `text`: Plex Sans 500, for a name or a
+   * word ("Saturn V", "Retired"). Omitted, a value that starts with a digit,
+   * a sign or "Mach" is a figure and any other string is text.
+   */
+  readonly kind?: "figure" | "text";
+  /**
+   * Set this figure larger. Use it for one to three primary figures at
+   * most (spec 6).
+   */
+  readonly primary?: boolean;
 }
 
 export type SpecPanelProps = Omit<
   ComponentPropsWithoutRef<"section">,
   "title"
 > & {
-  /** Two or three compartments per row from 40rem. Default 2. */
-  columns?: 2 | 3;
+  /**
+   * Figures per row: 2 at every width, or 3 or 4 from 40rem (2 below).
+   * Omitted, the list fills the width with 9.5rem columns. Below 24rem it
+   * is always one column.
+   */
+  columns?: 2 | 3 | 4;
   /** One or two sentences under the title. */
   description?: ReactNode;
-  /** A note under the grid, for example the source of the figures. */
+  /** A note under the figures, for example the source of the values. */
   footnote?: ReactNode;
   items: readonly SpecPanelItem[];
-  /** Short accent label above the title, for example "Featured aircraft". */
+  /** Short plain label above the title, for example "Featured aircraft". */
   kicker?: string;
   /** Vehicle or subject name, in the condensed display cut. */
   title?: ReactNode;
@@ -35,15 +50,17 @@ export type SpecPanelProps = Omit<
 };
 
 /**
- * Hairline compartment grid (spec 6, 8): cells separated by 1px rules, each
- * with a B612 Mono uppercase label over a large readout. Anchored at the
- * bottom right of a `PhotoHero` on desktop through its `aside` slot.
+ * Key figures as an open definition list (spec 6): label above value,
+ * values in B612 Mono, groups separated by space. No enclosure, no
+ * compartments, no rules. Values never break from their unit, and values in
+ * a row share a baseline when a label wraps.
  *
- * Values are a definition list, so each label is announced with its value.
+ * The component keeps its v2 name so existing imports compile; it no
+ * longer draws a panel.
  */
 export function SpecPanel({
   className,
-  columns = 2,
+  columns,
   description,
   footnote,
   items,
@@ -55,31 +72,36 @@ export function SpecPanel({
   const hasHead = Boolean(kicker || title || description);
 
   return (
-    <section className={cn("orbix-spec-panel", className)} {...props}>
+    <section className={cn("orbix-spec", className)} {...props}>
       {hasHead ? (
-        <div className="orbix-spec-panel__head">
-          {kicker ? <p className="orbix-spec-panel__kicker">{kicker}</p> : null}
-          {title ? (
-            <Title className="orbix-spec-panel__title">{title}</Title>
-          ) : null}
+        <div className="orbix-spec__head">
+          {kicker ? <p className="orbix-spec__kicker">{kicker}</p> : null}
+          {title ? <Title className="orbix-spec__title">{title}</Title> : null}
           {description ? (
-            <p className="orbix-spec-panel__description">{description}</p>
+            <p className="orbix-spec__description">{description}</p>
           ) : null}
         </div>
       ) : null}
 
-      <dl className="orbix-spec-grid" data-columns={columns}>
+      <dl className="orbix-spec__list" data-columns={columns}>
         {items.map((item) => (
-          <div className="orbix-spec-cell" key={item.label}>
+          <div
+            className="orbix-spec__item"
+            data-primary={item.primary ? "true" : undefined}
+            key={item.label}
+          >
             <dt>{item.label}</dt>
-            <dd className="orbix-spec-cell__value">
+            <dd className="orbix-spec__value" data-kind={valueKind(item)}>
               {formatFigure(item.value)}
               {item.unit ? (
-                <span className="orbix-spec-cell__unit">{item.unit}</span>
+                <span className="orbix-spec__unit">{item.unit}</span>
               ) : null}
             </dd>
             {item.secondary ? (
-              <dd className="orbix-spec-cell__secondary">
+              <dd
+                className="orbix-spec__secondary"
+                data-kind={isFigureValue(item.secondary) ? undefined : "text"}
+              >
                 {formatFigure(item.secondary)}
               </dd>
             ) : null}
@@ -87,9 +109,15 @@ export function SpecPanel({
         ))}
       </dl>
 
-      {footnote ? (
-        <div className="orbix-spec-panel__foot">{footnote}</div>
-      ) : null}
+      {footnote ? <div className="orbix-spec__note">{footnote}</div> : null}
     </section>
   );
+}
+
+function valueKind(item: {
+  readonly kind?: "figure" | "text";
+  readonly value: ReactNode;
+}) {
+  const kind = item.kind ?? (isFigureValue(item.value) ? "figure" : "text");
+  return kind === "text" ? "text" : undefined;
 }

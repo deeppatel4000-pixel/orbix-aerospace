@@ -1,6 +1,6 @@
 "use client";
 
-import { Button, EquationBlock } from "@/components/ui";
+import { Button } from "@/components/ui";
 import { useMemo, useState, type FormEvent } from "react";
 
 import { analyzeStagnationCondition } from "@/features/engineering-lab/analysis";
@@ -23,6 +23,7 @@ import {
   EqDot,
   EQ_SUB_CLEAR,
   EqFrac,
+  LabEquation,
 } from "@/features/engineering-lab/components/shared";
 import type {
   StagnationConditionAnalysis,
@@ -98,7 +99,7 @@ function deriveViewState(
 }
 
 const toolEquation = (
-  <EquationBlock
+  <LabEquation
     equation={
       <>
         <span className={EQ_LINE}>

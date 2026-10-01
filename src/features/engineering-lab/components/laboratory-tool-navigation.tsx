@@ -28,7 +28,7 @@ interface LaboratoryToolNavigationProps {
   onSelect: (toolId: string) => void;
 }
 
-/** The running number of each group's first tool, so rows read 01 onward. */
+/** The tool ID of each group's first tool, so IDs run 01 onward. */
 function groupStarts(groups: readonly LaboratoryToolGroup[]): number[] {
   let next = 1;
   return groups.map((group) => {
@@ -40,7 +40,7 @@ function groupStarts(groups: readonly LaboratoryToolGroup[]): number[] {
 
 function groupRange(start: number, count: number): string {
   return count > 1
-    ? `${formatIndexNumber(start)}-${formatIndexNumber(start + count - 1)}`
+    ? `${formatIndexNumber(start)}–${formatIndexNumber(start + count - 1)}`
     : formatIndexNumber(start);
 }
 
@@ -87,13 +87,15 @@ function ToolRows({
             <a
               aria-current={isActive ? "location" : undefined}
               className={cn(
-                "block border-l-2 pr-3 pl-11 transition-colors focus-visible:outline-offset-[-2px]",
+                "block pr-3 pl-11 transition-colors focus-visible:outline-offset-[-2px]",
                 dense
                   ? "min-h-[1.625rem] py-[0.1875rem] text-[0.84375rem] leading-5"
                   : "min-h-8 py-1.5 text-sm leading-5",
+                // Active by colour and weight only (spec 11): no stripe, no
+                // fill. Hover underlines, like any text link.
                 isActive
-                  ? "border-accent bg-surface-raised font-medium text-foreground"
-                  : "border-transparent text-text-secondary hover:border-border-control hover:bg-surface-raised hover:text-foreground",
+                  ? "font-semibold text-accent"
+                  : "text-text-secondary hover:text-foreground hover:underline hover:underline-offset-3",
               )}
               data-active={isActive ? "true" : undefined}
               href={`#${tool.id}`}
@@ -108,7 +110,7 @@ function ToolRows({
 }
 
 /**
- * The full numbered list with every discipline open, for the narrow
+ * The full list with every discipline open, for the narrow
  * "Show all tools" disclosure.
  */
 function ToolList({
@@ -130,7 +132,7 @@ function ToolList({
 
         return (
           <div key={group.id}>
-            <p className="flex min-h-7 items-center justify-between gap-3 border-b border-border">
+            <p className="flex min-h-7 items-center justify-between gap-3">
               <span
                 className="text-[0.8125rem] leading-5 font-medium text-foreground"
                 id={headingId}
@@ -158,7 +160,7 @@ function ToolList({
 }
 
 /**
- * The desktop index. The open tool's discipline lists every tool, numbered;
+ * The desktop index. The open tool's discipline lists every tool with its ID;
  * the other disciplines fold to one line each, a link with the discipline's
  * name and number range that opens its first tool. All 33 tools open would
  * need about 1,100px, so at a 900px-tall window the later disciplines would
@@ -207,12 +209,12 @@ function DesktopIndex({
     }
     const railBox = rail.getBoundingClientRect();
     const linkBox = activeLink.getBoundingClientRect();
-    // Keep clear of the 2rem fade at the rail's foot.
-    const fade = 32;
+    // Keep a row's height of clearance above the rail's foot.
+    const clearance = 32;
     if (linkBox.top < railBox.top) {
       rail.scrollTop -= railBox.top - linkBox.top;
-    } else if (linkBox.bottom > railBox.bottom - fade) {
-      rail.scrollTop += linkBox.bottom - (railBox.bottom - fade);
+    } else if (linkBox.bottom > railBox.bottom - clearance) {
+      rail.scrollTop += linkBox.bottom - (railBox.bottom - clearance);
     }
   }, [activeToolId]);
 
@@ -235,10 +237,10 @@ function DesktopIndex({
              * is the only way to its first tool. */}
             <a
               className={cn(
-                "flex min-h-7 items-center justify-between gap-3 border-b text-[0.8125rem] leading-5 font-semibold transition-colors focus-visible:outline-offset-2",
+                "flex min-h-7 items-center justify-between gap-3 text-[0.8125rem] leading-5 font-semibold transition-colors focus-visible:outline-offset-2",
                 open
-                  ? "border-border text-foreground"
-                  : "border-border-subtle text-text-secondary hover:border-border-control hover:text-foreground",
+                  ? "text-foreground"
+                  : "text-text-secondary hover:text-foreground hover:underline hover:underline-offset-3",
               )}
               href={
                 open || firstTool === undefined ? undefined : `#${firstTool.id}`
@@ -264,7 +266,7 @@ function DesktopIndex({
             </a>
             {/* Folded disciplines keep their rows mounted but hidden, and a
              * window tall enough for all 33 rows (from 1,376px) shows every
-             * discipline open, so the whole numbered index reads at once. */}
+             * discipline open, so the whole index reads at once. */}
             <div
               className={
                 open ? undefined : "hidden [@media(min-height:86rem)]:block"
@@ -286,8 +288,9 @@ function DesktopIndex({
 }
 
 /**
- * The Engineering Lab tool index (spec 9): every tool numbered in B612 Mono,
- * grouped by discipline.
+ * The Engineering Lab tool index (spec 11): a plain list, every tool with
+ * its tool ID in B612 Mono, grouped by discipline. The active tool is
+ * marked by colour and weight alone.
  *
  * From 1024px it is a vertical list of plain in-page links with
  * `aria-current` on the active one, held below the header by the shell;
@@ -309,7 +312,10 @@ export function LaboratoryToolNavigation({
       <div className="flex items-center gap-3 lg:hidden">
         {/* The visible prefix is part of the accessible name
          * ("Choose a tool"), so label-in-name holds. */}
-        <span aria-hidden="true" className="orbix-caps shrink-0 text-muted">
+        <span
+          aria-hidden="true"
+          className="shrink-0 text-[0.8125rem] leading-5 font-medium text-muted"
+        >
           Tool
         </span>
         <label className="sr-only" htmlFor="laboratory-tool-select">
@@ -348,7 +354,7 @@ export function LaboratoryToolNavigation({
 }
 
 /**
- * The full numbered list below 1024px, as a native disclosure in the page
+ * The full list with tool IDs below 1024px, as a native disclosure in the page
  * flow above the open tool (not in the sticky bar, which holds only the
  * select). It folds itself away once a tool is chosen.
  */

@@ -1,12 +1,13 @@
 "use client";
 
-import { Button, EquationBlock } from "@/components/ui";
+import { Button } from "@/components/ui";
 import { useMemo, useRef, useState, type FormEvent } from "react";
 import { ChevronDown, CircleAlert } from "lucide-react";
 
 import { analyzeInletCompression } from "@/features/engineering-lab/analysis";
 import {
   EQ_CONT,
+  EQ_JOIN,
   EQ_LINE,
   EQ_TERM,
   CalculatorNumberField,
@@ -26,6 +27,7 @@ import {
   EqFrac,
   EqOp,
   EQ_SUB_CLEAR,
+  LabEquation,
 } from "@/features/engineering-lab/components/shared";
 import type {
   InletCompressionAnalysis,
@@ -274,7 +276,7 @@ function collectValidationMessages(
 }
 
 const toolEquation = (
-  <EquationBlock
+  <LabEquation
     className="lab-equation--long"
     equation={
       <>
@@ -287,7 +289,7 @@ const toolEquation = (
             <EqDot />π<sub>terminal</sub>
           </span>
         </span>
-        <span className={EQ_LINE}>
+        <span className={EQ_JOIN}>
           <span className={EQ_TERM}>
             <EqFrac
               den={
@@ -302,7 +304,7 @@ const toolEquation = (
               }
             />
           </span>
-        </span>
+        </span>{" "}
         {/* Stacked fractions in tall parentheses, so one bracket family
             is used: B612 Mono draws "(" and "[" almost alike. */}
         <span className={EQ_CONT}>
@@ -679,7 +681,7 @@ export function InletCompressionAnalyzer() {
                   })}
                 </div>
               ) : (
-                <div className="mt-5 rounded-lg border border-border p-4">
+                <div className="mt-5">
                   <p className="text-sm font-semibold">
                     No external shock stages
                   </p>
@@ -745,7 +747,8 @@ export function InletCompressionAnalyzer() {
                   </div>
                   <div>
                     <dt className="orbix-label">
-                      Total pressure loss, 1 − recovery
+                      Total pressure loss,{" "}
+                      <span className="whitespace-nowrap">1 − recovery</span>
                     </dt>
                     <dd className="mt-1">
                       <output className="orbix-data" htmlFor={outputIds}>

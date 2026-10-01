@@ -12,7 +12,6 @@ import type {
 } from "@/features/vehicles/types";
 
 interface PropulsionPanelProps {
-  index?: number;
   name: string;
   stages: readonly RocketStage[];
 }
@@ -38,7 +37,7 @@ function thrustCell(measurement: ForceMeasurement | undefined) {
  * without scrolling; the stage and cycle follow. Each thrust cell gives the
  * published figure, its conversion and the source's qualifier.
  */
-export function PropulsionPanel({ index, name, stages }: PropulsionPanelProps) {
+export function PropulsionPanel({ name, stages }: PropulsionPanelProps) {
   const ordered = [...stages].sort((a, b) => a.stageNumber - b.stageNumber);
   const engineRows: EngineRow[] = ordered.flatMap((stage) =>
     stage.engines.map((engine) => ({ engine, stage })),
@@ -48,7 +47,6 @@ export function PropulsionPanel({ index, name, stages }: PropulsionPanelProps) {
     <VehicleProfileSection
       description="Thrust is per engine, where a figure is published. A rocket engine produces more thrust in vacuum because no outside air pressure acts against its exhaust."
       id="propulsion"
-      index={index}
       title="Propulsion"
     >
       <DataTable

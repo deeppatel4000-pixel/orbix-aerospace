@@ -7,7 +7,6 @@ import { VehicleProfileSection } from "@/features/vehicles/components/vehicle-pr
 import type { AircraftVariant } from "@/features/vehicles/types";
 
 interface VariantsPanelProps {
-  index?: number;
   name: string;
   variants: readonly AircraftVariant[];
 }
@@ -42,12 +41,11 @@ function byFirstFlight(variants: readonly AircraftVariant[]) {
  * were the same first-flight dates (and, for a single-variant aircraft,
  * only the date already given in the Overview).
  */
-export function VariantsPanel({ index, name, variants }: VariantsPanelProps) {
+export function VariantsPanel({ name, variants }: VariantsPanelProps) {
   return (
     <VehicleProfileSection
       description="Each variant in the record in order of first flight, with its status and the date where one is published."
       id="variants"
-      index={index}
       title="History and variants"
     >
       <DataTable

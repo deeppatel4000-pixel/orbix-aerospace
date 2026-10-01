@@ -448,7 +448,7 @@ export function DemoMode({
                 className={
                   isActive
                     ? "border-b-2 border-accent py-2 font-medium text-foreground"
-                    : "border-b-2 border-border py-2 text-muted"
+                    : "border-b-2 border-transparent py-2 text-muted"
                 }
                 key={step.id}
               >

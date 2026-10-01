@@ -3,8 +3,8 @@ import { cn } from "@/lib/cn";
 /**
  * The rules the spec sheet follows. Each is true of the rendering code: no
  * score is computed, `MISSING_VALUE_TEXT` replaces absent values, and
- * `normalizeRowMagnitudes` only draws bars for same-unit rows, scaled to
- * the largest figure in the row.
+ * `normalizeRowMagnitudes` only draws scale lines for same-unit rows,
+ * scaled to the largest figure in the row.
  */
 const comparisonRules = [
   {
@@ -20,7 +20,7 @@ const comparisonRules = [
     detail: "A missing value reads “Not published”, never zero.",
   },
   {
-    term: "Bars need one unit",
+    term: "Scale lines need one unit",
     detail:
       "Scaled to the row’s largest figure, only when the row shares a unit.",
   },
@@ -31,19 +31,19 @@ interface ComparisonRulesProps {
 }
 
 /**
- * Compact legend for the spec sheet: hairline rows, sans terms, muted
- * details. The rules are not a sequence, so they carry no numbers. Sits in
- * the empty top-left cell of the identity strip from 64rem and after the
- * sheet below that.
+ * Compact legend for the spec sheet: a plain definition list, sans terms,
+ * muted details, groups separated by space. The rules are not a sequence,
+ * so they carry no numbers. Sits in the empty top-left cell of the identity
+ * strip from 64rem and after the sheet below that.
  */
 export function ComparisonRules({ className }: ComparisonRulesProps) {
   return (
-    <dl aria-label="How the spec sheet reads" className={className}>
+    <dl
+      aria-label="How the spec sheet reads"
+      className={cn("flex flex-col gap-4", className)}
+    >
       {comparisonRules.map((rule) => (
-        <div
-          className={cn("border-t border-border py-2.5 last:border-b")}
-          key={rule.term}
-        >
+        <div key={rule.term}>
           <dt className="text-sm leading-5 font-medium text-foreground">
             {rule.term}
           </dt>

@@ -1,6 +1,6 @@
 "use client";
 
-import { Button, EquationBlock } from "@/components/ui";
+import { Button } from "@/components/ui";
 import { useState, type FormEvent } from "react";
 
 import { calculateLiftEquation } from "@/features/engineering-lab/calculators";
@@ -18,6 +18,7 @@ import {
   ReadoutGrid,
   EqDot,
   EQ_SUP,
+  LabEquation,
 } from "@/features/engineering-lab/components/shared";
 import type {
   LiftEquationField,
@@ -64,7 +65,7 @@ function parseFormValues(values: LiftEquationFormValues): LiftEquationInputs {
 }
 
 const toolEquation = (
-  <EquationBlock
+  <LabEquation
     equation={
       <>
         <span className={EQ_LINE}>

@@ -1,6 +1,6 @@
 "use client";
 
-import { Button, EquationBlock } from "@/components/ui";
+import { Button } from "@/components/ui";
 import { useMemo, useState, type FormEvent } from "react";
 
 import { analyzeHypersonicHeating } from "@/features/engineering-lab/analysis";
@@ -22,6 +22,7 @@ import {
   EqDot,
   EqFrac,
   EQ_SUP,
+  LabEquation,
 } from "@/features/engineering-lab/components/shared";
 import type {
   FlowRegime,
@@ -193,7 +194,7 @@ function deriveViewState(
 }
 
 const toolEquation = (
-  <EquationBlock
+  <LabEquation
     equation={
       <>
         <span className={EQ_LINE}>
@@ -519,8 +520,8 @@ export function HypersonicHeatingAnalyzer() {
             >
               What shapes stagnation heating?
             </h3>
-            <div className="mt-4 border-t border-border">
-              <article className="border-b border-border py-4">
+            <div className="mt-3 divide-y divide-border">
+              <article className="py-4">
                 <h4 className="text-sm font-semibold text-foreground">
                   Velocity
                 </h4>
@@ -529,7 +530,7 @@ export function HypersonicHeatingAnalyzer() {
                   modest speed increases can produce much larger heat flux.
                 </p>
               </article>
-              <article className="border-b border-border py-4">
+              <article className="py-4">
                 <h4 className="text-sm font-semibold text-foreground">
                   Altitude and density
                 </h4>
@@ -538,7 +539,7 @@ export function HypersonicHeatingAnalyzer() {
                   air particles available to transfer convective heat.
                 </p>
               </article>
-              <article className="border-b border-border py-4">
+              <article className="py-4">
                 <h4 className="text-sm font-semibold text-foreground">
                   Nose radius
                 </h4>

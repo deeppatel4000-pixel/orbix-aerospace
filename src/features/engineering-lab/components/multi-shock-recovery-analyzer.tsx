@@ -1,12 +1,13 @@
 "use client";
 
-import { Button, EquationBlock } from "@/components/ui";
+import { Button } from "@/components/ui";
 import { useMemo, useRef, useState, type FormEvent } from "react";
 import { ChevronDown, CircleAlert } from "lucide-react";
 
 import { analyzeMultiShockRecovery } from "@/features/engineering-lab/analysis";
 import {
   EQ_CONT,
+  EQ_JOIN,
   EQ_LINE,
   EQ_TERM,
   CalculatorNumberField,
@@ -27,6 +28,7 @@ import {
   EqFrac,
   EqOp,
   EQ_SUB_CLEAR,
+  LabEquation,
 } from "@/features/engineering-lab/components/shared";
 import type {
   MultiShockRecoveryAnalysis,
@@ -247,7 +249,7 @@ function collectValidationMessages(
 }
 
 const toolEquation = (
-  <EquationBlock
+  <LabEquation
     className="lab-equation--long"
     equation={
       <>
@@ -261,7 +263,7 @@ const toolEquation = (
             <sub className={EQ_SUB_CLEAR}>t1</sub>)<sub>i</sub>
           </span>
         </span>
-        <span className={EQ_LINE}>
+        <span className={EQ_JOIN}>
           <span className={EQ_TERM}>
             <EqFrac
               den={
@@ -276,7 +278,7 @@ const toolEquation = (
               }
             />
           </span>
-        </span>
+        </span>{" "}
         {/* Stacked fractions in tall parentheses, so one bracket family
             is used: B612 Mono draws "(" and "[" almost alike. */}
         <span className={EQ_CONT}>
@@ -608,7 +610,7 @@ export function MultiShockRecoveryAnalyzer() {
                   })}
                 </div>
               ) : (
-                <div className="mt-5 rounded-lg border border-border p-4">
+                <div className="mt-5">
                   <p className="text-sm font-semibold">No shock stages</p>
                   <p className="mt-2 text-sm leading-6 text-muted">
                     Add a normal or oblique shock stage to begin the sequence.

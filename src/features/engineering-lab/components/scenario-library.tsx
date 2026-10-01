@@ -439,17 +439,12 @@ export function ScenarioLibrary() {
               <li
                 aria-labelledby={titleId}
                 className={
-                  // Only the loaded scenario is boxed; the rest sit on a
-                  // hairline so no card sits inside the tool frame. Every
-                  // item has the same 1px border and radius, so loading one
-                  // changes only colour and moves nothing.
+                  // Open ruled rows, no box (spec 3.2). The loaded scenario
+                  // is marked by the "Loaded" tag and a division-colour
+                  // rule; loading one changes only colour and moves nothing.
                   cn(
-                    "relative rounded-lg border p-4 sm:p-6",
-                    loaded
-                      ? "border-accent bg-surface-raised"
-                      : // A straight 1px rule across the top, not a top
-                        // border that would taper into the rounded corners.
-                        "border-transparent before:pointer-events-none before:absolute before:-inset-x-px before:-top-px before:h-px before:bg-border-subtle",
+                    "border-t pt-4 pb-2",
+                    loaded ? "border-accent" : "border-border-subtle",
                   )
                 }
                 key={scenario.id}

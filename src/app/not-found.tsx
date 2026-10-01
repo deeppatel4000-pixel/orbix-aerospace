@@ -14,10 +14,11 @@ export const metadata: Metadata = {
 };
 
 /**
- * 404 (spec 9): a display "Off course." line over the US Air Force F-15C photo,
- * with a way home and into both registries. "Off course." is the H1; the
- * plain "Page not found" eyebrow above it and the document title name the
- * page for assistive technology and search.
+ * 404: "Off course." on the page ground with a way home and into both
+ * registries, and the US Air Force F-15C photograph as a hard-edged plate
+ * beside it (spec 7). "Off course." is the H1, in one colour; the plain
+ * "Page not found" kicker above it (the page's one kicker) and the document
+ * title name the page for assistive technology and search.
  *
  * `app/not-found.tsx` sits outside the (site) layout, so it renders the site
  * chrome itself to keep the header, main and footer on every page.
@@ -28,9 +29,7 @@ export default function NotFound() {
   const content = (
     <>
       <Eyebrow>Page not found</Eyebrow>
-      <h1 className="orbix-display mt-5 text-text-primary">
-        Off <span className="orbix-accent-word">course.</span>
-      </h1>
+      <h1 className="orbix-h1 mt-4 text-ink">Off course.</h1>
       <p className="orbix-lead mt-6">
         The page you asked for does not exist or has moved. The registries and
         the home page are still where you left them.
@@ -62,6 +61,7 @@ export default function NotFound() {
           // its own profile; the registries lead with the B-2 and the
           // Saturn V, home with the SR-71), so this page reads as its own.
           <PhotoHero
+            caption="F-15C Eagle of the 44th Fighter Squadron on a training flight, 15 April 2019"
             visual={{ ...visual, objectPosition: visual.heroObjectPosition }}
           >
             {content}

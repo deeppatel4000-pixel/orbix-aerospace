@@ -2,7 +2,6 @@
 
 import { useId, type ReactNode } from "react";
 
-import { RegistrationMarks } from "@/components/ui/registration-marks";
 import { cn } from "@/lib/cn";
 
 import { figureTspans } from "./figure-tspans";
@@ -87,7 +86,7 @@ const ANNOTATION_TEXT = {
 
 /**
  * The large drawing's label size before it is measured, by the figure's
- * width: 11 x 400 / (figure width less the 2rem plate padding), rounded up,
+ * width: 11 x 400 / (figure width less the 2rem drawing inset), rounded up,
  * so the labels never render under 11 CSS px on a phone before hydration.
  */
 const ANNOTATION_FLOOR_CLASS =
@@ -138,16 +137,20 @@ function LimbView({
   finalAltitudeMetres,
   initialAltitudeMetres,
   initialLabel,
+  summary,
+  title,
 }: {
   readonly finalAltitudeMetres?: number;
   readonly initialAltitudeMetres?: number;
   readonly initialLabel: string;
+  /** The figure's plain-language summary, read before the limb detail. */
+  readonly summary: string;
+  readonly title: string;
 }) {
   const reactId = useId().replaceAll(":", "");
   const titleId = `orbit-limb-title-${reactId}`;
   const descriptionId = `orbit-limb-description-${reactId}`;
   const clipId = `orbit-limb-clip-${reactId}`;
-  const fadeId = `orbit-limb-fade-${reactId}`;
   const markerId = `orbit-limb-arrow-${reactId}`;
   const { fontSize, svgRef } = useAnnotationFontSize(true, LIMB_WIDTH, "exact");
 
@@ -204,9 +207,9 @@ function LimbView({
         role="img"
         viewBox={`0 0 ${LIMB_WIDTH} ${height}`}
       >
-        <title id={titleId}>Limb view of the orbits</title>
+        <title id={titleId}>{title}</title>
         <desc id={descriptionId}>
-          {`The top 20 degrees of Earth's outline with the ${altitudes.join(" and the ")}. ${
+          {`${summary} Limb view: the top 20 degrees of Earth's outline with the ${altitudes.join(" and the ")}. ${
             stretch === 1
               ? "Altitudes are drawn to the same scale as Earth's curvature."
               : `Altitudes are drawn ${stretch} times their true scale against Earth's curvature.`
@@ -216,28 +219,6 @@ function LimbView({
           <clipPath id={clipId}>
             <rect height={height} width={LIMB_WIDTH} x="0" y="0" />
           </clipPath>
-          {/* Earth's fill fades out below the arc, so the cut at the
-           * drawing's sides and bottom never reads as a hard rectangle. */}
-          <linearGradient
-            gradientUnits="userSpaceOnUse"
-            id={fadeId}
-            x1="0"
-            x2="0"
-            y1={surfaceTop}
-            y2={height}
-          >
-            <stop offset="0" stopColor="white" stopOpacity="1" />
-            <stop offset="1" stopColor="white" stopOpacity="0" />
-          </linearGradient>
-          <mask id={`${fadeId}-mask`}>
-            <rect
-              fill={`url(#${fadeId})`}
-              height={height}
-              width={LIMB_WIDTH}
-              x="0"
-              y="0"
-            />
-          </mask>
           <marker
             id={markerId}
             markerHeight="8"
@@ -260,8 +241,7 @@ function LimbView({
           <circle
             cx={cx}
             cy={cy}
-            fill="var(--orbix-surface-raised)"
-            mask={`url(#${fadeId}-mask)`}
+            fill="none"
             r={LIMB_EARTH_RADIUS}
             stroke={EARTH_OUTLINE}
             strokeWidth="1"
@@ -327,7 +307,9 @@ function LimbView({
           })}
         </g>
       </svg>
-      <p className="orbix-caps mt-2 text-center text-muted">{stretchLabel}</p>
+      <p className="mt-2 text-center text-[0.8125rem] leading-5 font-medium text-muted">
+        {stretchLabel}
+      </p>
     </div>
   );
 }
@@ -359,8 +341,9 @@ export function OrbitDiagram({
   const drawnR1 = r1 !== undefined ? r1 * scale : undefined;
   const drawnR2 = r2 !== undefined ? r2 * scale : undefined;
   const highestAltitude = largestRadius - EARTH_RADIUS_METRES;
-  // A tool-sized drawing of a low orbit adds the magnified limb view and
-  // keeps the true-scale disk as a small reference figure.
+  // A tool-sized drawing of a low orbit is shown as the magnified limb view
+  // only: at true scale such orbits sit on Earth's outline and read as a
+  // doubled ring, so the full disk would show nothing the limb does not.
   const withLimb =
     size === "default" &&
     highestAltitude > 0 &&
@@ -413,11 +396,6 @@ export function OrbitDiagram({
           y: CENTRE + drawnR2 * Math.sin(dimensionAngle),
         }
       : undefined;
-  const dimensionLabel = {
-    x: CENTRE + (drawnR2 ?? 0) * 0.62 * Math.cos(dimensionAngle),
-    y: CENTRE + (drawnR2 ?? 0) * 0.62 * Math.sin(dimensionAngle),
-  };
-
   const {
     fontSize: annotationFontSize,
     measured,
@@ -433,6 +411,24 @@ export function OrbitDiagram({
     style: measured ? { fontSize: annotationFontSize } : undefined,
   };
   const subscriptShift = annotationFontSize * 0.25;
+  // The r2 label is centred on the dimension line, pulled in from 62
+  // percent of the radius when needed so its far end (B612 Mono, about
+  // 0.62em a character) stays clear of the dotted target ring at every
+  // drawing size, and never reaches back over Earth.
+  const dimensionText = `r2 = ${kilometres.format((r2 ?? 0) / 1000)} km`;
+  const dimensionHalfWidth =
+    (dimensionText.length * annotationFontSize * 0.62) / 2;
+  const dimensionDistance = Math.max(
+    earthRadius + dimensionHalfWidth + 4,
+    Math.min(
+      (drawnR2 ?? 0) * 0.62,
+      (drawnR2 ?? 0) - dimensionHalfWidth - annotationFontSize - 8,
+    ),
+  );
+  const dimensionLabel = {
+    x: CENTRE + dimensionDistance * Math.cos(dimensionAngle),
+    y: CENTRE + dimensionDistance * Math.sin(dimensionAngle),
+  };
 
   const drawing = (
     <svg
@@ -455,7 +451,7 @@ export function OrbitDiagram({
       <circle
         cx={CENTRE}
         cy={CENTRE}
-        fill="var(--orbix-surface-raised)"
+        fill="none"
         r={earthRadius}
         stroke={EARTH_OUTLINE}
         strokeWidth="1"
@@ -577,20 +573,13 @@ export function OrbitDiagram({
   return (
     <figure className="@container m-0">
       {size === "large" ? (
-        // Registration marks frame the drawing only, like a plate; the
-        // legend and caption sit below them.
-        <div className="relative mx-auto p-4 max-md:max-w-[20.5rem] sm:p-5">
-          <RegistrationMarks />
+        // Unframed linework on the ground (spec 8); the legend and caption
+        // sit below it.
+        <div className="mx-auto p-4 max-md:max-w-[20.5rem] sm:p-5">
           {drawing}
         </div>
       ) : withLimb ? (
-        <div className="grid items-end gap-6 @[40rem]:grid-cols-[10rem_minmax(0,1fr)]">
-          <div>
-            {drawing}
-            <p className="orbix-caps mt-2 text-center whitespace-nowrap text-muted">
-              To scale
-            </p>
-          </div>
+        <div className="max-w-xl">
           <LimbView
             finalAltitudeMetres={finalAltitudeMetres}
             initialAltitudeMetres={
@@ -604,6 +593,8 @@ export function OrbitDiagram({
                 ? "Initial orbit"
                 : "Maneuver orbit"
             }
+            summary={description}
+            title={title}
           />
         </div>
       ) : (
@@ -633,15 +624,10 @@ export function OrbitDiagram({
           {caption ??
             (withLimb ? (
               <>
-                The full view is drawn to scale from the computed altitudes. The
-                limb view enlarges the top 20 degrees of Earth&apos;s outline
-                and marks each orbit&apos;s altitude.
+                The top 20 degrees of Earth&apos;s outline at true curvature,
+                with each orbit at its computed altitude.
                 {transferPath ? (
-                  <>
-                    {" "}
-                    Transfer path not drawn: at this scale it lies on the
-                    orbits.
-                  </>
+                  <> Transfer path not drawn: it runs between the two orbits.</>
                 ) : null}
               </>
             ) : (

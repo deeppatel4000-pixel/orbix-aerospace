@@ -6,17 +6,16 @@ import { CircleAlert } from "lucide-react";
  * One numeric parameter, rendered with the shared field pattern (spec 9).
  *
  * The label sits above the control and stays the accessible name on its own,
- * so a field can be found by its plain name ("Thrust"). The unit is shown as a
- * joined suffix beside the value and is also announced through
- * `aria-describedby`, together with the help text and, when present, the error
- * message. The invalid state marks the border and prints a message with an
+ * so a field can be found by its plain name ("Thrust"). The unit is plain muted
+ * text after the input (spec 9, never a bordered cell) and is also announced
+ * through `aria-describedby`, together with the help text and, when present,
+ * the error message. The invalid state marks the border and prints a message with an
  * icon, so colour is never the only signal.
  *
- * In the lab every suffix is one fixed width (`.lab-field__unit`). A
- * dimensionless field has no suffix at all: its input fills the row, so an
- * empty bordered cell is never mistaken for a missing unit.
- * The input keeps an 8rem minimum so a value stays readable beside the
- * suffix on a 320px screen.
+ * In the lab every unit sits in a column of one width (`.lab-field__unit`).
+ * A dimensionless field has no unit at all, and its input stops where the
+ * others stop. The input keeps an 8rem minimum so a value stays readable
+ * beside the unit on a 320px screen.
  *
  * Parsing and validation stay in each calculator; this component does neither.
  */

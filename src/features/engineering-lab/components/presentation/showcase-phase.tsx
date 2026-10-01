@@ -87,7 +87,7 @@ export interface ShowcasePhaseProps {
 
 /**
  * One step in the walkthrough's step row: B612 Mono number, label and a
- * 2px rule, accent under the current step. The number is a real sequence.
+ * 2px accent rule under the current step only. The number is a real sequence.
  */
 export function ShowcasePhase({
   active,
@@ -103,7 +103,7 @@ export function ShowcasePhase({
           "flex min-h-11 w-full items-end border-b-2 py-2 text-left text-sm leading-5 transition-colors focus-visible:outline-offset-[-2px] " +
           (active
             ? "border-accent font-medium text-foreground"
-            : "border-border text-text-secondary hover:border-border-control hover:text-foreground")
+            : "border-transparent text-text-secondary hover:border-border-control hover:text-foreground")
         }
         onClick={() => onSelect(index)}
         type="button"

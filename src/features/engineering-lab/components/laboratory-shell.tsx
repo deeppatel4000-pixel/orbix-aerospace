@@ -35,7 +35,7 @@ export function useActiveLaboratoryTool(): string | null {
 }
 
 /**
- * The Engineering Lab workspace: the numbered tool index, held below the
+ * The Engineering Lab workspace: the tool index with tool IDs, held below the
  * header (a slim select bar under 1024px, a column on the left from
  * 1024px), and exactly one active tool beside it.
  *
@@ -155,11 +155,13 @@ export function LaboratoryShell({ children, workflows }: LaboratoryShellProps) {
         {/* Held under the 64px header: below 1024px as a slim bar holding
          * only the select, from 1024px as the numbered index with the open
          * discipline expanded. On a short window the index scrolls inside
-         * its own column with a thin, token-coloured bar, the last rows
-         * fade out, and the current row is kept in view. */}
+         * its own column with a visible thin scrollbar as the overflow cue
+         * (spec 3.1: no fade), and the current row is kept in view. The
+         * narrow bar's ground is the page colour, so scrolled content does
+         * not show through it; it is not a fill. */}
         <div
           data-tool-rail=""
-          className="sticky top-[var(--header-height)] z-30 -mx-4 self-start border-b border-border bg-background px-4 py-2 sm:-mx-6 sm:px-6 lg:top-[calc(var(--header-height)+1.5rem)] lg:z-auto lg:mx-0 lg:max-h-[calc(100svh-var(--header-height)-3rem)] lg:[scrollbar-width:thin] lg:[scrollbar-color:var(--border-control)_transparent] lg:overflow-y-auto lg:border-b-0 lg:bg-transparent lg:[mask-image:linear-gradient(#000_calc(100%-2rem),transparent)] lg:px-0 lg:pt-0 lg:pb-8 max-lg:[html:has(&)]:scroll-pt-[calc(var(--header-height)+5rem)]"
+          className="sticky top-[var(--header-height)] z-30 -mx-4 self-start border-b border-border bg-background px-4 py-2 sm:-mx-6 sm:px-6 lg:top-[calc(var(--header-height)+1.5rem)] lg:z-auto lg:mx-0 lg:max-h-[calc(100svh-var(--header-height)-3rem)] lg:[scrollbar-width:thin] lg:[scrollbar-color:var(--rule-strong)_var(--rule)] lg:overflow-y-auto lg:border-b-0 lg:bg-transparent lg:px-0 lg:pt-0 lg:pb-8 max-lg:[html:has(&)]:scroll-pt-[calc(var(--header-height)+5rem)]"
           ref={indexRef}
         >
           <LaboratoryToolNavigation

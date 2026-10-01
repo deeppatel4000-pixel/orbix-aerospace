@@ -9,7 +9,7 @@ import {
 
 export type ButtonProps = ComponentPropsWithoutRef<"button"> & {
   /**
-   * Adds a 16px arrow (spec 8): `right` (another page), `down` (a section
+   * Adds a 16px arrow (spec 9): `right` (another page), `down` (a section
    * on this page) or `external` (leaves the site) after the label, or
    * `back` (return to the previous page) before it. Decorative;
    * hidden from assistive technology, so the text must carry the meaning.
@@ -22,7 +22,7 @@ export type ButtonProps = ComponentPropsWithoutRef<"button"> & {
 };
 
 /**
- * The `<button>` primitive (spec 8), for actions on this page. Use
+ * The `<button>` primitive (spec 9), for actions on this page. Use
  * `ButtonLink` for navigation. Button text is a verb phrase naming the
  * outcome ("Calculate delta-v"), never "Go" or "Submit" on its own.
  * Defaults to `type="button"` so it never submits a form by accident.

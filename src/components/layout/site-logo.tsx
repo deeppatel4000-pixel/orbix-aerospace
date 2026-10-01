@@ -9,7 +9,7 @@ interface SiteLogoProps {
 
 /**
  * Owner-supplied wordmark at its natural 1055:400 aspect, 36px tall at
- * every breakpoint (spec 8). The PNG has 23/1055 of empty space before the
+ * every breakpoint. The PNG has 23/1055 of empty space before the
  * first letter, so a -2px start margin puts the ink on the text edge. No
  * glow, no scale, nothing violet added around it.
  */

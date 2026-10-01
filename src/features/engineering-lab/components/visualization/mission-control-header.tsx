@@ -52,28 +52,28 @@ export function MissionControlHeader({
         {missionDescription}
       </p>
 
-      {/* One hairline row; a vertical rule splits the cells on wider
-       * columns. The category is the label above the name. The preset cell
-       * shows only when the mission came from a preset: a lab example or
-       * custom mission would otherwise read as a missing value. */}
+      {/* One hairline above the row; the next section's top rule closes it,
+       * so there is no bottom rule here. On wider columns the cells sit side
+       * by side, separated by space (no vertical rule, spec 6). The category
+       * is the label above the name. The preset cell shows only when the
+       * mission came from a preset: a lab example or custom mission would
+       * otherwise read as a missing value. */}
       <dl
         className={
           missionPreset
-            ? "mt-4 grid border-y border-border-subtle text-sm sm:grid-cols-2 sm:divide-x sm:divide-border-subtle"
-            : "mt-4 grid border-y border-border-subtle text-sm"
+            ? "mt-4 grid border-t border-border-subtle text-sm sm:grid-cols-2 sm:gap-x-8"
+            : "mt-4 grid border-t border-border-subtle text-sm"
         }
       >
         {missionPreset ? (
-          <div className="min-w-0 border-b border-border-subtle py-2 sm:border-b-0 sm:pr-4">
+          <div className="min-w-0 border-b border-border-subtle py-2 sm:border-b-0">
             <dt className="text-muted">Mission preset</dt>
             <dd className="mt-0.5 break-words text-foreground">
               {missionPreset.name}
             </dd>
           </div>
         ) : null}
-        <div
-          className={missionPreset ? "min-w-0 py-2 sm:pl-4" : "min-w-0 py-2"}
-        >
+        <div className="min-w-0 py-2">
           <dt className="text-muted">Systems used</dt>
           <dd
             className={

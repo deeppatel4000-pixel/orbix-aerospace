@@ -2,9 +2,7 @@ import Link from "next/link";
 
 import { Container } from "@/components/layout/container";
 import { ButtonLink } from "@/components/ui/button-link";
-import { ProfileLink } from "@/features/vehicles/components/profile-link";
 import { EmptyState } from "@/components/ui/empty-state";
-import { Eyebrow } from "@/components/ui/eyebrow";
 import { PhotoHero } from "@/components/ui/photo-hero";
 import { SpecPanel } from "@/components/ui/spec-panel";
 import { AircraftCard } from "@/features/aircraft/components/aircraft-card";
@@ -13,17 +11,14 @@ import {
   formatAircraftEngineType,
   formatAircraftRoles,
 } from "@/features/aircraft/utils";
+import { AircraftSizeComparison, toMetres } from "@/features/vehicles/drawings";
 import {
   CONVERSION_NOTE,
   MINIMUM_NOTE,
-  measurementParts,
+  measurementFigure,
   panelSecondary,
 } from "@/features/vehicles/components/measurement-display";
-import {
-  responsiveHeroPosition,
-  STOPGAP_HERO_SPEC_PANEL,
-  STOPGAP_PHOTO_HERO_BANNER_TABLET,
-} from "@/features/vehicles/components/primitive-stopgaps";
+import { ProfileLink } from "@/features/vehicles/components/profile-link";
 import { VehicleRegistry } from "@/features/vehicles/components/vehicle-registry";
 import type { Aircraft } from "@/features/vehicles/types";
 import { formatCountWord } from "@/features/vehicles/utils/format-measurement";
@@ -33,21 +28,12 @@ interface AircraftExplorerProps {
 }
 
 /**
- * The aircraft shown in the hero and its spec panel: the B-2, whose
- * photograph puts the whole airframe across the upper half of the frame
- * over open ocean, so neither the text nor the spec panel at the bottom
- * right covers it (the F-22 photograph fills the middle of the frame and
- * sat behind both). Not the SR-71, whose photograph opens the home page,
- * nor the F-22, pictured in the home page's aircraft card.
+ * The aircraft in the hero photograph and the figures under it: the B-2,
+ * whose photograph puts the whole airframe across the upper half of the
+ * frame, so a wide band keeps both wingtips. Not the SR-71, whose
+ * photograph opens the home page.
  */
 const FEATURED_AIRCRAFT_ID = "b-2-spirit";
-
-/**
- * The registry's wide first card. Not the hero aircraft: on a phone the
- * same photograph came round again within one screen of the hero. The
- * hero spec panel stays the page's one featured aircraft.
- */
-const REGISTRY_LEAD_ID = "f-22-raptor";
 
 /** Words the registry search matches for one aircraft. */
 function aircraftKeywords(aircraft: Aircraft) {
@@ -64,73 +50,94 @@ function aircraftKeywords(aircraft: Aircraft) {
   ].join(" ");
 }
 
-/** The record order with the registry's lead aircraft first. */
-function registryOrder(aircraft: readonly Aircraft[], leadId: string) {
-  const lead = aircraft.find((item) => item.id === leadId);
-  return lead
-    ? [lead, ...aircraft.filter((item) => item !== lead)]
-    : [...aircraft];
-}
-
 function capitalise(text: string) {
   return text.charAt(0).toLocaleUpperCase("en-US") + text.slice(1);
 }
 
 /**
- * The featured aircraft's maximum speed and range, each with its conversion
- * and qualifier, and a link to its profile. Two figures, one row: a second
- * row made the panel tall enough to reach the airframe at 1024 to 1279px.
- * The conversion note is given once, in "About these figures".
+ * The pictured aircraft, named on the ground under the photograph's
+ * caption, with three published figures as an open definition list and a
+ * link to its profile.
  */
-function FeaturedPanel({ aircraft }: { aircraft: Aircraft }) {
-  const { maxSpeed, range } = aircraft.performance;
-  const rows = [
-    { label: "Maximum speed", measurement: maxSpeed },
-    { label: "Range", measurement: range },
-  ];
+function PicturedAircraft({ aircraft }: { aircraft: Aircraft }) {
+  const { maxSpeed, range, serviceCeiling } = aircraft.performance;
+  const summary = getAircraftVisual(aircraft.id)?.cardSummary;
 
   return (
-    <SpecPanel
-      className={STOPGAP_HERO_SPEC_PANEL}
-      footnote={
-        <ProfileLink href={`/aircraft/${aircraft.id}`} name={aircraft.name} />
-      }
-      items={rows.map(({ label, measurement }) => {
-        const { unit, value } = measurementParts(measurement);
-        return {
+    <section
+      aria-labelledby="pictured-aircraft-title"
+      className="grid gap-8 pb-16 lg:grid-cols-12 lg:gap-6 lg:pb-20"
+    >
+      <div className="lg:col-span-4">
+        <p className="orbix-kicker">Pictured above</p>
+        <h2
+          className="font-display mt-2 text-[2rem] leading-none tracking-[-0.035em] text-foreground"
+          id="pictured-aircraft-title"
+        >
+          {aircraft.name}
+        </h2>
+        {summary ? <p className="mt-3 text-muted">{summary}</p> : null}
+        <div className="mt-5">
+          <ProfileLink href={`/aircraft/${aircraft.id}`} name={aircraft.name} />
+        </div>
+      </div>
+      <SpecPanel
+        className="lg:col-span-8"
+        columns={3}
+        items={[
+          { label: "Maximum speed", measurement: maxSpeed },
+          { label: "Range", measurement: range },
+          { label: "Service ceiling", measurement: serviceCeiling },
+        ].map(({ label, measurement }) => ({
           label,
+          primary: true,
           secondary: panelSecondary(measurement),
-          unit,
-          value,
-        };
-      })}
-      kicker="Featured aircraft"
-      title={aircraft.name}
-    />
+          ...measurementFigure(measurement),
+        }))}
+      />
+    </section>
   );
 }
 
-/** The `/aircraft` registry page (spec 9). */
+/**
+ * "The B-2 Spirit spans almost five F-35 Lightning IIs set wingtip to
+ * wingtip. ", worked out from the recorded wingspans, or nothing when the
+ * widest is not at least twice the narrowest. The count is the nearest
+ * true phrasing: "as much as" for a whole ratio, "almost" when the ratio
+ * falls short of the next whole number by a quarter or less (172 ft over
+ * 35 ft is 4.91), otherwise "more than" the whole part.
+ */
+function spanComparison(aircraft: readonly Aircraft[]) {
+  const bySpan = [...aircraft].sort(
+    (a, b) => toMetres(b.dimensions.wingspan) - toMetres(a.dimensions.wingspan),
+  );
+  const widest = bySpan[0];
+  const narrowest = bySpan.at(-1);
+  if (!widest || !narrowest || widest === narrowest) return "";
+  const ratio =
+    toMetres(widest.dimensions.wingspan) /
+    toMetres(narrowest.dimensions.wingspan);
+  if (ratio < 2) return "";
+  const whole = Math.floor(ratio);
+  const next = Math.ceil(ratio);
+  const phrase =
+    whole === ratio
+      ? `as much as ${formatCountWord(whole)}`
+      : next - ratio <= 0.25
+        ? `almost ${formatCountWord(next)}`
+        : `more than ${formatCountWord(whole)}`;
+  return `The ${widest.name} spans ${phrase} ${narrowest.name}s set wingtip to wingtip. `;
+}
+
+/** The `/aircraft` registry page. */
 export function AircraftExplorer({ aircraft }: AircraftExplorerProps) {
   const featured =
     aircraft.find((item) => item.id === FEATURED_AIRCRAFT_ID) ?? aircraft[0];
   const heroVisual = featured ? getAircraftVisual(featured.id) : undefined;
-  const heroPosition = heroVisual
-    ? responsiveHeroPosition(
-        heroVisual.registryHeroObjectPosition ?? {
-          base: heroVisual.heroObjectPosition,
-          lg: heroVisual.heroObjectPosition,
-          md: heroVisual.heroObjectPosition,
-        },
-      )
-    : undefined;
 
   const heroText = (
     <>
-      <Eyebrow>Aircraft registry</Eyebrow>
-      <h1 className="orbix-display mt-5 text-foreground">
-        Aircraft <span className="orbix-accent-word">Explorer</span>
-      </h1>
+      <h1 className="orbix-h1 text-foreground">Aircraft registry</h1>
       <p className="orbix-lead mt-6">
         {capitalise(formatCountWord(aircraft.length))} military aircraft set out
         from their published specifications: dimensions, weights, propulsion,
@@ -153,18 +160,15 @@ export function AircraftExplorer({ aircraft }: AircraftExplorerProps) {
 
   return (
     <>
-      {heroVisual && heroPosition && featured ? (
+      {heroVisual && featured ? (
         <PhotoHero
-          // From 64rem the landscape photograph runs behind the text (spec
-          // 8), with the spec panel over the open ocean at the bottom
-          // right. From 48rem to 64rem the text column would cross the
-          // B-2's centre body, so the photograph is a banner above it.
-          aside={<FeaturedPanel aircraft={featured} />}
-          className={`${heroPosition.className} ${STOPGAP_PHOTO_HERO_BANNER_TABLET}`}
-          style={heroPosition.style}
+          // A band under the text at every width: the flying wing spans
+          // nearly the whole frame, and a plate beside the text would crop
+          // both wingtips.
+          layout="band"
           visual={{
             ...heroVisual,
-            objectPosition: heroPosition.objectPosition,
+            objectPosition: heroVisual.heroObjectPosition,
           }}
         >
           {heroText}
@@ -173,7 +177,11 @@ export function AircraftExplorer({ aircraft }: AircraftExplorerProps) {
         <Container className="py-16">{heroText}</Container>
       )}
 
-      <Container className="py-16 lg:py-24">
+      <Container>
+        {featured && heroVisual ? (
+          <PicturedAircraft aircraft={featured} />
+        ) : null}
+
         {aircraft.length === 0 ? (
           <EmptyState
             description="No aircraft records are available right now."
@@ -181,22 +189,12 @@ export function AircraftExplorer({ aircraft }: AircraftExplorerProps) {
           />
         ) : (
           <VehicleRegistry
-            description="Each card opens a full profile. Maximum speed and service ceiling are the published figures for the baseline aircraft."
-            entries={registryOrder(aircraft, REGISTRY_LEAD_ID).map(
-              (item, index) => ({
-                card: (
-                  <AircraftCard
-                    aircraft={item}
-                    layout={index === 0 ? "feature" : "stacked"}
-                    leadRow={index === 1}
-                  />
-                ),
-                featured: index === 0,
-                id: item.id,
-                keywords: aircraftKeywords(item),
-              }),
-            )}
-            eyebrow="The registry"
+            description="Each entry opens a full profile. Maximum speed and service ceiling are the published figures for the baseline aircraft."
+            entries={aircraft.map((item) => ({
+              card: <AircraftCard aircraft={item} />,
+              id: item.id,
+              keywords: aircraftKeywords(item),
+            }))}
             id="available-aircraft"
             noun={{ plural: "aircraft", singular: "aircraft" }}
             searchHelp="Matches name, manufacturer, role, variant or engine."
@@ -205,17 +203,42 @@ export function AircraftExplorer({ aircraft }: AircraftExplorerProps) {
           />
         )}
 
+        {aircraft.length > 0 ? (
+          <section
+            aria-labelledby="aircraft-scale-title"
+            className="mt-20 grid gap-10 border-t border-border pt-12 lg:mt-28 lg:grid-cols-12 lg:gap-6"
+          >
+            <div className="lg:col-span-4">
+              <h2
+                className="orbix-h2 text-foreground"
+                id="aircraft-scale-title"
+              >
+                Side by side, to scale
+              </h2>
+              <p className="mt-5 max-w-[46ch] text-pretty text-muted">
+                {spanComparison(aircraft)}Each aircraft is drawn from the length
+                and wingspan in its record, and nothing else, at one scale.
+              </p>
+            </div>
+            <AircraftSizeComparison
+              aircraft={aircraft}
+              className="lg:col-span-8 lg:col-start-5"
+              figureNumber="1"
+            />
+          </section>
+        ) : null}
+
         <section
           aria-labelledby="aircraft-sources-title"
-          className="mt-16 grid gap-4 border-t border-border pt-8 lg:grid-cols-12 lg:gap-6"
+          className="mt-16 grid gap-3 border-t border-border pt-8 pb-16 lg:grid-cols-12 lg:gap-6 lg:pb-24"
         >
           <h2
-            className="orbix-caps text-muted lg:col-span-4"
+            className="text-base font-semibold text-foreground lg:col-span-4"
             id="aircraft-sources-title"
           >
             About these figures
           </h2>
-          <p className="max-w-[68ch] text-sm leading-6 text-text-secondary lg:col-span-8">
+          <p className="max-w-[68ch] text-sm leading-6 text-muted lg:col-span-8">
             Figures are publicly released specifications. Where a source gives a
             value as approximate, a minimum or a maximum, the profile keeps that
             qualifier beside the number. {MINIMUM_NOTE} {CONVERSION_NOTE}{" "}

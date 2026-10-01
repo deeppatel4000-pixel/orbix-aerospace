@@ -24,7 +24,7 @@ export function DemoNavigation({
   return (
     <nav aria-label="ORBIX demo tour navigation">
       {/* The shared transport order: the primary action first, then the
-       * quiet controls, as in the replay and the walkthrough. */}
+       * underlined text controls, as in the replay and the walkthrough. */}
       <div className={TRANSPORT_ROW_CLASS}>
         <Button arrow={isLastStep ? undefined : "right"} onClick={onNext}>
           {isLastStep ? "Complete tour" : "Next step"}
@@ -33,18 +33,18 @@ export function DemoNavigation({
           arrow="back"
           disabled={currentStepIndex === 0}
           onClick={onBack}
-          variant="ghost"
+          variant="tertiary"
         >
           Back
         </Button>
         <Button
           aria-label="Restart demo tour"
           onClick={onRestart}
-          variant="ghost"
+          variant="tertiary"
         >
           Restart
         </Button>
-        <Button onClick={onSkip} variant="ghost">
+        <Button arrow="right" onClick={onSkip} variant="tertiary">
           Skip tour
         </Button>
       </div>

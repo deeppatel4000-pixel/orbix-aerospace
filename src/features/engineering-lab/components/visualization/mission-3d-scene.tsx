@@ -126,7 +126,7 @@ export function Mission3DScene({
 
   return (
     <section aria-labelledby={`${baseId}-title`} className="min-w-0">
-      <header className="border-b border-border-subtle pb-4">
+      <header className="pb-4">
         <LabHeading id={`${baseId}-title`}>Mission scene</LabHeading>
       </header>
 

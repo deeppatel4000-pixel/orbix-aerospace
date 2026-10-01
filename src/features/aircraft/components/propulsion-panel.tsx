@@ -13,7 +13,6 @@ import type {
 import { formatCountWord } from "@/features/vehicles/utils/format-measurement";
 
 interface PropulsionPanelProps {
-  index?: number;
   name: string;
   propulsion: AircraftPropulsion;
 }
@@ -42,11 +41,7 @@ function describeEngines(name: string, engines: readonly AircraftEngine[]) {
  * columns come straight after it, so on a phone the figures are in view
  * without scrolling; the engine type follows.
  */
-export function PropulsionPanel({
-  index,
-  name,
-  propulsion,
-}: PropulsionPanelProps) {
+export function PropulsionPanel({ name, propulsion }: PropulsionPanelProps) {
   const engines = propulsion.engines;
   // Only the thrust ratings some engine publishes get a column.
   const columns = thrustColumns.filter((column) =>
@@ -57,7 +52,6 @@ export function PropulsionPanel({
     <VehicleProfileSection
       description={describeEngines(name, engines)}
       id="propulsion"
-      index={index}
       title="Propulsion"
     >
       <DataTable

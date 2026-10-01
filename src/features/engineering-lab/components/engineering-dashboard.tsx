@@ -4,7 +4,6 @@ import { Container } from "@/components/layout/container";
 import { ButtonArrowIcon } from "@/components/ui/button-arrow";
 import { buttonClass } from "@/components/ui/button-class";
 import { ButtonLink } from "@/components/ui/button-link";
-import { Eyebrow } from "@/components/ui/eyebrow";
 import { RecordRow } from "@/components/ui/record-row";
 import { formatIndexNumber } from "@/components/ui/section-index";
 import {
@@ -534,15 +533,12 @@ export function EngineeringDashboard() {
 
   return (
     <>
-      <header className="orbix-blueprint-minor relative border-b border-border">
+      <header>
         <Container className="grid gap-10 pt-10 pb-12 sm:pt-14 lg:grid-cols-[minmax(0,6fr)_minmax(0,5fr)] lg:grid-rows-[auto_1fr] lg:items-start lg:gap-x-14 lg:gap-y-8 lg:pt-14">
-          {/* Top-aligned, with the text dropped to meet the diagram frame's
-           * top registration marks, so the H1 does not sink to mid-height. */}
-          <div className="orbix-rise min-w-0 lg:pt-6">
-            <Eyebrow>Calculators and mission tools</Eyebrow>
-            <h1 className="orbix-display mt-6 text-foreground">
-              Engineering <span className="orbix-accent-word">Lab</span>
-            </h1>
+          {/* Top-aligned with the drawing's inset, so the H1 does not sink
+           * to mid-height. */}
+          <div className="min-w-0 lg:pt-6">
+            <h1 className="orbix-display text-foreground">Engineering Lab</h1>
             <p className="orbix-lead mt-6">
               Calculators for rocket propulsion, aerodynamics, compressible
               flow, atmospheric entry and orbital mechanics, each with its

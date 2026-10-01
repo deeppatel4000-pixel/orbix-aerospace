@@ -1,6 +1,6 @@
 "use client";
 
-import { Button, EquationBlock } from "@/components/ui";
+import { Button } from "@/components/ui";
 import { useState, type FormEvent } from "react";
 
 import {
@@ -29,6 +29,7 @@ import {
   EqDot,
   EQ_SUB_CLEAR,
   EqFrac,
+  LabEquation,
 } from "@/features/engineering-lab/components/shared";
 import type {
   AtmosphereField,
@@ -68,7 +69,7 @@ function parseFormValues(values: AtmosphereFormValues): AtmosphereInputs {
 }
 
 const toolEquation = (
-  <EquationBlock
+  <LabEquation
     equation={
       <>
         <span className={EQ_LINE}>
@@ -311,7 +312,7 @@ export function AtmosphereCalculator() {
                   <dt className="orbix-label">Pressure</dt>
                   <dd className="mt-2">
                     <output
-                      className="orbix-readout-lg"
+                      className="orbix-data"
                       htmlFor="standard-atmosphere-altitudeMetres"
                     >
                       <LabFigure unit="Pa">
@@ -324,7 +325,7 @@ export function AtmosphereCalculator() {
                   <dt className="orbix-label">Density</dt>
                   <dd className="mt-2">
                     <output
-                      className="orbix-readout-lg"
+                      className="orbix-data"
                       htmlFor="standard-atmosphere-altitudeMetres"
                     >
                       <LabFigure unit="kg/m³">
@@ -339,7 +340,7 @@ export function AtmosphereCalculator() {
                   <dt className="orbix-label">Speed of sound</dt>
                   <dd className="mt-2">
                     <output
-                      className="orbix-readout-lg"
+                      className="orbix-data"
                       htmlFor="standard-atmosphere-altitudeMetres"
                     >
                       <LabFigure unit="m/s">

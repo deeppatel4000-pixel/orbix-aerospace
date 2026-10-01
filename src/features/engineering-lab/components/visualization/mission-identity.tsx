@@ -49,7 +49,7 @@ export function MissionIdentity({
   );
 
   return (
-    <header className={cn("border-b border-border-subtle pb-4", className)}>
+    <header className={cn("pb-4", className)}>
       <p className="orbix-label">
         {category
           ? MISSION_CATEGORY_LABELS[category]

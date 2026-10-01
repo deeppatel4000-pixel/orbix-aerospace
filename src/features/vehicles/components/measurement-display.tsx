@@ -116,6 +116,35 @@ export function measurementParts(measurement: Measurement<MeasurementUnit>) {
     : { unit, value: `${value}${floor}` };
 }
 
+/**
+ * `measurementParts` for display: the same value and unit, but "Mach" is
+ * set as a unit before the figure, a step smaller and muted like every
+ * other unit (spec 5), instead of in the figure's size and ink. The text
+ * still reads "Mach 3+". `unitClassName` sizes the prefix to match the
+ * units around it.
+ */
+export function measurementFigure(
+  measurement: Measurement<MeasurementUnit>,
+  unitClassName = "text-[0.75em]",
+): { unit: string | undefined; value: ReactNode } {
+  const parts = measurementParts(measurement);
+  if (measurement.unit !== "Mach") return parts;
+  const figure = parts.value.replace(/^Mach\s+/, "");
+  return {
+    unit: undefined,
+    value: (
+      <>
+        <span
+          className={cn("mr-[0.3em] tracking-normal text-muted", unitClassName)}
+        >
+          Mach
+        </span>
+        {figure}
+      </>
+    ),
+  };
+}
+
 /** The source's qualifier as a sentence-case label, or undefined if exact. */
 function qualifierNote(measurement: Measurement<MeasurementUnit>) {
   const { qualifier } = measurement;

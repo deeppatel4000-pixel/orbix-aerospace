@@ -7,9 +7,9 @@ import { CircleAlert } from "lucide-react";
  * The submit-time summary of everything wrong with the form (spec 9).
  *
  * Each field already renders its own message under the input it belongs to,
- * so this is a roll-up: a panel with a 2px danger top rule (never a side
- * stripe), the heading "Check
- * these inputs", and one entry per problem. When the errors are passed as a
+ * so this is a roll-up on the page ground under a single 2px danger top
+ * rule (spec 3.2: no panel, never a side stripe), the heading "Check these
+ * inputs", and one entry per problem. When the errors are passed as a
  * record keyed by field name together with the fields' `idPrefix`, every
  * entry is a link that moves focus to its field, and the entries follow the
  * fields' on-screen order rather than the order of the record, so the first
@@ -117,10 +117,7 @@ export function ValidationErrorSummary({
   if (entries.length === 0) return null;
 
   return (
-    <div
-      className="mt-6 rounded border border-t-2 border-border border-t-status-danger bg-surface px-4 py-4"
-      role="alert"
-    >
+    <div className="orbix-error-summary mt-6" role="alert">
       <p className="flex items-center gap-2 text-sm font-semibold text-foreground">
         <CircleAlert
           aria-hidden="true"

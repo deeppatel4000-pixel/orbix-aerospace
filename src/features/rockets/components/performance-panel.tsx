@@ -12,7 +12,6 @@ import { VehicleProfileSection } from "@/features/vehicles/components/vehicle-pr
 import type { OrbitType, RocketPerformance } from "@/features/vehicles/types";
 
 interface PerformancePanelProps {
-  index?: number;
   name: string;
   performance: RocketPerformance;
 }
@@ -42,11 +41,7 @@ function formatList(items: readonly string[]) {
  * column and in view on a phone), with any supported destination the
  * record gives no payload figure for named in the table's note.
  */
-export function PerformancePanel({
-  index,
-  name,
-  performance,
-}: PerformancePanelProps) {
+export function PerformancePanel({ name, performance }: PerformancePanelProps) {
   const { payloadCapabilities, supportedOrbits } = performance;
   const withPayload = new Set(payloadCapabilities.map((row) => row.orbit));
   const otherOrbits = supportedOrbits
@@ -69,7 +64,6 @@ export function PerformancePanel({
     <VehicleProfileSection
       description="Payload mass depends on the destination orbit and on whether boosters are recovered, so each figure is tied to both."
       id="performance"
-      index={index}
       title="Performance"
     >
       {payloadCapabilities.length > 0 ? (

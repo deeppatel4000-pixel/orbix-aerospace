@@ -1,6 +1,6 @@
 "use client";
 
-import { Button, EquationBlock } from "@/components/ui";
+import { Button } from "@/components/ui";
 import { useMemo, useState, type FormEvent } from "react";
 import { ChevronDown, CircleAlert } from "lucide-react";
 
@@ -29,6 +29,7 @@ import {
   LAB_GROUP,
   LAB_GROUP_LEGEND,
   EqFrac,
+  LabEquation,
 } from "@/features/engineering-lab/components/shared";
 import {
   getTPSMaterialById,
@@ -173,7 +174,7 @@ function deriveViewState(
 }
 
 const toolEquation = (
-  <EquationBlock
+  <LabEquation
     equation={
       <>
         <span className={EQ_LINE}>
@@ -816,8 +817,8 @@ export function MaterialTPSSizingAnalyzer() {
             >
               Material trade space
             </h3>
-            <div className="mt-4 border-t border-border">
-              <article className="border-b border-border py-4">
+            <div className="mt-3 divide-y divide-border">
+              <article className="py-4">
                 <h4 className="text-sm font-semibold text-foreground">
                   Heat capacity
                 </h4>
@@ -826,7 +827,7 @@ export function MaterialTPSSizingAnalyzer() {
                   required areal density and resulting thickness.
                 </p>
               </article>
-              <article className="border-b border-border py-4">
+              <article className="py-4">
                 <h4 className="text-sm font-semibold text-foreground">
                   Density and mass
                 </h4>
@@ -835,7 +836,7 @@ export function MaterialTPSSizingAnalyzer() {
                   areal density sets mass while material density sets thickness.
                 </p>
               </article>
-              <article className="border-b border-border py-4">
+              <article className="py-4">
                 <h4 className="text-sm font-semibold text-foreground">
                   System tradeoff
                 </h4>

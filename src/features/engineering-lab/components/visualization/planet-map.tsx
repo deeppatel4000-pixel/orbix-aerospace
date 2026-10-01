@@ -12,9 +12,8 @@ function GroundMap() {
   return (
     <g>
       <rect
-        fill="var(--orbix-surface-input)"
+        fill="none"
         height="280"
-        rx="4"
         stroke="var(--orbix-border-strong)"
         strokeWidth="1.5"
         width="600"
@@ -25,11 +24,7 @@ function GroundMap() {
         <path d="M 60 126 H 660 M 60 182 H 660 M 60 238 H 660 M 60 294 H 660" />
         <path d="M 135 70 V 350 M 210 70 V 350 M 285 70 V 350 M 360 70 V 350 M 435 70 V 350 M 510 70 V 350 M 585 70 V 350" />
       </g>
-      <g
-        fill="var(--orbix-surface-raised)"
-        stroke="var(--orbix-border-strong)"
-        strokeWidth="1"
-      >
+      <g fill="none" stroke="var(--orbix-border-strong)" strokeWidth="1">
         <path d="M 120 130 L 165 102 L 224 111 L 245 145 L 218 173 L 180 165 L 154 206 L 122 194 L 102 158 Z" />
         <path d="M 220 215 L 259 205 L 278 232 L 267 279 L 239 321 L 221 286 L 230 252 Z" />
         <path d="M 333 121 L 385 99 L 443 115 L 478 145 L 542 138 L 590 166 L 559 201 L 493 190 L 451 216 L 414 191 L 381 198 L 348 164 Z" />
@@ -69,7 +64,7 @@ function OrbitMap() {
       <circle
         cx="360"
         cy="210"
-        fill="var(--orbix-surface-input)"
+        fill="none"
         r="126"
         stroke="var(--orbix-border-strong)"
         strokeWidth="2"
@@ -81,11 +76,7 @@ function OrbitMap() {
         <ellipse cx="360" cy="210" rx="88" ry="126" />
         <path d="M 234 210 H 486 M 360 84 V 336" />
       </g>
-      <g
-        fill="var(--orbix-surface-raised)"
-        stroke="var(--orbix-border-strong)"
-        strokeWidth="0.8"
-      >
+      <g fill="none" stroke="var(--orbix-border-strong)" strokeWidth="0.8">
         <path d="M 292 149 L 323 128 L 358 143 L 351 168 L 326 177 L 308 201 L 285 190 L 275 165 Z" />
         <path d="M 350 216 L 378 209 L 393 234 L 381 278 L 359 293 L 342 260 Z" />
         <path d="M 383 140 L 420 131 L 453 151 L 464 177 L 438 197 L 410 189 L 392 203 L 374 179 Z" />
@@ -123,7 +114,6 @@ export function PlanetMap({ children, mode, zoomScale }: PlanetMapProps) {
         grid, generalized continent shapes, a conceptual orbital path, and a
         spacecraft position marker. It is not geographic or navigational data.
       </desc>
-      <rect fill="var(--orbix-surface)" height="420" width="720" />
       <g
         style={{
           transform: `scale(${zoomScale})`,

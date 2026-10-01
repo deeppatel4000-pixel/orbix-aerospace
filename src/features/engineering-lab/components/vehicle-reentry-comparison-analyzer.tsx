@@ -1,6 +1,6 @@
 "use client";
 
-import { Button, DataTable, EquationBlock } from "@/components/ui";
+import { Button, DataTable } from "@/components/ui";
 import { useMemo, useRef, useState, type FormEvent } from "react";
 import { CircleAlert } from "lucide-react";
 
@@ -27,6 +27,7 @@ import {
   LAB_GROUP,
   LAB_GROUP_LEGEND,
   EqFrac,
+  LabEquation,
 } from "@/features/engineering-lab/components/shared";
 import type {
   VehicleReentryComparisonAnalysis,
@@ -387,7 +388,7 @@ function OptionalNumberField({
 }
 
 const toolEquation = (
-  <EquationBlock
+  <LabEquation
     equation={
       <>
         <span className={EQ_LINE}>
@@ -854,7 +855,7 @@ export function VehicleReentryComparisonAnalyzer() {
                   })}
                 </div>
               ) : (
-                <div className="mt-5 rounded-lg border border-border p-4">
+                <div className="mt-5">
                   <p className="text-sm font-semibold">
                     No vehicles configured
                   </p>
@@ -1201,8 +1202,8 @@ export function VehicleReentryComparisonAnalyzer() {
             >
               Reading the vehicle trade space
             </h3>
-            <div className="mt-4 border-t border-border">
-              <article className="border-b border-border py-4">
+            <div className="mt-3 divide-y divide-border">
+              <article className="py-4">
                 <h4 className="text-sm font-semibold text-foreground">
                   Vehicle trade-offs
                 </h4>
@@ -1211,7 +1212,7 @@ export function VehicleReentryComparisonAnalyzer() {
                   heating, and the resulting TPS estimates together.
                 </p>
               </article>
-              <article className="border-b border-border py-4">
+              <article className="py-4">
                 <h4 className="text-sm font-semibold text-foreground">
                   Ranking order
                 </h4>
@@ -1220,7 +1221,7 @@ export function VehicleReentryComparisonAnalyzer() {
                   thickness, and finally lower peak deceleration.
                 </p>
               </article>
-              <article className="border-b border-border py-4">
+              <article className="py-4">
                 <h4 className="text-sm font-semibold text-foreground">
                   Shared scenario
                 </h4>

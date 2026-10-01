@@ -5,19 +5,11 @@ import { useId, useRef, useState, type ReactNode } from "react";
 
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
-import { Eyebrow } from "@/components/ui/eyebrow";
 import { cn } from "@/lib/cn";
 
 export interface VehicleRegistryEntry {
   /** The rendered card. */
   readonly card: ReactNode;
-  /**
-   * Spans two grid columns wherever the grid has two or more (from 40rem;
-   * spec 8: vary emphasis, the first card in a registry spans two
-   * columns). With five vehicles that also leaves no card alone on the
-   * last row of the two-column grid. Render its card with a feature layout.
-   */
-  readonly featured?: boolean;
   readonly id: string;
   /** Text the search matches against: name, maker, roles and so on. */
   readonly keywords: string;
@@ -27,8 +19,13 @@ interface VehicleRegistryProps {
   /** One sentence under the heading. */
   description: string;
   entries: readonly VehicleRegistryEntry[];
-  /** Short label above the heading, sentence case. */
-  eyebrow: string;
+  /**
+   * `rows` (default): a ruled catalogue list, one rule between rows. Render
+   * each card with the `row` layout. `grid`: an open grid of photo plates
+   * with the caption under each, no rules, for portrait photographs; two
+   * across even on a phone, so five portrait plates scan in three rows.
+   */
+  layout?: "grid" | "rows";
   /** Id of the results section, kept stable for deep links. */
   id: string;
   /** "aircraft" / "launch vehicle", used in the count and messages. */
@@ -46,17 +43,17 @@ function normalise(value: string) {
 }
 
 /**
- * The registry (spec 8, 9): a heading row with the search field and a live
- * result count, then a grid of card links (1 column, 2 from 40rem, 3 from
- * 64rem) whose featured first card spans two columns from 40rem. Every card is
- * rendered on the server, so the full list is present without JavaScript;
- * the search only hides non-matching cards.
+ * The registry (spec 6, 11): a heading row with the search field and a live
+ * result count, then the entries as an open catalogue, either ruled rows or
+ * an open grid of plates, with no card chrome. Every entry is rendered on
+ * the server, so the full list is present without JavaScript; the search
+ * only hides entries that do not match.
  */
 export function VehicleRegistry({
   description,
   entries,
-  eyebrow,
   id,
+  layout = "rows",
   noun,
   searchHelp,
   searchLabel,
@@ -77,13 +74,15 @@ export function VehicleRegistry({
 
   return (
     <section aria-labelledby={`${id}-title`} className="scroll-mt-24" id={id}>
-      <div className="grid gap-8 border-b border-border pb-8 lg:grid-cols-12 lg:items-end lg:gap-6">
+      <div className="grid gap-8 lg:grid-cols-12 lg:items-end lg:gap-6">
         <div className="lg:col-span-7">
-          <Eyebrow>{eyebrow}</Eyebrow>
-          <h2 className="orbix-h2 mt-4 text-foreground" id={`${id}-title`}>
+          <h2
+            className="orbix-h2 orbix-heading-rule text-foreground"
+            id={`${id}-title`}
+          >
             {title}
           </h2>
-          <p className="mt-4 max-w-[60ch] text-pretty text-text-secondary">
+          <p className="mt-5 max-w-[60ch] text-pretty text-muted">
             {description}
           </p>
         </div>
@@ -116,11 +115,7 @@ export function VehicleRegistry({
               {searchHelp}
             </p>
           </div>
-          <p
-            aria-live="polite"
-            className="orbix-caps mt-4 text-muted"
-            role="status"
-          >
+          <p aria-live="polite" className="orbix-label mt-4" role="status">
             {query.trim() === ""
               ? `Showing ${countLabel}`
               : `${countLabel} ${count === 1 ? "matches" : "match"} “${query.trim()}”`}
@@ -129,16 +124,16 @@ export function VehicleRegistry({
       </div>
 
       <ul
-        className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3"
+        className={cn(
+          layout === "rows"
+            ? "mt-10 border-b border-border [&>li:not([hidden])]:border-t [&>li:not([hidden])]:border-border"
+            : "mt-12 grid grid-cols-2 gap-x-4 gap-y-10 sm:gap-x-6 sm:gap-y-12 md:grid-cols-3 xl:grid-cols-5",
+        )}
         hidden={count === 0}
         id={`${id}-list`}
       >
         {entries.map((entry) => (
-          <li
-            className={cn(entry.featured && "sm:col-span-2")}
-            hidden={!matches.includes(entry)}
-            key={entry.id}
-          >
+          <li hidden={!matches.includes(entry)} key={entry.id}>
             {entry.card}
           </li>
         ))}

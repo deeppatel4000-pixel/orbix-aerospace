@@ -1,6 +1,6 @@
 "use client";
 
-import { Button, EquationBlock } from "@/components/ui";
+import { Button } from "@/components/ui";
 import { useState, type FormEvent } from "react";
 
 import {
@@ -21,6 +21,7 @@ import {
   LabFigure,
   EqDot,
   EQ_SUB_CLEAR,
+  LabEquation,
 } from "@/features/engineering-lab/components/shared";
 import type {
   RocketEquationField,
@@ -67,7 +68,7 @@ function parseFormValues(
 // relation and stays on one line down to 320px, where 20px is about 20px
 // too wide for its block, so it may step down to 17px there.
 const toolEquation = (
-  <EquationBlock
+  <LabEquation
     className="lab-equation--one-line"
     equation={
       <>

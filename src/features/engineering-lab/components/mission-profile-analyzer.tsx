@@ -1,6 +1,6 @@
 "use client";
 
-import { Button, EquationBlock } from "@/components/ui";
+import { Button } from "@/components/ui";
 import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { CircleAlert } from "lucide-react";
 
@@ -28,6 +28,7 @@ import {
   EQ_SUP,
   LAB_GROUP,
   LAB_GROUP_LEGEND,
+  LabEquation,
 } from "@/features/engineering-lab/components/shared";
 import type {
   DeltaVBudgetInputs,
@@ -867,7 +868,7 @@ function VehicleFields({
 }
 
 const toolEquation = (
-  <EquationBlock
+  <LabEquation
     equation={
       <>
         <span className={EQ_LINE}>

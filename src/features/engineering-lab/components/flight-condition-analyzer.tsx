@@ -1,6 +1,6 @@
 "use client";
 
-import { Button, EquationBlock, formatFigure } from "@/components/ui";
+import { Button } from "@/components/ui";
 import { useState, type FormEvent } from "react";
 
 import { analyzeFlightCondition } from "@/features/engineering-lab/analysis";
@@ -23,6 +23,7 @@ import {
   EqDot,
   EqFrac,
   EQ_SUP,
+  LabEquation,
 } from "@/features/engineering-lab/components/shared";
 import type {
   FlightConditionAnalysis,
@@ -82,7 +83,7 @@ function parseFormValues(
 }
 
 const toolEquation = (
-  <EquationBlock
+  <LabEquation
     equation={
       <>
         <span className={EQ_LINE}>
@@ -279,6 +280,76 @@ export function FlightConditionAnalyzer() {
           >
             {result ? (
               <>
+                <ReadoutGrid columns={2} title="Flight">
+                  <div>
+                    <dt className="orbix-label">Mach number</dt>
+                    <dd className="orbix-readout-lg mt-1">
+                      <LabFigure>
+                        {ratioFormatter.format(result.flight.machNumber)}
+                      </LabFigure>
+                    </dd>
+                  </div>
+                  <div>
+                    <dt className="orbix-label">Flow regime</dt>
+                    <dd>
+                      <LabValueText>
+                        {toSentenceCase(result.flight.flowRegime)}
+                      </LabValueText>
+                    </dd>
+                  </div>
+                </ReadoutGrid>
+
+                <ReadoutGrid title="Performance">
+                  <div>
+                    <dt className="orbix-label">Lift-to-drag ratio</dt>
+                    <dd>
+                      <output
+                        className="orbix-readout-lg"
+                        htmlFor="flight-condition-altitudeMetres flight-condition-velocityMetresPerSecond flight-condition-wingAreaSquareMetres flight-condition-liftCoefficient flight-condition-dragCoefficient"
+                      >
+                        <LabFigure>
+                          {ratioFormatter.format(
+                            result.performance.liftToDragRatio,
+                          )}
+                        </LabFigure>
+                      </output>
+                    </dd>
+                  </div>
+                </ReadoutGrid>
+
+                <ReadoutGrid columns={3} title="Aerodynamics">
+                  <div>
+                    <dt className="orbix-label">Dynamic pressure</dt>
+                    <dd className="orbix-data mt-1">
+                      <LabFigure unit="Pa">
+                        {numberFormatter.format(
+                          result.aerodynamics.dynamicPressurePascals,
+                        )}
+                      </LabFigure>
+                    </dd>
+                  </div>
+                  <div>
+                    <dt className="orbix-label">Lift</dt>
+                    <dd className="orbix-data mt-1">
+                      <LabFigure unit="N">
+                        {numberFormatter.format(
+                          result.aerodynamics.liftForceNewtons,
+                        )}
+                      </LabFigure>
+                    </dd>
+                  </div>
+                  <div>
+                    <dt className="orbix-label">Drag</dt>
+                    <dd className="orbix-data mt-1">
+                      <LabFigure unit="N">
+                        {numberFormatter.format(
+                          result.aerodynamics.dragForceNewtons,
+                        )}
+                      </LabFigure>
+                    </dd>
+                  </div>
+                </ReadoutGrid>
+
                 <ReadoutGrid columns={2} title="Atmosphere">
                   <div>
                     <dt className="orbix-label">Temperature</dt>
@@ -321,76 +392,6 @@ export function FlightConditionAnalyzer() {
                     </dd>
                   </div>
                 </ReadoutGrid>
-
-                <ReadoutGrid columns={2} title="Flight">
-                  <div>
-                    <dt className="orbix-label">Mach number</dt>
-                    <dd className="orbix-readout-lg mt-1">
-                      <LabFigure>
-                        {ratioFormatter.format(result.flight.machNumber)}
-                      </LabFigure>
-                    </dd>
-                  </div>
-                  <div>
-                    <dt className="orbix-label">Flow regime</dt>
-                    <dd>
-                      <LabValueText>
-                        {toSentenceCase(result.flight.flowRegime)}
-                      </LabValueText>
-                    </dd>
-                  </div>
-                </ReadoutGrid>
-
-                <ReadoutGrid columns={3} title="Aerodynamics">
-                  <div>
-                    <dt className="orbix-label">Dynamic pressure</dt>
-                    <dd className="orbix-data mt-1">
-                      <LabFigure unit="Pa">
-                        {numberFormatter.format(
-                          result.aerodynamics.dynamicPressurePascals,
-                        )}
-                      </LabFigure>
-                    </dd>
-                  </div>
-                  <div>
-                    <dt className="orbix-label">Lift</dt>
-                    <dd className="orbix-data mt-1">
-                      <LabFigure unit="N">
-                        {numberFormatter.format(
-                          result.aerodynamics.liftForceNewtons,
-                        )}
-                      </LabFigure>
-                    </dd>
-                  </div>
-                  <div>
-                    <dt className="orbix-label">Drag</dt>
-                    <dd className="orbix-data mt-1">
-                      <LabFigure unit="N">
-                        {numberFormatter.format(
-                          result.aerodynamics.dragForceNewtons,
-                        )}
-                      </LabFigure>
-                    </dd>
-                  </div>
-                </ReadoutGrid>
-
-                <ReadoutGrid title="Performance">
-                  <div>
-                    <dt className="orbix-label">Lift-to-drag ratio</dt>
-                    <dd>
-                      <output
-                        className="orbix-readout-lg"
-                        htmlFor="flight-condition-altitudeMetres flight-condition-velocityMetresPerSecond flight-condition-wingAreaSquareMetres flight-condition-liftCoefficient flight-condition-dragCoefficient"
-                      >
-                        <LabFigure>
-                          {ratioFormatter.format(
-                            result.performance.liftToDragRatio,
-                          )}
-                        </LabFigure>
-                      </output>
-                    </dd>
-                  </div>
-                </ReadoutGrid>
               </>
             ) : (
               <NotCalculated invalid={Object.values(errors).some(Boolean)}>
@@ -407,39 +408,32 @@ export function FlightConditionAnalyzer() {
             className="border-t border-border pt-3"
           >
             <h3
-              className="text-sm font-medium text-foreground"
+              className="text-sm font-semibold text-foreground"
               id="flight-condition-flow-title"
             >
               Analysis flow
             </h3>
-            <ol className="mt-4 grid gap-3 text-sm @min-[36rem]/col:grid-cols-2">
+            <ol className="mt-3 divide-y divide-border text-sm">
               {[
                 [
-                  "01",
                   "Atmosphere",
                   "Altitude determines temperature, pressure, density, and acoustic speed.",
                 ],
                 [
-                  "02",
                   "Flow state",
                   "Density and velocity determine dynamic pressure; velocity and acoustic speed determine Mach.",
                 ],
                 [
-                  "03",
                   "Forces",
                   "Shared flow state feeds the lift and drag modules.",
                 ],
                 [
-                  "04",
                   "Performance",
                   "Returned forces determine lift-to-drag ratio.",
                 ],
-              ].map(([step, title, description]) => (
-                <li className="border-t border-border pt-3" key={step}>
-                  <p className="orbix-data text-accent">
-                    {formatFigure(<>{step}</>)}
-                  </p>
-                  <p className="mt-1 font-semibold">{title}</p>
+              ].map(([title, description]) => (
+                <li className="py-3" key={title}>
+                  <p className="font-medium text-foreground">{title}</p>
                   <p className="mt-1 text-sm leading-6 text-muted">
                     {description}
                   </p>

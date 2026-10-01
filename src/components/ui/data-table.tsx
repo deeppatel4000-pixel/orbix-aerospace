@@ -12,7 +12,7 @@ export interface DataTableColumn<Row> {
   readonly cell: (row: Row) => ReactNode;
   /**
    * Numeric columns are set in B612 Mono with tabular figures and aligned
-   * right (spec 8).
+   * right (spec 6).
    */
   readonly numeric?: boolean;
   /** Unit shown in the header after the label, for example "km/s". */
@@ -52,9 +52,13 @@ export interface DataTableProps<Row> {
 }
 
 /**
- * Hairline data table (spec 8). The caption sits above the scroll box and
- * names both the table and its scrollable region; the region is focusable
- * so keyboard users can scroll it sideways.
+ * Open data table (spec 6): no frame, no radius, no fill. The header row
+ * sits on a 1px strong rule and body rows on 1px hairlines; numbers are
+ * right-aligned tabular figures with the unit in the header. The caption
+ * sits above the scroll box and names both the table and its scrollable
+ * region; the region is focusable so keyboard users can scroll it
+ * sideways, and shows a visible scrollbar when the table overflows (no
+ * fade). Below 48rem the first column stays in view, on the page ground.
  */
 export function DataTable<Row>({
   caption,
@@ -76,75 +80,71 @@ export function DataTable<Row>({
       <p className="orbix-data-table__caption" id={captionId}>
         {caption}
       </p>
-      {/* The frame draws a fade on the right edge while the table can
-          still scroll sideways (a scroll-driven animation; no script). */}
-      <div className="orbix-data-table__frame">
-        <div
+      <div
+        aria-labelledby={captionId}
+        className="orbix-data-table__scroll"
+        role="region"
+        tabIndex={0}
+      >
+        {/* With `singleLineCells`, below 48rem the table fills its frame
+            and is at least as wide as its content, so figures and labels
+            never wrap mid-phrase, and the box scrolls sideways instead. */}
+        <table
           aria-labelledby={captionId}
-          className="orbix-data-table__scroll"
-          role="region"
-          tabIndex={0}
+          className={cn(
+            "orbix-table",
+            singleLineCells && "max-md:w-full max-md:min-w-max",
+          )}
         >
-          {/* With `singleLineCells`, below 48rem the table fills its frame
-              and is at least as wide as its content, so figures and labels
-              never wrap mid-phrase, and the box scrolls sideways instead. */}
-          <table
-            aria-labelledby={captionId}
-            className={cn(
-              "orbix-table",
-              singleLineCells && "max-md:w-full max-md:min-w-max",
-            )}
-          >
-            <thead>
-              <tr>
-                {columns.map((column) => (
-                  <th
-                    className={column.numeric ? "orbix-num" : undefined}
-                    key={column.key}
-                    scope="col"
-                  >
-                    {column.header}
-                    {column.unit ? (
-                      <span className="orbix-table-unit">{` (${column.unit})`}</span>
-                    ) : null}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {rows.map((row, rowIndex) => (
-                <tr key={getRowKey(row, rowIndex)}>
-                  {columns.map((column, columnIndex) => {
-                    const cellClass =
-                      cn(
-                        column.numeric && "orbix-num",
-                        singleLineCells &&
-                          columnIndex === 0 &&
-                          "max-md:w-[8.5rem] max-md:min-w-[8.5rem] max-[22.5rem]:w-[7.5rem] max-[22.5rem]:min-w-[7.5rem]",
-                        singleLineCells &&
-                          columnIndex > 0 &&
-                          (column.wrap
-                            ? "max-md:w-[18rem] max-md:min-w-[18rem]"
-                            : "max-md:whitespace-nowrap"),
-                      ) || undefined;
-                    const content = column.numeric
-                      ? formatFigure(column.cell(row))
-                      : column.cell(row);
-                    return columnIndex === 0 ? (
-                      <th className={cellClass} key={column.key} scope="row">
-                        {content}
-                      </th>
-                    ) : (
-                      <td className={cellClass} key={column.key}>
-                        {content}
-                      </td>
-                    );
-                  })}
-                </tr>
+          <thead>
+            <tr>
+              {columns.map((column) => (
+                <th
+                  className={column.numeric ? "orbix-num" : undefined}
+                  key={column.key}
+                  scope="col"
+                >
+                  {column.header}
+                  {column.unit ? (
+                    <span className="orbix-table-unit">{` (${column.unit})`}</span>
+                  ) : null}
+                </th>
               ))}
-            </tbody>
-          </table>
-        </div>
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((row, rowIndex) => (
+              <tr key={getRowKey(row, rowIndex)}>
+                {columns.map((column, columnIndex) => {
+                  const cellClass =
+                    cn(
+                      column.numeric && "orbix-num",
+                      singleLineCells &&
+                        columnIndex === 0 &&
+                        "max-md:w-[8.5rem] max-md:min-w-[8.5rem] max-[22.5rem]:w-[7.5rem] max-[22.5rem]:min-w-[7.5rem]",
+                      singleLineCells &&
+                        columnIndex > 0 &&
+                        (column.wrap
+                          ? "max-md:w-[18rem] max-md:min-w-[18rem]"
+                          : "max-md:whitespace-nowrap"),
+                    ) || undefined;
+                  const content = column.numeric
+                    ? formatFigure(column.cell(row))
+                    : column.cell(row);
+                  return columnIndex === 0 ? (
+                    <th className={cellClass} key={column.key} scope="row">
+                      {content}
+                    </th>
+                  ) : (
+                    <td className={cellClass} key={column.key}>
+                      {content}
+                    </td>
+                  );
+                })}
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
       {note ? <p className="orbix-data-table__note">{note}</p> : null}
     </div>

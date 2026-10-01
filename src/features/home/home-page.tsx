@@ -4,13 +4,14 @@ import { SiteSections } from "@/features/home/components/site-sections";
 import { SourcingNote } from "@/features/home/components/sourcing-note";
 
 /**
- * Homepage (design v2, spec 9, Home):
+ * Homepage (design v3, spec 11, Home):
  *
- *   hero             full-bleed SR-71B photograph, wordmark, tagline H1,
- *                    lead, primary and tertiary actions, credit line
- *   registries       asymmetric split: large aircraft card, tall launch
- *                    vehicle card
- *   section index    01 to 06: Compare, Engineering Lab, Learn,
+ *   hero             H1, one-sentence lead and two actions on solid ground,
+ *                    then the SR-71B photograph as a full-bleed band with
+ *                    its catalogue caption
+ *   registries       two open catalogue columns, aircraft and launch
+ *                    vehicles: plate, caption, open table, registry link
+ *   section index    a plain ruled list: Compare, Engineering Lab, Learn,
  *                    Verification, How I built ORBIX, Showcase
  *   sourcing         how vehicle values are sourced, and their limits
  */

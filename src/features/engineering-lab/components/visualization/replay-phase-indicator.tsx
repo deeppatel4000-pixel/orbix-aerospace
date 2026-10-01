@@ -46,8 +46,8 @@ export function ReplayPhaseIndicator({
       </div>
 
       {/* The guided demo's step row: B612 Mono number (a check once
-       * reviewed), label, 2px rule under each step, accent under the
-       * current one. 2, 3 or 6 across by the column's width. */}
+       * reviewed) and label; a 2px accent rule under the current step only.
+       * 2, 3 or 6 across by the column's width. */}
       <ol
         className="mt-4 grid grid-cols-2 gap-x-4 gap-y-1 @md:grid-cols-3 @3xl:grid-cols-6"
         role="list"
@@ -71,8 +71,8 @@ export function ReplayPhaseIndicator({
                   (isCurrent
                     ? "border-accent font-medium text-foreground"
                     : isComplete
-                      ? "border-border-control text-text-secondary hover:text-foreground"
-                      : "border-border text-muted hover:border-border-control hover:text-foreground")
+                      ? "border-transparent text-text-secondary hover:border-border-control hover:text-foreground"
+                      : "border-transparent text-muted hover:border-border-control hover:text-foreground")
                 }
                 onClick={() => onSelectPhase(index)}
                 type="button"

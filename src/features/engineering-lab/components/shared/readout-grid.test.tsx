@@ -75,7 +75,7 @@ describe("EqDot", () => {
 });
 
 describe("LabSymbol", () => {
-  it("marks a symbol so the uppercase label leaves it alone", () => {
+  it("marks a symbol for the data face", () => {
     expect(renderToStaticMarkup(<LabSymbol>ρ₂/ρ₁</LabSymbol>)).toBe(
       '<span class="lab-symbol">ρ₂/ρ₁</span>',
     );

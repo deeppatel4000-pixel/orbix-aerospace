@@ -4,12 +4,12 @@ import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
 /**
- * Global style guards for design v2 (`docs/design-system/orbix-design-v2.md`).
+ * Global style guards for design v3 (`docs/design-system/orbix-design-v3.md`).
  *
- * The v1 decoration classes stay deleted (the v2 blueprint grid lives on
- * `body::before` and `.orbix-blueprint-minor`, and the grain on
- * `body::after`). No stylesheet may reintroduce violet, pill radii, pure
- * black, blur or smooth scrolling, and the palette must match spec 4.
+ * The v1 and v2 decoration stays deleted: no blueprint grid, grain, light
+ * field, gradient, mask, shadow or radius above 2px (spec 3). No stylesheet
+ * may reintroduce violet, pill radii, pure black, blur or smooth scrolling,
+ * and the palette must match the spec 4 table.
  */
 
 const stylesDir = join(process.cwd(), "src/styles");
@@ -30,13 +30,23 @@ const motion = read("orbix-motion.css");
 describe("deleted decoration", () => {
   it.each(sheets)("%s defines no v1 star field or glow class", (_, css) => {
     expect(css).not.toMatch(
-      /\.(technical-grid|orbix-grid|orbix-starfield|orbix-atmosphere-glow|orbix-light-field|orbix-brand-glow|orbix-carbon|orbix-premium-card|orbix-frame)(?![\w-])/,
+      /\.(technical-grid|orbix-grid|orbix-starfield|orbix-atmosphere-glow|orbix-light-field|orbix-brand-glow|orbix-carbon|orbix-premium-card|orbix-frame|orbix-blueprint-minor|orbix-reg-marks|orbix-surface|orbix-photo-hero__scrim|orbix-spec-grid|orbix-spec-cell)(?![\w-])/,
     );
   });
 
-  it.each(sheets)("%s has no glow shadow or clip-path chamfer", (_, css) => {
-    expect(css).not.toMatch(/box-shadow:\s*0 0 \d/);
-    expect(css).not.toMatch(/drop-shadow\(|clip-path/);
+  it.each(sheets)(
+    "%s has no shadow or clip-path chamfer (spec 3.4)",
+    (_, css) => {
+      expect(css).not.toMatch(/box-shadow|text-shadow|drop-shadow|clip-path/);
+    },
+  );
+
+  it.each(sheets)("%s has no gradient or mask (spec 3.1)", (_, css) => {
+    expect(css).not.toMatch(/gradient\(|mask-image|mask:/);
+  });
+
+  it("draws no page-level texture layer (spec 3.10)", () => {
+    expect(foundations).not.toMatch(/body::(before|after)|feTurbulence/);
   });
 });
 
@@ -57,13 +67,17 @@ describe("global style hard rules", () => {
     expect(css).not.toMatch(/backdrop-filter|blur\(|scroll-behavior:\s*smooth/);
   });
 
-  it.each(sheets)("%s declares no radius above 12px", (_, css) => {
+  it.each(sheets)("%s declares no radius above 2px (spec 3.3)", (_, css) => {
     for (const match of css.matchAll(
       /radius[\w-]*:\s*(\d+(?:\.\d+)?)(px|rem)/g,
     )) {
       const px = match[2] === "rem" ? Number(match[1]) * 16 : Number(match[1]);
-      expect(px, match[0]).toBeLessThanOrEqual(12);
+      expect(px, match[0]).toBeLessThanOrEqual(2);
     }
+  });
+
+  it.each(sheets)("%s never forces uppercase (spec 3.6)", (_, css) => {
+    expect(css).not.toMatch(/text-transform:\s*uppercase/);
   });
 });
 
@@ -71,31 +85,26 @@ describe("palette (spec 4)", () => {
   // The expected values are read from the binding spec rather than repeated
   // here, so the spec table stays the single source of truth.
   const spec = readFileSync(
-    join(process.cwd(), "docs/design-system/orbix-design-v2.md"),
+    join(process.cwd(), "docs/design-system/orbix-design-v3.md"),
     "utf8",
   );
   const tableRows = [
     ...spec.matchAll(/^\|\s*`(--[a-z-]+)`\s*\|\s*`(#[0-9a-f]{6})`\s*\|/gm),
   ].map((match) => [match[1], match[2]] as const);
-  const statusRows = [
-    ...spec.matchAll(/(success|warning|danger) `(#[0-9a-f]{6})`/g),
-  ].map((match) => [`--status-${match[1]}`, match[2]] as const);
-  const expected = [...tableRows, ...statusRows];
 
   it("reads the full palette from the spec", () => {
-    expect(tableRows).toHaveLength(13);
-    expect(statusRows).toHaveLength(3);
+    expect(tableRows).toHaveLength(10);
   });
 
-  it.each(expected)("%s is %s", (token, hex) => {
-    expect(tokens).toMatch(new RegExp(`${token}:\\s*${hex};`));
+  it.each(tableRows)("%s is %s", (token, hex) => {
+    expect(tokens).toMatch(new RegExp(String.raw`${token}:\s*${hex};`));
   });
 
   it("each division overrides --accent", () => {
     for (const division of ["space", "aircraft", "lab"]) {
       expect(tokens).toMatch(
         new RegExp(
-          `\\[data-division="${division}"\\]\\s*\\{\\s*--accent:\\s*var\\(--accent-${division}\\);`,
+          String.raw`\[data-division="${division}"\]\s*\{\s*--accent:\s*var\(--accent-${division}\);`,
         ),
       );
     }
@@ -106,36 +115,26 @@ describe("palette (spec 4)", () => {
       /:root,\s*\[data-division\]\s*\{[^}]*--orbix-accent:\s*var\(--accent\)/,
     );
   });
-});
 
-describe("texture (spec 6)", () => {
-  it("draws the blueprint grid and grain on fixed, non-interactive layers", () => {
-    expect(foundations).toMatch(
-      /body::before,\s*body::after\s*\{[^}]*pointer-events:\s*none;[^}]*position:\s*fixed;/,
-    );
-    expect(foundations).toMatch(/feTurbulence/);
-  });
-
-  it("keeps the texture static", () => {
-    const layers = foundations.match(/body::(before|after)\s*\{[^}]*\}/g) ?? [];
-    expect(layers.length).toBeGreaterThan(0);
-    for (const layer of layers) {
-      expect(layer).not.toMatch(/animation|transition/);
+  it("collapses every v2 surface role onto the page ground (spec 3.2)", () => {
+    for (const role of ["--bg-surface", "--bg-raised", "--orbix-surface"]) {
+      expect(tokens).toMatch(
+        new RegExp(String.raw`${role}:\s*var\(--bg-page\);`),
+      );
     }
   });
 });
 
-describe("motion (spec 7)", () => {
-  it("runs the hero entrance only when motion is allowed", () => {
-    const allowed =
-      motion.match(
-        /@media \(prefers-reduced-motion: no-preference\)\s*\{[\s\S]*?\n\}/,
-      )?.[0] ?? "";
-    expect(allowed).toMatch(/\.orbix-rise > \*/);
+describe("motion (spec 10)", () => {
+  it("has no entrance animation", () => {
+    for (const [, css] of sheets) {
+      expect(css).not.toMatch(/@keyframes orbix-rise|\.orbix-rise/);
+    }
+  });
 
-    const outside = motion.replace(allowed, "");
-    expect(outside).not.toMatch(
-      /\.orbix-rise > \*\s*\{\s*animation: orbix-rise/,
+  it("removes every transition under reduced motion", () => {
+    expect(motion).toMatch(
+      /@media \(prefers-reduced-motion: reduce\)[\s\S]*transition:\s*none !important/,
     );
   });
 

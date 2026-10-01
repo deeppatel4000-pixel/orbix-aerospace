@@ -1,8 +1,6 @@
 import Image from "next/image";
 import type { ComponentPropsWithoutRef, ReactNode } from "react";
 
-import { Container } from "@/components/layout/container";
-import { RegistrationMarks } from "@/components/ui/registration-marks";
 import type { AccentDivision } from "@/config/divisions";
 import { cn } from "@/lib/cn";
 
@@ -32,161 +30,186 @@ export type PhotoHeroProps = Omit<
   "children"
 > & {
   /**
-   * Optional panel anchored at the bottom right on desktop and stacked below
-   * the text on smaller screens, normally a `SpecPanel`.
+   * Content under the hero text in the same column, normally a `SpecPanel`
+   * with the key figures. Never set on the photograph.
    */
   aside?: ReactNode;
-  /** Hero text: eyebrow, H1, lead, actions. Rendered in reading order. */
+  /**
+   * Catalogue caption: what the photograph shows, as a short phrase ("SR-71B
+   * over the Sierra Nevada"). The credit, licence and source link always
+   * follow it. Omitted, the photograph's `alt` text is printed instead, so
+   * the plate always names its subject. Pass a shorter phrase when the alt
+   * text is long.
+   */
+  caption?: ReactNode;
+  /** Hero text: H1, lead, actions. Rendered in reading order. */
   children: ReactNode;
   /** Sets `data-division` on the hero, overriding the route's accent. */
   division?: AccentDivision;
   /**
-   * Fade and rise the direct children of the text block once on first
-   * paint (spec 7). Off under reduced motion. Default true.
+   * @deprecated v3 has no entrance animation (spec 10). Accepted and
+   * ignored so existing calls compile.
    */
   entrance?: boolean;
   /**
-   * Shape of the framed plate below 48rem: `landscape` (4:3, default) or
-   * `portrait` (4:5, capped at `min(70svh, 34rem)`) for a tall subject such
-   * as a launch vehicle. No effect from 48rem, where the photo is
-   * full-bleed.
+   * Figure number printed before the caption in ink, for example `"1"`
+   * renders "Fig. 1". Only for a page that numbers its figures.
    */
-  plate?: "landscape" | "portrait";
+  figureNumber?: string;
   /**
-   * Where the photo stands from 48rem: `behind` the text (default, the
-   * full-bleed spec 8 hero) or on the `right`, for a tall subject such as a
-   * launch vehicle. With `right` the photo plate starts at 56vw (48rem to
-   * 64rem) or at the larger of 50% + 10rem and 46rem (from 64rem), its left
-   * edge feathered into the page ground (no opaque fill behind it, so the
-   * blueprint grid carries on under the feather), and only the bottom fade
-   * is drawn over it: no text is set on the photograph. From 48rem to 64rem
-   * the text and aside stop 2rem short of the plate.
+   * `split` (default): from 64rem the text column on solid ground at the
+   * left and the photograph as a hard-edged plate on the right, bleeding
+   * to the viewport edge. `band`: the text, then the photograph as a
+   * full-bleed band under it at every width. Below 64rem both stack as a
+   * band.
+   */
+  layout?: "band" | "split";
+  /**
+   * @deprecated v2 placement. `right` now means a portrait plate
+   * (`plate="portrait"`); `behind` is the default split. No text is ever
+   * set on the photograph.
    */
   placement?: "behind" | "right";
+  /**
+   * Plate shape. `landscape` (default): 3:2 in the band, full height beside
+   * the text. `portrait`: 4:5 in the band (capped at `min(70svh, 34rem)`)
+   * and a 2:3 plate beside the text, for a launch vehicle that must be
+   * shown whole.
+   */
+  plate?: "landscape" | "portrait";
   /** Load the photo with `priority` (the LCP image). Default true. */
   priority?: boolean;
-  /** `sizes` for the photo. Full-bleed by default. */
+  /** `sizes` for the photo. Defaults to the plate's widths. */
   sizes?: string;
   visual: VisualRecord;
-  /** Use the 84rem container instead of 72rem. */
+  /** Align the text to the 84rem container instead of 72rem. */
   wide?: boolean;
 };
 
+const DEFAULT_SIZES: Record<"band" | "split", string> = {
+  band: "100vw",
+  split: "(min-width: 64rem) 50vw, 100vw",
+};
+
 /**
- * Full-bleed photographic hero (spec 8) for the aircraft and rocket
- * registries, vehicle profiles and the home page.
+ * Photographic hero (spec 7): the H1, lead and actions on solid ground,
+ * and the photograph as a hard-edged plate beside the text (from 64rem) or
+ * below it (a full-bleed band), with a catalogue caption under the plate on
+ * the ground. No scrim, no mask, no overlay, no text on the photograph.
  *
- * From 48rem the photo runs behind the content under a left-to-right
- * overlay and a bottom fade into the page, at `min(88svh, 60rem)` tall,
- * with the credit line at the bottom right. Below 48rem the photo sits
- * above the text at 4:3 (4:5 with `plate="portrait"`) with the credit
- * directly underneath, so text is
- * never set on a photograph on a phone.
+ * The caption always carries the credit, the licence (linked when a licence
+ * page is known) and a link to the source file page, after the optional
+ * figure number and description:
+ * "Fig. 1  SR-71B over the Sierra Nevada. Photo: NASA. Public domain.
+ * Source file."
  *
- * The credit is always visible: credit, licence (linked when a licence page
- * is known) and a link to the source file page. It is one inline run that
- * wraps like a sentence, right-aligned to the content edge on desktop.
- *
- * Below 48rem the photo is a framed plate inside the container gutter
- * (6px radius) and the registration marks (spec 6) sit 6px outside its
- * corners, in the gutter on the page ground, like crop marks outside the
- * trim. From 48rem the photo is full-bleed with no frame, so they are
- * hidden.
+ * The heading comes first in the DOM, so the page's H1 is read before the
+ * photograph. Crops are art-directed through `visual.objectPosition`,
+ * which may be a CSS variable set per breakpoint.
  */
 export function PhotoHero({
   aside,
+  caption,
   children,
   className,
   division,
-  entrance = true,
-  placement = "behind",
-  plate = "landscape",
+  entrance,
+  figureNumber,
+  layout = "split",
+  placement,
+  plate,
   priority = true,
-  sizes = "100vw",
+  sizes,
   visual,
   wide = false,
   ...props
 }: PhotoHeroProps) {
+  void entrance; // retired prop, accepted for compatibility
   const licence = licenceLabel(visual.license);
+  const shape = plate ?? (placement === "right" ? "portrait" : "landscape");
 
   return (
     <section
       className={cn("orbix-photo-hero", className)}
       data-division={division}
-      data-placement={placement === "right" ? "right" : undefined}
-      data-plate={plate === "portrait" ? "portrait" : undefined}
+      data-layout={layout}
+      data-plate={shape}
+      data-wide={wide ? "true" : undefined}
       {...props}
     >
+      <div className="orbix-photo-hero__text">
+        <div className="orbix-photo-hero__lede">{children}</div>
+        {aside ? <div className="orbix-photo-hero__facts">{aside}</div> : null}
+      </div>
+
       <figure className="orbix-photo-hero__figure">
-        <div className="orbix-photo-hero__plate">
-          <div className="orbix-photo-hero__frame">
-            <Image
-              alt={visual.alt}
-              className="orbix-photo-hero__image"
-              fill
-              priority={priority}
-              sizes={sizes}
-              src={visual.src}
-              style={
-                visual.objectPosition
-                  ? { objectPosition: visual.objectPosition }
-                  : undefined
-              }
-            />
-            <span aria-hidden="true" className="orbix-photo-hero__scrim" />
-          </div>
-          <RegistrationMarks className="orbix-photo-hero__marks" />
+        <div className="orbix-photo-hero__photo">
+          <Image
+            alt={visual.alt}
+            className="orbix-photo-hero__img"
+            fill
+            priority={priority}
+            sizes={sizes ?? DEFAULT_SIZES[layout]}
+            src={visual.src}
+            style={
+              visual.objectPosition
+                ? { objectPosition: visual.objectPosition }
+                : undefined
+            }
+          />
         </div>
-        <figcaption className="orbix-photo-hero__credit">
-          <Container className="orbix-photo-hero__credit-inner" wide={wide}>
-            <span className="orbix-photo-hero__credit-item">
-              Photo: {plainCredit(visual.credit)}
-            </span>{" "}
-            <span className="orbix-photo-hero__credit-item">
-              {visual.licenseUrl ? (
-                <a
-                  aria-label={licence.isShortened ? licence.full : undefined}
-                  href={visual.licenseUrl}
-                  rel="noopener noreferrer license"
-                  title={licence.isShortened ? licence.full : undefined}
-                >
-                  {licence.short}
-                </a>
-              ) : (
-                licence.full
-              )}
-            </span>{" "}
-            <span className="orbix-photo-hero__credit-item">
-              <a href={visual.sourceUrl} rel="noopener noreferrer">
-                Source file
-              </a>
-            </span>
-          </Container>
+        <figcaption className="orbix-caption orbix-photo-hero__caption">
+          {figureNumber ? (
+            <span className="orbix-caption__number">Fig. {figureNumber}</span>
+          ) : null}
+          {caption ?? altCaption(visual.alt)}. {creditLine(visual.credit)}.{" "}
+          {visual.licenseUrl ? (
+            <a
+              aria-label={licence.isShortened ? licence.full : undefined}
+              href={visual.licenseUrl}
+              rel="noopener noreferrer license"
+              title={licence.isShortened ? licence.full : undefined}
+            >
+              {licence.short}
+            </a>
+          ) : (
+            <span>{licence.full}</span>
+          )}
+          .{" "}
+          <a href={visual.sourceUrl} rel="noopener noreferrer">
+            Source file
+          </a>
+          .
         </figcaption>
       </figure>
-
-      <Container
-        className="orbix-photo-hero__body"
-        data-has-aside={aside ? "true" : undefined}
-        wide={wide}
-      >
-        <div
-          className={cn("orbix-photo-hero__content", entrance && "orbix-rise")}
-        >
-          {children}
-        </div>
-        {aside ? <div className="orbix-photo-hero__aside">{aside}</div> : null}
-      </Container>
     </section>
   );
 }
 
 /**
- * "U.S." set in B612 Mono reads as "U. S.", so the credit line uses "US".
- * The record itself keeps its wording.
+ * The credit line reads "US" rather than "U.S." so the sentence full stops
+ * that follow it are not doubled. The record itself keeps its wording.
  */
 function plainCredit(text: string) {
-  return text.replace(/U\.S\./g, "US");
+  return text.replace(/U\.S\./g, "US").replace(/\.$/, "");
+}
+
+/**
+ * The alt text as a caption: one sentence, no closing full stop (the
+ * caption adds its own).
+ */
+function altCaption(alt: string) {
+  return alt.trim().replace(/[.\s]+$/, "");
+}
+
+/**
+ * "Photo: NASA", but a credit that already names the photograph ("U.S. Air
+ * Force photo by ...") is printed as it stands, so it never reads
+ * "Photo: US Air Force photo by".
+ */
+export function creditLine(credit: string) {
+  const text = plainCredit(credit);
+  return /\bphoto(graph)?\b/i.test(text) ? text : `Photo: ${text}`;
 }
 
 /**

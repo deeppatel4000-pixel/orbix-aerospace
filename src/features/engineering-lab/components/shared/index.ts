@@ -48,3 +48,8 @@ export {
   LAB_CHOICE_ROW,
   LabSegmented,
 } from "./lab-choice";
+export {
+  LabEquation,
+  LabToolNumberProvider,
+  labEquationNumber,
+} from "./lab-equation";

@@ -12,8 +12,9 @@ export interface RocketVisual {
   /**
    * Optional zoom for the stacked registry card, for a photograph whose
    * vehicle is small in the frame (SLS: about a quarter of the card height,
-   * over trees and a wall), with the point it zooms towards. The frame
-   * clips the overflow. The feature card and other surfaces are unscaled.
+   * over trees and a wall; Falcon 9, Falcon Heavy and Starship, whose
+   * vehicles fill a tenth of the frame's width), with the point it zooms
+   * towards. The frame clips the overflow. Other surfaces are unscaled.
    */
   readonly cardScale?: number;
   readonly cardScaleOrigin?: string;
@@ -28,9 +29,9 @@ export interface RocketVisual {
    * records: the engines and propellants ("Merlin engines on RP-1 and
    * LOX"), which the classification line above it (stage count and
    * reusability) does not give. At most 31 characters
-   * (CARD_SUMMARY_MAX_LENGTH): the summary line is 223px wide in the
-   * narrowest card (320px), where 33 characters wrapped. Shown whole,
-   * never truncated; the visuals test enforces the limit.
+   * (CARD_SUMMARY_MAX_LENGTH), so it sets on one line in a row entry and
+   * on two at most in the two-across phone grid. Shown whole, never
+   * truncated; the visuals test enforces the limit.
    */
   readonly cardSummary: string;
   /**
@@ -82,6 +83,10 @@ const rocketVisuals = {
   "falcon-9": {
     alt: "Falcon 9 climbing away from Launch Complex 39A, with the launch tower and a cloud of steam below",
     cardObjectPosition: "50% 30%",
+    // The vehicle is a thin line near the top of the frame: zoom towards
+    // it so nose to tower top fills the upper three quarters of the card.
+    cardScale: 1.5,
+    cardScaleOrigin: "49% 17%",
     cardSummary: "Merlin engines on RP-1 and LOX",
     cardTreatment: "flagship",
     credit: "NASA/Tony Gray and Tim Powers",
@@ -100,6 +105,9 @@ const rocketVisuals = {
   "falcon-heavy": {
     alt: "Falcon Heavy lifting off beside its launch tower at Launch Complex 39A, with steam clouds spreading across the pad",
     cardObjectPosition: "50% 40%",
+    // Zoom towards the three cores, keeping the nose and the flame.
+    cardScale: 1.4,
+    cardScaleOrigin: "48% 46%",
     cardSummary: "Three Merlin-powered cores",
     cardTreatment: "standard",
     credit: "NASA/Kim Shiflett",
@@ -156,7 +164,11 @@ const rocketVisuals = {
   },
   starship: {
     alt: "Starship on its Super Heavy booster rising above a large exhaust cloud during its fifth flight test",
-    cardObjectPosition: "100% 50%",
+    // Centred on the vehicle (57% across) and zoomed towards it, so the
+    // stack fills the card instead of the pale sky and haze beside it.
+    cardObjectPosition: "57% 50%",
+    cardScale: 1.3,
+    cardScaleOrigin: "57% 20%",
     cardSummary: "Raptor engines on methane",
     cardTreatment: "wide",
     credit: "Steve Jurvetson",
@@ -180,5 +192,5 @@ export function getRocketVisual(id: string): RocketVisual | undefined {
   return rocketVisuals[id as keyof typeof rocketVisuals];
 }
 
-/** The longest `cardSummary` that still sets on one line at 320px. */
+/** The longest `cardSummary`: one line in a row entry, two at most in a phone grid tile. */
 export const CARD_SUMMARY_MAX_LENGTH = 31;

@@ -290,7 +290,7 @@ export function MissionReplay({
       className="min-w-0"
       data-reduced-motion={reducedMotion ? "true" : "false"}
     >
-      <header className="border-b border-border-subtle pb-4">
+      <header className="pb-4">
         <LabHeading id="mission-replay-title">Mission replay</LabHeading>
       </header>
 

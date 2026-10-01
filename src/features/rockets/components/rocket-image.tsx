@@ -35,7 +35,7 @@ interface RocketImageProps {
 
 /**
  * The launch vehicle's photograph from `rocket-visuals.ts`, with the hero's
- * tonal treatment (spec 8: saturate 0.85, contrast 1.05) so cards and
+ * tonal treatment (spec 7: saturate 0.9 only) so cards and
  * heroes read as one set of photographs.
  * When no photograph is recorded, a plain text panel says so.
  */
@@ -57,7 +57,7 @@ export function RocketImage({
     return (
       <div
         className={cn(
-          "grid place-items-center bg-surface-raised p-4",
+          "grid place-items-center p-4",
           fillContainer ? "absolute inset-0" : "relative",
           className,
         )}
@@ -80,14 +80,12 @@ export function RocketImage({
       <Image
         alt={decorative ? "" : visual.alt}
         className={cn(
-          "object-cover [filter:saturate(0.85)_contrast(1.05)]",
+          "object-cover [filter:saturate(0.9)]",
           framing === "feature" &&
             "object-(--crop-card) sm:object-(--crop-feature)",
-          // A zoomed card crop: the zoom and the card's hover zoom (spec 7,
-          // scale 1.03 from `.orbix-vehicle-card:hover img`) multiply, so
-          // the photograph still responds to hover.
-          cardScale !== undefined &&
-            "[transform:scale(calc(var(--card-scale)*var(--card-hover,1)))] [.orbix-vehicle-card:hover_&]:[--card-hover:1.03]",
+          // A fixed zoom for a photograph whose vehicle is small in the
+          // frame. It never changes on hover (spec 10).
+          cardScale !== undefined && "[transform:scale(var(--card-scale))]",
           imageClassName,
         )}
         fill

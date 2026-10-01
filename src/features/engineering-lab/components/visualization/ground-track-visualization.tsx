@@ -131,7 +131,7 @@ export function GroundTrackVisualization({
       data-ground-track-mode={state.mode}
       onKeyDown={handleKeyboard}
     >
-      <header className="border-b border-border-subtle pb-4">
+      <header className="pb-4">
         {/* The one disclaimer is the foot line. */}
         <LabHeading id="ground-track-title">Orbital ground track</LabHeading>
 

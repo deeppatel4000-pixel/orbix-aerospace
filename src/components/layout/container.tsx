@@ -5,7 +5,7 @@ import { cn } from "@/lib/cn";
 type ContainerProps = ComponentPropsWithoutRef<"div"> & {
   /**
    * 84rem instead of 72rem. Only for Compare and the Engineering Lab
-   * workspace (spec 6.2).
+   * workspace.
    */
   wide?: boolean;
 };

@@ -1,6 +1,16 @@
 #!/usr/bin/env node
 /**
- * Migration-safe raw-colour check.
+ * Migration-safe design checks: raw colours, and the design v3 kill list.
+ *
+ * Two ratchets share one baseline file:
+ *
+ * 1. RAW COLOURS (below): literal colours outside the token file.
+ * 2. KILL LIST (`docs/design-system/orbix-design-v3.md` sections 3 and 12):
+ *    gradients, mask fades, shadows, radius utilities above 2px, `gap-px`
+ *    compartments and `uppercase`. The shared foundation (`src/styles/`,
+ *    `src/components/`) must be at zero with no baseline at all; feature
+ *    files may keep the hits they had when v3 started and may not gain any.
+ *    The v3 definition of done is an empty `killList` baseline.
  *
  * ## What problem this solves
  *
@@ -60,7 +70,7 @@ const allowlist = new Map([
   ],
   [
     "src/app/opengraph-image.tsx",
-    "ImageResponse cannot read CSS custom properties, so the social image mirrors six token values",
+    "ImageResponse cannot read CSS custom properties, so the social image mirrors five token values",
   ],
 ]);
 
@@ -105,6 +115,93 @@ function toPosix(pathValue) {
   return pathValue.split(sep).join("/");
 }
 
+/* ------------------------------------------------------------------ *
+ * KILL LIST (spec 3, 12)
+ * ------------------------------------------------------------------ */
+
+const killScanExtensions = [".ts", ".tsx", ".css"];
+
+/** Paths that must be at zero, with no baseline. */
+const killListStrictPrefixes = ["src/styles/", "src/components/"];
+
+const killPatterns = [
+  ["gradient", /\b(?:repeating-)?(?:linear|radial|conic)-gradient\(/g],
+  ["svg gradient", /<(?:linear|radial)Gradient\b/g],
+  ["tailwind gradient", /\bbg-(?:gradient|linear|radial|conic)-/g],
+  ["mask-image", /\bmask-image\b|\bmask-(?:linear|radial|conic)-/g],
+  ["box-shadow", /\bbox-shadow\s*:(?!\s*none)/g],
+  [
+    "shadow utility",
+    /(?<![\w-])(?:inset-)?shadow-(?:\[|2xs|xs|sm|md|lg|xl|2xl)\b/g,
+  ],
+  ["drop-shadow", /\bdrop-shadow\b|<feDropShadow\b/g],
+  ["text-shadow", /\btext-shadow\b(?!\s*:\s*none)/g],
+  [
+    "radius > 2px",
+    /\brounded(?:-[trblse]{1,2})?-(?:md|lg|xl|2xl|3xl|4xl|full)\b/g,
+  ],
+  ["bare shadow utility", /(?<![\w-])shadow(?![\w-])/g],
+  [
+    "arbitrary radius > 2px",
+    /\brounded(?:-[trblse]{1,2})?-\[(?!(?:0|0px|1px|2px|var\(--radius-(?:0|1|2|photo)\))\])[^\]]*\]/g,
+  ],
+  [
+    "css radius > 2px",
+    /\bborder-(?:[a-z-]+-)?radius\s*:\s*(?![\s0]|1px|2px|var\(--radius-(?:0|1|2|photo|circle)\)|inherit)[^;}]*/g,
+  ],
+  ["mask", /(?<![\w-])(?:-webkit-)?mask\s*:/g],
+  ["gap-px", /\bgap-(?:[xy]-)?px\b/g],
+  ["uppercase", /\buppercase\b/g],
+];
+
+function isTestFile(key) {
+  return /\.test\.[cm]?[jt]sx?$/.test(key) || key.includes("/__tests__/");
+}
+
+/** Drops block and line comments so a comment naming a rule never counts. */
+function stripComments(source) {
+  return source
+    .replace(/\/\*[\s\S]*?\*\//g, "")
+    .replace(/(^|[^:"'`])\/\/.*$/gm, "$1");
+}
+
+function inspectKillList(filePath) {
+  const source = stripComments(readFileSync(filePath, "utf8"));
+  const hits = [];
+  for (const [name, pattern] of killPatterns) {
+    for (const match of source.matchAll(pattern))
+      hits.push(`${name}: ${match[0]}`);
+  }
+  return { count: hits.length, samples: [...new Set(hits)].slice(0, 5) };
+}
+
+function listKillFiles(directory) {
+  const found = [];
+  for (const entry of readdirSync(directory)) {
+    const full = join(directory, entry);
+    if (statSync(full).isDirectory()) {
+      found.push(...listKillFiles(full));
+      continue;
+    }
+    if (killScanExtensions.some((extension) => entry.endsWith(extension))) {
+      found.push(full);
+    }
+  }
+  return found;
+}
+
+const currentKill = new Map();
+for (const filePath of listKillFiles(scanRoot)) {
+  const key = toPosix(relative(repoRoot, filePath));
+  if (isTestFile(key)) continue;
+  const { count, samples } = inspectKillList(filePath);
+  if (count > 0) currentKill.set(key, { count, samples });
+}
+
+/* ------------------------------------------------------------------ *
+ * RAW COLOURS
+ * ------------------------------------------------------------------ */
+
 const current = new Map();
 for (const filePath of listFiles(scanRoot)) {
   const key = toPosix(relative(repoRoot, filePath));
@@ -114,16 +211,30 @@ for (const filePath of listFiles(scanRoot)) {
   if (count > 0) current.set(key, { count, samples });
 }
 
-if (process.argv.includes("--update")) {
-  const next = Object.fromEntries(
-    [...current.entries()]
+function sortedCounts(map, skip = () => false) {
+  return Object.fromEntries(
+    [...map.entries()]
+      .filter(([key]) => !skip(key))
       .sort(([a], [b]) => a.localeCompare(b))
       .map(([key, { count }]) => [key, count]),
   );
-  writeFileSync(baselinePath, `${JSON.stringify(next, null, 2)}\n`);
-  const total = Object.values(next).reduce((sum, n) => sum + n, 0);
+}
+
+const isStrict = (key) =>
+  killListStrictPrefixes.some((prefix) => key.startsWith(prefix));
+
+if (process.argv.includes("--update")) {
+  const rawColors = sortedCounts(current);
+  // Strict paths are never baselined: they must be fixed, not recorded.
+  const killList = sortedCounts(currentKill, isStrict);
+  writeFileSync(
+    baselinePath,
+    `${JSON.stringify({ killList, rawColors }, null, 2)}\n`,
+  );
+  const sum = (object) => Object.values(object).reduce((a, n) => a + n, 0);
   console.log(
-    `Baseline updated: ${Object.keys(next).length} files, ${total} recorded violations.`,
+    `Baseline updated: raw colours ${Object.keys(rawColors).length} files, ${sum(rawColors)} violations; ` +
+      `kill list ${Object.keys(killList).length} files, ${sum(killList)} hits.`,
   );
   process.exit(0);
 }
@@ -139,11 +250,22 @@ try {
   process.exit(1);
 }
 
+const rawBaseline = baseline.rawColors ?? {};
+const killBaseline = baseline.killList ?? {};
+
 const failures = [];
 for (const [file, { count, samples }] of current) {
-  const allowed = baseline[file] ?? 0;
+  const allowed = rawBaseline[file] ?? 0;
   if (count > allowed) {
     failures.push({ allowed, count, file, samples });
+  }
+}
+
+const killFailures = [];
+for (const [file, { count, samples }] of currentKill) {
+  const allowed = isStrict(file) ? 0 : (killBaseline[file] ?? 0);
+  if (count > allowed) {
+    killFailures.push({ allowed, count, file, samples });
   }
 }
 
@@ -151,13 +273,29 @@ if (failures.length > 0) {
   console.error("\nRaw colour values are not allowed in new component code.\n");
   console.error(
     "Use a semantic token from src/styles/orbix-tokens.css instead, for\n" +
-      "example `text-muted`, `border-border`, or `var(--orbix-accent)`.\n",
+      "example `text-muted`, `border-rule`, or `var(--orbix-accent)`.\n",
   );
   for (const { allowed, count, file, samples } of failures) {
     console.error(
       `  ${file}\n    ${allowed} allowed, ${count} found, e.g. ${samples.join(", ")}`,
     );
   }
+}
+
+if (killFailures.length > 0) {
+  console.error(
+    "\nDesign v3 kill list (orbix-design-v3.md sections 3 and 12): no\n" +
+      "gradients, masks, shadows, radius above 2px, gap-px or uppercase.\n" +
+      "src/styles and src/components must be at zero.\n",
+  );
+  for (const { allowed, count, file, samples } of killFailures) {
+    console.error(
+      `  ${file}\n    ${allowed} allowed, ${count} found, e.g. ${samples.join("; ")}`,
+    );
+  }
+}
+
+if (failures.length > 0 || killFailures.length > 0) {
   console.error(
     "\nIf you have genuinely removed violations elsewhere, re-record the\n" +
       "baseline with: node scripts/check-raw-colors.mjs --update\n",
@@ -165,12 +303,10 @@ if (failures.length > 0) {
   process.exit(1);
 }
 
-const recorded = Object.values(baseline).reduce((sum, n) => sum + n, 0);
-const observed = [...current.values()].reduce(
-  (sum, { count }) => sum + count,
-  0,
-);
+const total = (map) =>
+  [...map.values()].reduce((sum, { count }) => sum + count, 0);
 console.log(
-  `Raw colour check passed: ${observed} known violations across ${current.size} files ` +
-    `(baseline allows ${recorded}). No new raw colours.`,
+  `Raw colour check passed: ${total(current)} known violations across ${current.size} files. ` +
+    `Kill list check passed: ${total(currentKill)} known hits across ${currentKill.size} feature files ` +
+    `(target 0). Nothing new.`,
 );

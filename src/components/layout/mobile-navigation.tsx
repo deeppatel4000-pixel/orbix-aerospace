@@ -23,9 +23,10 @@ const secondaryItems = legalNavigationItems.filter((item) =>
 const DESKTOP_QUERY = "(min-width: 64rem)";
 
 /**
- * Disclosure menu below 1024px (spec 8): a full-height sheet under the
- * header with the links in the condensed display cut at 24px, the current
- * page underlined in the accent as on desktop, and About, How I built ORBIX,
+ * Disclosure menu below 1024px (spec 9): a full-height sheet under the
+ * header with the links in the condensed display cut at 28px and no rules
+ * between them, the current page underlined in the division colour as on
+ * desktop, and About, How I built ORBIX,
  * Image credits and the operator line anchored to the bottom. It opens and
  * closes instantly, with no stagger.
  *

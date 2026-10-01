@@ -6,14 +6,15 @@ import { siteConfig } from "@/config/site";
 import "./globals.css";
 
 /**
- * ORBIX typography (design v2, spec 5) is self-hosted through
+ * ORBIX typography (design v3, spec 5) is self-hosted through
  * `next/font/google`: the files are downloaded at build time and served from
  * this origin, so there is no runtime request to a third party and no extra
  * dependency. Both families are licensed under the SIL Open Font License 1.1.
  *
- * IBM Plex Sans carries display, headings, body and interface text. The
- * `wdth` axis is loaded for the condensed display cut (`font-stretch: 84%`,
- * see `.orbix-display` and `.orbix-h1` in `src/styles/orbix-foundations.css`).
+ * IBM Plex Sans carries display, headings, body, labels and interface text.
+ * The `wdth` axis is loaded for the condensed display cut (`font-stretch:
+ * 84%`, see `.orbix-h1` in `src/styles/orbix-foundations.css`). There is no
+ * serif: the long-form serif question is decided in spec 5.
  */
 const plexSans = IBM_Plex_Sans({
   axes: ["wdth"],
@@ -23,8 +24,8 @@ const plexSans = IBM_Plex_Sans({
 });
 
 /**
- * B612 Mono, designed for Airbus cockpit displays, sets data: readouts, spec
- * values, units, table figures and small uppercase labels.
+ * B612 Mono, designed for Airbus cockpit displays, sets figures, units and
+ * equations only (spec 5). Never labels.
  */
 const b612Mono = B612_Mono({
   display: "swap",
@@ -76,7 +77,7 @@ export const metadata: Metadata = {
 
 export const viewport: Viewport = {
   colorScheme: "dark",
-  themeColor: "#03060c",
+  themeColor: "#07090d",
 };
 
 export default function RootLayout({

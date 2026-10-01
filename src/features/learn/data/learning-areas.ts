@@ -170,7 +170,7 @@ const learningAreas: readonly LearningArea[] = [
           { meaning: "Effective exhaust velocity", symbol: "v_e", unit: "m/s" },
           { meaning: "Specific impulse", symbol: "I_sp", unit: "s" },
           {
-            meaning: "Standard gravity, 9.80665 m/s² by definition",
+            meaning: "Standard gravity, 9.80665 by definition",
             symbol: "g_0",
             unit: "m/s²",
           },

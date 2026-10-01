@@ -201,12 +201,12 @@ export function MissionControlSidebar({
       </div>
 
       <nav aria-label="Mission control sections" className="mt-3">
-        {/* Square segmented controls, one per group, above the workspace
-         * so the content keeps the full tool column. From 48rem the four
-         * groups sit on a fixed two-column grid, so both rows line up. A
-         * four-segment group folds to 2 x 2 in a narrow cell and a
-         * three-segment group stays a row of three, so no segment is ever
-         * left on a row of its own. */}
+        {/* Text tabs, one row per group, above the workspace so the
+         * content keeps the full tool column. The active tab is marked by
+         * colour, weight and a 2px division-colour underline (spec 4); no
+         * fills and no segment frame. Every group is the same wrapping row
+         * of text tabs, so each underline matches its own label and the gaps
+         * between tabs are even across groups. */}
         <div
           aria-label="Mission systems workspaces"
           aria-orientation="horizontal"
@@ -215,31 +215,18 @@ export function MissionControlSidebar({
         >
           {MISSION_CONTROL_WORKSPACE_GROUPS.map((group) => (
             <div
-              className="@container/segments flex max-w-full min-w-0 flex-col gap-1.5"
+              className="flex max-w-full min-w-0 flex-col gap-1.5"
               key={group.id}
               role="presentation"
             >
-              <p aria-hidden="true" className="orbix-caps text-muted">
+              <p
+                aria-hidden="true"
+                className="text-[0.8125rem] leading-5 font-medium text-muted"
+              >
                 {group.label}
               </p>
 
-              <div
-                className={cn(
-                  "w-full gap-px overflow-hidden rounded border border-border-control bg-border-control",
-                  // A four-segment group is a 2 x 2 grid until its own cell
-                  // holds all four on one row, so it never wraps 3 + 1 with
-                  // one segment on a row of its own.
-                  // A three-segment group stays one row of three at every
-                  // width (never 2 + 1); in a narrow cell its segments
-                  // tighten and a two-word label may break onto two lines.
-                  group.workspaceIds.length === 4
-                    ? "grid grid-cols-2 @min-[23.5rem]/segments:grid-cols-4"
-                    : group.workspaceIds.length === 3
-                      ? "grid grid-cols-3"
-                      : "flex flex-wrap",
-                )}
-                role="presentation"
-              >
+              <div className="flex flex-wrap gap-x-6" role="presentation">
                 {group.workspaceIds.map((workspaceId) => {
                   const index = workspaceIndexById.get(workspaceId);
                   const workspace =
@@ -257,13 +244,10 @@ export function MissionControlSidebar({
                       aria-label={workspace.accessibleLabel}
                       aria-selected={isActive}
                       className={cn(
-                        "inline-flex min-h-11 grow items-center justify-center text-center transition-colors focus-visible:outline-offset-[-3px]",
-                        group.workspaceIds.length === 3
-                          ? "px-2 py-1 text-[0.8125rem] leading-tight @min-[22rem]/segments:px-3 @min-[22rem]/segments:text-sm @min-[22rem]/segments:whitespace-nowrap"
-                          : "px-3 text-sm whitespace-nowrap",
+                        "inline-flex min-h-11 items-center justify-start border-b-2 text-left text-sm whitespace-nowrap transition-colors focus-visible:outline-offset-2",
                         isActive
-                          ? "bg-accent font-medium text-on-accent"
-                          : "bg-background text-text-secondary hover:bg-surface-raised hover:text-foreground",
+                          ? "border-accent font-semibold text-accent"
+                          : "border-transparent text-text-secondary hover:border-rule-strong hover:text-foreground",
                       )}
                       id={`mission-workspace-${workspace.id}-tab`}
                       key={workspace.id}

@@ -1,6 +1,6 @@
 "use client";
 
-import { Button, EquationBlock } from "@/components/ui";
+import { Button } from "@/components/ui";
 import { useMemo, useState, type FormEvent } from "react";
 
 import { analyzeOrbitalPlaneChange } from "@/features/engineering-lab/analysis";
@@ -20,6 +20,7 @@ import {
   EqDot,
   LAB_GROUP,
   LAB_GROUP_LEGEND,
+  LabEquation,
 } from "@/features/engineering-lab/components/shared";
 import type {
   OrbitalPlaneChangeAnalysisInputs,
@@ -170,7 +171,7 @@ function deriveViewState(
 }
 
 const toolEquation = (
-  <EquationBlock
+  <LabEquation
     equation={
       <>
         <span className={EQ_LINE}>

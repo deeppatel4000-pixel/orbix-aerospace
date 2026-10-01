@@ -12,25 +12,25 @@ import type { VehiclePhotographRecord } from "@/features/vehicles/components/veh
 import { cn } from "@/lib/cn";
 
 /**
- * One figure for each pathway that has an honest one (spec 9, Learn), set
- * in the 8-column figure track after "Why it matters": credited
- * public-domain photographs from `public/images`, shown whole, and diagrams
- * drawn by the Engineering Lab and Showcase components from preset inputs.
- * The entry pathway has none: no entry photograph is in `public/images`
- * and no lab preset starts from orbit, so its equations carry it.
+ * One figure for each pathway that has an honest one (spec v3 sections 6,
+ * 7 and 11): credited public-domain photographs from `public/images`, shown
+ * whole as hard-edged plates (no frame, radius or fill), and diagrams drawn
+ * by the Engineering Lab and Showcase components from preset inputs, as
+ * linework on the ground. The entry pathway has none: no entry photograph
+ * is in `public/images` and no lab preset starts from orbit, so its
+ * equations carry it.
  *
- * One caption rule, like a museum label: the frame holds only the image or
- * drawing, and the caption sits outside it, below, at a 38rem measure under
- * a "FIGURE N" caps label. A photograph's credit, licence and source link
- * close its caption in 12px muted text. The portrait photograph is the only
- * exception to placement, with its caption beside it from 640px. Every
- * caption states what is shown and where it comes from; none states a
- * vehicle figure that is not already in the photograph's record.
+ * One catalogue caption below each figure (spec 6): "Fig. 1  An F-22
+ * Raptor in flight. ... U.S. Air Force, public domain. Source." in 14px
+ * muted Plex Sans with the figure number in ink. The portrait photograph
+ * alone sets its caption beside it from 640px. The two diagrams carry no
+ * note of their own: their scale and preset facts are folded into the one
+ * catalogue caption. Every caption states what is shown and where it
+ * comes from; none states a vehicle figure that is not already in the
+ * photograph's record.
  *
- * Accepted exception: AllowanceBars (Figure 5) is the Showcase owner's
- * DiagramPlate and carries its own in-frame heading, so that figure has a
- * title inside the frame as well as the caption outside it. Its plate is
- * already framed, so its registration marks are hidden here.
+ * Below 640px the photographs bleed across the 16px page gutters, as a
+ * band (spec 7); the caption stays in the text column.
  */
 
 /** Pathways with a figure, in page order. Figures are numbered in it. */
@@ -50,6 +50,13 @@ const TRACK_SIZES = "(min-width: 72rem) 45rem, (min-width: 64rem) 62vw, 100vw";
 const PORTRAIT_SIZES =
   "(min-width: 72rem) 27rem, (min-width: 40rem) 60vw, 100vw";
 
+/**
+ * The one pathway whose figure leaves the 8-column track: from 1024px the
+ * orbit drawing sits after the key ideas across all 12 columns, larger and
+ * centred, so the page changes scale once (tells T19).
+ */
+export const WIDE_FIGURE_AREA_ID = "orbital-mechanics-mission-design";
+
 /** The Engineering Lab hero's transfer (engineering-dashboard.tsx). */
 const HERO_TRANSFER = {
   finalAltitudeMetres: 35_786_000,
@@ -65,7 +72,7 @@ export function PathwayFigure({ areaId }: PathwayFigureProps) {
   const figureIndex = (FIGURE_AREA_IDS as readonly string[]).indexOf(areaId);
   if (figureIndex === -1) return null;
   const captionId = `${areaId}-figure-caption`;
-  const label = `Figure ${figureIndex + 1}`;
+  const label = `Fig. ${figureIndex + 1}`;
 
   switch (areaId) {
     case "aerodynamics-flight-fundamentals": {
@@ -124,28 +131,28 @@ export function PathwayFigure({ areaId }: PathwayFigureProps) {
     }
 
     case "orbital-mechanics-mission-design": {
-      // Not wrapped in DiagramPlate: the large OrbitDiagram draws its own
-      // registration marks around the drawing, and a second set reads as
-      // noise. It fills the 8-column track, so its marks share the right
-      // edge of the rules and equation blocks. Its legend and scale note
-      // sit below the marks.
+      // OrbitDiagram is its own <figure>; its `caption` slot replaces the
+      // default scale note, so the legend and one catalogue caption are
+      // the only text under the drawing. Placed wide by the section.
       return (
-        <figure aria-labelledby={captionId} className="m-0 mt-14">
-          <div className="w-full">
-            <OrbitDiagram
-              description="A circular orbit at 400 km, a circular orbit at 35,786 km, and the half ellipse that joins them, drawn to scale around Earth."
-              finalAltitudeMetres={HERO_TRANSFER.finalAltitudeMetres}
-              initialAltitudeMetres={HERO_TRANSFER.initialAltitudeMetres}
-              size="large"
-              title="Hohmann transfer from low Earth orbit to geostationary altitude"
-            />
-          </div>
-          <Caption id={captionId} label={label}>
-            A Hohmann transfer from a 400 km circular orbit to geostationary
-            altitude, 35,786 km. The same drawing heads the Engineering Lab,
-            where the Hohmann transfer analyzer computes the two burns.
-          </Caption>
-        </figure>
+        <div className="mx-auto w-full lg:max-w-[50rem]">
+          <OrbitDiagram
+            caption={
+              <span className="block max-w-[38rem] text-pretty">
+                <span className="orbix-caption__number">{label}</span> A Hohmann
+                transfer from a 400 km circular orbit to geostationary altitude,
+                35,786 km, drawn to scale from the computed altitudes. The same
+                drawing heads the Engineering Lab, where the Hohmann transfer
+                analyzer computes the two burns.
+              </span>
+            }
+            description="A circular orbit at 400 km, a circular orbit at 35,786 km, and the half ellipse that joins them, drawn to scale around Earth."
+            finalAltitudeMetres={HERO_TRANSFER.finalAltitudeMetres}
+            initialAltitudeMetres={HERO_TRANSFER.initialAltitudeMetres}
+            size="large"
+            title="Hohmann transfer from low Earth orbit to geostationary altitude"
+          />
+        </div>
       );
     }
 
@@ -154,21 +161,23 @@ export function PathwayFigure({ areaId }: PathwayFigureProps) {
       if (!mission || mission.diagram.kind !== "allowances") return null;
       return (
         <figure aria-labelledby={captionId} className="m-0 mt-14">
-          {/* AllowanceBars comes framed (a bordered DiagramPlate), and
-              registration marks belong on an unframed drawing, so Learn
-              hides the plate's marks and sets its in-frame note muted.
-              A plain variant is requested from the Showcase owner. */}
-          <div className="[&_.orbix-label]:text-text-muted [&_.orbix-reg-marks]:hidden">
+          {/* AllowanceBars (Showcase) sets a short label above the bars and
+              a note below them. On Learn both are folded into the catalogue
+              caption: the label stays only as the inner figure's accessible
+              name (sr-only) and the note is hidden, so each figure has one
+              caption voice. */}
+          <div className="[&_.orbix-figure>figcaption]:hidden [&_.orbix-figure>p:first-child]:sr-only">
             <AllowanceBars
               diagram={mission.diagram}
               missionId={`learn-${mission.preset.id}`}
             />
           </div>
           <Caption id={captionId} label={label}>
-            Maneuver allowances entered for the {mission.preset.name} preset, as
-            the Showcase page presents them. Every bar shares one scale and
-            every value carries its unit, so a reviewer can check the budget
-            line by line.
+            Delta-v allowances for the {mission.preset.name} preset, in flight
+            order, as the Showcase page presents them. The allowances are preset
+            inputs, not optimized trajectory values; their sum is the only
+            derived number. Every bar shares one scale and every value carries
+            its unit.
           </Caption>
         </figure>
       );
@@ -204,16 +213,12 @@ function PhotoFigure({
         portrait && "grid gap-6 sm:grid-cols-8 sm:gap-x-8",
       )}
     >
-      {/* The tonal treatment matches the vehicle profile photographs. */}
-      <div
-        className={cn(
-          "overflow-hidden rounded-md border border-border bg-surface",
-          portrait && "sm:col-span-5",
-        )}
-      >
+      {/* A hard-edged plate: no frame, radius or fill (spec 3.2, 7). The
+          tonal treatment matches the vehicle profile photographs. */}
+      <div className={cn("max-sm:-mx-4", portrait && "sm:col-span-5")}>
         <Image
           alt={visual.alt}
-          className="block h-auto w-full [filter:saturate(0.85)_contrast(1.05)]"
+          className="block h-auto w-full rounded-none [filter:saturate(0.9)]"
           height={visual.height}
           sizes={portrait ? PORTRAIT_SIZES : TRACK_SIZES}
           src={visual.src}
@@ -221,7 +226,7 @@ function PhotoFigure({
         />
       </div>
       <Caption
-        className={portrait ? "sm:col-span-3 sm:self-end" : "mt-6"}
+        className={portrait ? "sm:col-span-3 sm:mt-0 sm:self-end" : undefined}
         id={captionId}
         label={label}
       >
@@ -233,8 +238,8 @@ function PhotoFigure({
 }
 
 /**
- * "Photo: NASA, public domain. Source", in 12px muted text at the end of
- * the caption. The licence links to its terms where the record gives them.
+ * "Photo: NASA, public domain. Source." closing the caption sentence. The
+ * licence links to its terms where the record gives them.
  */
 function PhotoCredit({
   name,
@@ -249,16 +254,12 @@ function PhotoCredit({
     .replace(/^Public domain/, "public domain");
 
   return (
-    <span className="mt-3 block text-xs leading-5 text-text-muted">
+    <span>
+      {" "}
       {credit ?? (license ? "Licence:" : null)}
       {license ? (credit ? ", " : " ") : null}
       {license && visual.licenseUrl ? (
-        <a
-          className="orbix-link"
-          href={visual.licenseUrl}
-          rel="noreferrer"
-          target="_blank"
-        >
+        <a href={visual.licenseUrl} rel="noreferrer" target="_blank">
           {license}
           <span className="sr-only"> (opens in a new tab)</span>
         </a>
@@ -267,7 +268,7 @@ function PhotoCredit({
       )}
       {credit || license ? ". " : null}
       <a
-        className="orbix-link inline-flex items-center gap-1"
+        className="inline-flex items-center gap-1"
         href={visual.sourceUrl}
         rel="noreferrer"
         target="_blank"
@@ -285,26 +286,22 @@ function PhotoCredit({
 
 function Caption({
   children,
-  className = "mt-6",
+  className,
   id,
   label,
 }: {
   children: ReactNode;
-  /** Placement. Default `mt-6`: below the frame. */
+  /** Placement. Default: below the plate. */
   className?: string;
   id: string;
   label: string;
 }) {
   return (
     <figcaption
-      className={cn(
-        "max-w-[38rem] text-sm leading-6 text-pretty text-text-secondary",
-        className,
-      )}
+      className={cn("orbix-caption max-w-[38rem] text-pretty", className)}
       id={id}
     >
-      <span className="orbix-caps mb-2 block text-text-muted">{label}</span>
-      {children}
+      <span className="orbix-caption__number">{label}</span> {children}
     </figcaption>
   );
 }

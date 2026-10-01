@@ -31,7 +31,8 @@ describe("ReentryProfileVisualization", () => {
     expect(markup).toContain("Reentry profile");
     expect(markup).toContain("Visualization Reference Vehicle");
     expect(markup).toContain("Altitude profile");
-    expect(markup).toContain("Velocity (km/s)");
+    // Axis words in Plex Sans, the unit in B612 Mono.
+    expect(markup).toMatch(/Velocity <tspan[^>]*>\(km\/s\)<\/tspan>/);
     expect(markup).toContain("Peak heating");
     expect(markup).toContain("Peak deceleration");
     expect(markup).toContain("<svg");

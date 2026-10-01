@@ -3,7 +3,7 @@ import type { ComponentPropsWithoutRef, ReactNode } from "react";
 import { formatFigure } from "@/components/ui/readout";
 import { cn } from "@/lib/cn";
 
-/** One entry of the variables legend. */
+/** One entry of the variables list. */
 export interface EquationVariable {
   /** The symbol as written in the equation, for example "Isp". */
   readonly symbol: ReactNode;
@@ -17,10 +17,20 @@ export type EquationBlockProps = Omit<
   ComponentPropsWithoutRef<"figure">,
   "children"
 > & {
-  /** The equation as text, set large in B612 Mono. */
+  /** The equation as text, set in B612 Mono. */
   equation: ReactNode;
-  /** Name of the relation, for example "Tsiolkovsky rocket equation". */
+  /**
+   * Name of the relation, for example "Tsiolkovsky rocket equation". It is
+   * set under the equation as the lead-in to the variables ("Tsiolkovsky
+   * rocket equation, where"), never above it as a label.
+   */
   label?: string;
+  /**
+   * Equation number printed in parentheses at the right margin, for example
+   * `"2.1"` renders "(2.1)". A real reference number (spec 3.7). Spec 6
+   * numbers every display equation, so pages should always pass one.
+   */
+  number?: string;
   /**
    * How a screen reader should say the equation, when the written form
    * relies on symbols it would mispronounce, for example
@@ -31,51 +41,72 @@ export type EquationBlockProps = Omit<
 };
 
 /**
- * Equation block for the Engineering Lab and Learn (spec 8): the equation
- * set large in B612 Mono on a raised panel with a thin accent top rule, and
- * the variables as a definition list below it. Decimal points and thousands
- * separators in the equation, symbols and units go through `formatFigure`,
- * including those inside `<sub>`/`<sup>` in a JSX equation.
+ * Display equation (spec 6) for the Engineering Lab and Learn: the
+ * expression set on the page ground, indented, with its number "(2.1)" at
+ * the right margin, then the relation's name as a plain lead-in and the
+ * variables as a "where" list. No
+ * panel, no accent rule. Decimal points and thousands separators in the
+ * equation, symbols and units go through `formatFigure`, including those
+ * inside `<sub>`/`<sup>` in a JSX equation.
  */
 export function EquationBlock({
   className,
   equation,
   label,
+  number,
   spokenAs,
   variables,
   ...props
 }: EquationBlockProps) {
+  const hasVariables = Boolean(variables && variables.length > 0);
   return (
     <figure className={cn("orbix-equation", className)} {...props}>
+      <div className="orbix-equation__line">
+        <p className="orbix-equation__expr">
+          {spokenAs ? (
+            <>
+              <span aria-hidden="true">{formatFigure(equation)}</span>
+              <span className="sr-only">{spokenAs}</span>
+            </>
+          ) : (
+            formatFigure(equation)
+          )}
+        </p>
+        {number ? (
+          <span className="orbix-equation__number">
+            ({formatFigure(number)})
+          </span>
+        ) : null}
+      </div>
       {label ? (
-        <figcaption className="orbix-equation__label">{label}</figcaption>
+        <figcaption className="orbix-equation__where">
+          {label}
+          {hasVariables ? ", where" : "."}
+        </figcaption>
+      ) : hasVariables ? (
+        <p className="orbix-equation__where">where</p>
       ) : null}
-      <p className="orbix-equation__expr">
-        {spokenAs ? (
-          <>
-            <span aria-hidden="true">{formatFigure(equation)}</span>
-            <span className="sr-only">{spokenAs}</span>
-          </>
-        ) : (
-          formatFigure(equation)
-        )}
-      </p>
-      {variables && variables.length > 0 ? (
-        <dl className="orbix-equation__vars">
-          {variables.map((variable, index) => (
-            <div className="contents" key={index}>
-              <dt>{formatFigure(variable.symbol)}</dt>
-              <dd>
-                {variable.meaning}
-                {variable.unit ? (
-                  <span className="orbix-equation__unit">
-                    {formatFigure(variable.unit)}
-                  </span>
-                ) : null}
-              </dd>
-            </div>
-          ))}
-        </dl>
+      {hasVariables ? (
+        <>
+          <dl className="orbix-equation__vars">
+            {variables?.map((variable, index) => (
+              <div className="contents" key={index}>
+                <dt>{formatFigure(variable.symbol)}</dt>
+                <dd>
+                  {variable.meaning}
+                  {variable.unit ? (
+                    <>
+                      {", "}
+                      <span className="orbix-equation__unit">
+                        {formatFigure(variable.unit)}
+                      </span>
+                    </>
+                  ) : null}
+                </dd>
+              </div>
+            ))}
+          </dl>
+        </>
       ) : null}
     </figure>
   );

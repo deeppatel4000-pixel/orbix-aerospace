@@ -10,7 +10,10 @@ import {
   ComparisonCell,
   rowNeedsPerFigureQualifiers,
 } from "@/features/compare/components/comparison-cell";
-import { ComparisonRowEducation } from "@/features/compare/components/comparison-row-education";
+import {
+  ComparisonGroupNotes,
+  ComparisonRowEducation,
+} from "@/features/compare/components/comparison-row-education";
 import { ComparisonRules } from "@/features/compare/components/comparison-rules";
 import { groupedCredits } from "@/features/compare/components/photo-credit";
 import { getRowEducation } from "@/features/compare/education";
@@ -54,14 +57,14 @@ const sheetWidth: Record<number, string> = {
 };
 
 /**
- * Hides the sideways-scroll hint once the sheet fits: its minimum width
- * plus the 1px outline on each side. Keyed to the width of the column the
- * sheet sits in (a size container), not the viewport, so a browser that
- * reserves a scrollbar gutter still shows the hint when the sheet overflows.
+ * Hides the sideways-scroll hint once the sheet fits its minimum width.
+ * Keyed to the width of the column the sheet sits in (a size container),
+ * not the viewport, so a browser that reserves a scrollbar gutter still
+ * shows the hint when the sheet overflows.
  */
 const hintVisibility: Record<number, string> = {
-  2: "@min-[21.375rem]/sheet:hidden",
-  3: "@min-[30.375rem]/sheet:hidden",
+  2: "@min-[21.25rem]/sheet:hidden",
+  3: "@min-[30.25rem]/sheet:hidden",
 };
 
 const bandColumns: Record<number, string> = {
@@ -81,11 +84,19 @@ const stripColumns: Record<number, string> = {
 };
 
 /**
- * Joins the per-group `DataTable`s into one sheet: no inner outlines or
- * radii, one outline around the sheet, the visual column header shown once
- * (each table keeps a real header row for assistive technology, visually
- * hidden), and one sideways scroll region below 64rem so every group moves
- * together.
+ * Joins the per-group `DataTable`s into one open sheet (spec 6: no frame,
+ * no fill, rules only), the visual column header shown once (each table
+ * keeps a real header row for assistive technology, visually hidden).
+ * Below 64rem each group is its own sideways scroll region, so the
+ * scrollbar, the overflow cue, sits at the foot of the group being read
+ * rather than at the foot of the whole sheet.
+ *
+ * Alignment decision (spec 6 deviation, recorded): figures stay
+ * left-aligned in the vehicle columns and units stay inline with each
+ * figure. Each column is one vehicle rather than one quantity, and rows
+ * mix text (maker, role, stages) with figures in different published
+ * units, so a right edge would scatter the text rows and a unit in the
+ * header would not hold for a whole column.
  */
 const joinedTables = cn(
   "[&_table]:w-full [&_table]:table-fixed",
@@ -97,20 +108,21 @@ const joinedTables = cn(
   "[&_thead_th]:h-0 [&_thead_th]:border-0 [&_thead_th]:p-0 [&_thead_th]:text-[0px] [&_thead_th]:leading-[0]",
   // No hyphenation: the column widths above fit whole words, and
   // break-word only guards against an unforeseen long token.
-  "max-md:[&_th]:px-2.5 max-md:[&_td]:px-2 [&_tbody_:is(th,td)]:[overflow-wrap:break-word]",
+  "max-md:[&_tbody_th]:pr-2.5 max-md:[&_td]:px-2 [&_tbody_:is(th,td)]:[overflow-wrap:break-word]",
   // The caption and the scroll-cue frame are the root's two children; the
   // scroll region sits in the frame.
   "[&>*>[role=region]]:overflow-visible [&>*>[role=region]]:rounded-none [&>*>[role=region]]:border-0",
-  "[&>p:first-child]:mb-0 [&>p:first-child]:px-3 [&>p:first-child]:pt-6 [&>p:first-child]:pb-3 md:[&>p:first-child]:px-4",
+  "[&>p:first-child]:mb-0 [&>p:first-child]:pt-10 [&>p:first-child]:pb-4",
   "max-md:[&>p:first-child]:sticky max-md:[&>p:first-child]:left-0 max-md:[&>p:first-child]:max-w-[100cqw]",
 );
 
 /**
- * The comparison as a spec sheet (design v2, spec 8 and 9). An identity
+ * The comparison as a spec sheet (design v3, spec 6 and 11). An identity
  * strip names each column with its photograph, maker and profile link, next
  * to the rules the sheet follows; then the groups of characteristics as one
  * sheet, the characteristic as the row header and one column per vehicle,
- * with accent magnitude bars where a row shares one unit.
+ * with a thin accent scale line where a row shares one unit. An open table:
+ * the header band sits on a strong rule, rows on hairlines, no frame.
  */
 export function ComparisonTable({ result }: ComparisonTableProps) {
   const groups = groupComparisonRows(result);
@@ -163,7 +175,7 @@ export function ComparisonTable({ result }: ComparisonTableProps) {
              disclosure on its own line, so the labels in the column share
              one left edge and read as a list. */
           <span className="flex flex-col items-start">
-            <span className="text-[0.8125rem] font-medium text-foreground max-md:tracking-[-0.01em] md:text-sm">
+            <span className="text-[0.8125rem] font-medium text-muted max-md:tracking-[-0.01em] md:text-sm">
               {row.label}
             </span>
             {row.description ? (
@@ -214,21 +226,21 @@ export function ComparisonTable({ result }: ComparisonTableProps) {
     <div
       aria-hidden="true"
       className={cn(
-        "grid items-center border-b border-border bg-surface",
+        "grid items-center border-b border-border-control bg-background",
         bandColumns[count],
         className,
       )}
     >
-      {/* Stretched so the sticky cell fills the band on a phone; its text
-          is centred like the names beside it, so the label and the names
-          share one optical line. */}
-      <span className="orbix-caps sticky left-0 z-10 flex items-center self-stretch border-r border-border bg-surface px-2.5 py-3 leading-5 text-muted md:static md:border-r-0 md:px-4">
+      {/* Stretched so the sticky cell covers the band on a phone (page
+          ground, the colour behind every cell); its text is centred like
+          the names beside it, so they share one optical line. */}
+      <span className="orbix-label sticky left-0 z-10 flex items-center self-stretch bg-background py-3 pr-2.5 md:static">
         {/* Too wide for the 6.25rem phone column. */}
         <span className="max-md:hidden">Characteristic</span>
       </span>
       {result.vehicles.map((vehicle) => (
         <span
-          className="font-display px-2 py-3 text-base leading-5 tracking-[-0.02em] text-foreground md:px-4"
+          className="font-display px-2 py-3 text-[1.0625rem] leading-5 tracking-[-0.02em] text-foreground md:px-4"
           key={vehicle.id}
         >
           {vehicle.name}
@@ -239,12 +251,26 @@ export function ComparisonTable({ result }: ComparisonTableProps) {
 
   return (
     <div>
+      {/* The group index leads the sheet, so the identity strip, the only
+          place the photographs repeat, runs straight into the column band. */}
+      {groups.length > 1 ? (
+        <div className="mb-10">
+          <SectionNavigation
+            items={groups.map((group) => ({
+              id: groupAnchorId(group.categoryId),
+              label: group.label,
+            }))}
+            label="Jump to a group in the spec sheet"
+          />
+        </div>
+      ) : null}
+
       {/* Identity strip. From 64rem the rules fill the 16rem cell over the
           characteristic column and the vehicles sit over their columns;
           below that the rules follow the sheet, so a phone reaches the
           figures sooner. Only one copy is ever displayed. */}
       <div className="grid gap-8 lg:grid-cols-[16rem_minmax(0,1fr)] lg:gap-0">
-        <ComparisonRules className="hidden lg:block lg:self-start lg:pr-6" />
+        <ComparisonRules className="max-lg:hidden lg:self-start lg:pr-8" />
 
         <div className="min-w-0">
           <ul
@@ -267,20 +293,20 @@ export function ComparisonTable({ result }: ComparisonTableProps) {
                   {visual ? (
                     <span
                       className={cn(
-                        "relative block max-w-full shrink-0 overflow-hidden rounded-md bg-surface",
+                        "relative block max-w-full shrink-0 overflow-hidden bg-background",
                         isAircraft
                           ? "aspect-[16/10] h-[4.375rem] sm:h-auto sm:w-full"
-                          : "aspect-[3/4] h-24 sm:h-auto sm:w-[10.5rem]",
+                          : "aspect-[3/4] h-24 sm:aspect-[4/5] sm:h-auto sm:max-h-[22rem] sm:w-full",
                       )}
                     >
                       <Image
                         alt={visual.alt}
-                        className="object-cover contrast-[1.05] saturate-[0.85]"
+                        className="object-cover saturate-[0.9]"
                         fill
                         sizes={
                           isAircraft
                             ? "(min-width: 64rem) 24rem, (min-width: 40rem) 33vw, 7rem"
-                            : "(min-width: 40rem) 10.5rem, 4.5rem"
+                            : "(min-width: 64rem) 28rem, (min-width: 40rem) 33vw, 4.5rem"
                         }
                         src={visual.src}
                         style={{ objectPosition: visual.objectPosition }}
@@ -312,7 +338,7 @@ export function ComparisonTable({ result }: ComparisonTableProps) {
           </ul>
 
           {credits.length > 0 ? (
-            <p className="orbix-micro mt-4 text-[0.6875rem] text-muted lg:px-4">
+            <p className="orbix-micro mt-4 text-[0.75rem] text-muted lg:px-4">
               Photographs:{" "}
               {credits.map((group, index) => (
                 <Fragment key={group.license}>
@@ -341,22 +367,6 @@ export function ComparisonTable({ result }: ComparisonTableProps) {
         </div>
       </div>
 
-      {groups.length > 1 ? (
-        /* SectionNavigation has no quiet variant, so its band is thinned
-           here: no fill and no top rule, only the bottom hairline. Below
-           64rem it keeps the primitive single row, which scrolls sideways
-           with unbroken labels. */
-        <div className="mt-10 lg:mb-4 [&_.orbix-anchor-nav]:border-t-0 [&_.orbix-anchor-nav]:bg-transparent [&_.orbix-anchor-nav]:px-0">
-          <SectionNavigation
-            items={groups.map((group) => ({
-              id: groupAnchorId(group.categoryId),
-              label: group.label,
-            }))}
-            label="Jump to a group in the spec sheet"
-          />
-        </div>
-      ) : null}
-
       {count > 1 ? (
         <div className="@container/sheet md:hidden">
           <p className={cn("orbix-label mt-6", hintVisibility[count])}>
@@ -366,29 +376,30 @@ export function ComparisonTable({ result }: ComparisonTableProps) {
         </div>
       ) : null}
 
-      <div className="mt-6 rounded-lg border border-border bg-surface lg:mt-0">
-        {/* A size container, so the caption and the notes list can match
-            the visible width of the sheet (100cqw) while it scrolls
-            sideways, whatever the scrollbar takes. */}
-        <div className="@container overflow-x-auto rounded-[7px] lg:overflow-visible">
-          <div className={sheetWidth[count]}>
-            {nameBand(
-              "hidden lg:sticky lg:top-16 lg:z-20 lg:grid lg:rounded-t-[7px]",
-            )}
+      <div className="mt-6 lg:mt-10">
+        {nameBand("hidden lg:sticky lg:top-16 lg:z-20 lg:grid")}
 
-            {groups.map((group, index) => (
+        {groups.map((group) => (
+          <div
+            className="scroll-mt-24 lg:scroll-mt-40"
+            id={groupAnchorId(group.categoryId)}
+            key={group.categoryId}
+          >
+            {/* A size container, so the caption and the notes can match the
+                visible width of the group (100cqw) while it scrolls
+                sideways, whatever the scrollbar takes. The scrollbar is the
+                overflow cue (spec 3.1). */}
+            <div className="orbix-data-table__scroll @container overflow-x-auto lg:overflow-visible">
               <div
                 className={cn(
-                  "flex scroll-mt-24 flex-col lg:scroll-mt-40",
-                  index > 0 && "border-t border-border",
+                  "flex flex-col",
+                  sheetWidth[count],
                   // The table root joins this column, so the repeated name
                   // band can sit between the caption and the table. The
                   // band is aria-hidden and holds no focusable element, so
                   // the visual order never differs from the focus order.
                   "[&>.orbix-data-table]:contents [&>.orbix-data-table>div]:order-3 [&>.orbix-data-table>p:first-child]:order-1",
                 )}
-                id={groupAnchorId(group.categoryId)}
-                key={group.categoryId}
               >
                 <DataTable
                   caption={
@@ -410,39 +421,19 @@ export function ComparisonTable({ result }: ComparisonTableProps) {
                   getRowKey={(row) => row.id}
                   rows={group.rows}
                 />
-                {nameBand("order-2 border-t lg:hidden")}
-                {/* Below 48rem the rows' notes follow the group at the
-                    visible width of the sheet, held in view like the
-                    caption while the sheet scrolls sideways. */}
-                {group.rows.some((row) =>
-                  getRowEducation(result.category, row.id),
-                ) ? (
-                  <ul
-                    aria-label={"About the rows in " + group.label}
-                    className="sticky left-0 order-4 max-w-[100cqw] border-t border-border px-3 py-1 md:hidden"
-                  >
-                    {group.rows
-                      .filter((row) => getRowEducation(result.category, row.id))
-                      .map((row) => (
-                        <li
-                          className="border-border-subtle not-first:border-t"
-                          key={row.id}
-                        >
-                          <ComparisonRowEducation
-                            category={result.category}
-                            description={row.description}
-                            label={row.label}
-                            rowId={row.id}
-                            variant="list"
-                          />
-                        </li>
-                      ))}
-                  </ul>
-                ) : null}
+                {nameBand("order-2 lg:hidden")}
               </div>
-            ))}
+            </div>
+            {/* Below 48rem the rows' notes follow the group as one
+                disclosure, outside the sideways scroller. */}
+            <ComparisonGroupNotes
+              category={result.category}
+              className="pt-2 md:hidden"
+              groupLabel={group.label}
+              rows={group.rows}
+            />
           </div>
-        </div>
+        ))}
       </div>
 
       <ComparisonRules className="mt-10 sm:grid sm:grid-cols-2 sm:gap-x-6 lg:hidden" />

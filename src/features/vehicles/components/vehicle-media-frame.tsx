@@ -16,9 +16,8 @@ import { cn } from "@/lib/cn";
  *                      height.
  *
  * Framing within the box comes from `objectPosition` in the visuals files.
- * By default the photograph is shown as taken. With `settle` (the
- * registry and related-vehicle cards) its saturation is eased and its
- * contrast lifted slightly, like the other card photographs.
+ * By default the photograph is shown as taken. With `settle` its
+ * saturation is eased to 0.9, the one tonal change spec 7 allows.
  */
 export type VehicleMediaAspect = "landscape" | "portrait" | "tall" | "wide";
 
@@ -33,7 +32,7 @@ interface VehicleMediaFrameProps {
   aspect: VehicleMediaAspect;
   children: ReactNode;
   className?: string;
-  /** Ease the saturation and lift the contrast slightly. */
+  /** Ease the saturation to 0.9. */
   settle?: boolean;
 }
 
@@ -46,12 +45,9 @@ export function VehicleMediaFrame({
   return (
     <div
       className={cn(
-        "relative overflow-hidden bg-surface-raised",
+        "relative overflow-hidden",
         aspectClasses[aspect],
-        // The card photo filter's saturation and contrast only: the text
-        // sits below the photograph, so a dimming scrim would only muddy
-        // the sky.
-        settle && "[&_img]:[filter:saturate(0.85)_contrast(1.05)]",
+        settle && "[&_img]:[filter:saturate(0.9)]",
         className,
       )}
     >

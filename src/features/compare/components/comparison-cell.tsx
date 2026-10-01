@@ -211,8 +211,9 @@ function Qualifier({ text }: { text: string | undefined }) {
 }
 
 /**
- * One line of a text cell: the designation in medium weight, and any
- * bracketed description on its own line under it in regular weight. Every
+ * One line of a text cell: the designation in ink, and any bracketed
+ * description on its own line under it in secondary ink. Both are regular
+ * weight, so the row labels and the figures carry the emphasis. Every
  * line of a text cell (the value and each detail) goes through this, so
  * the first line never differs from the others.
  */
@@ -229,7 +230,7 @@ function TextLine({
       {/* 13px below 48rem, so the widest designation ("2 × F119-PW-100")
           fits the 8rem phone column whole; 15px from 48rem, so a text
           row holds its own beside the 17px mono figures. */}
-      <span className="block text-[0.8125rem] leading-5 font-medium text-foreground md:text-[0.9375rem]">
+      <span className="block text-[0.8125rem] leading-5 font-normal text-foreground md:text-[0.9375rem]">
         <KeepDesignations text={designation} />
       </span>
       {description ? (
@@ -346,16 +347,17 @@ export function ComparisonCell({
           text={cell.value}
         />
       )}
-      {/* A flat 4px accent track under the figure: relative scale within the
-       * row only, no ranking. Hidden from assistive technology because the
-       * published number above it is the value; a normalized fraction is an
-       * artefact of this layout, not a property of the vehicle. The track
-       * spans the whole column (the shared rule caps it at 11rem) on the
-       * default border colour, so its far end, the row maximum, is legible. */}
+      {/* A 2px accent scale line under the figure, drawn on the ground with
+       * no track: relative scale within the row only, no ranking. The row
+       * maximum spans the full column, so every line in the row is read
+       * against the same width. Hidden from assistive technology because
+       * the published number above it is the value; a normalized fraction
+       * is an artefact of this layout, not a property of the vehicle. The
+       * height and the transparent ground override the shared rule. */}
       {typeof magnitude === "number" ? (
         <span
           aria-hidden="true"
-          className="orbix-magnitude w-full max-w-full bg-border-default"
+          className="orbix-magnitude h-0.5 w-full max-w-full bg-transparent"
         >
           <span
             className="orbix-magnitude__fill"

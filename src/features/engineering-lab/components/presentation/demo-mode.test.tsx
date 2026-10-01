@@ -135,11 +135,14 @@ describe("DemoMode", () => {
     expect(markup).not.toContain('aria-label="Previous demo step"');
     expect(markup).not.toContain('aria-label="Next demo step"');
     expect(markup).not.toContain('aria-label="Skip ORBIX demo tour"');
-    expect(markup).toMatch(/<button[^>]*>(?:<svg[^]*?<\/svg>)?Back<\/button>/);
-    expect(markup).toMatch(
-      /<button[^>]*>Next step(?:<svg[^]*?<\/svg>)?<\/button>/,
+    // Each button's visible text, with the arrow icon and label spans
+    // stripped.
+    const buttonText = (markup.match(/<button[^]*?<\/button>/g) ?? []).map(
+      (button) => button.replace(/<[^>]+>/g, "").trim(),
     );
-    expect(markup).toMatch(/<button[^>]*>Skip tour<\/button>/);
+    expect(buttonText).toContain("Back");
+    expect(buttonText).toContain("Next step");
+    expect(buttonText).toContain("Skip tour");
     expect(markup).toContain('aria-label="Restart demo tour"');
     expect(markup).toContain('aria-live="polite"');
     expect(markup).toContain("the left and right arrow keys change steps");

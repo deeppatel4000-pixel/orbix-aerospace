@@ -1,6 +1,6 @@
 "use client";
 
-import { Button, EquationBlock } from "@/components/ui";
+import { Button } from "@/components/ui";
 import { useMemo, useState, type FormEvent } from "react";
 
 import { analyzeShockCondition } from "@/features/engineering-lab/analysis";
@@ -24,6 +24,7 @@ import {
   EqSubSup,
   EqFrac,
   EQ_SUB_CLEAR,
+  LabEquation,
 } from "@/features/engineering-lab/components/shared";
 import type {
   ShockConditionAnalysis,
@@ -104,7 +105,7 @@ function deriveViewState(
 }
 
 const toolEquation = (
-  <EquationBlock
+  <LabEquation
     equation={
       <>
         {/* A stacked fraction, so the only outer grouping is the bar:
@@ -337,55 +338,6 @@ export function ShockConditionAnalyzer() {
           >
             {result ? (
               <>
-                <ReadoutGrid columns={2} title="Upstream conditions">
-                  <div>
-                    <dt className="orbix-label">Temperature</dt>
-                    <dd className="mt-1">
-                      <output className="orbix-data" htmlFor={outputIds}>
-                        <LabFigure unit="K">
-                          {conditionFormatter.format(
-                            result.upstream.temperatureKelvin,
-                          )}
-                        </LabFigure>
-                      </output>
-                    </dd>
-                  </div>
-                  <div>
-                    <dt className="orbix-label">Pressure</dt>
-                    <dd className="mt-1">
-                      <output className="orbix-data" htmlFor={outputIds}>
-                        <LabFigure unit="Pa">
-                          {conditionFormatter.format(
-                            result.upstream.pressurePascals,
-                          )}
-                        </LabFigure>
-                      </output>
-                    </dd>
-                  </div>
-                  <div>
-                    <dt className="orbix-label">Density</dt>
-                    <dd className="mt-1">
-                      <output className="orbix-data" htmlFor={outputIds}>
-                        <LabFigure unit="kg/m³">
-                          {densityFormatter.format(
-                            result.upstream.densityKilogramsPerCubicMetre,
-                          )}
-                        </LabFigure>
-                      </output>
-                    </dd>
-                  </div>
-                  <div>
-                    <dt className="orbix-label">Mach</dt>
-                    <dd className="mt-1">
-                      <output className="orbix-data" htmlFor={outputIds}>
-                        <LabFigure>
-                          {machFormatter.format(result.upstream.machNumber)}
-                        </LabFigure>
-                      </output>
-                    </dd>
-                  </div>
-                </ReadoutGrid>
-
                 <ReadoutGrid columns={2} title="Downstream conditions">
                   <div>
                     <dt className="orbix-label">Mach</dt>
@@ -438,7 +390,11 @@ export function ShockConditionAnalyzer() {
                 <ReadoutGrid columns={3} title="Shock ratios">
                   <div>
                     <dt className="orbix-label">
-                      Temperature ratio <LabSymbol>(T₂/T₁)</LabSymbol>
+                      Temperature ratio{" "}
+                      <LabSymbol>
+                        (T<sub className="lab-figure__sub">2</sub>/T
+                        <sub className="lab-figure__sub">1</sub>)
+                      </LabSymbol>
                     </dt>
                     <dd className="orbix-data mt-1">
                       <LabFigure>
@@ -448,7 +404,11 @@ export function ShockConditionAnalyzer() {
                   </div>
                   <div>
                     <dt className="orbix-label">
-                      Pressure ratio <LabSymbol>(p₂/p₁)</LabSymbol>
+                      Pressure ratio{" "}
+                      <LabSymbol>
+                        (p<sub className="lab-figure__sub">2</sub>/p
+                        <sub className="lab-figure__sub">1</sub>)
+                      </LabSymbol>
                     </dt>
                     <dd className="orbix-data mt-1">
                       <LabFigure>
@@ -458,12 +418,65 @@ export function ShockConditionAnalyzer() {
                   </div>
                   <div>
                     <dt className="orbix-label">
-                      Density ratio <LabSymbol>(ρ₂/ρ₁)</LabSymbol>
+                      Density ratio{" "}
+                      <LabSymbol>
+                        (ρ<sub className="lab-figure__sub">2</sub>/ρ
+                        <sub className="lab-figure__sub">1</sub>)
+                      </LabSymbol>
                     </dt>
                     <dd className="orbix-data mt-1">
                       <LabFigure>
                         {ratioFormatter.format(result.ratios.densityRatio)}
                       </LabFigure>
+                    </dd>
+                  </div>
+                </ReadoutGrid>
+
+                <ReadoutGrid columns={2} title="Upstream conditions">
+                  <div>
+                    <dt className="orbix-label">Temperature</dt>
+                    <dd className="mt-1">
+                      <output className="orbix-data" htmlFor={outputIds}>
+                        <LabFigure unit="K">
+                          {conditionFormatter.format(
+                            result.upstream.temperatureKelvin,
+                          )}
+                        </LabFigure>
+                      </output>
+                    </dd>
+                  </div>
+                  <div>
+                    <dt className="orbix-label">Pressure</dt>
+                    <dd className="mt-1">
+                      <output className="orbix-data" htmlFor={outputIds}>
+                        <LabFigure unit="Pa">
+                          {conditionFormatter.format(
+                            result.upstream.pressurePascals,
+                          )}
+                        </LabFigure>
+                      </output>
+                    </dd>
+                  </div>
+                  <div>
+                    <dt className="orbix-label">Density</dt>
+                    <dd className="mt-1">
+                      <output className="orbix-data" htmlFor={outputIds}>
+                        <LabFigure unit="kg/m³">
+                          {densityFormatter.format(
+                            result.upstream.densityKilogramsPerCubicMetre,
+                          )}
+                        </LabFigure>
+                      </output>
+                    </dd>
+                  </div>
+                  <div>
+                    <dt className="orbix-label">Mach</dt>
+                    <dd className="mt-1">
+                      <output className="orbix-data" htmlFor={outputIds}>
+                        <LabFigure>
+                          {machFormatter.format(result.upstream.machNumber)}
+                        </LabFigure>
+                      </output>
                     </dd>
                   </div>
                 </ReadoutGrid>

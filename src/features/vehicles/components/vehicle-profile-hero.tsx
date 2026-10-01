@@ -1,64 +1,49 @@
-import type { CSSProperties, ReactNode } from "react";
+import type { ReactNode } from "react";
 
+import { Container } from "@/components/layout/container";
 import { Breadcrumbs } from "@/components/ui/breadcrumbs";
-import { Eyebrow } from "@/components/ui/eyebrow";
 import { PhotoHero, type VisualRecord } from "@/components/ui/photo-hero";
 import { RecordRow, type RecordRowItem } from "@/components/ui/record-row";
-import { Container } from "@/components/layout/container";
-import { cn } from "@/lib/cn";
 
-import {
-  responsiveHeroPosition,
-  STOPGAP_PHOTO_HERO_PHONE_TALL,
-  STOPGAP_PHOTO_HERO_SIDE,
-  STOPGAP_RECORD_ROW,
-  STOPGAP_RECORD_ROW_SIDE,
-  STOPGAP_RECORD_ROW_WIDE,
-  type ResponsiveObjectPosition,
-} from "./primitive-stopgaps";
+import { heroCrop, type HeroCrop } from "./hero-crop";
 
 export interface VehiclePageCrumb {
   readonly href?: string;
   readonly label: string;
 }
 
-/** The photograph, its crop per breakpoint and its intrinsic size. */
+/** The photograph and its crop per layout. */
 export interface VehicleHeroVisual extends VisualRecord {
-  readonly height: number;
-  readonly position: ResponsiveObjectPosition;
-  readonly width: number;
+  readonly crop: HeroCrop;
 }
 
 interface VehicleProfileHeroProps {
-  /** One action under the record row, such as the compare link. */
+  /** One action under the key figures, such as the compare link. */
   action?: ReactNode;
   breadcrumbs: readonly VehiclePageCrumb[];
-  /** Sentence-case classification, shown as the eyebrow. */
+  /** Sentence-case classification: the page's one plain kicker. */
   classification: string;
   lead: string;
   name: string;
   /**
-   * `side` (default), for a landscape photograph of an airframe: a banner
-   * across the top from 48rem, then from 80rem the photograph full-bleed
-   * behind the right of the content, off the window's right edge
-   * (`STOPGAP_PHOTO_HERO_SIDE`).
-   * `right`, for a portrait photograph of a launch vehicle: from 48rem the
-   * photograph stands on the right at the hero's height with a feathered
-   * left edge; below 48rem a 3:4 plate. The hero is the one place a
-   * profile shows its photograph large (spec 9), so the sections below do
-   * not repeat it.
+   * `band` (default), for a landscape photograph of an airframe: the text,
+   * then the photograph as a full-bleed band under it, so a wide airframe
+   * is never cropped at the wingtips. `split`: from 64rem a landscape
+   * plate beside the text, for a photograph close to square. `portrait`,
+   * for a launch vehicle: from 64rem a 2:3 plate beside the text, so the
+   * whole vehicle stands in view.
    */
-  photoPlacement?: "right" | "side";
-  /** Three or four key figures (spec 8). */
+  photo?: "band" | "portrait" | "split";
+  /** Three or four key figures. */
   record: readonly RecordRowItem[];
   visual?: VehicleHeroVisual;
 }
 
 /**
- * The profile hero (spec 9): the photograph with the breadcrumb,
- * classification, display name, lead and record row, and the photo credit
- * at the bottom right. Without a photograph the same text sits on the page
- * ground.
+ * The profile hero (spec 7, 11): breadcrumb, classification, name, lead,
+ * the key figures as an open definition list and one action, all on the
+ * page ground; the photograph as a hard-edged plate with its catalogue
+ * caption under it. Nothing is set on the photograph.
  */
 export function VehicleProfileHero({
   action,
@@ -66,39 +51,24 @@ export function VehicleProfileHero({
   classification,
   lead,
   name,
-  photoPlacement = "side",
+  photo = "band",
   record,
   visual,
 }: VehicleProfileHeroProps) {
-  const isSide = photoPlacement === "side";
   const content = (
     <>
       <Breadcrumbs items={breadcrumbs} />
-      <Eyebrow className="mt-8">{classification}</Eyebrow>
-      <h1
-        className={cn(
-          "orbix-h1 mt-4 text-foreground",
-          !isSide && "lg:max-w-[38rem]",
-        )}
-      >
-        {name}
-      </h1>
-      {/*
-       * Beside a portrait photograph the lead and the record row stop at
-       * 38rem, clear of the plate, and the record row is one row from 64rem.
-       * On an aircraft profile the record row is 2x2, one row of four from
-       * 64rem.
-       */}
-      <p className={cn("orbix-lead mt-6", !isSide && "lg:max-w-[38rem]")}>
-        {lead}
-      </p>
+      <div className="mt-8">
+        <p className="orbix-kicker">{classification}</p>
+      </div>
+      <h1 className="orbix-h1 mt-3 text-foreground">{name}</h1>
+      <p className="orbix-lead mt-6">{lead}</p>
+      {/* Four across only in the full-width band layout. Beside a plate
+          the text column is too narrow for four unbroken figures such as
+          "118,000 kg" from 64rem, so they set two by two. */}
       <RecordRow
-        className={cn(
-          "mt-8",
-          !isSide && "lg:max-w-[38rem]",
-          STOPGAP_RECORD_ROW,
-          isSide ? STOPGAP_RECORD_ROW_SIDE : STOPGAP_RECORD_ROW_WIDE,
-        )}
+        className="mt-8"
+        columns={visual && photo !== "band" ? 2 : 4}
         items={record}
       />
       {action ? <div className="mt-8">{action}</div> : null}
@@ -109,33 +79,16 @@ export function VehicleProfileHero({
     return <Container className="py-16">{content}</Container>;
   }
 
-  const position = responsiveHeroPosition(visual.position);
+  const crop = heroCrop(visual.crop);
+  const isPortrait = photo === "portrait";
 
   return (
     <PhotoHero
-      className={cn(
-        position.className,
-        // Top-aligned on every profile, so the breadcrumb and the name sit
-        // at the same height (6rem into the hero from 48rem) from one
-        // profile to the next; the photograph still fills the hero.
-        "md:justify-start",
-        isSide ? STOPGAP_PHOTO_HERO_SIDE : STOPGAP_PHOTO_HERO_PHONE_TALL,
-        // Rocket profiles (placement="right") are top-aligned, so the full
-        // min(88svh, 60rem) hero left a tall empty band under the actions.
-        // The portrait photograph is height-bound, so the whole vehicle
-        // still shows at this height.
-        !isSide && "md:min-h-[min(88svh,44rem)]",
-      )}
-      placement={isSide ? "behind" : "right"}
-      plate={isSide ? "landscape" : "portrait"}
-      style={
-        {
-          ...position.style,
-          // A plain number: it divides a length in `STOPGAP_PHOTO_HERO_SIDE`.
-          "--orbix-hero-aspect": (visual.width / visual.height).toFixed(4),
-        } as CSSProperties
-      }
-      visual={{ ...visual, objectPosition: position.objectPosition }}
+      className={crop.className}
+      layout={photo === "band" ? "band" : "split"}
+      plate={isPortrait ? "portrait" : "landscape"}
+      style={crop.style}
+      visual={{ ...visual, objectPosition: crop.objectPosition }}
     >
       {content}
     </PhotoHero>

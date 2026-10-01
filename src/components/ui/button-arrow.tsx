@@ -4,7 +4,7 @@ import { ArrowDown, ArrowLeft, ArrowRight, ArrowUpRight } from "lucide-react";
 import type { ButtonVariant } from "@/components/ui/button-class";
 
 /**
- * Direction of the button arrow (spec 8: 16px). `right` moves to another
+ * Direction of the button arrow (spec 9: 16px). `right` moves to another
  * page, `down` to a section on this page, and `external` leaves the site;
  * these trail the label. `back` returns to the page the reader came from
  * and leads the label.

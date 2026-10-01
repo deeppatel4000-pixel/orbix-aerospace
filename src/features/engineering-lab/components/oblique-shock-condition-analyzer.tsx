@@ -1,6 +1,6 @@
 "use client";
 
-import { Button, EquationBlock } from "@/components/ui";
+import { Button } from "@/components/ui";
 import { useMemo, useState, type FormEvent } from "react";
 
 import { analyzeObliqueShockCondition } from "@/features/engineering-lab/analysis";
@@ -26,6 +26,7 @@ import {
   EQ_SUP,
   EQ_CONT,
   EQ_JOIN,
+  LabEquation,
 } from "@/features/engineering-lab/components/shared";
 import type {
   ObliqueShockConditionAnalysis,
@@ -124,7 +125,7 @@ function deriveViewState(
 }
 
 const toolEquation = (
-  <EquationBlock
+  <LabEquation
     equation={
       <>
         <span className={EQ_JOIN}>
@@ -388,7 +389,11 @@ export function ObliqueShockConditionAnalyzer() {
                 <ReadoutGrid columns={3} title="Ratios">
                   <div>
                     <dt className="orbix-label">
-                      Pressure ratio <LabSymbol>(p₂/p₁)</LabSymbol>
+                      Pressure ratio{" "}
+                      <LabSymbol>
+                        (p<sub className="lab-figure__sub">2</sub>/p
+                        <sub className="lab-figure__sub">1</sub>)
+                      </LabSymbol>
                     </dt>
                     <dd className="mt-1">
                       <output className="orbix-data" htmlFor={outputIds}>
@@ -402,7 +407,11 @@ export function ObliqueShockConditionAnalyzer() {
                   </div>
                   <div>
                     <dt className="orbix-label">
-                      Temperature ratio <LabSymbol>(T₂/T₁)</LabSymbol>
+                      Temperature ratio{" "}
+                      <LabSymbol>
+                        (T<sub className="lab-figure__sub">2</sub>/T
+                        <sub className="lab-figure__sub">1</sub>)
+                      </LabSymbol>
                     </dt>
                     <dd className="mt-1">
                       <output className="orbix-data" htmlFor={outputIds}>
@@ -416,7 +425,11 @@ export function ObliqueShockConditionAnalyzer() {
                   </div>
                   <div>
                     <dt className="orbix-label">
-                      Density ratio <LabSymbol>(ρ₂/ρ₁)</LabSymbol>
+                      Density ratio{" "}
+                      <LabSymbol>
+                        (ρ<sub className="lab-figure__sub">2</sub>/ρ
+                        <sub className="lab-figure__sub">1</sub>)
+                      </LabSymbol>
                     </dt>
                     <dd className="mt-1">
                       <output className="orbix-data" htmlFor={outputIds}>

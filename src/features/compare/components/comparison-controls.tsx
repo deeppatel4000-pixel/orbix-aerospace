@@ -57,10 +57,10 @@ function prefersReducedMotion() {
 }
 
 /**
- * Selection for `/compare` (design v2, spec 9): a square segmented control
- * for the vehicle type (native radios, so arrow keys move between them),
- * then one toggle tile per vehicle (`aria-pressed`), then one primary
- * action. Nothing navigates until the action is taken, so the table never
+ * Selection for `/compare` (design v3, spec 11): text choices for the
+ * vehicle type (native radios, so arrow keys move between them), then one
+ * open toggle tile per vehicle (`aria-pressed`) with a checkbox glyph, then
+ * one primary action. Nothing navigates until the action is taken, so the table never
  * changes under a keyboard or screen reader user while they are choosing.
  * Tiles keep the order they were chosen in, which is the column order.
  */
@@ -207,38 +207,33 @@ export function ComparisonControls({
       noValidate
       onSubmit={handleSubmit}
     >
-      {/* From 64rem the heading, the count and the vehicle type control
-          share one row, so the tiles start high on the page. */}
+      {/* From 64rem the heading, the vehicle type choice and the count share
+          one row, so the tiles start high on the page. */}
       <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between lg:gap-10">
         <div>
-          <h2 className="orbix-h2 text-foreground" id="compare-selection-title">
+          {/* A section heading at h3 scale: "Spec sheet" is the page's one
+              display H2, so the picker reads as a step, not a second hero. */}
+          <h2 className="orbix-h3 text-foreground" id="compare-selection-title">
             Choose vehicles
           </h2>
-          <p
-            className="mt-2 text-sm leading-6 text-muted lg:mt-3"
-            id="compare-help"
-          >
+          <p className="mt-3 text-sm leading-6 text-muted" id="compare-help">
             Choose two, a third is optional. The order you choose them in is the
             column order.
           </p>
         </div>
 
-        <div className="flex flex-wrap items-end gap-x-6 gap-y-3">
+        <div className="flex flex-wrap items-end gap-x-8 gap-y-3">
           <fieldset>
-            <legend className="orbix-caps text-muted max-lg:sr-only">
-              Vehicle type
-            </legend>
-            {/* Square segmented control: one outline, hairline dividers,
-                the chosen segment filled with the accent. Native radios
-                keep the group semantics and arrow-key behaviour. */}
-            <div className="inline-flex max-w-full rounded border border-border-control lg:mt-2">
-              {categoryOptions.map((option, index) => (
+            <legend className="orbix-label">Vehicle type</legend>
+            {/* Text choices, the chosen one in ink with an accent underline.
+                Native radios keep the group semantics and arrow keys. */}
+            <div className="flex gap-6">
+              {categoryOptions.map((option) => (
                 <label
                   className={cn(
-                    "relative inline-flex min-h-11 cursor-pointer items-center px-5 text-[0.9375rem] font-medium text-text-secondary transition-colors duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] select-none hover:bg-surface-raised hover:text-foreground",
-                    "has-[:checked]:bg-accent has-[:checked]:text-on-accent",
-                    "first:rounded-l-[3px] last:rounded-r-[3px] has-[:focus-visible]:z-10 has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-3 has-[:focus-visible]:outline-[var(--orbix-focus)]",
-                    index > 0 && "border-l border-border-control",
+                    "relative inline-flex min-h-11 cursor-pointer items-center text-base font-medium text-muted underline decoration-transparent decoration-2 underline-offset-[6px] transition-colors duration-200 select-none hover:text-foreground motion-reduce:transition-none",
+                    "has-[:checked]:text-foreground has-[:checked]:decoration-accent",
+                    "has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-[var(--orbix-focus)]",
                   )}
                   key={option.id}
                 >
@@ -256,7 +251,7 @@ export function ComparisonControls({
             </div>
           </fieldset>
           <p
-            className="flex items-center text-sm leading-6 text-muted lg:min-h-11"
+            className="flex min-h-11 items-center text-sm leading-6 text-muted"
             id="compare-count"
           >
             <span className="orbix-readout-inline mr-1 text-[1.0625rem] text-foreground">
@@ -271,27 +266,20 @@ export function ComparisonControls({
         </div>
       </div>
 
-      <fieldset className="mt-6">
+      <fieldset className="mt-8">
         <legend className="sr-only">
           {isAircraft ? "Aircraft" : "Launch vehicles"}
         </legend>
 
-        {/* From 64rem both categories use one tile: the photo on top, five
-            across, so the launch vehicle row is as photo-led as the aircraft
-            row in the same slot. Below 64rem aircraft photos are wide, so
-            from 40rem their tiles stand with the photo on top in a
-            six-column span grid, three tiles over two half-width tiles.
-            Launch vehicle photos are tall (every vehicle whole), so below
-            64rem their tiles keep the photo on the left, two across from
-            40rem, and an odd last tile takes the full row. */}
-        <ul
-          className={cn(
-            "grid grid-cols-1 gap-2 sm:gap-4",
-            isAircraft
-              ? "sm:max-lg:grid-cols-6 lg:grid-cols-5 sm:max-lg:[&>li]:col-span-2 sm:max-lg:[&>li:nth-child(n+4)]:col-span-3"
-              : "sm:max-lg:grid-cols-2 lg:grid-cols-5 sm:max-lg:[&>li:last-child:nth-child(odd)]:col-span-2",
-          )}
-        >
+        {/* Below 40rem each vehicle is a ruled catalogue row: checkbox,
+            thumbnail, name, maker and credit. From 40rem the rows become
+            open tiles, three across and five from 64rem: a hard-edged
+            photo plate with its one-line credit under it as the catalogue
+            caption (so every tile's text starts on one line), then the name
+            with the checkbox at its right end, the maker and the column
+            number, all flush with the plate's left edge. The checkbox is
+            the only boxed element. */}
+        <ul className="grid grid-cols-1 max-sm:border-b max-sm:border-border-subtle sm:grid-cols-3 sm:gap-x-5 sm:gap-y-8 lg:grid-cols-5">
           {vehicleOptions.map((option, index) => {
             const thumbnail = categoryThumbnails[option.id];
             const position = selection.indexOf(option.id);
@@ -302,10 +290,13 @@ export function ComparisonControls({
             const creditId = "compare-credit-" + option.id;
 
             return (
-              <li key={option.id}>
+              <li
+                className="max-sm:border-t max-sm:border-border-subtle"
+                key={option.id}
+              >
                 {/* Named by the vehicle and its maker only; the photo credit
-                    stays visible on the tile but is a description, so a
-                    screen reader does not repeat it before the state. */}
+                    is a description, so a screen reader does not repeat it
+                    before the state. */}
                 <button
                   aria-describedby={cn(
                     thumbnail && creditId,
@@ -313,31 +304,25 @@ export function ComparisonControls({
                   )}
                   aria-labelledby={nameId + " " + makerId}
                   aria-pressed={isSelected}
-                  className={cn(
-                    "group relative grid h-full w-full cursor-pointer grid-cols-[auto_minmax(0,1fr)] gap-3 overflow-hidden rounded-lg border bg-surface p-3 text-left transition-colors duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] active:translate-y-px",
-                    isAircraft && "sm:flex sm:flex-col sm:gap-0 sm:p-0",
-                    !isAircraft &&
-                      "sm:gap-4 lg:flex lg:flex-col lg:gap-0 lg:p-0",
-                    isSelected
-                      ? "border-accent shadow-[inset_0_0_0_1px_var(--accent)] max-sm:bg-surface-raised"
-                      : "border-border hover:border-border-control hover:bg-surface-raised",
-                  )}
+                  className="group grid w-full cursor-pointer grid-cols-[auto_auto_minmax(0,1fr)] items-center gap-x-4 py-3 text-left focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--orbix-focus)] sm:grid-cols-[minmax(0,1fr)_auto] sm:items-start sm:gap-x-3 sm:py-0 sm:[grid-template-areas:'plate_plate'_'credit_credit'_'name_box'_'maker_maker'_'column_column']"
                   onClick={() => toggleVehicle(option.id, option.name)}
                   type="button"
                 >
+                  {/* The photo plate: a thumbnail in the row below 40rem,
+                      the full tile width above it. */}
                   <span
                     className={cn(
-                      "relative block self-start overflow-hidden rounded-md bg-background",
+                      "relative order-2 block overflow-hidden bg-background sm:w-full sm:[grid-area:plate]",
                       isAircraft
-                        ? "aspect-[16/10] h-14 sm:h-auto sm:w-full sm:rounded-none"
-                        : "aspect-[3/4] h-[5.5rem] sm:h-auto sm:w-24 lg:aspect-[4/5] lg:w-full lg:self-stretch lg:rounded-none",
+                        ? "aspect-[16/10] h-14 sm:h-auto"
+                        : "aspect-[3/4] h-[5.5rem] sm:aspect-[4/5] sm:h-auto",
                     )}
                   >
                     {thumbnail ? (
                       <Image
                         alt=""
                         className={cn(
-                          "object-cover [object-position:var(--tile-pos)] contrast-[1.05] saturate-[0.85] transition-[transform,opacity] duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-[1.03] motion-reduce:transition-none motion-reduce:group-hover:scale-100 lg:[object-position:var(--tile-pos-lg)]",
+                          "object-cover [object-position:var(--tile-pos)] saturate-[0.9] transition-opacity duration-200 motion-reduce:transition-none lg:[object-position:var(--tile-pos-lg)]",
                           isBlocked && "opacity-50",
                         )}
                         fill
@@ -347,7 +332,7 @@ export function ComparisonControls({
                         sizes={
                           isAircraft
                             ? "(min-width: 64rem) 13rem, (min-width: 40rem) 30vw, 5.5rem"
-                            : "(min-width: 64rem) 13rem, (min-width: 40rem) 6rem, 4.125rem"
+                            : "(min-width: 64rem) 13rem, (min-width: 40rem) 30vw, 4.125rem"
                         }
                         src={thumbnail.src}
                         style={
@@ -362,86 +347,71 @@ export function ComparisonControls({
                     ) : null}
                   </span>
 
+                  {/* Checkbox glyph, decorative: aria-pressed carries the
+                      state. An empty 20px square at rest (3:1 outline), an
+                      accent square with a check when chosen. Below 40rem
+                      the column number sits under it; from 40rem the box
+                      ends the name line and the number is its own line. */}
                   <span
-                    className={cn(
-                      "flex min-w-0 flex-1 flex-col gap-1.5",
-                      isAircraft && "sm:gap-3 sm:p-4",
-                      isAircraft && isSelected && "sm:bg-surface-raised",
-                      "lg:gap-2 lg:p-3",
-                      !isAircraft && isSelected && "lg:bg-surface-raised",
-                    )}
+                    aria-hidden="true"
+                    className="order-1 flex flex-col items-center gap-1 sm:mt-3 sm:[grid-area:box]"
                   >
-                    <span className="flex flex-row-reverse items-start justify-between gap-2.5 lg:flex-row lg:justify-start">
-                      {/* Check box at the top right of every tile: an empty
-                          20px square at rest (3:1 outline), an accent square
-                          with a check when chosen, the column number beside
-                          it. The number keeps its slot when empty, so
-                          choosing a tile moves nothing. Decorative:
-                          aria-pressed carries the state. From 64rem, five
-                          across, it moves to the photo's top right corner
-                          on an opaque 28px plate (never bare over the photo),
-                          so the name gets the full width of the tile. */}
-                      <span
-                        aria-hidden="true"
-                        className="flex shrink-0 items-center gap-1.5 lg:absolute lg:top-2 lg:right-2 lg:z-10 lg:h-7 lg:rounded-[2px] lg:bg-background lg:px-1"
-                      >
-                        <span
-                          className={cn(
-                            "orbix-readout-inline w-3 text-center text-xs leading-none text-foreground",
-                            !isSelected && "invisible lg:hidden",
-                          )}
-                        >
-                          {isSelected ? position + 1 : null}
-                        </span>
-                        <span
-                          className={cn(
-                            "flex size-5 items-center justify-center rounded-[2px] border",
-                            isSelected
-                              ? "border-accent bg-accent text-on-accent"
-                              : "border-border-control",
-                          )}
-                        >
-                          {isSelected ? (
-                            <Check size={12} strokeWidth={3} />
-                          ) : null}
-                        </span>
-                      </span>
-                      <span className="flex min-w-0 flex-col gap-1 lg:gap-2">
-                        <span
-                          id={nameId}
-                          className={cn(
-                            "font-display text-[1.125rem] leading-[1.1] tracking-[-0.03em] sm:text-[1.3125rem] sm:leading-[1.05]",
-                            "lg:text-[1.25rem] lg:leading-[1.05]",
-                            isBlocked ? "text-muted" : "text-foreground",
-                          )}
-                        >
-                          {option.name}
-                        </span>{" "}
-                        <span
-                          className="text-[0.8125rem] leading-5 text-muted"
-                          id={makerId}
-                        >
-                          {option.manufacturer}
-                        </span>
-                      </span>
+                    <span
+                      className={cn(
+                        "flex size-5 shrink-0 items-center justify-center rounded-[2px] border transition-colors duration-200 motion-reduce:transition-none",
+                        isSelected
+                          ? "border-accent bg-accent text-on-accent"
+                          : "border-border-control group-hover:border-foreground",
+                      )}
+                    >
+                      {isSelected ? <Check size={13} strokeWidth={3} /> : null}
+                    </span>
+                    <span
+                      className={cn(
+                        "orbix-readout-inline text-xs leading-4 text-muted sm:hidden",
+                        !isSelected && "invisible",
+                      )}
+                    >
+                      {isSelected ? position + 1 : null}
+                    </span>
+                  </span>
+
+                  <span className="order-3 flex min-w-0 flex-col gap-1 sm:contents">
+                    <span
+                      id={nameId}
+                      className={cn(
+                        "font-display text-[1.25rem] leading-[1.05] tracking-[-0.03em] decoration-1 underline-offset-[3px] group-hover:underline sm:mt-3 sm:[grid-area:name]",
+                        isBlocked ? "text-muted" : "text-foreground",
+                      )}
+                    >
+                      {option.name}
+                    </span>{" "}
+                    <span
+                      className="text-[0.8125rem] leading-5 text-muted sm:mt-1 sm:[grid-area:maker]"
+                      id={makerId}
+                    >
+                      {option.manufacturer}
                     </span>
                     {thumbnail ? (
-                      // Anchored to the tile foot. Five across from 64rem,
-                      // "Steve Jurvetson, CC BY 2.0" needs two lines, so
-                      // launch vehicle credits reserve two and every credit
-                      // in that row starts at one height. It may wrap, but the
-                      // no-break licence only breaks after the comma.
                       <span
-                        className={cn(
-                          "orbix-micro mt-auto text-[0.6875rem] text-muted",
-                          !isAircraft && "lg:min-h-[2.9em]",
-                        )}
+                        className="orbix-micro text-[0.75rem] text-muted sm:mt-2 sm:[grid-area:credit]"
                         id={creditId}
                       >
                         <span className="sr-only">Photo: </span>
                         {shortCredit(thumbnail.credit, thumbnail.license)}
                       </span>
                     ) : null}
+                    {/* The column this vehicle fills, from 40rem. The
+                        live status already announces it on selection. */}
+                    <span
+                      aria-hidden="true"
+                      className={cn(
+                        "text-[0.8125rem] leading-5 text-muted max-sm:hidden sm:mt-1 sm:[grid-area:column]",
+                        !isSelected && "invisible",
+                      )}
+                    >
+                      {isSelected ? "Column " + (position + 1) : "Column"}
+                    </span>
                   </span>
                 </button>
               </li>
@@ -450,7 +420,7 @@ export function ComparisonControls({
         </ul>
       </fieldset>
 
-      <div className="mt-8 flex flex-col gap-4 border-t border-border-subtle pt-6 sm:flex-row sm:flex-wrap sm:items-center lg:mt-6 lg:pt-5">
+      <div className="mt-10 flex flex-col gap-4 sm:flex-row sm:flex-wrap sm:items-center">
         <Button
           aria-describedby={error ? "compare-error" : undefined}
           arrow="down"
@@ -464,7 +434,7 @@ export function ComparisonControls({
             keyboard user back to the top of the page (WCAG 2.4.3). */}
         <Button
           aria-disabled={selection.length === 0 ? true : undefined}
-          className="w-full sm:w-auto"
+          className="self-start"
           onClick={clearSelection}
           variant="ghost"
         >

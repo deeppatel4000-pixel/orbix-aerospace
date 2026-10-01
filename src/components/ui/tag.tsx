@@ -4,16 +4,17 @@ import { cn } from "@/lib/cn";
 
 export type TagProps = ComponentPropsWithoutRef<"span"> & {
   /**
-   * `accent` draws the tag in the division accent, for a classification
-   * that identifies the section. `neutral` (default) is for everything else.
+   * `accent` sets the text in the division colour, for a classification
+   * that identifies the section. `neutral` (default) is muted ink.
    */
   tone?: "accent" | "neutral";
 };
 
 /**
- * A non-interactive label (spec 7): 2px radius, 1px outline, B612 Mono
- * uppercase at 11px, never a pill. A clickable filter is a secondary
- * `Button` with `aria-pressed`, not a tag.
+ * A non-interactive label, as plain text (spec 3.2, 3.6): Plex Sans 13px
+ * 500, sentence case, no outline, no fill. Write the words in sentence case;
+ * uppercase only for abbreviations (LEO, NASA). A clickable filter is a
+ * secondary `Button` with `aria-pressed`, not a tag.
  */
 export function Tag({ className, tone = "neutral", ...props }: TagProps) {
   return (

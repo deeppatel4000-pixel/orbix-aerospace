@@ -171,7 +171,7 @@ export function MissionShowcase({
             onClick={() => {
               if (!isFirstPhase) dispatch({ type: "previous" });
             }}
-            variant="ghost"
+            variant="tertiary"
           >
             Previous
           </Button>
@@ -182,14 +182,14 @@ export function MissionShowcase({
             onClick={() => {
               if (!isLastPhase) dispatch({ type: "next" });
             }}
-            variant="ghost"
+            variant="tertiary"
           >
             Next
           </Button>
           <Button
             aria-label="Restart mission showcase"
             onClick={() => dispatch({ type: "restart" })}
-            variant="ghost"
+            variant="tertiary"
           >
             Restart
           </Button>

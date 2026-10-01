@@ -4,8 +4,8 @@ import { LearningPathwaySection } from "@/features/learn/components/learning-pat
 import { listLearningAreas } from "@/features/learn/data";
 
 /**
- * Learn (spec 9): a typographic hero whose figure is the numbered index of
- * the six pathways, then each pathway as a numbered chapter.
+ * Learn (spec v3 section 11): a typographic hero with a plain contents
+ * list, then the six pathways on the page ground.
  */
 export function LearnPage() {
   const learningAreas = listLearningAreas();
@@ -13,13 +13,11 @@ export function LearnPage() {
   return (
     <>
       <LearnIntro areas={learningAreas} />
-      {/* The .orbix-section rhythm, except that from 1024px the hero's own
-          bottom padding is the gap, so chapter 01's rule and heading show on
-          a 1440x1000 screen. The `!` is needed: .orbix-section is declared in
-          the utilities layer after Tailwind's own utilities, so a plain
-          lg:pt-0 would lose to it. */}
-      <div className="orbix-section lg:pt-0!">
-        <Container>
+      {/* A full-width 1px rule closes the hero, so the scope note reads
+          as part of the hero and the gap above the first pathway is at
+          least the gap between pathways (spec 6). */}
+      <Container>
+        <div className="orbix-section orbix-rule-top">
           {learningAreas.map((area, index) => (
             <LearningPathwaySection
               area={area}
@@ -27,8 +25,8 @@ export function LearnPage() {
               number={index + 1}
             />
           ))}
-        </Container>
-      </div>
+        </div>
+      </Container>
     </>
   );
 }

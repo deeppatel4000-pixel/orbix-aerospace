@@ -50,10 +50,30 @@ function sampleTrajectoryPoints(
   return sampled;
 }
 
+interface CalloutLine {
+  /** Words, in Plex Sans. */
+  readonly label: string;
+  /** Figures and units, in B612 Mono. */
+  readonly value: string;
+}
+
+interface Callout {
+  readonly anchor: "end" | "start";
+  readonly elbowX: number;
+  readonly elbowY: number;
+  readonly lines: readonly CalloutLine[];
+  readonly shelfX: number;
+  readonly textX: number;
+  readonly textY: number;
+  readonly width: number;
+}
+
 /**
  * Altitude (solid, left axis, km) and velocity (dashed, right axis, km/s)
- * against elapsed time, drawn from the computed trajectory points. Peak
- * deceleration and peak heating are marked with distinct shapes.
+ * against elapsed time, drawn from the computed trajectory points. Linework
+ * in ink with the lab accent for velocity only; peak deceleration (hollow
+ * square) and peak heating (hollow circle) are ink outlines with a leader
+ * callout each, merged into one marker and one callout when they coincide.
  */
 export function ReentryProfileChart({
   analysis,
@@ -158,42 +178,95 @@ export function ReentryProfileChart({
   const peakHeatingY = peakHeating
     ? insetY(plotAltitudeY(peakHeating.altitudeMeters))
     : 0;
-  // Each peak is named inline: a B612 Mono label 12 CSS px to the right
-  // of its marker (to the left when it would leave the plot), and a second
-  // label that would overlap the first is stacked 14 CSS px below it.
-  const labelOffset = 12 * unitsPerPixel + 7;
-  const lineGap = 14 * unitsPerPixel;
-  const heatingLabel = peakHeating
-    ? `Peak heating ${formatLabValue(peakHeating.heatFluxKilowattsPerSquareMetre)} kW/m², ${formatLabValue(peakHeating.timeSeconds)} s`
+  // Words in the drawing are Plex Sans at 13 CSS px (spec 5); only figures
+  // and units are B612 Mono. Plex Sans advances about 0.5em per character.
+  const wordSize = (fontSize * 13) / 11;
+  const wordWidth = (text: string) => text.length * wordSize * 0.5;
+  const lineGap = 18 * unitsPerPixel;
+  // Peaks closer than this share one marker and one callout, so two
+  // symbols never sit on top of each other (at t = 0, say).
+  const mergeDistance = 40 * unitsPerPixel;
+  const peaksMerged =
+    peakHeating !== undefined &&
+    Math.abs(peakHeatingX - peakDecelerationX) < mergeDistance &&
+    Math.abs(peakHeatingY - peakDecelerationY) < mergeDistance;
+  const decelerationLine: CalloutLine = {
+    label: "Peak deceleration",
+    value: `${formatLabValue(peakDeceleration.decelerationGs)} g, ${formatLabValue(peakDeceleration.timeSeconds)} s`,
+  };
+  const heatingLine: CalloutLine | undefined = peakHeating
+    ? {
+        label: "Peak heating",
+        value: `${formatLabValue(peakHeating.heatFluxKilowattsPerSquareMetre)} kW/m², ${formatLabValue(peakHeating.timeSeconds)} s`,
+      }
     : undefined;
-  const decelerationLabel = `Peak decel ${formatLabValue(peakDeceleration.decelerationGs)} g, ${formatLabValue(peakDeceleration.timeSeconds)} s`;
-  const placeLabel = (markerX: number, markerY: number, text: string) => {
-    const fitsRight = markerX + labelOffset + labelWidth(text) <= plotRight - 4;
-    return {
-      anchor: fitsRight ? ("start" as const) : ("end" as const),
-      x: fitsRight ? markerX + labelOffset : markerX - labelOffset,
-      y: Math.min(
-        Math.max(markerY + fontSize * 0.35, plotTop + fontSize),
-        plotBottom - lineGap - 4,
+  const lineWidth = (line: CalloutLine) =>
+    wordWidth(`${line.label} `) + labelWidth(line.value);
+  // One leader per callout: a diagonal from the marker into the plot's
+  // open side, a short shelf, then the text block.
+  const placeCallout = (
+    markerX: number,
+    markerY: number,
+    lines: readonly CalloutLine[],
+    extraDrop = 0,
+  ): Callout => {
+    const reach = 28 * unitsPerPixel;
+    const shelf = 10 * unitsPerPixel;
+    const width = Math.max(...lines.map(lineWidth));
+    const blockHeight = (lines.length - 1) * lineGap;
+    const down = markerY < plotTop + plotHeight / 2;
+    let right = markerX < plotLeft + plotWidth / 2;
+    if (right && markerX + reach + shelf + 4 + width > plotRight - 4) {
+      right = false;
+    } else if (!right && markerX - reach - shelf - 4 - width < plotLeft + 4) {
+      right = true;
+    }
+    const direction = right ? 1 : -1;
+    const elbowX = markerX + direction * reach;
+    const elbowY = Math.min(
+      Math.max(
+        markerY + (down ? 1 : -1) * (reach + extraDrop),
+        plotTop + wordSize + blockHeight / 2,
       ),
+      plotBottom - 6 - blockHeight / 2,
+    );
+    const shelfX = elbowX + direction * shelf;
+    return {
+      anchor: right ? "start" : "end",
+      elbowX,
+      elbowY,
+      lines,
+      shelfX,
+      textX: shelfX + direction * 4 * unitsPerPixel,
+      textY: elbowY - blockHeight / 2 + wordSize * 0.35,
+      width,
     };
   };
-  const heatingPlacement =
-    heatingLabel !== undefined
-      ? placeLabel(peakHeatingX, peakHeatingY, heatingLabel)
-      : undefined;
-  const decelerationPlacementRaw = placeLabel(
+  const decelerationCallout = placeCallout(
     peakDecelerationX,
     peakDecelerationY,
-    decelerationLabel,
+    peaksMerged && heatingLine
+      ? [heatingLine, decelerationLine]
+      : [decelerationLine],
   );
-  const decelerationPlacement =
-    heatingPlacement &&
-    Math.abs(decelerationPlacementRaw.y - heatingPlacement.y) < lineGap &&
-    Math.abs(decelerationPlacementRaw.x - heatingPlacement.x) <
-      Math.max(labelWidth(decelerationLabel), labelWidth(heatingLabel ?? ""))
-      ? { ...heatingPlacement, y: heatingPlacement.y + lineGap }
-      : decelerationPlacementRaw;
+  let heatingCallout: Callout | undefined;
+  if (heatingLine && !peaksMerged) {
+    heatingCallout = placeCallout(peakHeatingX, peakHeatingY, [heatingLine]);
+    // Two single-line callouts that would overlap: the heating one moves
+    // two lines further out along its own leader.
+    if (
+      Math.abs(heatingCallout.textY - decelerationCallout.textY) < lineGap &&
+      Math.abs(heatingCallout.textX - decelerationCallout.textX) <
+        Math.max(heatingCallout.width, decelerationCallout.width)
+    ) {
+      heatingCallout = placeCallout(
+        peakHeatingX,
+        peakHeatingY,
+        [heatingLine],
+        2 * lineGap,
+      );
+    }
+  }
   const visualSummary = `${analysis.vehicle.vehicleName} descends from ${formatLabAltitude(analysis.trajectory.initialState.altitudeMeters)} to ${formatLabAltitude(analysis.trajectory.finalState.altitudeMeters)} while velocity changes from ${formatLabValue(analysis.trajectory.initialState.velocityMetersPerSecond)} m/s to ${formatLabValue(analysis.trajectory.finalState.velocityMetersPerSecond)} m/s over ${formatLabValue(analysis.trajectory.durationSeconds)} s.`;
 
   return (
@@ -244,59 +317,78 @@ export function ReentryProfileChart({
         <path
           d={altitudePath}
           fill="none"
-          stroke="var(--orbix-data-1)"
+          stroke="var(--ink)"
           strokeWidth="2.5"
         />
         <path
           d={velocityPath}
           fill="none"
-          stroke="var(--orbix-data-2)"
+          stroke="var(--accent-lab)"
           strokeDasharray="7 5"
           strokeWidth="2"
         />
 
         {/* 1px dashed drop lines from each peak to the time axis. */}
-        {peakHeating ? (
+        {peakHeating && !peaksMerged ? (
           <line
-            stroke="var(--orbix-data-2)"
+            stroke="var(--ink-muted)"
             strokeDasharray="3 3"
             strokeWidth="1"
             x1={peakHeatingX}
             x2={peakHeatingX}
-            y1={peakHeatingY}
+            y1={peakHeatingY + 6}
             y2={plotBottom}
           />
         ) : null}
         <line
-          stroke="var(--orbix-data-3)"
+          stroke="var(--ink-muted)"
           strokeDasharray="3 3"
           strokeWidth="1"
           x1={peakDecelerationX}
           x2={peakDecelerationX}
-          y1={peakDecelerationY}
+          y1={peakDecelerationY + 7}
           y2={plotBottom}
         />
 
-        {peakHeating ? (
-          <path
-            d={`M ${peakHeatingX} ${peakHeatingY - 6} L ${peakHeatingX + 6} ${peakHeatingY + 5} L ${peakHeatingX - 6} ${peakHeatingY + 5} Z`}
-            fill="var(--orbix-data-2)"
-            stroke="var(--orbix-surface)"
+        {peakHeating && !peaksMerged ? (
+          <circle
+            cx={peakHeatingX}
+            cy={peakHeatingY}
+            fill="none"
+            r="6"
+            stroke="var(--ink)"
             strokeWidth="1.5"
           />
         ) : null}
-        {/* Drawn after the triangle so it is never hidden under it. */}
-        {/* A hollow square, so a heating triangle at the same point still
-         * shows inside it. */}
         <rect
           fill="none"
           height="14"
-          stroke="var(--orbix-data-3)"
-          strokeWidth="2"
+          stroke="var(--ink)"
+          strokeWidth="1.5"
           width="14"
           x={peakDecelerationX - 7}
           y={peakDecelerationY - 7}
         />
+
+        {/* Leader lines: marker, elbow, shelf. */}
+        {[
+          {
+            callout: decelerationCallout,
+            x: peakDecelerationX,
+            y: peakDecelerationY,
+          },
+          ...(heatingCallout
+            ? [{ callout: heatingCallout, x: peakHeatingX, y: peakHeatingY }]
+            : []),
+        ].map(({ callout, x, y }) => (
+          <polyline
+            fill="none"
+            key={callout.lines[0]?.label}
+            points={`${x + (callout.elbowX > x ? 8 : -8)},${y + (callout.elbowY > y ? 8 : -8)} ${callout.elbowX},${callout.elbowY} ${callout.shelfX},${callout.elbowY}`}
+            stroke="var(--ink-muted)"
+            strokeWidth="0.75"
+          />
+        ))}
 
         <g
           fill="var(--orbix-data-axis)"
@@ -324,11 +416,29 @@ export function ReentryProfileChart({
             {figureTspans(formatLabValue(analysis.trajectory.durationSeconds))}{" "}
             s
           </text>
+        </g>
+        <g
+          fill="var(--ink-muted)"
+          fontFamily="var(--font-sans), sans-serif"
+          fontSize={wordSize}
+        >
           <text textAnchor="start" x={8} y={axisTitleTopY}>
-            Altitude (km)
+            Altitude{" "}
+            <tspan
+              fontFamily="var(--font-telemetry), monospace"
+              fontSize={fontSize}
+            >
+              (km)
+            </tspan>
           </text>
           <text textAnchor="end" x={CHART_WIDTH - 4} y={axisTitleTopY}>
-            Velocity (km/s)
+            Velocity{" "}
+            <tspan
+              fontFamily="var(--font-telemetry), monospace"
+              fontSize={fontSize}
+            >
+              (km/s)
+            </tspan>
           </text>
           <text
             textAnchor="middle"
@@ -339,33 +449,39 @@ export function ReentryProfileChart({
           </text>
         </g>
 
-        {/* Inline peak labels, with a surface-coloured outline so they stay
-         * legible where they cross a curve or gridline. */}
+        {/* Callout text: words in Plex Sans (muted), figures in B612 Mono
+         * (ink), with a ground-coloured outline so the text stays legible
+         * where it crosses a curve or gridline. */}
         <g
-          fill="var(--orbix-text-secondary)"
-          fontFamily="var(--font-telemetry), monospace"
-          fontSize={fontSize}
           paintOrder="stroke"
-          stroke="var(--orbix-surface)"
+          stroke="var(--bg-page)"
           strokeLinejoin="round"
           strokeWidth={3 * unitsPerPixel}
         >
-          {heatingLabel && heatingPlacement ? (
-            <text
-              textAnchor={heatingPlacement.anchor}
-              x={heatingPlacement.x}
-              y={heatingPlacement.y}
-            >
-              {heatingLabel}
-            </text>
-          ) : null}
-          <text
-            textAnchor={decelerationPlacement.anchor}
-            x={decelerationPlacement.x}
-            y={decelerationPlacement.y}
-          >
-            {decelerationLabel}
-          </text>
+          {[
+            decelerationCallout,
+            ...(heatingCallout ? [heatingCallout] : []),
+          ].map((callout) =>
+            callout.lines.map((line, index) => (
+              <text
+                fontFamily="var(--font-sans), sans-serif"
+                fontSize={wordSize}
+                key={line.label}
+                textAnchor={callout.anchor}
+                x={callout.textX}
+                y={callout.textY + index * lineGap}
+              >
+                <tspan fill="var(--ink-muted)">{line.label} </tspan>
+                <tspan
+                  fill="var(--ink)"
+                  fontFamily="var(--font-telemetry), monospace"
+                  fontSize={fontSize}
+                >
+                  {figureTspans(line.value)}
+                </tspan>
+              </text>
+            )),
+          )}
         </g>
       </svg>
 
@@ -374,7 +490,7 @@ export function ReentryProfileChart({
           <li className="flex items-center gap-2">
             <svg aria-hidden="true" height="8" width="24">
               <line
-                stroke="var(--orbix-data-1)"
+                stroke="var(--ink)"
                 strokeWidth="2.5"
                 x1="0"
                 x2="24"
@@ -387,7 +503,7 @@ export function ReentryProfileChart({
           <li className="flex items-center gap-2">
             <svg aria-hidden="true" height="8" width="24">
               <line
-                stroke="var(--orbix-data-2)"
+                stroke="var(--accent-lab)"
                 strokeDasharray="7 5"
                 strokeWidth="2"
                 x1="0"
@@ -399,13 +515,13 @@ export function ReentryProfileChart({
             Velocity
           </li>
           <li className="flex items-center gap-2">
-            <svg aria-hidden="true" height="10" width="10">
+            <svg aria-hidden="true" height="12" width="12">
               <rect
                 fill="none"
-                height="8"
-                stroke="var(--orbix-data-3)"
-                strokeWidth="2"
-                width="8"
+                height="10"
+                stroke="var(--ink)"
+                strokeWidth="1.5"
+                width="10"
                 x="1"
                 y="1"
               />
@@ -414,8 +530,15 @@ export function ReentryProfileChart({
           </li>
           {peakHeating ? (
             <li className="flex items-center gap-2">
-              <svg aria-hidden="true" height="10" width="12">
-                <path d="M 6 0 L 12 10 L 0 10 Z" fill="var(--orbix-data-2)" />
+              <svg aria-hidden="true" height="12" width="12">
+                <circle
+                  cx="6"
+                  cy="6"
+                  fill="none"
+                  r="5"
+                  stroke="var(--ink)"
+                  strokeWidth="1.5"
+                />
               </svg>
               Peak heating
             </li>
@@ -447,7 +570,7 @@ export function ReentryProfileVisualization({
 
   return (
     <section aria-labelledby={titleId} className="min-w-0">
-      <header className="flex flex-wrap items-baseline justify-between gap-2 border-b border-border-subtle pb-4">
+      <header className="flex flex-wrap items-baseline justify-between gap-2 pb-4">
         <LabHeading id={titleId}>Reentry profile</LabHeading>
         <p className="text-sm text-text-secondary">
           {analysis.vehicle.vehicleName}
@@ -458,8 +581,10 @@ export function ReentryProfileVisualization({
         <ReentryProfileChart analysis={analysis} />
       </div>
 
+      {/* Five figures: 3 + 2 from sm, one row of five from lg, so no
+       * figure is left on a row of its own. */}
       <RecordRow
-        className="mt-2"
+        className="mt-8 sm:[&>dl]:grid-cols-3 lg:[&>dl]:grid-cols-5"
         items={[
           {
             label: "Entry velocity",

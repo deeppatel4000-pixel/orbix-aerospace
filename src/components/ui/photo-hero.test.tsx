@@ -36,10 +36,11 @@ describe("PhotoHero", () => {
     expect(markup).toContain("object-position:50% 55%");
   });
 
-  it("loads the photo eagerly with full-bleed sizes by default", () => {
+  it("loads the photo eagerly, sized for the split plate by default", () => {
     const markup = render();
     expect(markup).not.toContain('loading="lazy"');
-    expect(markup).toContain('sizes="100vw"');
+    expect(markup).toContain('sizes="(min-width: 64rem) 50vw, 100vw"');
+    expect(render({ layout: "band" })).toContain('sizes="100vw"');
   });
 
   it("can be told the photo is not the LCP image", () => {
@@ -56,6 +57,43 @@ describe("PhotoHero", () => {
     expect(markup).toContain(">Source file</a>");
   });
 
+  it("prints a catalogue caption with the figure number before the credit", () => {
+    const markup = render({
+      caption: "SR-71B over the Sierra Nevada",
+      figureNumber: "1",
+    });
+    const text = markup
+      .match(/<figcaption[^>]*>(.*)<\/figcaption>/)?.[1]
+      ?.replace(/<[^>]+>/g, "");
+    expect(text).toBe(
+      "Fig. 1SR-71B over the Sierra Nevada. Photo: NASA. Public domain. Source file.",
+    );
+    expect(markup).toContain(
+      '<span class="orbix-caption__number">Fig. 1</span>',
+    );
+  });
+
+  it("names the subject from the alt text when no caption is given", () => {
+    const text = render()
+      .match(/<figcaption[^>]*>(.*)<\/figcaption>/)?.[1]
+      ?.replace(/<[^>]+>/g, "");
+    expect(text).toBe(
+      `${visual.alt}. Photo: NASA. Public domain. Source file.`,
+    );
+  });
+
+  it("does not print 'Photo:' before a credit that already says photo", () => {
+    const text = render({
+      caption: "F-15C Eagle",
+      visual: { ...visual, credit: "U.S. Air Force photo by Master Sgt. A" },
+    })
+      .match(/<figcaption[^>]*>(.*)<\/figcaption>/)?.[1]
+      ?.replace(/<[^>]+>/g, "");
+    expect(text).toBe(
+      "F-15C Eagle. US Air Force photo by Master Sgt. A. Public domain. Source file.",
+    );
+  });
+
   it("shortens a public-domain licence and keeps the full wording in the name", () => {
     const markup = render();
     expect(markup).toContain('aria-label="Public domain (US government work)"');
@@ -65,7 +103,7 @@ describe("PhotoHero", () => {
 
   it("prints the licence as text when no licence page is known", () => {
     const markup = render({ visual: { ...visual, licenseUrl: undefined } });
-    expect(markup).toContain(">Public domain (US government work)</span>");
+    expect(markup).toContain("<span>Public domain (US government work)</span>");
   });
 
   it("shows other licences whole, without a redundant label", () => {
@@ -76,13 +114,13 @@ describe("PhotoHero", () => {
     });
   });
 
-  it("renders the aside slot only when given, and flags the layout", () => {
-    expect(render()).not.toContain("orbix-photo-hero__aside");
-    const markup = render({ aside: <div>Panel</div> });
-    expect(markup).toContain('data-has-aside="true"');
+  it("sets the aside under the hero text, only when given", () => {
+    expect(render()).not.toContain("orbix-photo-hero__facts");
+    const markup = render({ aside: <div>Figures</div> });
     expect(markup).toContain(
-      '<div class="orbix-photo-hero__aside"><div>Panel</div></div>',
+      '<div class="orbix-photo-hero__facts"><div>Figures</div></div>',
     );
+    expect(markup.indexOf("__facts")).toBeLessThan(markup.indexOf("<figure"));
   });
 
   it("can override the route accent", () => {
@@ -92,21 +130,22 @@ describe("PhotoHero", () => {
     expect(render()).not.toContain("data-division");
   });
 
-  it("puts the hero text in reading order after the figure", () => {
-    const markup = render();
-    expect(markup.indexOf("</figure>")).toBeLessThan(markup.indexOf("<h1>"));
-    expect(markup).toContain('class="orbix-photo-hero__content orbix-rise"');
-    expect(render({ entrance: false })).not.toContain("orbix-rise");
+  it("puts the heading before the photograph and never animates it", () => {
+    const markup = render({ entrance: true });
+    expect(markup.indexOf("<h1>")).toBeLessThan(markup.indexOf("<figure"));
+    expect(markup).not.toContain("orbix-rise");
   });
 
-  it("marks the framed photo with decorative registration marks", () => {
+  it("draws no scrim, mask or registration marks", () => {
     const markup = render();
-    expect(markup).toContain('class="orbix-reg-marks orbix-photo-hero__marks"');
-    expect(markup).toMatch(/<span aria-hidden="true" class="orbix-reg-marks/);
+    expect(markup).not.toMatch(/scrim|reg-marks|marks/);
   });
 
-  it("marks the right-hand placement only when asked", () => {
-    expect(render()).not.toContain("data-placement");
-    expect(render({ placement: "right" })).toContain('data-placement="right"');
+  it("maps the v2 right placement to a portrait plate", () => {
+    expect(render()).toContain('data-plate="landscape"');
+    expect(render({ placement: "right" })).toContain('data-plate="portrait"');
+    expect(render({ plate: "portrait" })).toContain('data-plate="portrait"');
+    expect(render()).toContain('data-layout="split"');
+    expect(render({ layout: "band" })).toContain('data-layout="band"');
   });
 });

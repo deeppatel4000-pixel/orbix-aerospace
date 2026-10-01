@@ -1,4 +1,26 @@
 {
-  "src/app/layout.tsx": 1,
-  "src/app/manifest.ts": 2
+  "killList": {
+    "src/features/compare/components/comparison-controls.tsx": 5,
+    "src/features/compare/components/comparison-empty-state.tsx": 1,
+    "src/features/compare/components/comparison-table.tsx": 4,
+    "src/features/engineering-lab/components/calculator-card.module.css": 2,
+    "src/features/engineering-lab/components/inlet-compression-analyzer.tsx": 1,
+    "src/features/engineering-lab/components/laboratory-shell.tsx": 2,
+    "src/features/engineering-lab/components/multi-shock-recovery-analyzer.tsx": 1,
+    "src/features/engineering-lab/components/scenario-library.tsx": 1,
+    "src/features/engineering-lab/components/shared/calculator-result-section.tsx": 1,
+    "src/features/engineering-lab/components/shared/lab-choice.tsx": 2,
+    "src/features/engineering-lab/components/vehicle-reentry-comparison-analyzer.tsx": 1,
+    "src/features/engineering-lab/components/visualization/mission-control-sidebar.tsx": 1,
+    "src/features/engineering-lab/components/visualization/orbit-diagram.tsx": 1,
+    "src/features/learn/components/pathway-figure.tsx": 1,
+    "src/features/legal/components/about-page.tsx": 1,
+    "src/features/showcase/components/architecture-section.tsx": 1,
+    "src/features/vehicles/components/primitive-stopgaps.ts": 5,
+    "src/features/vehicles/components/profile-section-nav.tsx": 3
+  },
+  "rawColors": {
+    "src/app/layout.tsx": 1,
+    "src/app/manifest.ts": 2
+  }
 }

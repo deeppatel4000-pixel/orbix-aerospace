@@ -1,7 +1,5 @@
 import { Container } from "@/components/layout/container";
 import { ButtonLink } from "@/components/ui/button-link";
-import { Eyebrow } from "@/components/ui/eyebrow";
-import { RegistrationMarks } from "@/components/ui/registration-marks";
 import { getAircraftVisual } from "@/features/aircraft/data/aircraft-visuals";
 import {
   ComparisonControls,
@@ -72,10 +70,10 @@ function buildThumbnails(options: ComparisonOptions): ComparisonThumbnails {
 }
 
 /**
- * `/compare` (design v2, spec 9): a typographic hero on the blueprint grid,
- * a category control and selectable vehicle tiles, then the comparison as a
- * spec sheet or an empty state. The whole state lives in the URL, so a
- * comparison can be bookmarked or shared.
+ * `/compare` (design v3, spec 11): a typographic hero on solid ground, the
+ * vehicle choice as open tiles whose checkbox is the only boxed element,
+ * then the comparison as an open table or a plain-text empty state. The
+ * whole state lives in the URL, so a comparison can be bookmarked or shared.
  */
 export function ComparePage({ category, options, result }: ComparePageProps) {
   const canCompare = result.vehicles.length >= 2;
@@ -83,20 +81,10 @@ export function ComparePage({ category, options, result }: ComparePageProps) {
 
   return (
     <>
-      {/* The minor blueprint grid is for hero sections only (spec 6). The
-          registration marks frame the hero like a drawing sheet: their
-          ticks sit on the container's text edges, so the eyebrow, the H1
-          and the lead share the left edge of every section below. */}
-      <header className="orbix-blueprint-minor relative py-4 sm:py-6 lg:py-5">
+      <header className="pt-12 pb-10 sm:pt-16 sm:pb-12 lg:pt-20 lg:pb-14">
         <Container>
-          <div className="relative grid gap-6 py-8 lg:grid-cols-[minmax(0,1fr)_26rem] lg:items-end lg:gap-16 lg:py-7">
-            <RegistrationMarks />
-            <div>
-              <Eyebrow>Published figures, side by side</Eyebrow>
-              <h1 className="orbix-display mt-6 text-foreground">
-                Compare <span className="orbix-accent-word">vehicles</span>
-              </h1>
-            </div>
+          <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_26rem] lg:items-end lg:gap-16">
+            <h1 className="orbix-display text-foreground">Compare vehicles</h1>
             <p className="orbix-lead lg:pb-1">
               Put two or three aircraft, or two or three launch vehicles, side
               by side. Aircraft and launch vehicles are compared separately
@@ -108,7 +96,7 @@ export function ComparePage({ category, options, result }: ComparePageProps) {
 
       <section
         aria-labelledby="compare-selection-title"
-        className="border-t border-border-subtle pt-8 pb-14 sm:pt-12 sm:pb-16 lg:pt-8"
+        className="pb-14 sm:pb-16"
       >
         <Container>
           <ComparisonControls
@@ -138,11 +126,9 @@ export function ComparePage({ category, options, result }: ComparePageProps) {
             )}
           </div>
 
-          {/* Below 64rem the rules list above ends on its own hairline, so
-              the links follow it without a second rule. */}
           <nav
             aria-label="Related sections"
-            className="mt-10 flex flex-wrap gap-x-10 gap-y-2 lg:mt-14 lg:border-t lg:border-border-subtle lg:pt-5"
+            className="mt-14 flex flex-wrap gap-x-10 gap-y-2 lg:mt-20"
           >
             <ButtonLink
               arrow="right"

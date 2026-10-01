@@ -39,10 +39,13 @@ function figure(value: number): string {
   return formatLabValue(value);
 }
 
-/** One labelled value: label left, value right in tabular mono. */
+/**
+ * One secondary value: label left, value right in tabular mono. No rule per
+ * row; the rows are grouped by space under their section's headline.
+ */
 function ReportMetric({ label, text = false, unit, value }: ReportMetricProps) {
   return (
-    <div className="flex items-baseline justify-between gap-4 border-t border-border-subtle py-2">
+    <div className="flex items-baseline justify-between gap-4 py-1.5">
       <dt className="text-sm text-muted">{label}</dt>
       <dd className="text-right">
         <output
@@ -71,7 +74,41 @@ function AltitudeMetric({
 }
 
 function MetricList({ children }: { readonly children: ReactNode }) {
-  return <dl className="mt-3 grid gap-x-8 sm:grid-cols-2">{children}</dl>;
+  return <dl className="mt-3 grid gap-x-10 sm:grid-cols-2">{children}</dl>;
+}
+
+/**
+ * A section's headline figure (spec 11): label above, value large in B612
+ * Mono, the unit a step smaller and muted. One per section.
+ */
+function HeadlineMetric({
+  label,
+  secondary,
+  unit,
+  value,
+}: {
+  readonly label: string;
+  /** The same value in a second unit, muted after it. */
+  readonly secondary?: ReactNode;
+  readonly unit: string;
+  readonly value: string;
+}) {
+  return (
+    <dl className="mt-4">
+      <dt className="text-sm text-muted">{label}</dt>
+      <dd className="mt-1">
+        <output className="orbix-readout-lg text-foreground">
+          {formatFigure(value)}
+          <span className="text-[0.45em] text-muted"> {unit}</span>
+        </output>
+        {secondary ? (
+          <span className="orbix-data ml-3 text-sm text-muted">
+            {secondary}
+          </span>
+        ) : null}
+      </dd>
+    </dl>
+  );
 }
 
 export function MissionReportViewer({
@@ -128,7 +165,7 @@ export function MissionReportViewer({
           <p className="mt-3 max-w-[68ch] text-sm leading-6 text-muted">
             {missionSummary.description}
           </p>
-          <div className="mt-4 border-t border-border-subtle pt-3">
+          <div className="mt-4">
             <p className="orbix-label">Systems used</p>
             {missionSummary.systemsUsed.length > 0 ? (
               <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-foreground">
@@ -153,24 +190,17 @@ export function MissionReportViewer({
               Orbital analysis
             </LabHeading>
 
-            <MetricList>
-              <ReportMetric
-                label="Total mission delta-v"
-                unit="m/s"
-                value={figure(orbital.totalDeltaVMetresPerSecond)}
-              />
-              <ReportMetric
-                label="Maneuvers reported"
-                value={orbital.maneuvers.length}
-              />
-              {transfer ? (
-                <ReportMetric
-                  label="Transfer duration"
-                  unit="h"
-                  value={figure(transfer.transfer.transferTimeHours)}
-                />
-              ) : null}
-            </MetricList>
+            <HeadlineMetric
+              label="Total mission delta-v"
+              unit="m/s"
+              value={figure(orbital.totalDeltaVMetresPerSecond)}
+            />
+            <p className="mt-2 text-sm text-muted">
+              Maneuvers reported:{" "}
+              <span className="orbix-data text-foreground">
+                {orbital.maneuvers.length}
+              </span>
+            </p>
 
             {transfer ? (
               <section
@@ -215,9 +245,9 @@ export function MissionReportViewer({
                     )}
                   />
                   <ReportMetric
-                    label="Transfer delta-v"
-                    unit="m/s"
-                    value={figure(transfer.transfer.totalDeltaVMetresPerSecond)}
+                    label="Transfer duration"
+                    unit="h"
+                    value={figure(transfer.transfer.transferTimeHours)}
                   />
                 </MetricList>
               </section>
@@ -246,18 +276,14 @@ export function MissionReportViewer({
                     unit="m/s"
                     value={figure(planeChange.orbitalVelocityMetresPerSecond)}
                   />
-                  <ReportMetric
-                    label="Plane-change delta-v"
-                    unit="m/s"
-                    value={figure(planeChange.deltaVMetresPerSecond)}
-                  />
                 </MetricList>
               </section>
             ) : null}
 
-            {orbital.maneuvers.length > 0 ? (
-              // Name and value pairs on hairlines, like the rows above; a
-              // bordered table here would be a second panel in the tool.
+            {orbital.maneuvers.length > 1 ? (
+              // Each maneuver's delta-v appears once, here: the transfer
+              // and plane-change lists above leave it out. With a single
+              // maneuver its value is the total, so the list is skipped.
               <section
                 aria-labelledby="mission-report-maneuvers-title"
                 className="mt-6"
@@ -296,6 +322,29 @@ export function MissionReportViewer({
             <output className="mt-1 block text-base font-semibold text-foreground">
               {vehicle.selectedVehicle.vehicleName}
             </output>
+            {/* g first, as in every mission view; m/s² as the secondary
+             * unit. Peak heating is the thermal section's headline, so it
+             * is not repeated here. */}
+            <HeadlineMetric
+              label="Peak deceleration"
+              secondary={
+                <>
+                  (
+                  {formatFigure(
+                    figure(
+                      vehicle.performanceSummary.dynamics.peakDeceleration
+                        .decelerationMetersPerSecondSquared,
+                    ),
+                  )}{" "}
+                  m/s²)
+                </>
+              }
+              unit="g"
+              value={figure(
+                vehicle.performanceSummary.dynamics.peakDeceleration
+                  .decelerationGs,
+              )}
+            />
             <MetricList>
               <AltitudeMetric
                 label="Initial altitude"
@@ -324,37 +373,6 @@ export function MissionReportViewer({
                   vehicle.performanceSummary.flight.reentryDurationSeconds,
                 )}
               />
-              {/* g first, as in every mission view; m/s² as the
-               * secondary unit. */}
-              <ReportMetric
-                label="Peak deceleration"
-                value={
-                  <>
-                    {figure(
-                      vehicle.performanceSummary.dynamics.peakDeceleration
-                        .decelerationGs,
-                    )}
-                    <LabUnit unit="g" />
-                    <span className="ml-2 text-muted">
-                      (
-                      {figure(
-                        vehicle.performanceSummary.dynamics.peakDeceleration
-                          .decelerationMetersPerSecondSquared,
-                      )}{" "}
-                      m/s²)
-                    </span>
-                  </>
-                }
-              />
-              {thermal ? (
-                <ReportMetric
-                  label="Peak heating"
-                  unit="kW/m²"
-                  value={figure(
-                    thermal.thermalSummary.peakHeatFluxKilowattsPerSquareMetre,
-                  )}
-                />
-              ) : null}
             </MetricList>
           </section>
         ) : null}
@@ -371,14 +389,14 @@ export function MissionReportViewer({
               {THERMAL_MODEL_NOTE}
             </p>
 
+            <HeadlineMetric
+              label="Peak heat flux"
+              unit="kW/m²"
+              value={figure(
+                thermal.thermalSummary.peakHeatFluxKilowattsPerSquareMetre,
+              )}
+            />
             <MetricList>
-              <ReportMetric
-                label="Peak heat flux"
-                unit="kW/m²"
-                value={figure(
-                  thermal.thermalSummary.peakHeatFluxKilowattsPerSquareMetre,
-                )}
-              />
               <ReportMetric
                 label="Total heat load"
                 unit="MJ/m²"

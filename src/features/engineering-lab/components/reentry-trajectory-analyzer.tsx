@@ -1,6 +1,6 @@
 "use client";
 
-import { Button, DataTable, EquationBlock } from "@/components/ui";
+import { Button, DataTable } from "@/components/ui";
 import { useMemo, useState, type FormEvent } from "react";
 
 import { analyzeReentryTrajectory } from "@/features/engineering-lab/analysis";
@@ -25,6 +25,7 @@ import {
   LAB_GROUP,
   LAB_GROUP_LEGEND,
   EQ_SUB_CLEAR,
+  LabEquation,
 } from "@/features/engineering-lab/components/shared";
 import type {
   ReentryTrajectoryAnalysis,
@@ -214,7 +215,7 @@ function sampleTrajectoryPoints(
 }
 
 const toolEquation = (
-  <EquationBlock
+  <LabEquation
     equation={
       <>
         <span className={EQ_LINE}>
@@ -732,8 +733,8 @@ export function ReentryTrajectoryAnalyzer() {
             >
               Why the trajectory changes
             </h3>
-            <div className="mt-4 border-t border-border">
-              <article className="border-b border-border py-4">
+            <div className="mt-3 divide-y divide-border">
+              <article className="py-4">
                 <h4 className="text-sm font-semibold text-foreground">
                   Velocity
                 </h4>
@@ -742,7 +743,7 @@ export function ReentryTrajectoryAnalyzer() {
                   velocity as the vehicle moves through the atmosphere.
                 </p>
               </article>
-              <article className="border-b border-border py-4">
+              <article className="py-4">
                 <h4 className="text-sm font-semibold text-foreground">
                   Density
                 </h4>
@@ -751,7 +752,7 @@ export function ReentryTrajectoryAnalyzer() {
                   dynamic pressure and the drag acting on the vehicle.
                 </p>
               </article>
-              <article className="border-b border-border py-4">
+              <article className="py-4">
                 <h4 className="text-sm font-semibold text-foreground">
                   G-load
                 </h4>

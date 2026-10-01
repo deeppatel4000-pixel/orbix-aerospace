@@ -72,10 +72,9 @@ function unitWithSubscripts(unit: string): ReactNode {
 }
 
 /**
- * A mathematical symbol inside an uppercase readout label, such as the
- * "ρ₂/ρ₁" in "Density ratio (ρ₂/ρ₁)". Readout labels are uppercased by
- * CSS, which would turn ρ into Ρ (read as a Latin P), β into Β and p into
- * P; this span keeps the symbol's case, spacing and a legible size.
+ * A mathematical symbol inside a readout label, such as the "β" in
+ * "Shock angle β": set in the data face (spec 5: mono for figures,
+ * units and equations) at a legible size, and never case-shifted.
  */
 export function LabSymbol({ children }: { children: ReactNode }) {
   return <span className="lab-symbol">{children}</span>;
@@ -205,7 +204,7 @@ export function EqFrac({
 /**
  * Class names for a form group: put `LAB_GROUP` on each top-level
  * `<fieldset>` of a tool's form and `LAB_GROUP_LEGEND` on its legend. The
- * legend is a small B612 Mono caps label; every group after the first
+ * legend is a sentence-case sans label; every group after the first
  * opens 32px down under a 1px rule (see `calculator-card.module.css`).
  */
 export const LAB_GROUP = "lab-group";

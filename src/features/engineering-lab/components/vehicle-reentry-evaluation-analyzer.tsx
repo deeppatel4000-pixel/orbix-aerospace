@@ -1,6 +1,6 @@
 "use client";
 
-import { Button, EquationBlock } from "@/components/ui";
+import { Button } from "@/components/ui";
 import { useMemo, useState, type FormEvent } from "react";
 import { CircleAlert } from "lucide-react";
 
@@ -26,6 +26,7 @@ import {
   LAB_GROUP,
   LAB_GROUP_LEGEND,
   EqFrac,
+  LabEquation,
 } from "@/features/engineering-lab/components/shared";
 import type {
   VehicleReentryEvaluationAnalysis,
@@ -275,7 +276,7 @@ function OptionalNumberField({
 }
 
 const toolEquation = (
-  <EquationBlock
+  <LabEquation
     equation={
       <>
         <span className={EQ_LINE}>
@@ -603,145 +604,6 @@ export function VehicleReentryEvaluationAnalyzer() {
           >
             {result ? (
               <>
-                <ReadoutGrid columns={2} title="Vehicle">
-                  <div>
-                    <dt className="orbix-label">Name</dt>
-                    <dd>
-                      <output
-                        className="lab-value-text"
-                        htmlFor="vehicle-reentry-evaluation-vehicleName"
-                      >
-                        {result.vehicle.vehicleName}
-                      </output>
-                    </dd>
-                  </div>
-                  <div>
-                    <dt className="orbix-label">Mass</dt>
-                    <dd className="mt-1">
-                      <output
-                        className="orbix-data"
-                        htmlFor="vehicle-reentry-evaluation-massKilograms"
-                      >
-                        <LabFigure unit="kg">
-                          {standardFormatter.format(
-                            result.vehicle.massKilograms,
-                          )}
-                        </LabFigure>
-                      </output>
-                    </dd>
-                  </div>
-                  <div>
-                    <dt className="orbix-label">Drag coefficient</dt>
-                    <dd className="mt-1">
-                      <output
-                        className="orbix-data"
-                        htmlFor="vehicle-reentry-evaluation-dragCoefficient"
-                      >
-                        <LabFigure>
-                          {standardFormatter.format(
-                            result.vehicle.dragCoefficient,
-                          )}
-                        </LabFigure>
-                      </output>
-                    </dd>
-                  </div>
-                  <div>
-                    <dt className="orbix-label">Reference area</dt>
-                    <dd className="mt-1">
-                      <output
-                        className="orbix-data"
-                        htmlFor="vehicle-reentry-evaluation-referenceAreaSquareMetres"
-                      >
-                        <LabFigure unit="m²">
-                          {standardFormatter.format(
-                            result.vehicle.referenceAreaSquareMetres,
-                          )}
-                        </LabFigure>
-                      </output>
-                    </dd>
-                  </div>
-                  <div>
-                    <dt className="orbix-label">Nose radius</dt>
-                    <dd className="mt-1">
-                      <output
-                        className="orbix-data"
-                        htmlFor="vehicle-reentry-evaluation-noseRadiusMetres"
-                      >
-                        <LabFigure unit="m">
-                          {standardFormatter.format(
-                            result.vehicle.noseRadiusMetres,
-                          )}
-                        </LabFigure>
-                      </output>
-                    </dd>
-                  </div>
-                </ReadoutGrid>
-
-                <ReadoutGrid columns={2} title="Flight summary">
-                  <div>
-                    <dt className="orbix-label">Reentry duration</dt>
-                    <dd className="mt-1">
-                      <output className="orbix-data" htmlFor={allOutputIds}>
-                        <LabFigure unit="s">
-                          {standardFormatter.format(
-                            result.summary.flight.reentryDurationSeconds,
-                          )}
-                        </LabFigure>
-                      </output>
-                    </dd>
-                  </div>
-                  <div>
-                    <dt className="orbix-label">Initial altitude</dt>
-                    <dd className="mt-1">
-                      <output className="orbix-data" htmlFor={reentryOutputIds}>
-                        <LabFigure unit="m">
-                          {standardFormatter.format(
-                            result.summary.flight.initialAltitudeMeters,
-                          )}
-                        </LabFigure>
-                      </output>
-                    </dd>
-                  </div>
-                  <div>
-                    <dt className="orbix-label">Initial velocity</dt>
-                    <dd className="mt-1">
-                      <output className="orbix-data" htmlFor={reentryOutputIds}>
-                        <LabFigure unit="m/s">
-                          {standardFormatter.format(
-                            result.summary.flight
-                              .initialVelocityMetersPerSecond,
-                          )}
-                        </LabFigure>
-                      </output>
-                    </dd>
-                  </div>
-                  <div>
-                    <dt className="orbix-label">Final altitude</dt>
-                    <dd className="mt-1">
-                      <output className="orbix-data" htmlFor={allOutputIds}>
-                        <LabFigure unit="m">
-                          {standardFormatter.format(
-                            result.summary.flight.finalState.altitudeMeters,
-                          )}
-                        </LabFigure>
-                      </output>
-                    </dd>
-                  </div>
-                  <div>
-                    <dt className="orbix-label">Final velocity</dt>
-                    <dd className="mt-1">
-                      <output className="orbix-data" htmlFor={allOutputIds}>
-                        <LabFigure unit="m/s">
-                          {standardFormatter.format(
-                            result.summary.flight.finalState
-                              .velocityMetersPerSecond,
-                          )}
-                        </LabFigure>
-                      </output>
-                    </dd>
-                  </div>
-                </ReadoutGrid>
-
                 <ReadoutGrid columns={2} title="Dynamics">
                   <div>
                     <dt className="orbix-label">Peak deceleration</dt>
@@ -927,6 +789,145 @@ export function VehicleReentryEvaluationAnalyzer() {
                     </dd>
                   </div>
                 </ReadoutGrid>
+
+                <ReadoutGrid columns={2} title="Flight summary">
+                  <div>
+                    <dt className="orbix-label">Reentry duration</dt>
+                    <dd className="mt-1">
+                      <output className="orbix-data" htmlFor={allOutputIds}>
+                        <LabFigure unit="s">
+                          {standardFormatter.format(
+                            result.summary.flight.reentryDurationSeconds,
+                          )}
+                        </LabFigure>
+                      </output>
+                    </dd>
+                  </div>
+                  <div>
+                    <dt className="orbix-label">Initial altitude</dt>
+                    <dd className="mt-1">
+                      <output className="orbix-data" htmlFor={reentryOutputIds}>
+                        <LabFigure unit="m">
+                          {standardFormatter.format(
+                            result.summary.flight.initialAltitudeMeters,
+                          )}
+                        </LabFigure>
+                      </output>
+                    </dd>
+                  </div>
+                  <div>
+                    <dt className="orbix-label">Initial velocity</dt>
+                    <dd className="mt-1">
+                      <output className="orbix-data" htmlFor={reentryOutputIds}>
+                        <LabFigure unit="m/s">
+                          {standardFormatter.format(
+                            result.summary.flight
+                              .initialVelocityMetersPerSecond,
+                          )}
+                        </LabFigure>
+                      </output>
+                    </dd>
+                  </div>
+                  <div>
+                    <dt className="orbix-label">Final altitude</dt>
+                    <dd className="mt-1">
+                      <output className="orbix-data" htmlFor={allOutputIds}>
+                        <LabFigure unit="m">
+                          {standardFormatter.format(
+                            result.summary.flight.finalState.altitudeMeters,
+                          )}
+                        </LabFigure>
+                      </output>
+                    </dd>
+                  </div>
+                  <div>
+                    <dt className="orbix-label">Final velocity</dt>
+                    <dd className="mt-1">
+                      <output className="orbix-data" htmlFor={allOutputIds}>
+                        <LabFigure unit="m/s">
+                          {standardFormatter.format(
+                            result.summary.flight.finalState
+                              .velocityMetersPerSecond,
+                          )}
+                        </LabFigure>
+                      </output>
+                    </dd>
+                  </div>
+                </ReadoutGrid>
+
+                <ReadoutGrid columns={2} title="Vehicle">
+                  <div>
+                    <dt className="orbix-label">Name</dt>
+                    <dd>
+                      <output
+                        className="lab-value-text"
+                        htmlFor="vehicle-reentry-evaluation-vehicleName"
+                      >
+                        {result.vehicle.vehicleName}
+                      </output>
+                    </dd>
+                  </div>
+                  <div>
+                    <dt className="orbix-label">Mass</dt>
+                    <dd className="mt-1">
+                      <output
+                        className="orbix-data"
+                        htmlFor="vehicle-reentry-evaluation-massKilograms"
+                      >
+                        <LabFigure unit="kg">
+                          {standardFormatter.format(
+                            result.vehicle.massKilograms,
+                          )}
+                        </LabFigure>
+                      </output>
+                    </dd>
+                  </div>
+                  <div>
+                    <dt className="orbix-label">Drag coefficient</dt>
+                    <dd className="mt-1">
+                      <output
+                        className="orbix-data"
+                        htmlFor="vehicle-reentry-evaluation-dragCoefficient"
+                      >
+                        <LabFigure>
+                          {standardFormatter.format(
+                            result.vehicle.dragCoefficient,
+                          )}
+                        </LabFigure>
+                      </output>
+                    </dd>
+                  </div>
+                  <div>
+                    <dt className="orbix-label">Reference area</dt>
+                    <dd className="mt-1">
+                      <output
+                        className="orbix-data"
+                        htmlFor="vehicle-reentry-evaluation-referenceAreaSquareMetres"
+                      >
+                        <LabFigure unit="m²">
+                          {standardFormatter.format(
+                            result.vehicle.referenceAreaSquareMetres,
+                          )}
+                        </LabFigure>
+                      </output>
+                    </dd>
+                  </div>
+                  <div>
+                    <dt className="orbix-label">Nose radius</dt>
+                    <dd className="mt-1">
+                      <output
+                        className="orbix-data"
+                        htmlFor="vehicle-reentry-evaluation-noseRadiusMetres"
+                      >
+                        <LabFigure unit="m">
+                          {standardFormatter.format(
+                            result.vehicle.noseRadiusMetres,
+                          )}
+                        </LabFigure>
+                      </output>
+                    </dd>
+                  </div>
+                </ReadoutGrid>
               </>
             ) : (
               <NotCalculated invalid={Object.values(errors).some(Boolean)}>
@@ -948,8 +949,8 @@ export function VehicleReentryEvaluationAnalyzer() {
             >
               Coupled reentry disciplines
             </h3>
-            <div className="mt-4 border-t border-border">
-              <article className="border-b border-border py-4">
+            <div className="mt-3 divide-y divide-border">
+              <article className="py-4">
                 <h4 className="text-sm font-semibold text-foreground">
                   Vehicle geometry
                 </h4>
@@ -958,7 +959,7 @@ export function VehicleReentryEvaluationAnalyzer() {
                   stagnation-heating behavior.
                 </p>
               </article>
-              <article className="border-b border-border py-4">
+              <article className="py-4">
                 <h4 className="text-sm font-semibold text-foreground">
                   Ballistic coefficient
                 </h4>
@@ -967,7 +968,7 @@ export function VehicleReentryEvaluationAnalyzer() {
                   area influences atmospheric deceleration.
                 </p>
               </article>
-              <article className="border-b border-border py-4">
+              <article className="py-4">
                 <h4 className="text-sm font-semibold text-foreground">
                   Thermal loading
                 </h4>
@@ -976,7 +977,7 @@ export function VehicleReentryEvaluationAnalyzer() {
                   produced for the vehicle and trajectory.
                 </p>
               </article>
-              <article className="border-b border-border py-4">
+              <article className="py-4">
                 <h4 className="text-sm font-semibold text-foreground">
                   Multidisciplinary workflow
                 </h4>

@@ -58,7 +58,7 @@ export function ReplayControls({
           <Button
             aria-label="Restart mission replay"
             onClick={onRestart}
-            variant="ghost"
+            variant="tertiary"
           >
             Restart
           </Button>

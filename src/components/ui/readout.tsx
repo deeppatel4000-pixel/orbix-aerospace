@@ -115,3 +115,17 @@ export function Readout({ children, className, ...props }: ReadoutProps) {
     </span>
   );
 }
+
+/**
+ * Whether a key-figure value is a figure (set in B612 Mono) or a name or
+ * word (set in Plex Sans, spec 5: mono only for figures, units and
+ * equations). A number, or a string that starts with a digit, a sign or
+ * "Mach", is a figure: "2,193", "~3,500", "Mach 3.3", "-56". "F-22 Raptor",
+ * "Saturn V" and "Retired" are text. JSX values are treated as figures;
+ * pass `kind` on the item to decide explicitly.
+ */
+export function isFigureValue(value: ReactNode): boolean {
+  if (typeof value === "number") return true;
+  if (typeof value !== "string") return value !== null && value !== undefined;
+  return /^\s*(?:[~≈<>≤≥±+\-−$]\s*)?(?:Mach\s+)?\d/i.test(value);
+}

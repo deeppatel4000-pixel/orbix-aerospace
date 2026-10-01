@@ -1,6 +1,6 @@
 "use client";
 
-import { Button, EquationBlock } from "@/components/ui";
+import { Button } from "@/components/ui";
 import { useMemo, useState, type FormEvent } from "react";
 
 import { analyzeHohmannTransfer } from "@/features/engineering-lab/analysis";
@@ -25,6 +25,7 @@ import {
   LAB_GROUP_LEGEND,
   EqFrac,
   EQ_PAREN,
+  LabEquation,
 } from "@/features/engineering-lab/components/shared";
 import type {
   HohmannTransferAnalysisInputs,
@@ -152,7 +153,7 @@ function deriveViewState(
 }
 
 const toolEquation = (
-  <EquationBlock
+  <LabEquation
     equation={
       <>
         <span className={EQ_LINE}>
@@ -489,22 +490,7 @@ export function HohmannTransferAnalyzer() {
                     </dd>
                   </div>
                   <div>
-                    <dt className="orbix-label">Transfer duration, seconds</dt>
-                    <dd className="mt-1">
-                      <output
-                        className="orbix-data"
-                        htmlFor={transferOutputIds}
-                      >
-                        <LabFigure unit="s">
-                          {timeFormatter.format(
-                            result.transfer.transferTimeSeconds,
-                          )}
-                        </LabFigure>
-                      </output>
-                    </dd>
-                  </div>
-                  <div>
-                    <dt className="orbix-label">Transfer duration, hours</dt>
+                    <dt className="orbix-label">Transfer duration</dt>
                     <dd className="mt-1">
                       <output
                         className="orbix-data"
@@ -513,6 +499,16 @@ export function HohmannTransferAnalyzer() {
                         <LabFigure unit="h">
                           {timeFormatter.format(
                             result.transfer.transferTimeHours,
+                          )}
+                        </LabFigure>
+                      </output>
+                      <output
+                        className="lab-figure-note"
+                        htmlFor={transferOutputIds}
+                      >
+                        <LabFigure unit="s">
+                          {timeFormatter.format(
+                            result.transfer.transferTimeSeconds,
                           )}
                         </LabFigure>
                       </output>

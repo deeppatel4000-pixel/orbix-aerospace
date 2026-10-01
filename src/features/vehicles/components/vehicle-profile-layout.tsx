@@ -15,9 +15,10 @@ interface VehicleProfileLayoutProps {
 }
 
 /**
- * The profile template (spec 9): the photo hero, a sticky "On this page"
- * bar, then the sections as full-width spec sheets and the related
- * vehicles.
+ * The profile template (spec 9, 11): the photo hero, then from 64rem a
+ * plain "On this page" list in its own left column, sticky beside the
+ * sections so it never covers them, and the sections to its right. Below
+ * 64rem the list sits once above the sections and does not stick.
  */
 export function VehicleProfileLayout({
   children,
@@ -28,11 +29,17 @@ export function VehicleProfileLayout({
   return (
     <article>
       {hero}
-      <ProfileSectionNav items={navigation} />
-      <Container className="pb-16 sm:pb-24">
-        {/* The first section's top rule would sit on the bar's own rule. */}
-        <div className="[&>section:first-child]:border-t-0">{children}</div>
-        {related}
+      <Container className="pb-16 sm:pb-24 lg:grid lg:grid-cols-12 lg:gap-x-6">
+        <div className="pt-4 pb-10 lg:col-span-3 lg:pt-12 lg:pb-0">
+          <ProfileSectionNav items={navigation} />
+        </div>
+        <div className="min-w-0 lg:col-span-9">
+          {/* The first section's rule would sit right under the hero. */}
+          <div className="lg:[&>section:first-child]:border-t-0">
+            {children}
+          </div>
+          {related}
+        </div>
       </Container>
     </article>
   );

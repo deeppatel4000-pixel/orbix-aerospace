@@ -3,7 +3,6 @@ import Link from "next/link";
 import { Container } from "@/components/layout/container";
 import { ButtonLink } from "@/components/ui/button-link";
 import { EmptyState } from "@/components/ui/empty-state";
-import { Eyebrow } from "@/components/ui/eyebrow";
 import { PhotoHero } from "@/components/ui/photo-hero";
 import { SpecPanel, type SpecPanelItem } from "@/components/ui/spec-panel";
 import { RocketCard } from "@/features/rockets/components/rocket-card";
@@ -19,21 +18,16 @@ import {
   formatRocketClassification,
   formatRocketEngineCycle,
 } from "@/features/rockets/utils";
-import { ProfileLink } from "@/features/vehicles/components/profile-link";
+import { heroCrop } from "@/features/vehicles/components/hero-crop";
 import {
   CONVERSION_NOTE,
   MINIMUM_NOTE,
   measurementParts,
   panelSecondary,
 } from "@/features/vehicles/components/measurement-display";
-import {
-  STOPGAP_HERO_SPEC_PANEL,
-  STOPGAP_HERO_SPEC_PANEL_STRIP,
-  STOPGAP_PHOTO_HERO_ASIDE_BELOW,
-  STOPGAP_PHOTO_HERO_PHONE_TALL,
-  responsiveHeroPosition,
-} from "@/features/vehicles/components/primitive-stopgaps";
+import { ProfileLink } from "@/features/vehicles/components/profile-link";
 import { VehicleRegistry } from "@/features/vehicles/components/vehicle-registry";
+import { RocketHeightLineup, toMetres } from "@/features/vehicles/drawings";
 import type { Rocket } from "@/features/vehicles/types";
 import { formatCountWord } from "@/features/vehicles/utils/format-measurement";
 
@@ -41,15 +35,8 @@ interface RocketExplorerProps {
   rockets: readonly Rocket[];
 }
 
-/** The launch vehicle shown in the hero and its spec panel. */
+/** The launch vehicle in the hero photograph and its figures. */
 const FEATURED_ROCKET_ID = "saturn-v";
-
-/**
- * The registry's wide first card. Not the hero vehicle: on a phone the
- * same photograph came round again within one screen of the hero. The
- * hero spec panel stays the page's one featured launch vehicle.
- */
-const REGISTRY_LEAD_ID = "falcon-9";
 
 /** Words the registry search matches for one launch vehicle. */
 function rocketKeywords(rocket: Rocket) {
@@ -71,36 +58,31 @@ function rocketKeywords(rocket: Rocket) {
   ].join(" ");
 }
 
-/** The record order with the registry's lead launch vehicle first. */
-function registryOrder(rockets: readonly Rocket[], leadId: string) {
-  const lead = rockets.find((rocket) => rocket.id === leadId);
-  return lead
-    ? [lead, ...rockets.filter((rocket) => rocket !== lead)]
-    : [...rockets];
-}
-
 function capitalise(text: string) {
   return text.charAt(0).toLocaleUpperCase("en-US") + text.slice(1);
 }
 
 /**
- * The featured launch vehicle's published figures, each with its
- * conversion and qualifier, and a link to its profile. Thrust is shown in
- * the published unit, as on the cards. The conversion note is given once,
- * in "About these figures".
+ * The pictured launch vehicle, named on the ground under the hero, with
+ * three published figures as an open definition list (the same form as
+ * the aircraft registry) and a link to its profile. Each figure keeps its
+ * conversion and qualifier; thrust is shown in the published unit.
  */
-function FeaturedPanel({ rocket }: { rocket: Rocket }) {
+function PicturedRocket({ rocket }: { rocket: Rocket }) {
   const leo = maxPayloadTo(rocket, "LEO");
   const { height } = rocket.dimensions;
   const thrust = rocket.performance.liftoffThrust;
+  const summary = getRocketVisual(rocket.id)?.cardSummary;
   const items: SpecPanelItem[] = [
     {
       label: "Height",
+      primary: true,
       ...measurementParts(height),
       secondary: panelSecondary(height),
     },
     {
       label: "Liftoff thrust",
+      primary: true,
       ...thrustParts(thrust),
       secondary: panelSecondary(thrust),
     },
@@ -108,46 +90,69 @@ function FeaturedPanel({ rocket }: { rocket: Rocket }) {
   if (leo) {
     items.push({
       label: payloadLabel(leo),
+      primary: true,
       ...measurementParts(leo.mass),
       secondary: panelSecondary(leo.mass, payloadConfiguration(leo)),
     });
   }
-  items.push({ label: "First flight", value: rocket.firstFlight.slice(0, 4) });
 
   return (
-    <SpecPanel
-      // From 64rem one strip of four figures under the text that ends
-      // where the photo plate begins, so Saturn V stands whole beside it.
-      className={`${STOPGAP_HERO_SPEC_PANEL} ${STOPGAP_HERO_SPEC_PANEL_STRIP}`}
-      footnote={
-        <ProfileLink href={`/rockets/${rocket.id}`} name={rocket.name} />
-      }
-      items={items}
-      kicker="Featured launch vehicle"
-      title={rocket.name}
-    />
+    <section
+      aria-labelledby="pictured-rocket-title"
+      className="grid gap-8 pb-16 lg:grid-cols-12 lg:gap-6 lg:pb-20"
+    >
+      <div className="lg:col-span-4">
+        <p className="orbix-kicker">Pictured</p>
+        <h2
+          className="font-display mt-2 text-[2rem] leading-none tracking-[-0.035em] text-foreground"
+          id="pictured-rocket-title"
+        >
+          {rocket.name}
+        </h2>
+        {summary ? <p className="mt-3 text-muted">{summary}</p> : null}
+        <div className="mt-5">
+          <ProfileLink href={`/rockets/${rocket.id}`} name={rocket.name} />
+        </div>
+      </div>
+      <SpecPanel className="lg:col-span-8" columns={3} items={items} />
+    </section>
   );
 }
 
-/** The `/rockets` registry page (spec 9). */
+/**
+ * "Starship stands 54.4 m taller than Falcon 9", worked out from the
+ * recorded heights, or nothing when there are fewer than two.
+ */
+function heightSpread(rockets: readonly Rocket[]) {
+  const byHeight = [...rockets].sort(
+    (a, b) => toMetres(a.dimensions.height) - toMetres(b.dimensions.height),
+  );
+  const shortest = byHeight[0];
+  const tallest = byHeight.at(-1);
+  if (!shortest || !tallest || shortest === tallest) return "";
+  const difference =
+    toMetres(tallest.dimensions.height) - toMetres(shortest.dimensions.height);
+  const text = new Intl.NumberFormat("en-US", {
+    maximumFractionDigits: 1,
+  }).format(difference);
+  return `${tallest.name} stands ${text} m taller than ${shortest.name}. `;
+}
+
+/** The `/rockets` registry page. */
 export function RocketExplorer({ rockets }: RocketExplorerProps) {
   const featured =
     rockets.find((rocket) => rocket.id === FEATURED_ROCKET_ID) ?? rockets[0];
   const heroVisual = featured ? getRocketVisual(featured.id) : undefined;
-  const heroPosition = heroVisual
-    ? responsiveHeroPosition({
+  const crop = heroVisual
+    ? heroCrop({
         base: heroVisual.heroPhoneObjectPosition,
         lg: heroVisual.heroObjectPosition,
-        md: heroVisual.heroObjectPosition,
       })
     : undefined;
 
   const heroText = (
     <>
-      <Eyebrow>Launch vehicle registry</Eyebrow>
-      <h1 className="orbix-display mt-5 text-foreground">
-        Launch Vehicle <span className="orbix-accent-word">Explorer</span>
-      </h1>
+      <h1 className="orbix-h1 text-foreground">Launch vehicle registry</h1>
       <p className="orbix-lead mt-6">
         {capitalise(formatCountWord(rockets.length))} launch vehicles set out
         from their published specifications: stages, engines, liftoff thrust and
@@ -170,19 +175,12 @@ export function RocketExplorer({ rockets }: RocketExplorerProps) {
 
   return (
     <>
-      {heroVisual && heroPosition && featured ? (
+      {heroVisual && crop && featured ? (
         <PhotoHero
-          aside={<FeaturedPanel rocket={featured} />}
-          // Saturn V on the right, as on the launch vehicle profiles, so the
-          // lead never runs into the rocket.
-          className={`${heroPosition.className} ${STOPGAP_PHOTO_HERO_ASIDE_BELOW} ${STOPGAP_PHOTO_HERO_PHONE_TALL}`}
-          placement="right"
+          className={crop.className}
           plate="portrait"
-          style={heroPosition.style}
-          visual={{
-            ...heroVisual,
-            objectPosition: heroPosition.objectPosition,
-          }}
+          style={crop.style}
+          visual={{ ...heroVisual, objectPosition: crop.objectPosition }}
         >
           {heroText}
         </PhotoHero>
@@ -190,7 +188,9 @@ export function RocketExplorer({ rockets }: RocketExplorerProps) {
         <Container className="py-16">{heroText}</Container>
       )}
 
-      <Container className="py-16 lg:py-24">
+      <Container>
+        {featured && heroVisual ? <PicturedRocket rocket={featured} /> : null}
+
         {rockets.length === 0 ? (
           <EmptyState
             description="No launch vehicle records are available right now."
@@ -198,22 +198,14 @@ export function RocketExplorer({ rockets }: RocketExplorerProps) {
           />
         ) : (
           <VehicleRegistry
-            description="Each card opens a full profile. Height is the published figure; liftoff thrust is the published figure converted to meganewtons, for the configuration each record describes."
-            entries={registryOrder(rockets, REGISTRY_LEAD_ID).map(
-              (rocket, index) => ({
-                card: (
-                  <RocketCard
-                    layout={index === 0 ? "feature" : "stacked"}
-                    rocket={rocket}
-                  />
-                ),
-                featured: index === 0,
-                id: rocket.id,
-                keywords: rocketKeywords(rocket),
-              }),
-            )}
-            eyebrow="The registry"
+            description="Each entry opens a full profile. Height is the published figure; liftoff thrust is the published figure converted to meganewtons, for the configuration each record describes."
+            entries={rockets.map((rocket) => ({
+              card: <RocketCard rocket={rocket} />,
+              id: rocket.id,
+              keywords: rocketKeywords(rocket),
+            }))}
             id="launch-vehicle-registry"
+            layout="grid"
             noun={{ plural: "launch vehicles", singular: "launch vehicle" }}
             searchHelp="Matches name, manufacturer, engine, or an orbit such as LEO."
             searchLabel="Search launch vehicles"
@@ -221,23 +213,45 @@ export function RocketExplorer({ rockets }: RocketExplorerProps) {
           />
         )}
 
+        {rockets.length > 0 ? (
+          <section
+            aria-labelledby="rocket-scale-title"
+            className="mt-20 grid gap-10 border-t border-border pt-12 lg:mt-28 lg:grid-cols-12 lg:gap-6"
+          >
+            <div className="lg:col-span-4">
+              <h2 className="orbix-h2 text-foreground" id="rocket-scale-title">
+                Heights to one scale
+              </h2>
+              <p className="mt-5 max-w-[46ch] text-pretty text-muted">
+                {heightSpread(rockets)}Each launch vehicle is drawn from the
+                height in its record, on one ground line at one scale.
+              </p>
+            </div>
+            <RocketHeightLineup
+              className="lg:col-span-8 lg:col-start-5"
+              figureNumber="1"
+              rockets={rockets}
+            />
+          </section>
+        ) : null}
+
         <section
           aria-labelledby="rocket-sources-title"
-          className="mt-16 grid gap-4 border-t border-border pt-8 lg:grid-cols-12 lg:gap-6"
+          className="mt-16 grid gap-3 border-t border-border pt-8 pb-16 lg:grid-cols-12 lg:gap-6 lg:pb-24"
         >
           <h2
-            className="orbix-caps text-muted lg:col-span-4"
+            className="text-base font-semibold text-foreground lg:col-span-4"
             id="rocket-sources-title"
           >
             About these figures
           </h2>
-          <p className="max-w-[68ch] text-sm leading-6 text-text-secondary lg:col-span-8">
+          <p className="max-w-[68ch] text-sm leading-6 text-muted lg:col-span-8">
             Figures are publicly released specifications. Payload figures are
             tied to a destination orbit and to whether boosters are recovered,
             and a qualifier such as approximate or maximum stays beside the
-            number. {MINIMUM_NOTE} {CONVERSION_NOTE} On the cards, liftoff
+            number. {MINIMUM_NOTE} {CONVERSION_NOTE} In the registry, liftoff
             thrust is converted to meganewtons and rounded to one decimal place
-            so the cards read in one unit; each profile gives it as published.
+            so the entries read in one unit; each profile gives it as published.
             Photographs are credited on each profile and on the{" "}
             <Link className="orbix-link" href="/credits">
               image credits page

@@ -1,169 +1,320 @@
+import Image from "next/image";
 import Link from "next/link";
+import type { ReactNode } from "react";
 
 import { Container } from "@/components/layout/container";
-import { Eyebrow } from "@/components/ui";
-import { AircraftImage } from "@/features/aircraft/components/aircraft-image";
-import { getAircraftById } from "@/features/aircraft/data";
 import {
-  getAircraftVisual,
-  type AircraftVisual,
-} from "@/features/aircraft/data/aircraft-visuals";
-import { formatAircraftMeasurement } from "@/features/aircraft/utils";
-import { RocketImage } from "@/features/rockets/components/rocket-image";
-import { getRocketById } from "@/features/rockets/data";
-import { getRocketVisual } from "@/features/rockets/data/rocket-visuals";
-import { formatRocketMeasurement } from "@/features/rockets/utils";
-import { VehicleMediaFrame } from "@/features/vehicles/components/vehicle-media-frame";
-import { VehicleRecordCard } from "@/features/vehicles/components/vehicle-record-card";
+  ButtonLink,
+  DataTable,
+  type DataTableColumn,
+  type VisualRecord,
+} from "@/components/ui";
+import { creditLine, licenceLabel } from "@/components/ui/photo-hero";
+import type { AccentDivision } from "@/config/divisions";
+import { getAircraftVisual, listAircraft } from "@/features/aircraft/data";
+import { getRocketVisual, listRockets } from "@/features/rockets/data";
 
 /**
- * The two registries as an asymmetric split (design v2, spec 9, Home).
+ * The two registries as two open catalogue columns (design v3, spec 6 and
+ * 11, Home): aircraft on the left, launch vehicles on the right, the same
+ * shape on both sides. Each column is a heading under a 2px rule in its
+ * division colour, one sentence, a hard-edged square photo plate with a
+ * catalogue caption on the ground, an open table of the registry's
+ * vehicles in order of first flight (name, first flight, one size figure
+ * with its unit in the header), and a text link to the registry. No card,
+ * no panel, no fill.
  *
- * From 64rem the heading block and the large aircraft card (F-22, 16:10)
- * share the left seven columns, and the launch vehicle card (Saturn V, 3:4)
- * runs the full height of the section in the right five, so the rocket is
- * clearly the tall column. Both cards end on the same line, which puts their
- * spec rows side by side. From 48rem the cards sit 6/6 under the heading (a
- * 5-column rocket card is too narrow for its spec labels to stay on one line)
- * and the photo credit sits under the shorter aircraft card, beside the tall
- * rocket card, like an editorial caption. The caption row is 1fr so the
- * tall card's extra height lands there and the caption stays 24px under the
- * aircraft card. Below 48rem everything stacks.
+ * From 48rem the two columns share subgrid rows, so the headings, plates,
+ * table rules and links sit on the same lines across the pair even when
+ * one caption wraps further than the other.
  *
- * Each card is the shared `VehicleRecordCard` and opens its registry. The
- * spec row names the pictured vehicle and gives one figure for it from the
- * repository, through the same formatters the registries use. The credit
- * line names both photographs and points to /credits.
+ * The plates are square: the Saturn V source is portrait and a square
+ * shows the whole vehicle, escape tower to first stage, and the F-22
+ * source is landscape and a square keeps both wingtips.
+ *
+ * Every figure and unit comes from the vehicle records. The table note
+ * names the basis of the size figures from their qualifiers, so an
+ * approximate value is never shown as if it were exact.
  */
 const PICTURED_AIRCRAFT_ID = "f-22-raptor";
 const PICTURED_ROCKET_ID = "saturn-v";
 
-/** "Public domain (U.S. government work)" reads as "public domain". */
-function shortLicense(license: AircraftVisual["license"]) {
-  return license.startsWith("Public domain") ? "public domain" : license;
+interface CatalogueRow {
+  /** ISO date, for ordering; the table shows the year. */
+  readonly firstFlightDate: string;
+  readonly href: string;
+  readonly id: string;
+  readonly name: string;
+  readonly qualifier?: string;
+  readonly size: number;
+  readonly sizeUnit: string;
+}
+
+interface CatalogueColumnProps {
+  readonly caption: string;
+  readonly division: AccentDivision;
+  readonly linkHref: string;
+  readonly linkLabel: string;
+  /** `object-position` for the square plate. */
+  readonly objectPosition: string;
+  readonly rows: readonly CatalogueRow[];
+  readonly sizeLabel: string;
+  /** Plural of `sizeLabel` for the table note, for example "Heights". */
+  readonly sizePlural: string;
+  readonly summary: string;
+  /** Accessible name of the table, visually hidden: the heading says it. */
+  readonly tableCaption: string;
+  readonly title: string;
+  readonly visual?: VisualRecord;
+}
+
+function byFirstFlight(a: CatalogueRow, b: CatalogueRow) {
+  return a.firstFlightDate.localeCompare(b.firstFlightDate);
+}
+
+function decimalPlaces(value: number) {
+  const [, fraction = ""] = String(value).split(".");
+  return fraction.length;
 }
 
 /**
- * "34.5 MN" as value and unit, so the card sets the unit muted at 0.7em
- * like every other figure. Mach is written before the number and stays
- * whole.
+ * A size figure padded so decimal points line up down a right-aligned
+ * column: "51" gets an invisible ".0" after it when the column also holds
+ * "62.1". The padding is hidden from assistive technology and from
+ * selection, so no precision is claimed: the visible figure is the
+ * recorded one.
  */
-function splitUnit(text: string) {
-  if (text.startsWith("Mach")) return { value: text };
-  const space = text.lastIndexOf(" ");
-  return space === -1
-    ? { value: text }
-    : { unit: text.slice(space + 1), value: text.slice(0, space) };
+function alignedFigure(value: number, places: number): ReactNode {
+  const own = decimalPlaces(value);
+  const text = value.toLocaleString("en-US", {
+    maximumFractionDigits: places,
+  });
+  if (own >= places) return text;
+  const pad = `${own === 0 ? "." : ""}${"0".repeat(places - own)}`;
+  return (
+    <>
+      {text}
+      <span aria-hidden="true" className="invisible select-none">
+        {pad}
+      </span>
+    </>
+  );
+}
+
+/**
+ * The unit for the size column header when every row shares one, as the
+ * records do today. Mixed units are printed in each cell instead.
+ */
+function sharedUnit(rows: readonly CatalogueRow[]) {
+  const units = new Set(rows.map((row) => row.sizeUnit));
+  return units.size === 1 ? [...units][0] : undefined;
+}
+
+/**
+ * "Heights are nominal values from each record, except Saturn V
+ * (approximate)." Built from the qualifiers in the records. A value with
+ * no qualifier is listed as an exception ("as recorded") rather than
+ * counted as nominal.
+ */
+function basisNote(plural: string, rows: readonly CatalogueRow[]): ReactNode {
+  const exceptions = rows.filter((row) => row.qualifier !== "nominal");
+  const lead = `${plural} are nominal values from each record`;
+  if (exceptions.length === 0) return `${lead}.`;
+  const list = exceptions
+    .map((row) => `${row.name} (${row.qualifier ?? "as recorded"})`)
+    .join(", ");
+  return `${lead}, except ${list}.`;
+}
+
+function CatalogueColumn({
+  caption,
+  division,
+  linkHref,
+  linkLabel,
+  objectPosition,
+  rows,
+  sizeLabel,
+  sizePlural,
+  summary,
+  tableCaption,
+  title,
+  visual,
+}: CatalogueColumnProps) {
+  const unit = sharedUnit(rows);
+  const places = Math.max(0, ...rows.map((row) => decimalPlaces(row.size)));
+  const columns: readonly DataTableColumn<CatalogueRow>[] = [
+    {
+      // Ink with a division-colour underline, the same treatment as the
+      // registry link under the table, so a column has one link colour.
+      cell: (row) => (
+        <Link
+          className="text-text-primary underline decoration-(--orbix-accent) decoration-1 underline-offset-3 transition-colors hover:text-(--orbix-accent)"
+          href={row.href}
+        >
+          {row.name}
+        </Link>
+      ),
+      header: "Vehicle",
+      key: "name",
+    },
+    {
+      cell: (row) => row.firstFlightDate.slice(0, 4),
+      header: "First flight",
+      key: "first-flight",
+      numeric: true,
+    },
+    {
+      cell: (row) =>
+        unit ? (
+          alignedFigure(row.size, places)
+        ) : (
+          <>
+            {alignedFigure(row.size, places)} {row.sizeUnit}
+          </>
+        ),
+      header: sizeLabel,
+      key: "size",
+      numeric: true,
+      unit,
+    },
+  ];
+  const licence = visual ? licenceLabel(visual.license) : null;
+
+  return (
+    <div
+      className="min-w-0 md:row-span-5 md:grid md:grid-rows-subgrid md:gap-y-0"
+      data-division={division}
+    >
+      <h3 className="orbix-h2 orbix-heading-rule text-[clamp(1.75rem,2.2vw,2.25rem)]!">
+        {title}
+      </h3>
+      <p className="mt-4 max-w-[48ch] text-pretty text-text-secondary">
+        {summary}
+      </p>
+
+      {visual && licence ? (
+        <figure className="orbix-figure mt-8">
+          <div className="relative aspect-square overflow-hidden">
+            <Image
+              alt={visual.alt}
+              className="object-cover saturate-[0.9]"
+              fill
+              sizes="(min-width: 72rem) 536px, (min-width: 48rem) 45vw, 100vw"
+              src={visual.src}
+              style={{ objectPosition }}
+            />
+          </div>
+          <figcaption className="orbix-caption">
+            {caption}. {creditLine(visual.credit)}.{" "}
+            {visual.licenseUrl ? (
+              <a
+                aria-label={licence.isShortened ? licence.full : undefined}
+                href={visual.licenseUrl}
+                rel="noopener noreferrer license"
+                title={licence.isShortened ? licence.full : undefined}
+              >
+                {licence.short}
+              </a>
+            ) : (
+              <span>{licence.full}</span>
+            )}
+            .{" "}
+            <a href={visual.sourceUrl} rel="noopener noreferrer">
+              Source file
+            </a>
+            .
+          </figcaption>
+        </figure>
+      ) : (
+        // Keeps the five subgrid rows when a record has no photograph.
+        <div aria-hidden="true" />
+      )}
+
+      <DataTable
+        caption={tableCaption}
+        className="mt-10 [&>p:first-child]:sr-only"
+        columns={columns}
+        getRowKey={(row) => row.id}
+        note={basisNote(sizePlural, rows)}
+        rows={rows}
+      />
+
+      <div className="mt-6">
+        <ButtonLink arrow="right" href={linkHref} variant="tertiary">
+          {linkLabel}
+        </ButtonLink>
+      </div>
+    </div>
+  );
 }
 
 export function RegistrySplit() {
-  const aircraft = getAircraftById(PICTURED_AIRCRAFT_ID);
-  const rocket = getRocketById(PICTURED_ROCKET_ID);
-  const aircraftVisual = getAircraftVisual(PICTURED_AIRCRAFT_ID);
-  const rocketVisual = getRocketVisual(PICTURED_ROCKET_ID);
+  const aircraft = listAircraft();
+  const rockets = listRockets();
 
-  const credits = [
-    aircraft && aircraftVisual
-      ? `${aircraft.name}, ${aircraftVisual.credit}, ${shortLicense(aircraftVisual.license)}`
-      : null,
-    rocket && rocketVisual
-      ? `${rocket.name}, ${rocketVisual.credit}, ${shortLicense(rocketVisual.license)}`
-      : null,
-  ].filter((credit): credit is string => credit !== null);
+  const aircraftRows: CatalogueRow[] = aircraft
+    .map((record) => ({
+      firstFlightDate: record.firstFlight,
+      href: `/aircraft/${record.id}`,
+      id: record.id,
+      name: record.name,
+      qualifier: record.dimensions.length.qualifier,
+      size: record.dimensions.length.value,
+      sizeUnit: record.dimensions.length.unit,
+    }))
+    .sort(byFirstFlight);
+  const rocketRows: CatalogueRow[] = rockets
+    .map((record) => ({
+      firstFlightDate: record.firstFlight,
+      href: `/rockets/${record.id}`,
+      id: record.id,
+      name: record.name,
+      qualifier: record.dimensions.height.qualifier,
+      size: record.dimensions.height.value,
+      sizeUnit: record.dimensions.height.unit,
+    }))
+    .sort(byFirstFlight);
 
   return (
     <section aria-labelledby="home-registries-title" className="orbix-section">
       <Container>
-        <div className="grid gap-6 md:grid-cols-12 md:grid-rows-[auto_auto_1fr] lg:grid-rows-none">
-          <div className="md:col-span-12 lg:col-span-7">
-            <Eyebrow>The registries</Eyebrow>
-            <h2 className="orbix-h2 mt-4" id="home-registries-title">
-              Aircraft and launch vehicles, on the record.
-            </h2>
-            <p className="mt-5 max-w-[52ch] text-pretty text-text-secondary">
-              Each record keeps its published figures with their units and
-              qualifiers, alongside propulsion, dimensions and engineering
-              notes.
-            </p>
-          </div>
+        <h2 className="orbix-h2 max-w-[18ch]" id="home-registries-title">
+          Aircraft and launch vehicles, on the record.
+        </h2>
+        <p className="mt-6 max-w-[60ch] text-pretty text-text-secondary">
+          Each record keeps its published figures with their units and
+          qualifiers, alongside propulsion, dimensions and engineering notes.
+        </p>
 
-          {aircraft ? (
-            <div
-              className="md:col-span-6 md:row-start-2 md:self-start lg:col-span-7 lg:col-start-1 lg:row-start-2"
-              data-division="aircraft"
-            >
-              <VehicleRecordCard
-                classification="Aircraft registry"
-                href="/aircraft"
-                media={
-                  <VehicleMediaFrame aspect="wide">
-                    <AircraftImage
-                      aircraft={aircraft}
-                      decorative
-                      fillContainer
-                      sizes="(min-width: 1152px) 660px, (min-width: 1024px) 58vw, (min-width: 768px) 50vw, 100vw"
-                    />
-                  </VehicleMediaFrame>
-                }
-                name="Aircraft"
-                specs={[
-                  { label: "Pictured", value: aircraft.name },
-                  {
-                    label: "Maximum speed",
-                    ...splitUnit(
-                      formatAircraftMeasurement(aircraft.performance.maxSpeed)
-                        .value,
-                    ),
-                  },
-                ]}
-                summary="SR-71 to F-35: dimensions, engines, performance."
-              />
-            </div>
-          ) : null}
-
-          {rocket ? (
-            <div
-              className="md:col-span-6 md:row-span-2 md:row-start-2 md:self-start lg:col-span-5 lg:col-start-8 lg:row-span-2 lg:row-start-1 lg:self-stretch"
-              data-division="space"
-            >
-              <VehicleRecordCard
-                classification="Launch vehicle registry"
-                href="/rockets"
-                media={
-                  <VehicleMediaFrame aspect="tall">
-                    <RocketImage
-                      decorative
-                      fillContainer
-                      rocket={rocket}
-                      sizes="(min-width: 1152px) 470px, (min-width: 1024px) 42vw, (min-width: 768px) 50vw, 100vw"
-                    />
-                  </VehicleMediaFrame>
-                }
-                name="Launch vehicles"
-                specs={[
-                  { label: "Pictured", value: rocket.name },
-                  {
-                    label: "Liftoff thrust",
-                    ...splitUnit(
-                      formatRocketMeasurement(rocket.performance.liftoffThrust)
-                        .value,
-                    ),
-                  },
-                ]}
-                summary="Saturn V to Starship: stages, thrust, payload."
-              />
-            </div>
-          ) : null}
-
-          {credits.length > 0 ? (
-            <p className="max-w-[80ch] text-sm text-pretty text-text-muted md:col-span-6 md:col-start-1 md:row-start-3 md:self-start lg:col-span-7 lg:row-start-3">
-              Photos: {credits.join("; ")}. All sources on the{" "}
-              <Link className="orbix-link" href="/credits">
-                image credits page
-              </Link>
-              .
-            </p>
-          ) : null}
+        <div className="mt-14 grid gap-20 md:grid-cols-2 md:gap-x-10 md:gap-y-0 lg:gap-x-16">
+          <CatalogueColumn
+            caption="F-22 Raptor over open water"
+            division="aircraft"
+            linkHref="/aircraft"
+            linkLabel="Open the aircraft registry"
+            objectPosition="69% 50%"
+            rows={aircraftRows}
+            sizeLabel="Length"
+            sizePlural="Lengths"
+            summary={`${aircraft.length} aircraft, with their dimensions, engines, performance and variants.`}
+            tableCaption="Aircraft in the registry"
+            title="Aircraft"
+            visual={getAircraftVisual(PICTURED_AIRCRAFT_ID)}
+          />
+          <CatalogueColumn
+            caption="Saturn V lifting off for Apollo 11"
+            division="space"
+            linkHref="/rockets"
+            linkLabel="Open the launch vehicle registry"
+            objectPosition="50% 45%"
+            rows={rocketRows}
+            sizeLabel="Height"
+            sizePlural="Heights"
+            summary={`${rockets.length} launch vehicles, with their stages, engines, thrust and payload.`}
+            tableCaption="Launch vehicles in the registry"
+            title="Launch vehicles"
+            visual={getRocketVisual(PICTURED_ROCKET_ID)}
+          />
         </div>
       </Container>
     </section>

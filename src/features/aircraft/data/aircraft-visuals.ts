@@ -40,9 +40,15 @@ export interface AircraftVisual {
   readonly modifications: string;
   readonly objectPosition: string;
   /**
-   * `object-position` for the full-bleed profile hero photograph from
-   * 80rem, which is cropped only where the hero text is taller than the
-   * photograph at that width: the y value keeps the airframe in frame.
+   * The profile hero from 64rem (spec 7). `band` (default): the photograph
+   * full width under the text, for an airframe that spans the frame.
+   * `split`: a plate beside the text, cropped to about square, for a
+   * photograph close to 5:4 whose subject a wide band would cut through.
+   */
+  readonly profileHeroLayout?: "band" | "split";
+  /**
+   * `object-position` for the profile hero from 64rem: the band's crop,
+   * or the split plate's when `profileHeroLayout` is `split`.
    */
   readonly profileHeroObjectPosition?: string;
   /**
@@ -156,7 +162,8 @@ const aircraftVisuals = {
     modifications:
       "Converted to WebP from the Wikimedia Commons crop of the original",
     objectPosition: "50% 50%",
-    profileHeroObjectPosition: "70% 50%",
+    profileHeroLayout: "split",
+    profileHeroObjectPosition: "55% 50%",
     sourceUrl:
       "https://commons.wikimedia.org/wiki/File:F-35A_flight_(cropped).jpg",
     src: "/images/aircraft/f-35-lightning-ii.webp",
@@ -174,7 +181,8 @@ const aircraftVisuals = {
     ...PUBLIC_DOMAIN_NASA,
     modifications: RESIZED,
     objectPosition: "50% 55%",
-    profileHeroObjectPosition: "70% 50%",
+    profileHeroLayout: "split",
+    profileHeroObjectPosition: "60% 50%",
     sourceUrl:
       "https://commons.wikimedia.org/wiki/File:SR-71_Over_Snow_Capped_Mountains_-_GPN-2000-000162.jpg",
     src: "/images/aircraft/sr-71-blackbird.webp",

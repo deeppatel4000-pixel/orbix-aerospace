@@ -2,9 +2,9 @@ import { Container } from "@/components/layout/container";
 import { SectionIndex, type SectionIndexItem } from "@/components/ui";
 
 /**
- * The rest of the site as a numbered section index (design v2, spec 9,
- * Home): a condensed H2 on the left and the 01 to 06 rows on the right from
- * 1024px. One sentence each, describing what the route contains today and
+ * The rest of the site as a plain ruled list (design v3, spec 11, Home): a
+ * condensed H2 on the left and the rows on the right from 1024px, with no
+ * numbers. One sentence each, describing what the route contains today and
  * nothing it might contain later.
  */
 const SECTIONS: readonly SectionIndexItem[] = [
@@ -50,11 +50,11 @@ export function SiteSections() {
   return (
     <section
       aria-labelledby="home-sections-title"
-      className="orbix-section pt-0!"
+      className="orbix-section pt-0! pb-12! sm:pb-14!"
     >
       <Container className="grid gap-8 lg:grid-cols-12 lg:gap-6">
         <div className="lg:col-span-4">
-          <h2 className="orbix-h2 lg:sticky lg:top-24" id="home-sections-title">
+          <h2 className="orbix-h2" id="home-sections-title">
             Beyond the registries.
           </h2>
         </div>

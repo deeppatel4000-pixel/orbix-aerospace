@@ -8,7 +8,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { Check, CircleCheck } from "lucide-react";
+import { CircleCheck } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { ButtonArrowIcon } from "@/components/ui/button-arrow";
@@ -141,11 +141,11 @@ export function MissionPresetLauncher() {
     <div className="space-y-6">
       <fieldset className="orbix-fieldset">
         <legend className="text-foreground">Choose a mission preset</legend>
-        {/* One treatment at every width: each tile sits on a 1px top rule
-         * across its full width, with 12px of inner padding so the text
-         * never touches a fill. The chosen tile's rule becomes a 2px accent
-         * rule, it takes the raised fill and a check, and it never reaches
-         * past the column edge the rules above and below stop at. */}
+        {/* One treatment at every width: each option is an open row on a
+         * 1px top rule across its full width, with no box and no fill
+         * (spec 3.2). The chosen option's rule becomes a 2px accent rule
+         * and it shows a check; the rule never reaches past the column
+         * edge the rules above and below stop at. */}
         <div className="grid gap-y-3 lg:grid-cols-2 lg:gap-x-6">
           {presets.map((preset, presetIndex) => {
             const selected = preset.id === selectedPresetId;
@@ -157,26 +157,23 @@ export function MissionPresetLauncher() {
                 className={cn(
                   // Padding is equal in both states, so choosing a preset
                   // changes only colour and the weight of the top rule.
-                  "relative flex cursor-pointer gap-3 px-3 py-4 transition-colors before:pointer-events-none before:absolute before:inset-x-0 before:top-0",
+                  "group relative flex cursor-pointer gap-3 py-4 transition-colors before:pointer-events-none before:absolute before:inset-x-0 before:top-0",
                   // An odd last tile spans both columns, so no blank cell.
                   presets.length % 2 === 1 &&
                     presetIndex === presets.length - 1 &&
                     "lg:col-span-2",
                   "has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-[var(--orbix-focus)]",
                   selected
-                    ? "bg-surface-raised before:h-0.5 before:bg-accent"
-                    : "before:h-px before:bg-border-subtle hover:bg-surface-raised",
+                    ? "before:h-0.5 before:bg-accent"
+                    : "before:h-px before:bg-border-subtle hover:before:bg-rule-strong",
                 )}
                 htmlFor={inputId}
                 key={preset.id}
               >
-                {/* Native radio for the group semantics and arrow keys.
-                    Single choice, so no empty box at rest (that reads as
-                    multi-select, like the Compare tiles) and no empty slot
-                    indenting the text: the chosen tile shows the accent
-                    rule and a check pinned to its top-right corner, and
-                    the text always keeps clear of that corner, so choosing a
-                    preset moves nothing. */}
+                {/* Native radio for the group semantics and arrow keys,
+                    visually hidden under a drawn radio pinned to the row's
+                    top-right corner. The text always keeps clear of that
+                    corner, so choosing a preset moves nothing. */}
                 <input
                   aria-describedby={`${inputId}-description`}
                   checked={selected}
@@ -190,14 +187,32 @@ export function MissionPresetLauncher() {
                   type="radio"
                   value={preset.id}
                 />
-                {selected ? (
-                  <span
-                    aria-hidden="true"
-                    className="pointer-events-none absolute top-4 right-3 flex h-4 w-4 items-center justify-center rounded-[2px] bg-accent text-on-accent"
-                  >
-                    <Check size={12} strokeWidth={3} />
-                  </span>
-                ) : null}
+                {/* A drawn radio (1px outline at rest, accent ring and dot
+                    when chosen), so an unselected row still reads as a
+                    choice. Drawn in SVG: the ring is the control's own
+                    shape, not a rounded box. */}
+                <svg
+                  aria-hidden="true"
+                  className={cn(
+                    "pointer-events-none absolute top-4 right-0 h-4 w-4 transition-colors",
+                    selected
+                      ? "text-accent"
+                      : "text-rule-strong group-hover:text-foreground",
+                  )}
+                  viewBox="0 0 16 16"
+                >
+                  <circle
+                    cx="8"
+                    cy="8"
+                    fill="none"
+                    r="7.5"
+                    stroke="currentColor"
+                    strokeWidth="1"
+                  />
+                  {selected ? (
+                    <circle cx="8" cy="8" fill="currentColor" r="4" />
+                  ) : null}
+                </svg>
                 <span className="min-w-0 pr-6">
                   <span className="orbix-label block">
                     {formatCategory(preset.category)}
@@ -262,7 +277,7 @@ export function MissionPresetLauncher() {
 
         <div className="mt-6 flex flex-wrap items-center gap-3 border-t border-border-subtle pt-4">
           <Button disabled={!selectedPreset} onClick={loadSelectedPreset}>
-            Load into Mission Profile Analyzer
+            Load into the mission profile analyzer
           </Button>
           {loadedPreset ? (
             <a

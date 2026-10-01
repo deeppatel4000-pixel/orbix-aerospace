@@ -2,11 +2,11 @@ import { Container } from "@/components/layout/container";
 import { ButtonLink } from "@/components/ui";
 
 /**
- * "How values are sourced" (design v2, spec 9, Home): a short note, set as a
- * small mono label column (the same treatment as "About these figures" on
- * the registries) beside the text under a hairline from 1024px. Below that
- * the section index's closing rule above is the only separator, so the two
- * rules do not read as a doubled line.
+ * How values are sourced (design v3, spec 11, Home): a sentence-case
+ * heading and a short paragraph on the ground, in the same right-hand
+ * column as the list above it from 1024px, about 56px under the last rule,
+ * so it reads as the list's footnote.
+ * The last row rule of the list above is the only separator.
  *
  * Written to match the data as it is today: vehicle records store each value
  * with its unit and, where one applies, a qualifier, but they do not yet carry
@@ -15,31 +15,26 @@ import { ButtonLink } from "@/components/ui";
 export function SourcingNote() {
   return (
     <section aria-labelledby="home-sourcing-title" className="pb-16 sm:pb-24">
-      <Container>
-        <div className="grid gap-4 lg:grid-cols-12 lg:gap-6 lg:border-t lg:border-border lg:pt-8">
-          <h2
-            className="orbix-caps text-muted lg:col-span-4"
-            id="home-sourcing-title"
-          >
+      <Container className="grid lg:grid-cols-12 lg:gap-6">
+        <div className="lg:col-span-8 lg:col-start-5">
+          <h2 className="orbix-h4" id="home-sourcing-title">
             How values are sourced
           </h2>
-          <div className="lg:col-span-8">
-            <p className="max-w-[68ch] text-sm leading-6 text-pretty text-text-secondary">
-              Vehicle figures are taken from publicly available specifications
-              and stored with their units and, where it applies, a qualifier
-              such as nominal, approximate or minimum. Records do not yet cite a
-              source for every individual value, so treat them as reference
-              figures for study, not for operational use.
-            </p>
-            <ButtonLink
-              arrow="right"
-              className="mt-5"
-              href="/about#sources"
-              variant="tertiary"
-            >
-              Read how ORBIX sources vehicle values
-            </ButtonLink>
-          </div>
+          <p className="mt-3 max-w-[66ch] text-pretty text-text-secondary">
+            Vehicle figures are taken from publicly available specifications and
+            stored with their units and, where it applies, a qualifier such as
+            nominal, approximate or minimum. Records do not yet cite a source
+            for every individual value, so treat them as reference figures for
+            study, not for operational use.
+          </p>
+          <ButtonLink
+            arrow="right"
+            className="mt-5"
+            href="/about#sources"
+            variant="tertiary"
+          >
+            Read how ORBIX sources vehicle values
+          </ButtonLink>
         </div>
       </Container>
     </section>

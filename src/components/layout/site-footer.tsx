@@ -1,28 +1,26 @@
 import Link from "next/link";
 
 import { Container } from "@/components/layout/container";
-import { SiteLogo } from "@/components/layout/site-logo";
 import { legalNavigationItems, navigationItems } from "@/config/navigation";
 import { siteLegal } from "@/config/site-legal";
 
 /**
- * Site footer (spec 8), lighter than the header and never heavier than a
- * hero. Set in the sans throughout; mono is for figures and labels only.
+ * Site footer (spec 9): the page ground, one rule above, plain text links,
+ * then the operator and contact line. Set in the sans throughout.
  *
- * 1. The logo and a one-line description.
- * 2. A hairline rule, then the site sections at 14px (44px rows) and the
- *    about and legal pages at 13px in the muted colour (36px rows).
- * 3. The operator and contact line, then the copyright with the
- *    educational-use notice.
+ * 1. The operator line: what ORBIX is, who runs it and how to reach
+ *    them. The header already carries the logo, so the footer does not
+ *    repeat it.
+ * 2. The site sections at 14px (44px rows) and the about and legal pages
+ *    at 13px in the muted ink (36px rows), separated from the operator
+ *    line by space, not a second rule.
+ * 3. The copyright with the educational-use notice.
  *
  * The DOM order is the same at every width and no CSS `order` is used, so
  * the keyboard reaches the links in the order they are shown. Below 40rem
  * each nav is a two-column grid, 24px apart. From 40rem the two navs share
  * one wrapping row, site sections at the left and about and legal at the
- * right; when the row is too narrow (below about 70rem) the about and
- * legal links drop to their own line, left-aligned. From 80rem the
- * copyright sits at the right of the operator line when it fits. The
- * contact address comes from `src/config/site-legal.ts`.
+ * right. The contact address comes from `src/config/site-legal.ts`.
  */
 export function SiteFooter() {
   const siteLinks = navigationItems.slice(1);
@@ -30,15 +28,17 @@ export function SiteFooter() {
   return (
     <footer className="orbix-site-footer">
       <Container className="py-10 sm:py-12">
-        <div className="flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:gap-6">
-          <SiteLogo />
-          <p className="text-sm leading-6 text-text-secondary">
-            An educational site about aircraft, launch vehicles and the
-            engineering behind them.
-          </p>
-        </div>
+        <p className="orbix-footer-lead">
+          <span className="orbix-footer-lead__name">ORBIX</span> is an
+          educational site about aircraft, launch vehicles and the engineering
+          behind them, operated by {siteLegal.operatorName}, Massachusetts, USA.
+          Contact{" "}
+          <a href={`mailto:${siteLegal.contactEmail}`}>
+            {siteLegal.contactEmail}
+          </a>
+        </p>
 
-        <div className="orbix-footer-navs mt-6 border-t border-border pt-4">
+        <div className="orbix-footer-navs mt-8">
           <nav aria-label="Footer navigation">
             <ul className="orbix-footer-links">
               {siteLinks.map((item) => (
@@ -67,12 +67,6 @@ export function SiteFooter() {
         </div>
 
         <div className="orbix-footer-base">
-          <p>
-            Operated by {siteLegal.operatorName}, Massachusetts, USA. Contact{" "}
-            <a href={`mailto:${siteLegal.contactEmail}`}>
-              {siteLegal.contactEmail}
-            </a>
-          </p>
           <p>
             © {new Date().getFullYear()} {siteLegal.operatorName}. Educational
             use only, not for operational or certification use.

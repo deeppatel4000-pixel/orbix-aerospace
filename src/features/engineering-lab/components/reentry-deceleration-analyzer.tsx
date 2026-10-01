@@ -1,6 +1,6 @@
 "use client";
 
-import { Button, EquationBlock } from "@/components/ui";
+import { Button } from "@/components/ui";
 import { useMemo, useState, type FormEvent } from "react";
 
 import { analyzeReentryDeceleration } from "@/features/engineering-lab/analysis";
@@ -24,6 +24,7 @@ import {
   EQ_SUP,
   EQ_SUB_CLEAR,
   EqFrac,
+  LabEquation,
 } from "@/features/engineering-lab/components/shared";
 import type {
   ReentryDecelerationAnalysis,
@@ -153,7 +154,7 @@ function deriveViewState(
 }
 
 const toolEquation = (
-  <EquationBlock
+  <LabEquation
     equation={
       <>
         <span className={EQ_LINE}>
@@ -491,8 +492,8 @@ export function ReentryDecelerationAnalyzer() {
             >
               What controls drag deceleration?
             </h3>
-            <div className="mt-4 border-t border-border">
-              <article className="border-b border-border py-4">
+            <div className="mt-3 divide-y divide-border">
+              <article className="py-4">
                 <h4 className="text-sm font-semibold text-foreground">
                   Ballistic coefficient
                 </h4>
@@ -502,7 +503,7 @@ export function ReentryDecelerationAnalyzer() {
                   deceleration.
                 </p>
               </article>
-              <article className="border-b border-border py-4">
+              <article className="py-4">
                 <h4 className="text-sm font-semibold text-foreground">
                   Velocity
                 </h4>
@@ -512,7 +513,7 @@ export function ReentryDecelerationAnalyzer() {
                   deceleration.
                 </p>
               </article>
-              <article className="border-b border-border py-4">
+              <article className="py-4">
                 <h4 className="text-sm font-semibold text-foreground">
                   Atmospheric density
                 </h4>

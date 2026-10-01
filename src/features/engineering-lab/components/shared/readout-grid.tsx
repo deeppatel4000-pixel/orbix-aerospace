@@ -4,47 +4,38 @@ import { cn } from "@/lib/cn";
 
 export type ReadoutGridProps = ComponentPropsWithoutRef<"dl"> & {
   /**
-   * Most compartments per row: one below a 20rem container, two from
+   * Most entries per row: one below a 20rem container, two from
    * 20rem, three (when asked for) from 46rem. `1` keeps a single column,
    * for compound values. Default 2.
    */
   columns?: 1 | 2 | 3;
   /**
    * Names a group of figures inside a larger result. Rendered as a plain
-   * head row above the compartments (sans 500, 0.8125rem, sentence case,
-   * over a 1px rule, no fill), and the group becomes a `<section>`
-   * labelled by it.
+   * sentence-case sans head above the list (under a 1px rule, no fill),
+   * and the group becomes a `<section>` labelled by it.
    */
   title?: ReactNode;
 };
 
 /**
- * Calculated figures as a hairline compartment grid (spec 6 and 8), for
- * results inside `CalculatorResultSection`. Each child is a `<div>` holding
- * one `<dt>` label and its `<dd>` value; values use `LabFigure`, so a
- * number never breaks and only its unit may wrap. Put a symbol inside a
- * label in `LabSymbol`: labels are uppercase and would otherwise turn ρ
- * into Ρ.
+ * Calculated figures as an open definition list (design v3, spec 6 and
+ * 11), for results inside `CalculatorResultSection`. Each child is a
+ * `<div>` holding one `<dt>` label and its `<dd>` value: the label above
+ * in sentence-case sans, the value below in B612 Mono. Values use
+ * `LabFigure`, so a number never breaks and only its unit may wrap. Put a
+ * symbol inside a label in `LabSymbol`.
  *
- * Importance is explicit: a value set in `orbix-readout-lg` is a primary
- * figure and its compartment takes a whole row; `orbix-data` values are
- * secondary and share rows. Put primary compartments first. Words rather
- * than numbers (a flow regime, a material name) go in `LabValueText`.
+ * Importance is explicit: a value set in `orbix-readout-lg` is the
+ * headline figure, set large on a row of its own; `orbix-data` values are
+ * secondary and share rows. Put primary entries first. Words rather than
+ * numbers (a flow regime, a material name) go in `LabValueText`.
  *
- * The wrapper is an inline-size container, and the column count and the
- * two fixed figure sizes follow its width, not the viewport or the
- * compartment, so every figure of one kind is the same size across a
- * tool. When the last row of secondary figures is short, its last
- * compartment spans the rest of the row, so no empty cell is left. Grids
- * sit directly in the result panel body, edge to edge, separated by 1px
- * rules; none draws an outline of its own. All rules live in
- * `calculator-card.module.css` (`.lab-readout-grid`), because Vitest
- * cannot load a CSS module from this shared barrel.
- *
- * This is the results counterpart of `SpecPanel`'s grid: `SpecPanel` wraps
- * its grid in a bordered `<section>` with a head, which would put a panel
- * inside the result panel, and it takes plain values rather than the
- * `<output>` elements the calculators announce.
+ * No compartments, fills or outlines: entries are separated by space, and
+ * a titled group opens under one hairline. The wrapper is an inline-size
+ * container, so the column count and the two fixed figure sizes follow its
+ * width, not the viewport. All rules live in `calculator-card.module.css`
+ * (`.lab-readout-grid`), because Vitest cannot load a CSS module from this
+ * shared barrel.
  */
 export function ReadoutGrid({
   className,

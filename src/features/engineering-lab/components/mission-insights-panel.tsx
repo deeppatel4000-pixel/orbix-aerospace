@@ -29,7 +29,7 @@ export function MissionInsightsPanel({ analysis }: MissionInsightsPanelProps) {
       className="min-w-0"
       role="region"
     >
-      <header className="border-b border-border-subtle pb-4">
+      <header className="pb-4">
         <LabHeading id="mission-insights-title">
           Mission engineering insights
         </LabHeading>

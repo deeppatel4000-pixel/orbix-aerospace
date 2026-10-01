@@ -184,7 +184,7 @@ export function MissionTimeline(props: MissionTimelineProps) {
       </div>
 
       {/* The same step row as the guided demo: B612 Mono number, label,
-       * 2px rule under each step, accent under the selected one. A
+       * and a 2px accent rule under the selected step only. A
        * container query, not a viewport breakpoint, sets 2, 3 or 6 across
        * so the row reflows to its column instead of scrolling sideways. */}
       <div className="@container mt-4">
@@ -206,8 +206,8 @@ export function MissionTimeline(props: MissionTimelineProps) {
                   (isActive
                     ? "border-accent font-medium text-foreground"
                     : phase.available
-                      ? "border-border text-text-secondary hover:border-border-control hover:text-foreground"
-                      : "border-border text-muted hover:border-border-control hover:text-foreground")
+                      ? "border-transparent text-text-secondary hover:border-border-control hover:text-foreground"
+                      : "border-transparent text-muted hover:border-border-control hover:text-foreground")
                 }
                 id={buttonId}
                 key={phase.id}
@@ -244,7 +244,7 @@ export function MissionTimeline(props: MissionTimelineProps) {
       {activePhase ? (
         <div
           aria-labelledby={`${timelineId}-${activePhase.id}-tab`}
-          className="mt-3 flex flex-col-reverse gap-2 border-t border-border-subtle pt-3 sm:flex-row sm:items-start sm:justify-between"
+          className="mt-4 flex flex-col-reverse gap-2 sm:flex-row sm:items-start sm:justify-between"
           id={`${timelineId}-phase-detail`}
           role="tabpanel"
           tabIndex={0}

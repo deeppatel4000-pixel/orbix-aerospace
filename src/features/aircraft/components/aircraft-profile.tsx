@@ -12,6 +12,7 @@ import {
 } from "@/features/aircraft/utils";
 import {
   CONVERSION_NOTE,
+  measurementFigure,
   measurementParts,
 } from "@/features/vehicles/components/measurement-display";
 import { MeasurementTable } from "@/features/vehicles/components/measurement-table";
@@ -83,7 +84,7 @@ const navigation = [
   { id: "engineering-notes", label: "Engineering analysis" },
 ] as const;
 
-/** The `/aircraft/[id]` profile (spec 9). */
+/** The `/aircraft/[id]` profile (spec 11). */
 export function AircraftProfile({ aircraft }: AircraftProfileProps) {
   const visual = getAircraftVisual(aircraft.id);
   const related = listAircraft()
@@ -119,7 +120,10 @@ export function AircraftProfile({ aircraft }: AircraftProfileProps) {
           lead={aircraft.description}
           name={aircraft.name}
           record={[
-            { label: "Maximum speed", ...measurementParts(maxSpeed) },
+            {
+              label: "Maximum speed",
+              ...measurementFigure(maxSpeed, "text-[0.8em]"),
+            },
             { label: "Service ceiling", ...measurementParts(serviceCeiling) },
             { label: "Range", ...measurementParts(range) },
             {
@@ -127,18 +131,18 @@ export function AircraftProfile({ aircraft }: AircraftProfileProps) {
               value: aircraft.firstFlight.slice(0, 4),
             },
           ]}
+          photo={visual?.profileHeroLayout === "split" ? "split" : "band"}
           visual={
             visual
               ? {
                   ...visual,
-                  // The phone plate and the banner (48rem to 80rem) use the
-                  // banner crop; from 80rem the full-bleed photograph is
-                  // cropped only when the text is taller than it.
-                  position: {
-                    base: visual.heroObjectPosition,
-                    lg: visual.heroObjectPosition,
-                    md: visual.heroObjectPosition,
-                    xl: visual.profileHeroObjectPosition,
+                  crop: {
+                    base: visual.objectPosition,
+                    lg:
+                      visual.profileHeroLayout === "split"
+                        ? (visual.profileHeroObjectPosition ??
+                          visual.objectPosition)
+                        : visual.heroObjectPosition,
                   },
                 }
               : undefined
@@ -148,13 +152,8 @@ export function AircraftProfile({ aircraft }: AircraftProfileProps) {
       navigation={navigation}
       related={<RelatedAircraft aircraft={related} />}
     >
-      {/*
-       * The hero shows the photograph large, the airframe clear of the
-       * text, so it is not repeated here (as on the launch vehicle
-       * profiles). The Overview is a short spec sheet of the record's
-       * facts, in the same 4/8 split as every section after it.
-       */}
-      <VehicleProfileSection id="overview" index={1} title="Overview">
+      {/* The hero shows the photograph large, so it is not repeated. */}
+      <VehicleProfileSection id="overview" title="Overview">
         <VehicleFactsTable
           caption={`${aircraft.name} record`}
           facts={overviewFacts(aircraft)}
@@ -164,7 +163,6 @@ export function AircraftProfile({ aircraft }: AircraftProfileProps) {
       <VehicleProfileSection
         description="Dimensions and weights as published, with the basis of each figure."
         id="specifications"
-        index={2}
         title="Specifications"
       >
         <MeasurementTable
@@ -182,22 +180,13 @@ export function AircraftProfile({ aircraft }: AircraftProfileProps) {
         />
       </VehicleProfileSection>
 
-      <PropulsionPanel
-        index={3}
-        name={aircraft.name}
-        propulsion={aircraft.propulsion}
-      />
+      <PropulsionPanel name={aircraft.name} propulsion={aircraft.propulsion} />
       <PerformancePanel
-        index={4}
         name={aircraft.name}
         performance={aircraft.performance}
       />
-      <VariantsPanel
-        index={5}
-        name={aircraft.name}
-        variants={aircraft.variants}
-      />
-      <EngineeringNotesPanel index={6} notes={aircraft.engineeringAnalysis} />
+      <VariantsPanel name={aircraft.name} variants={aircraft.variants} />
+      <EngineeringNotesPanel notes={aircraft.engineeringAnalysis} />
     </VehicleProfileLayout>
   );
 }

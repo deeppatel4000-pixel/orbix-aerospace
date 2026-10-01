@@ -3,10 +3,10 @@ import type { ReactNode } from "react";
 import { cn } from "@/lib/cn";
 
 /**
- * Choices inside a lab form (design v2, spec 4 and 8).
+ * Choices inside a lab form (design v3, spec 3, 6 and 9).
  *
  * A list of checkboxes or radios with descriptions is one hairline-ruled
- * list: a 1px `--border-default` rule between rows and none around each
+ * list: a 1px `--rule` between rows and none around each
  * row, so the native control alone shows the state and a block of choices
  * adds no accent outlines. Put `LAB_CHOICE_LIST` on the wrapper,
  * `LAB_CHOICE_ROW` on each `<label>` and `LAB_CHOICE_INPUT` on its input.
@@ -35,7 +35,8 @@ interface LabSegmentedProps<T extends string> {
 
 /**
  * A short either-or choice as a square segmented control, the same control
- * as the vehicle type switch on /compare: one 4px outline, hairline
+ * as the vehicle type switch on /compare: one 1px outline at the 2px
+ * control radius (spec 3.3), hairline
  * dividers, and the chosen segment filled with the accent. Native radios
  * keep the group semantics and arrow-key behaviour.
  *
@@ -56,7 +57,7 @@ export function LabSegmented<T extends string>({
       aria-describedby={describedBy}
       aria-label={label}
       className={cn(
-        "inline-flex max-w-full rounded border border-border-control",
+        "inline-flex max-w-full rounded-[2px] border border-border-control",
         className,
       )}
       role="radiogroup"
@@ -64,9 +65,9 @@ export function LabSegmented<T extends string>({
       {options.map((option, index) => (
         <label
           className={cn(
-            "relative inline-flex min-h-11 cursor-pointer items-center px-4 text-sm font-medium text-text-secondary transition-colors duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] select-none hover:bg-surface-raised hover:text-foreground",
+            "relative inline-flex min-h-11 cursor-pointer items-center px-4 text-sm font-medium text-text-secondary transition-colors duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] select-none hover:text-foreground",
             "has-[:checked]:bg-accent has-[:checked]:text-on-accent",
-            "first:rounded-l-[3px] last:rounded-r-[3px] has-[:focus-visible]:z-10 has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-3 has-[:focus-visible]:outline-[var(--orbix-focus)]",
+            "first:rounded-l-[1px] last:rounded-r-[1px] has-[:focus-visible]:z-10 has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-3 has-[:focus-visible]:outline-[var(--orbix-focus)]",
             index > 0 && "border-l border-border-control",
           )}
           key={option.value}

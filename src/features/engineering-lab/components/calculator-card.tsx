@@ -18,7 +18,7 @@ interface CalculatorCardProps {
 }
 
 /**
- * The frame every Engineering Lab module renders in (spec 14): the module
+ * The open sheet every Engineering Lab module renders in (spec 11): the module
  * name as a heading, one sentence of purpose, then the module itself. The
  * visual treatment lives in `calculator-card.module.css`.
  */

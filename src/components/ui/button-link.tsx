@@ -10,7 +10,7 @@ import {
 
 export type ButtonLinkProps = ComponentProps<typeof Link> & {
   /**
-   * Adds a 16px arrow (spec 8): `right` (another page), `down` (a section
+   * Adds a 16px arrow (spec 9): `right` (another page), `down` (a section
    * on this page) or `external` (leaves the site) after the label, or
    * `back` (return to the previous page) before it. Decorative;
    * hidden from assistive technology.
@@ -23,7 +23,7 @@ export type ButtonLinkProps = ComponentProps<typeof Link> & {
 };
 
 /**
- * A Next.js `<Link>` styled as a button (spec 8), for navigation. Takes
+ * A Next.js `<Link>` styled as a button (spec 9), for navigation. Takes
  * every `Link` prop plus `variant`, `size` and `arrow`; see `buttonClass`
  * for the variants. For an external URL pass `arrow="external"` and name
  * the destination in the text.

@@ -26,13 +26,11 @@ describe("SectionIndex", () => {
     { title: "Sourcing" },
   ] as const;
 
-  it("is an ordered list with decorative, zero-padded numbers", () => {
+  it("is a plain list with no row numbers (spec 3.7)", () => {
     const markup = renderToStaticMarkup(<SectionIndex items={items} />);
-    expect(markup).toMatch(/^<ol class="orbix-section-index">/);
-    expect(markup).toContain(
-      '<span aria-hidden="true" class="orbix-section-index__number">01</span>',
-    );
-    expect(markup).toContain(">03</span>");
+    expect(markup).toMatch(/^<ul class="orbix-section-index">/);
+    expect(markup).not.toContain("orbix-section-index__number");
+    expect(markup).not.toMatch(/>0\d</);
   });
 
   it("links the title when a row has a destination, and only then", () => {
@@ -56,13 +54,12 @@ describe("SectionIndex", () => {
     );
   });
 
-  it("continues numbering from start and uses the requested heading level", () => {
+  it("ignores the retired start prop and uses the requested heading level", () => {
     const markup = renderToStaticMarkup(
       <SectionIndex headingAs="h2" items={items} start={4} />,
     );
-    expect(markup).toContain('<ol class="orbix-section-index" start="4">');
-    expect(markup).toContain(">04</span>");
-    expect(markup).toContain(">06</span>");
+    expect(markup).toMatch(/^<ul class="orbix-section-index">/);
+    expect(markup).not.toContain("start=");
     expect(markup).toContain('<h2 class="orbix-section-index__title">');
   });
 });

@@ -69,6 +69,14 @@ describe("DataTable", () => {
     );
   });
 
+  it("draws no frame and no fade: the scroll box holds the table directly", () => {
+    const markup = render();
+    expect(markup).not.toContain("orbix-data-table__frame");
+    expect(markup).toMatch(
+      /class="orbix-data-table__scroll" role="region" tabindex="0"><table/,
+    );
+  });
+
   it("keeps the first column sticky unless told not to", () => {
     expect(render()).toContain('data-sticky-first="true"');
     expect(render(false)).not.toContain("data-sticky-first");

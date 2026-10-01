@@ -3,16 +3,11 @@ import type { ReactNode } from "react";
 /**
  * The results panel every calculator ends in (spec 14, Engineering Lab).
  *
- * One flat 8px panel of hairline compartments (design v2, spec 6 and 8): a
- * flat head holding only the h3 title over a 1px rule (no raised fill, so
- * it matches the readout grid heads and does not read as a second panel
- * family beside the EquationBlock), then the figures, usually one or
- * more `ReadoutGrid`s. The body has no padding of its own: a `ReadoutGrid`
- * placed directly in it runs edge to edge and is separated from the next
- * one by a 1px rule, and every other direct child gets the panel inset
- * (`.lab-result-body` in `calculator-card.module.css`). Keep grids as
- * direct children, so the result reads as one compartment sheet rather
- * than panels inside a panel.
+ * Open results on the page ground (design v3, spec 6 and 11): no panel,
+ * no fill, no outline. A 2px lab-colour rule, 48px wide, sits above the
+ * h3 title, then the figures follow as definition lists (`ReadoutGrid`),
+ * the headline value set large, groups separated by space and at most a
+ * hairline. See `.lab-result*` in `calculator-card.module.css`.
  *
  * The body keeps `role="status"` with `aria-live="polite"`: results appear
  * on submit (or as valid inputs change) without moving focus, so a screen
@@ -61,19 +56,14 @@ export function CalculatorResultSection({
   const titleId = id + "-title";
 
   return (
-    <section
-      aria-labelledby={titleId}
-      className="min-w-0 overflow-hidden rounded-lg border border-border bg-surface"
-      id={id}
-    >
+    <section aria-labelledby={titleId} className="lab-result min-w-0" id={id}>
       <div
         className={
-          "border-b border-border px-4 py-3 sm:px-5" +
-          (stale === undefined ? "" : " lab-result-head")
+          "lab-result-title" + (stale === undefined ? "" : " lab-result-head")
         }
       >
         <h3
-          className="text-base leading-6 font-semibold text-foreground"
+          className="text-lg leading-7 font-semibold text-foreground"
           id={titleId}
         >
           {title}

@@ -1,14 +1,13 @@
 import type { ComponentPropsWithoutRef } from "react";
 
-import { RegistrationMarks } from "@/components/ui/registration-marks";
 import { cn } from "@/lib/cn";
 
 /**
- * A technical drawing plate for diagrams on editorial pages (spec 6 and 9):
- * the drawing sits on the surface colour inside a hairline frame with an
- * 8px radius, and the shared registration marks sit just outside its
- * corners like crop marks. Renders a `<figure>`; pass the caption as a
- * child `<figcaption>` and name the figure with `aria-labelledby`.
+ * A technical drawing on the page ground (spec 6, 8): a plain `<figure>`
+ * with no frame, fill, radius or corner marks, so the linework sits on the
+ * sheet like a drawing in a manual. Pass the caption as a child
+ * `<figcaption className="orbix-caption">` below the drawing, and name the
+ * figure with `aria-labelledby`.
  */
 export function DiagramPlate({
   children,
@@ -16,14 +15,7 @@ export function DiagramPlate({
   ...props
 }: ComponentPropsWithoutRef<"figure">) {
   return (
-    <figure
-      className={cn(
-        "relative m-0 rounded-lg border border-border-subtle bg-surface p-5 sm:p-8",
-        className,
-      )}
-      {...props}
-    >
-      <RegistrationMarks inset="-7px" />
+    <figure className={cn("orbix-figure m-0", className)} {...props}>
       {children}
     </figure>
   );

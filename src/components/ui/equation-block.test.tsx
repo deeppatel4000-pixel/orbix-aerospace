@@ -6,13 +6,26 @@ import { EquationBlock } from "@/components/ui/equation-block";
 const rocketEquation = "Δv = Isp g0 ln(m0 / mf)";
 
 describe("EquationBlock", () => {
-  it("sets the equation in a figure named by its label", () => {
+  it("names the relation under the equation, not above it", () => {
     const markup = renderToStaticMarkup(
       <EquationBlock equation={rocketEquation} label="Rocket equation" />,
     );
-    expect(markup).toMatch(/^<figure class="orbix-equation">/);
+    expect(markup).toMatch(
+      /^<figure class="orbix-equation"><div class="orbix-equation__line">/,
+    );
     expect(markup).toContain(
-      '<figcaption class="orbix-equation__label">Rocket equation</figcaption>',
+      '<figcaption class="orbix-equation__where">Rocket equation.</figcaption>',
+    );
+    expect(
+      renderToStaticMarkup(
+        <EquationBlock
+          equation="F = m a"
+          label="Newton's second law"
+          variables={[{ meaning: "Force", symbol: "F" }]}
+        />,
+      ),
+    ).toContain(
+      '<figcaption class="orbix-equation__where">Newton&#x27;s second law, where</figcaption><dl',
     );
     expect(markup).toContain(
       `<p class="orbix-equation__expr">${rocketEquation}</p>`,
@@ -40,11 +53,28 @@ describe("EquationBlock", () => {
         ]}
       />,
     );
-    expect(markup).toContain('<dl class="orbix-equation__vars">');
     expect(markup).toContain(
-      '<dt>F</dt><dd>Force<span class="orbix-equation__unit">N</span></dd>',
+      '<p class="orbix-equation__where">where</p><dl class="orbix-equation__vars">',
+    );
+    expect(markup).toContain(
+      '<dt>F</dt><dd>Force, <span class="orbix-equation__unit">N</span></dd>',
     );
     expect(markup).toContain("<dt>r</dt><dd>Ratio</dd>");
+  });
+
+  it("prints the equation number at the right margin only when given", () => {
+    expect(
+      renderToStaticMarkup(<EquationBlock equation="F = m a" />),
+    ).not.toContain("orbix-equation__number");
+    const markup = renderToStaticMarkup(
+      <EquationBlock equation="F = m a" number="2.1" />,
+    );
+    expect(markup).toContain(
+      '<span class="orbix-equation__number">(2<span class="orbix-num-sep">.</span>1)</span>',
+    );
+    expect(markup).toMatch(
+      /<div class="orbix-equation__line"><p class="orbix-equation__expr">F = m a<\/p><span/,
+    );
   });
 
   it("centres decimal separators in the equation, symbols and units", () => {

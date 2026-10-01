@@ -9,7 +9,10 @@ interface EmptyStateProps extends ComponentPropsWithoutRef<"div"> {
   title: string;
 }
 
-/** Dashed outline, a heading, one sentence, optional action (spec 10). */
+/**
+ * Empty state as plain text on the ground (spec 11): a heading, one
+ * sentence, an optional action. No box.
+ */
 export function EmptyState({
   action,
   className,
@@ -20,7 +23,7 @@ export function EmptyState({
   return (
     <div className={cn("orbix-empty-state", className)} {...props}>
       <h3 className="orbix-h3 text-foreground">{title}</h3>
-      <p className="mt-2 max-w-prose text-sm leading-6 text-muted">
+      <p className="mt-2 max-w-prose text-[length:var(--text-body-sm)] leading-6 text-muted">
         {description}
       </p>
       {action ? <div className="mt-4">{action}</div> : null}

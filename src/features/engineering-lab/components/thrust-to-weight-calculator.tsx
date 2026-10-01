@@ -1,6 +1,6 @@
 "use client";
 
-import { Button, EquationBlock, formatFigure, Tag } from "@/components/ui";
+import { Button, formatFigure, Tag } from "@/components/ui";
 import { useState, type FormEvent } from "react";
 import { ArrowDown, ArrowUp, Equal } from "lucide-react";
 
@@ -26,6 +26,7 @@ import {
   EqDot,
   EQ_SUB_CLEAR,
   EqFrac,
+  LabEquation,
 } from "@/features/engineering-lab/components/shared";
 import type {
   ThrustToWeightField,
@@ -107,7 +108,7 @@ function parseFormValues(
 }
 
 const toolEquation = (
-  <EquationBlock
+  <LabEquation
     equation={
       <>
         <span className={EQ_LINE}>
@@ -308,19 +309,13 @@ export function ThrustToWeightCalculator() {
             >
               Result interpretation
             </h3>
-            <ul className="mt-4 border-t border-border">
+            <ul className="mt-3 divide-y divide-border">
               {interpretations.map((interpretation) => {
                 const Icon = interpretation.icon;
                 const isActive = result?.regime === interpretation.regime;
 
                 return (
-                  <li
-                    className={
-                      "border-b border-border px-3 py-4 transition-colors " +
-                      (isActive ? "bg-surface-raised" : "")
-                    }
-                    key={interpretation.regime}
-                  >
+                  <li className="py-4" key={interpretation.regime}>
                     <div className="flex items-start gap-3">
                       <Icon
                         aria-hidden="true"
@@ -332,7 +327,12 @@ export function ThrustToWeightCalculator() {
                       />
                       <div>
                         <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-                          <p className="text-sm font-semibold">
+                          <p
+                            className={
+                              "text-sm font-semibold" +
+                              (isActive ? " text-accent" : "")
+                            }
+                          >
                             {interpretation.label}
                           </p>
                           <p className="orbix-data text-muted">
