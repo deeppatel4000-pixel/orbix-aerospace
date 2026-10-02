@@ -98,6 +98,10 @@ export const metadata: Metadata = {
     description: siteConfig.description,
     title: `${siteConfig.wordmark} | ${siteConfig.tagline}`,
   },
+  // Google Search Console ownership token (public by design).
+  verification: {
+    google: "sJI8wxoBdpUn5PYcNhs2dFnujf_DZ5mqPyuGZPiAseE",
+  },
 };
 
 export const viewport: Viewport = {
