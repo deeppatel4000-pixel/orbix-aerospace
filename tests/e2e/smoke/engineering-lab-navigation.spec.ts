@@ -15,7 +15,7 @@ import {
  * shell's `hashchange` listener (`laboratory-shell.tsx`). A regression there
  * would leave deep links working while the visible navigation silently broke.
  *
- * Behaviour asserted here is what the components implement (design v2,
+ * Behavior asserted here is what the components implement (design v2,
  * spec 9):
  *   - from 1024px, `<nav aria-label="Engineering Lab tools">` lists every
  *     tool as a numbered link to its own id, grouped under the workflow
@@ -23,7 +23,7 @@ import {
  *   - v4 cut the lab to three workflows, so every workflow's list is open
  *     and its name is a plain label (not a link); every tool is one click
  *     away
- *   - below 1024px the same nav offers a `<select>` labelled "Choose a tool"
+ *   - below 1024px the same nav offers a `<select>` labeled "Choose a tool"
  *     (option values are tool ids) plus the full list in a `<details>`
  *   - selecting a tool updates the URL hash, reveals that tool's workflow
  *     section, and hides the other workflows' tools (they stay mounted, per

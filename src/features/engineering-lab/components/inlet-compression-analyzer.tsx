@@ -515,7 +515,7 @@ export function InletCompressionAnalyzer() {
                     STANDARD_ATMOSPHERE_MAX_ALTITUDE_METRES.toLocaleString(
                       "en-US",
                     ) +
-                    " metres. Leave blank to omit."
+                    " meters. Leave blank to omit."
                   }
                   idPrefix="inlet-compression"
                   label="Altitude (optional)"

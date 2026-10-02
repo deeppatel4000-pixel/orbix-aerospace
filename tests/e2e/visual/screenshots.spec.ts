@@ -24,7 +24,7 @@ const MISSION_PLANNER_HASH = "#mission-planner";
  *             A change that started encoding mixed units would be visible here
  *             as bars appearing in the speed row.
  *
- *   rockets   Height is metres and liftoff mass is kilograms for all three, but
+ *   rockets   Height is meters and liftoff mass is kilograms for all three, but
  *             Falcon 9 and Falcon Heavy publish thrust in kN while Saturn V
  *             publishes MN, so the thrust row must stay text-only. This also
  *             captures the launch-vehicle photographs in the column headers.
@@ -330,7 +330,7 @@ test.describe("Visual regression / mobile 390x844", () => {
   // horizontal scroller at this width, so what a screenshot can actually show
   // is the identity strip plus the first column of the matrix. The aircraft
   // selection is used because its leading column carries an encoded row and an
-  // intentionally unencoded one, which is the behaviour worth photographing.
+  // intentionally unencoded one, which is the behavior worth photographing.
   test("compare / populated aircraft comparison", async ({ page }) => {
     await page.goto(ROUTES.compare + COMPARE_AIRCRAFT_QUERY, {
       waitUntil: "domcontentloaded",

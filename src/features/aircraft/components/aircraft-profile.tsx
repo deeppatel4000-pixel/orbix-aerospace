@@ -87,7 +87,7 @@ function overviewFacts(aircraft: Aircraft): VehicleFact[] {
  * The profile hero's photograph: the `profile` slot. When it is the
  * aircraft's identity photograph, the art-directed crops in
  * `aircraft-visuals.ts` frame it; a profile's own photograph (the B-2
- * takeoff) runs as a band at its recorded centre.
+ * takeoff) runs as a band at its recorded center.
  */
 function heroPhoto(
   aircraft: Aircraft,

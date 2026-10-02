@@ -13,7 +13,7 @@ const lowEarthOrbitInputs: OrbitalElementsInputs = {
 };
 
 describe("calculateOrbitalElements", () => {
-  it("calculates a 400 kilometre circular low Earth orbit reference", () => {
+  it("calculates a 400 kilometer circular low Earth orbit reference", () => {
     const result = calculateOrbitalElements(lowEarthOrbitInputs);
 
     expect(result.orbitalRadiusMetres).toBe(6_771_000);

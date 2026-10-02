@@ -232,7 +232,7 @@ test.describe("Engineering Laboratory modules", () => {
     expect(new URL(page.url()).hash).toBe("#drag-equation");
   });
 
-  test("the active module is announced and marked, not left to colour alone", async ({
+  test("the active module is announced and marked, not left to color alone", async ({
     page,
   }) => {
     await page.goto(`${ROUTES.engineeringLab}#lift-equation`, {
@@ -243,7 +243,7 @@ test.describe("Engineering Laboratory modules", () => {
       .toBe("lift-equation");
 
     // Marked: the current link carries aria-current (and a text weight and
-    // border change, not only a colour change).
+    // border change, not only a color change).
     const current = page.locator(
       'nav[aria-label="Engineering Lab tools"] a[aria-current="location"]:visible',
     );

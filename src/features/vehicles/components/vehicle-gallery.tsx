@@ -98,7 +98,7 @@ function photoSizes(
 /**
  * A profile's further photographs (v4 plan section 7): two or three views
  * the registry and hero do not show, each a hard-edged plate in its own
- * proportions with a catalogue caption under it, so nothing is cropped.
+ * proportions with a catalog caption under it, so nothing is cropped.
  * From 64rem the gallery runs the full container width (see
  * `arrangement` for how the photographs sit); from 40rem two to a row;
  * below that one column. Renders nothing when the vehicle has no further

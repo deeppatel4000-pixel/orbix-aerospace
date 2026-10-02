@@ -37,7 +37,7 @@ export const LINEUP_LAYOUTS = {
 
 export type LineupLayoutName = keyof typeof LINEUP_LAYOUTS;
 
-/** The metre scale bar: its length and tick step (spec 8). */
+/** The meter scale bar: its length and tick step (spec 8). */
 export const SCALE_BAR_M = 50;
 const SCALE_TICK_M = 10;
 
@@ -50,7 +50,7 @@ const MARGIN = 8;
 const FIGURE_TO_LEADER = 6;
 /** From the end of the extension lines to the first outline's left edge. */
 const LEADER_TO_FIRST = 40;
-/** Room right of the last outline's centre, for its two-line name. */
+/** Room right of the last outline's center, for its two-line name. */
 const UPRIGHT_RIGHT = 78;
 /** The gap between a nose and its extension line. */
 export const EXT_GAP = 6;
@@ -72,7 +72,7 @@ const ROW_GAP = 14;
 
 /** The qualifier set after an approximate height, on the same line. */
 const APPROX = " approx.";
-/** Scale bar tick heights: the labelled ends, and the steps between. */
+/** Scale bar tick heights: the labeled ends, and the steps between. */
 const SCALE_TICK_MAJOR = 7;
 const SCALE_TICK_MINOR = 3.5;
 
@@ -81,17 +81,17 @@ export interface LineupVehicle {
   /** The name split for the label under the ground line. */
   readonly nameLines: readonly string[];
   readonly name: string;
-  /** Recorded height in metres, converted from the record's own unit. */
+  /** Recorded height in meters, converted from the record's own unit. */
   readonly metres: number;
   /** The height as recorded, for example "111 m". */
   readonly recorded: string;
-  /** The metre figure, only when the record is in another unit. */
+  /** The meter figure, only when the record is in another unit. */
   readonly converted?: string;
   readonly approximate: boolean;
   /** The traced side-view outline. */
   readonly drawing: VehicleDrawing;
   /**
-   * Drawing units per traced metre: the outline's height times this is
+   * Drawing units per traced meter: the outline's height times this is
    * the recorded height at the layout's scale.
    */
   readonly scale: number;
@@ -104,7 +104,7 @@ export interface LineupVehicle {
   readonly halfWidth: number;
   /**
    * The height's dimension line, from the ground (x1, y1) to the top
-   * (x2, y2). Upright: the outline's centre line. Level: horizontal,
+   * (x2, y2). Upright: the outline's center line. Level: horizontal,
    * under the outline.
    */
   readonly x1: number;
@@ -139,7 +139,7 @@ export interface LineupGeometry {
   readonly width: number;
 }
 
-/** A usable recorded height, in metres. */
+/** A usable recorded height, in meters. */
 function recordedMetres(rocket: Rocket) {
   const metres = toMetres(rocket.dimensions.height);
   return Number.isFinite(metres) && metres > 0 ? metres : undefined;
@@ -152,7 +152,7 @@ function r(value: number) {
 
 /**
  * The lineup's geometry, built from `dimensions.height` in each record,
- * converted to metres, and each vehicle's traced side-view outline,
+ * converted to meters, and each vehicle's traced side-view outline,
  * scaled so its height is the recorded height: every vehicle stands on one
  * ground line at one scale, shortest first. Widths follow the source
  * drawings at the same scale; the records give no diameter. A record with
@@ -362,7 +362,7 @@ function LineupDrawing({ className, layoutName, rockets }: LineupDrawingProps) {
           vectorEffect="non-scaling-stroke"
           {...geometry.ground}
         />
-        {/* Metre scale bar, 0 to 50 m, ticked every 10 m. */}
+        {/* Meter scale bar, 0 to 50 m, ticked every 10 m. */}
         {scaleStart && scaleEnd ? (
           <>
             <line
@@ -584,7 +584,7 @@ interface RocketHeightLineupProps {
 
 /**
  * The launch vehicles to one scale (spec 8): each traced outline scaled to
- * its recorded height on a common ground, with a metre scale bar.
+ * its recorded height on a common ground, with a meter scale bar.
  * Linework in the muted ink, figures in B612 Mono, no fills. Below 64rem
  * the lineup is laid on its side. A record with no usable height or no
  * outline is left out and named in the caption, and every outline's

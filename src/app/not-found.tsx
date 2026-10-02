@@ -16,7 +16,7 @@ export const metadata: Metadata = {
 /**
  * 404: "Off course." on the page ground with a way home and into both
  * registries, and the `not-found` slot photograph (an F-22 leaving its
- * hangar, used on no other page) as a hard-edged plate beside it (spec 7). "Off course." is the H1, in one colour; the plain
+ * hangar, used on no other page) as a hard-edged plate beside it (spec 7). "Off course." is the H1, in one color; the plain
  * "Page not found" kicker above it (the page's one kicker) and the document
  * title name the page for assistive technology and search.
  *

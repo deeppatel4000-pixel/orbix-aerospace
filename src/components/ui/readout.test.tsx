@@ -50,7 +50,7 @@ describe("formatFigure", () => {
 });
 
 describe("formatCode", () => {
-  it("centres . and : between word characters and breaks after /", () => {
+  it("centers . and : between word characters and breaks after /", () => {
     expect(html(formatCode("npm run check:design"))).toBe(
       'npm run check<span class="orbix-num-sep">:</span>design',
     );

@@ -156,7 +156,7 @@ export function MissionPresetLauncher() {
               <label
                 className={cn(
                   // Padding is equal in both states, so choosing a preset
-                  // changes only colour and the weight of the top rule.
+                  // changes only color and the weight of the top rule.
                   "group relative flex cursor-pointer gap-3 py-4 transition-colors before:pointer-events-none before:absolute before:inset-x-0 before:top-0",
                   // An odd last tile spans both columns, so no blank cell.
                   presets.length % 2 === 1 &&

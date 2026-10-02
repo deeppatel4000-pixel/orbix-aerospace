@@ -76,7 +76,7 @@ describe.each(lineupLayouts)("rocket height lineup, %s", (layout) => {
       const drawnMetres =
         Math.hypot(vehicle.x2 - vehicle.x1, vehicle.y2 - vehicle.y1) / u;
       expect(drawnMetres).toBeCloseTo(toMetres(rocket.dimensions.height), 9);
-      // Every record is in metres, so the drawn height is the value itself.
+      // Every record is in meters, so the drawn height is the value itself.
       expect(rocket.dimensions.height.unit).toBe("m");
       expect(drawnMetres).toBeCloseTo(rocket.dimensions.height.value, 9);
       expect(vehicle.recorded).toBe(
@@ -110,7 +110,7 @@ describe.each(lineupLayouts)("rocket height lineup, %s", (layout) => {
       } else {
         // Upright, each vehicle is its traced outline, scaled so its
         // height is the recorded height, base on the ground line and
-        // centred on its height line.
+        // centered on its height line.
         const outline = attributes(
           markup,
           new RegExp(
@@ -275,7 +275,7 @@ describe("aircraft size comparison", () => {
     (id, aircraft) => {
       const drawn = plans.find((item) => item.id === id)!;
       const { length, wingspan } = aircraft.dimensions;
-      // The records give feet; the drawing is in metres at 0.3048 m/ft.
+      // The records give feet; the drawing is in meters at 0.3048 m/ft.
       expect(length.unit).toBe("ft");
       expect(wingspan.unit).toBe("ft");
       expect(drawn.lengthM).toBeCloseTo(length.value * 0.3048, 9);
@@ -291,7 +291,7 @@ describe("aircraft size comparison", () => {
     },
   );
 
-  it("renders each plan in metres at one shared CSS scale", () => {
+  it("renders each plan in meters at one shared CSS scale", () => {
     const svg = markup();
     for (const item of plans) {
       const group = new RegExp(`data-vehicle="${item.id}"[^]*?`);
@@ -301,7 +301,7 @@ describe("aircraft size comparison", () => {
       );
       const box = planViewBox(item);
       expect(plan.viewBox).toBe(`${box.x} 0 ${box.width} ${box.height}`);
-      // The rendered width is the box in metres times the shared scale.
+      // The rendered width is the box in meters times the shared scale.
       expect(plan.style).toBe(
         `width:calc(var(--plan-u) * ${Math.round(box.width * 1000) / 1000})`,
       );

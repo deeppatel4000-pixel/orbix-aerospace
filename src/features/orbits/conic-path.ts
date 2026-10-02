@@ -8,7 +8,7 @@ import type { StretchMap } from "./stretch-map";
  */
 
 export interface PolarPoint {
-  /** Distance from the central body's centre, metres. */
+  /** Distance from the central body's center, meters. */
   readonly radiusMetres: number;
   /** Polar angle in the drawing, radians, counter-clockwise from +x. */
   readonly angleRadians: number;
@@ -33,7 +33,7 @@ export interface Point {
   readonly y: number;
 }
 
-/** r(ν) for an ellipse, metres. */
+/** r(ν) for an ellipse, meters. */
 export function conicRadius(
   semiMajorAxisMetres: number,
   eccentricity: number,

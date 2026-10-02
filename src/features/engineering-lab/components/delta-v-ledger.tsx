@@ -15,8 +15,8 @@ const AXIS_STEPS = [100, 200, 500, 1_000, 2_000, 5_000, 10_000] as const;
 const MAX_TICK_INTERVALS = 3;
 
 /**
- * Segment colour by step: burn 1 in the first data colour, burn 2 in a
- * darker mix of it, the plane change in the second data colour, and preset
+ * Segment color by step: burn 1 in the first data color, burn 2 in a
+ * darker mix of it, the plane change in the second data color, and preset
  * allowances, which are not computed, in the muted ink. The key above the
  * bars names each one.
  */
@@ -99,7 +99,7 @@ function tableRows(plans: readonly MissionPlan[]): LedgerRow[] {
 
 interface DeltaVLedgerProps {
   readonly plans: readonly MissionPlan[];
-  /** The plan shown in the planner, drawn in the ink colour. */
+  /** The plan shown in the planner, drawn in the ink color. */
   readonly currentPlanId?: string;
 }
 
@@ -207,7 +207,7 @@ export function DeltaVLedger({ currentPlanId, plans }: DeltaVLedgerProps) {
                   index > 0 && !last && "-translate-x-1/2",
                 )}
                 key={tick}
-                // The last tick carries the unit; its number stays centred
+                // The last tick carries the unit; its number stays centered
                 // on the tick and the unit runs into the gutter.
                 style={
                   last

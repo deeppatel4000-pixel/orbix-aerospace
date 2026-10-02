@@ -4,7 +4,7 @@ import { cn } from "@/lib/cn";
 
 export type TagProps = ComponentPropsWithoutRef<"span"> & {
   /**
-   * `accent` sets the text in the division colour, for a classification
+   * `accent` sets the text in the division color, for a classification
    * that identifies the section. `neutral` (default) is muted ink.
    */
   tone?: "accent" | "neutral";

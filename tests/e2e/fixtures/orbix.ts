@@ -77,7 +77,7 @@ export const PROJECT_ROUTES = {
 
 /**
  * Routes removed in v4 (plan section 3) and where each now redirects,
- * permanently. `/showcase` became the build log's "How it is organised"
+ * permanently. `/showcase` became the build log's "How it is organized"
  * section; the capture pages, with or without a mission id, go to the
  * Engineering Lab's mission planner.
  */

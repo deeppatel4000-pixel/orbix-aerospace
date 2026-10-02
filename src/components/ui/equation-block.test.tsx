@@ -95,7 +95,7 @@ describe("EquationBlock", () => {
     );
   });
 
-  it("centres decimal separators in the equation, symbols and units", () => {
+  it("centers decimal separators in the equation, symbols and units", () => {
     const markup = renderToStaticMarkup(
       <EquationBlock
         equation={

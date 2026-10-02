@@ -20,7 +20,7 @@ import { OrbitTransferFigure } from "./orbit-transfer-figure";
  * the Engineering Lab, so the page does not repeat the home page's
  * explorer.
  *
- * One catalogue caption below each figure (spec 6): "Fig. 1  <caption>
+ * One catalog caption below each figure (spec 6): "Fig. 1  <caption>
  * Photo: <credit>. Public domain. Source file." in 14px muted Plex Sans,
  * the figure number in ink. Captions come from the photo records; none
  * states a vehicle figure the record does not hold.

@@ -38,7 +38,7 @@ export function AccessibilityPage() {
             focusable element shows a visible focus outline.
           </li>
           <li>
-            <strong>Contrast.</strong> Text colours are chosen to meet at least
+            <strong>Contrast.</strong> Text colors are chosen to meet at least
             4.5:1 contrast against their backgrounds, and form control edges and
             focus outlines at least 3:1. The ratios are measured and recorded in
             the ORBIX design specification.
@@ -57,7 +57,7 @@ export function AccessibilityPage() {
           <li>
             <strong>Forms.</strong> Calculator inputs use visible labels above
             the field, with units, and input errors are described in text, not
-            by colour alone.
+            by color alone.
           </li>
           <li>
             <strong>Structure.</strong> Each page has one main heading, a

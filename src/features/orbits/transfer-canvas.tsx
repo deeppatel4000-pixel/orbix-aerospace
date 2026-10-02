@@ -29,7 +29,7 @@ export interface TransferCanvasCraft {
 export interface TransferCanvasProps {
   readonly initialAltitudeMetres: number;
   readonly targetAltitudeMetres: number;
-  /** Earth's radius used by the analysis, metres. */
+  /** Earth's radius used by the analysis, meters. */
   readonly planetRadiusMetres: number;
   /** The computed transfer, or null when both orbits are the same. */
   readonly model: TransferModel | null;
@@ -52,7 +52,7 @@ export interface TransferCanvasProps {
   readonly onTargetDragStart?: () => void;
   /**
    * Pointer drag of the target orbit moves: the pointer's distance from
-   * Earth's centre, in drawing units.
+   * Earth's center, in drawing units.
    */
   readonly onTargetDrag?: (drawnRadius: number) => void;
   readonly onTargetDragEnd?: () => void;
@@ -82,7 +82,7 @@ function onCircle(radius: number, angle: number): Point {
 /**
  * The shared orbit drawing (v4 plan, section 5): Earth at a fixed drawn
  * radius, both circular orbits and the transfer half-ellipse sampled from
- * the true conic and stretched outward by altitude, labelled on the paths.
+ * the true conic and stretched outward by altitude, labeled on the paths.
  * Burn 1 is on the right; the craft travels counter-clockwise over the top
  * to burn 2 on the left.
  */
@@ -185,9 +185,9 @@ export function TransferCanvas({
   const burn1 = onCircle(startRadius, 0);
   const burn2 = onCircle(targetRadius, Math.PI);
   const handle = onCircle(targetRadius, HANDLE_ANGLE);
-  // Each burn is labelled beside its own marker, just under the line of
+  // Each burn is labeled beside its own marker, just under the line of
   // apsides (the arc leaves and arrives above it), so the label reads as
-  // the place the burn happens, on whichever ring that is. A ground-colour
+  // the place the burn happens, on whichever ring that is. A ground-color
   // stroke under the glyphs breaks a ring line the label crosses.
   const burnLabelY = CENTRE.y + 0.95 * fontSize;
   const craftPoint = craft
@@ -302,7 +302,7 @@ export function TransferCanvas({
         stroke="var(--orbix-text-muted)"
         strokeWidth={1.5}
       />
-      {/* Target orbit: dashed, so it reads without colour. */}
+      {/* Target orbit: dashed, so it reads without color. */}
       <circle
         cx={CENTRE.x}
         cy={CENTRE.y}

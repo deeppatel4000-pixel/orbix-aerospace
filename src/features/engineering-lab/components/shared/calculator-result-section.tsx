@@ -4,7 +4,7 @@ import type { ReactNode } from "react";
  * The results panel every calculator ends in (spec 14, Engineering Lab).
  *
  * Open results on the page ground (design v3, spec 6 and 11): no panel,
- * no fill, no outline. A 2px lab-colour rule, 48px wide, sits above the
+ * no fill, no outline. A 2px lab-color rule, 48px wide, sits above the
  * h3 title, then the figures follow as definition lists (`ReadoutGrid`),
  * the headline value set large, groups separated by space and at most a
  * hairline. See `.lab-result*` in `calculator-card.module.css`.

@@ -37,8 +37,9 @@ import {
  *
  * Shape of `.next/prerender-manifest.json` (v4, 2026-10-01):
  *
- *    7 framework outputs: /_global-error, /_not-found, /favicon.ico,
- *      /icon.png, /manifest.webmanifest, and the two metadata image routes
+ *    9 framework outputs: /_global-error, /_not-found, /favicon.ico,
+ *      /icon.png, /manifest.webmanifest, /robots.txt, /sitemap.xml, and the
+ *      two metadata image routes
  *      /opengraph-image and /twitter-image
  *   23 user-facing pages  <- the meaningful invariant
  *    2 dynamic templates: /aircraft/[id] and /rockets/[id]
@@ -84,7 +85,8 @@ const STATIC_PAGE_ROUTES = [
 function isFrameworkInternal(route: string): boolean {
   return (
     route.startsWith("/_") ||
-    /\.(ico|png|webmanifest)$/.test(route) ||
+    // Metadata files: favicon, icon, manifest, robots.txt and sitemap.xml.
+    /\.(ico|png|webmanifest|txt|xml)$/.test(route) ||
     // Next's metadata image routes (src/app/opengraph-image.tsx and
     // twitter-image.tsx): share-card images, not pages.
     route === "/opengraph-image" ||

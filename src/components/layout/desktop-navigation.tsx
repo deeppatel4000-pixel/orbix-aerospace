@@ -13,7 +13,7 @@ function isCurrentRoute(pathname: string, href: string) {
 
 /**
  * Links sit directly in the header. The current page is in ink and
- * underlined in the division colour (spec 9).
+ * underlined in the division color (spec 9).
  */
 export function DesktopNavigation() {
   const pathname = usePathname();

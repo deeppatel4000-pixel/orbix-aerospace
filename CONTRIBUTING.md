@@ -33,16 +33,16 @@ See [`docs/architecture.md`](docs/architecture.md) for the full repository conve
 - ORBIX source code is licensed under the [MIT License](LICENSE). By submitting a contribution,
   you agree that it is licensed under the MIT License on the same terms.
 - You must own the rights to everything you submit, or have permission to submit it under the MIT
-  License. Do not copy code, text, or data from sources whose licence does not allow it.
+  License. Do not copy code, text, or data from sources whose license does not allow it.
 - Read [NOTICE.md](NOTICE.md) for what the MIT License does not cover, including the ORBIX name and
   logo.
 
 ## Images
 
-- Do not add an image unless it has a verified free licence (for example, public domain, CC0,
+- Do not add an image unless it has a verified free license (for example, public domain, CC0,
   CC BY, or CC BY-SA) that allows use in this project.
 - Record every image in [`docs/assets/image-provenance.md`](docs/assets/image-provenance.md) in the
-  same change: subject, author or agency, licence, source page URL, and any modifications. The
+  same change: subject, author or agency, license, source page URL, and any modifications. The
   site's `/credits` page must list it too.
 - Do not add AI-generated images of any kind.
 - Do not add images that suggest endorsement by NASA, a branch of the U.S. armed forces, or any
@@ -56,10 +56,10 @@ Run the full validation pipeline:
 npm run validate
 ```
 
-This checks formatting, ESLint, the design colour check, TypeScript, Vitest, and the production
+This checks formatting, ESLint, the design color check, TypeScript, Vitest, and the production
 Next.js build.
 
-When adding engineering behaviour, include focused unit tests beside the calculator or analysis
+When adding engineering behavior, include focused unit tests beside the calculator or analysis
 module. Presentation changes should keep keyboard access, semantic structure, visible focus, and
 reduced-motion support.
 

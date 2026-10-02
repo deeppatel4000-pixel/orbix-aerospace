@@ -23,8 +23,8 @@ export function formatLabValue(value: number): string {
 }
 
 /**
- * An orbital or flight altitude as a value and unit: kilometres from 1 km
- * up, metres below. The orbit diagrams label altitudes in km, so every
+ * An orbital or flight altitude as a value and unit: kilometers from 1 km
+ * up, meters below. The orbit diagrams label altitudes in km, so every
  * readout beside them uses the same unit.
  */
 export function altitudeReadout<T extends number | undefined>(

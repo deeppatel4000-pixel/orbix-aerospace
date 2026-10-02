@@ -69,7 +69,7 @@ function renderScripts(value: string, key: string): ReactNode {
 /**
  * Renders `_x` in a string as a subscript, so "C_L" reads as C with a
  * subscript L, and ², ³ and `^x` as superscripts at the same scale, so
- * "kg^1/2/m" reads as kg with a superscript 1/2, per metre. Inline
+ * "kg^1/2/m" reads as kg with a superscript 1/2, per meter. Inline
  * formulas and hyphenated compounds are kept on one line. Everything
  * else is returned as text.
  */
@@ -98,7 +98,7 @@ const NBSP = " ";
  *
  * A product (`·`) is set the textbook way, by juxtaposition: a narrow
  * spacer and no visible operator. B612 Mono draws its middle dot left of
- * the cell centre, so a dot hugs the term before it whatever the margins.
+ * the cell center, so a dot hugs the term before it whatever the margins.
  * Every equation carries a `spokenAs` that says "times".
  */
 /**

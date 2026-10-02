@@ -8,7 +8,7 @@ interface RelatedRocketsProps {
   rockets: readonly Rocket[];
 }
 
-/** Related vehicles (spec 11): up to three catalogue rows, then the registry. */
+/** Related vehicles (spec 11): up to three catalog rows, then the registry. */
 export function RelatedRockets({ rockets }: RelatedRocketsProps) {
   if (rockets.length === 0) return null;
 

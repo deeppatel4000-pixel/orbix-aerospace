@@ -13,7 +13,7 @@ export const TARGET_SCALE_STEPS = 1_000;
 export const SNAP_TOLERANCE_STEPS = 12;
 
 /**
- * Mean Earth-Moon distance, centre to centre: 384,400 km, the Moon's
+ * Mean Earth-Moon distance, center to center: 384,400 km, the Moon's
  * semimajor axis in the NASA Moon Fact Sheet
  * (https://nssdc.gsfc.nasa.gov/planetary/factsheet/moonfact.html).
  */
@@ -23,7 +23,7 @@ export interface TargetStop {
   readonly id: "geo" | "iss" | "moon";
   /** Button text. */
   readonly label: string;
-  /** Altitude above Earth's mean radius, metres. */
+  /** Altitude above Earth's mean radius, meters. */
   readonly altitudeMetres: number;
   /** Words added to the slider's value text, for example "ISS altitude". */
   readonly description: string;
@@ -45,13 +45,13 @@ export const TARGET_STOPS: readonly TargetStop[] = [
     label: "GEO",
   },
   {
-    // The orbit's radius is the Moon's mean distance from Earth's centre.
+    // The orbit's radius is the Moon's mean distance from Earth's center.
     altitudeMetres: MOON_MEAN_DISTANCE_METRES - EARTH_MEAN_RADIUS_METRES,
     description:
-      "orbit radius equal to the Moon's mean distance, 384,400 km from Earth's centre",
+      "orbit radius equal to the Moon's mean distance, 384,400 km from Earth's center",
     id: "moon",
     label: "Moon",
-    note: "384,400 km from Earth's centre (NASA Moon Fact Sheet); Moon's gravity ignored.",
+    note: "384,400 km from Earth's center (NASA Moon Fact Sheet); Moon's gravity ignored.",
   },
 ];
 
@@ -60,7 +60,7 @@ const LOG_RATIO = Math.log(
 );
 
 /**
- * Rounds an altitude to three significant figures in kilometres (1 km at
+ * Rounds an altitude to three significant figures in kilometers (1 km at
  * least), so the readout does not flicker through meaningless digits.
  */
 export function roundTargetAltitude(altitudeMetres: number): number {

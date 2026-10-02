@@ -27,7 +27,7 @@ const RELATED_COUNT = 3;
 test.describe("Vehicle profile body", () => {
   test.skip(
     () => test.info().project.name !== "desktop",
-    "Profile structure is viewport-independent; overflow guards cover responsive behaviour.",
+    "Profile structure is viewport-independent; overflow guards cover responsive behavior.",
   );
 
   test("every section-navigation anchor resolves to a real section", async ({

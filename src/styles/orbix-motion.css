@@ -1,7 +1,7 @@
 /**
  * Motion (spec 10). CSS only.
  *
- * Allowed: colour and underline transitions of 150 to 200ms, triggered by
+ * Allowed: color and underline transitions of 150 to 200ms, triggered by
  * hover, focus or a state change the user made, plus the loading spinner,
  * the only infinite animation.
  *

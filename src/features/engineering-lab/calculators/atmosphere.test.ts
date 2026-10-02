@@ -17,7 +17,7 @@ describe("calculateStandardAtmosphere", () => {
     expect(result.speedOfSoundMetersPerSecond).toBeCloseTo(340.292286865, 9);
   });
 
-  it("returns the reference state at 5,000 metres", () => {
+  it("returns the reference state at 5,000 meters", () => {
     const result = calculateStandardAtmosphere({ altitudeMetres: 5_000 });
 
     expect(result.temperatureKelvin).toBeCloseTo(255.65, 8);
@@ -38,10 +38,10 @@ describe("calculateStandardAtmosphere", () => {
   it("rejects altitude above the model range", () => {
     expect(() =>
       calculateStandardAtmosphere({ altitudeMetres: 11_000.01 }),
-    ).toThrowError(/must not exceed 11,000 metres/);
+    ).toThrowError(/must not exceed 11,000 meters/);
   });
 
-  it("accepts the 11,000 metre upper boundary", () => {
+  it("accepts the 11,000 meter upper boundary", () => {
     const result = calculateStandardAtmosphere({ altitudeMetres: 11_000 });
 
     expect(result.temperatureKelvin).toBeCloseTo(216.65, 8);

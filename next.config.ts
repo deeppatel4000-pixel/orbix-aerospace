@@ -30,7 +30,7 @@ const nextConfig: NextConfig = {
   reactStrictMode: true,
   /**
    * `/showcase` was removed in v4 (plan section 3): its architecture figure
-   * and quality checks are now the build log's "How it is organised"
+   * and quality checks are now the build log's "How it is organized"
    * section. The old capture pages, with or without a mission id, go to the
    * Engineering Lab's mission planner.
    */

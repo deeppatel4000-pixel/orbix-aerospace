@@ -49,7 +49,7 @@ describe("PhotoHero", () => {
     expect(markup).toContain('sizes="50vw"');
   });
 
-  it("always shows the credit, the linked licence and the source", () => {
+  it("always shows the credit, the linked license and the source", () => {
     const markup = render();
     expect(markup).toMatch(/<figcaption[^>]*>.*Photo: NASA/);
     expect(markup).toContain(`href="${visual.licenseUrl}"`);
@@ -57,7 +57,7 @@ describe("PhotoHero", () => {
     expect(markup).toContain(">Source file</a>");
   });
 
-  it("prints a catalogue caption with the figure number before the credit", () => {
+  it("prints a catalog caption with the figure number before the credit", () => {
     const markup = render({
       caption: "SR-71B over the Sierra Nevada",
       figureNumber: "1",
@@ -94,7 +94,7 @@ describe("PhotoHero", () => {
     );
   });
 
-  it("shortens a public-domain licence and keeps the full wording in the name", () => {
+  it("shortens a public-domain license and keeps the full wording in the name", () => {
     const markup = render();
     expect(markup).toContain(
       'aria-label="Public domain (U.S. government work)"',
@@ -102,14 +102,14 @@ describe("PhotoHero", () => {
     expect(markup).toContain(">Public domain</a>");
   });
 
-  it("prints the licence as text when no licence page is known", () => {
+  it("prints the license as text when no license page is known", () => {
     const markup = render({ visual: { ...visual, licenseUrl: undefined } });
     expect(markup).toContain(
       "<span>Public domain (U.S. government work)</span>",
     );
   });
 
-  it("shows other licences whole, without a redundant label", () => {
+  it("shows other licenses whole, without a redundant label", () => {
     expect(licenceLabel("CC BY-SA 4.0")).toEqual({
       full: "CC BY-SA 4.0",
       isShortened: false,

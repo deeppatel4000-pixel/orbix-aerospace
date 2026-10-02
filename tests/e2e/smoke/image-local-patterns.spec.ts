@@ -18,7 +18,7 @@ import { expect, ROUTES, test } from "../fixtures/orbix";
  * allowlist actually rejects anything, so widening or deleting it would have
  * been invisible — every other test would still pass.
  *
- * ## Observed behaviour (measured, not assumed)
+ * ## Observed behavior (measured, not assumed)
  *
  * Probed against both a local production build and the live deployment
  * before writing these assertions; both behave identically:

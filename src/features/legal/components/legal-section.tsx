@@ -21,7 +21,7 @@ interface LegalSectionProps {
  * Ordinary sections are separated by whitespace alone and set the H2 at
  * 1.75rem to 2rem, so a heading over one or two short paragraphs does not
  * outweigh them. Major sections (verification, the manual-like page) open
- * with a 2px, 48px lab-colour rule above the heading (spec 4 and 6), more
+ * with a 2px, 48px lab-color rule above the heading (spec 4 and 6), more
  * space and a larger H2 of 2rem to 2.5rem, so the break between groups
  * reads larger than the break between the h3 cases inside. The legal pages
  * stay plain. The

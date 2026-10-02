@@ -37,9 +37,9 @@ describe("build log page", () => {
     expect(text).not.toMatch(/\b\d+ tools\b/);
   });
 
-  it("carries the How it is organised section moved from /showcase", () => {
+  it("carries the How it is organized section moved from /showcase", () => {
     expect(markup).toContain('id="structure"');
-    expect(text).toContain("How it is organised");
+    expect(text).toContain("How it is organized");
     expect(markup).toContain('aria-labelledby="architecture-figure-caption"');
     expect(text).toContain("npm run validate");
     expect(text).toContain("Validate workflow");

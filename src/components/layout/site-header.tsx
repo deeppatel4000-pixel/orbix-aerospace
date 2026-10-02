@@ -6,7 +6,7 @@ import { SiteLogo } from "@/components/layout/site-logo";
 /**
  * Site header (spec 9): the opaque page ground, no blur, 64px tall, the
  * wordmark left and text links right, one 1px rule under the bar. The
- * current link is underlined in the division colour. Below 1024px the
+ * current link is underlined in the division color. Below 1024px the
  * links move into a full-height sheet.
  */
 export function SiteHeader() {

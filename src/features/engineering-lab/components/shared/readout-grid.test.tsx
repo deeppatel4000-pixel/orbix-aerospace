@@ -20,7 +20,7 @@ describe("ReadoutGrid", () => {
     expect(html).toContain("<dl><div><dt>Pressure</dt>");
   });
 
-  it("renders a titled group as a section labelled by its head", () => {
+  it("renders a titled group as a section labeled by its head", () => {
     const html = renderToStaticMarkup(
       <ReadoutGrid title="Stagnation conditions">
         <div>

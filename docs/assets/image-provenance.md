@@ -1,8 +1,8 @@
 # Image provenance register
 
-Every raster image under `public/`, where it came from, and the licence it is used under.
-Each row gives its own verification date. Licences were checked on the linked Wikimedia Commons
-file page (licence template, and for Flickr imports the Flickr page and the FlickreviewR result).
+Every raster image under `public/`, where it came from, and the license it is used under.
+Each row gives its own verification date. Licenses were checked on the linked Wikimedia Commons
+file page (license template, and for Flickr imports the Flickr page and the FlickreviewR result).
 
 ORBIX is not affiliated with or endorsed by NASA, the U.S. Air Force, SpaceX, Lockheed Martin,
 Boeing, Northrop Grumman or any other manufacturer. Vehicle and company names are trademarks of their
@@ -22,11 +22,11 @@ height in CSS pixels.
 The records live in `src/features/vehicles/data/gallery.ts` (every slot and every additional
 photograph) and, for each vehicle's main photograph, in
 `src/features/aircraft/data/aircraft-visuals.ts` and `src/features/rockets/data/rocket-visuals.ts`.
-They carry the same credit, licence and source page as this table. The Slot column says where each
+They carry the same credit, license and source page as this table. The Slot column says where each
 file is used; no file fills more than one slot, except that a vehicle's main photograph serves both
 its registry card and its profile.
 
-| File                                                         | Subject                                                                                                                                               | Slot                    | Credit                                                    | Licence                                                                                                                                                                           | Source file page                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  | Original (px) | Export                                                             | Verified   |
+| File                                                         | Subject                                                                                                                                               | Slot                    | Credit                                                    | License                                                                                                                                                                           | Source file page                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  | Original (px) | Export                                                             | Verified   |
 | ------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------- | --------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------- | ------------------------------------------------------------------ | ---------- |
 | `public/images/aircraft/f-22-raptor-kadena.webp`             | F-22 Raptor over Kadena Air Base, Japan, January 2009.                                                                                                | card, profile           | U.S. Air Force photo by Master Sgt. Andy Dunaway          | Public domain (U.S. government work, PD-USGov-Military-Air Force)                                                                                                                 | [File:F-22 Raptor.JPG](https://commons.wikimedia.org/wiki/File:F-22_Raptor.JPG)                                                                                                                                                                                                                                                                                                                                                                                                                                                   | 3000 x 1996   | 2880 x 1916, 91 KB                                                 | 2026-10-01 |
 | `public/images/aircraft/f-22-raptor-taxi.webp`               | F-22 Raptors of the 3rd Air Expeditionary Wing taxiing on Tinian, Northern Mariana Islands, July 2025.                                                | gallery                 | U.S. Air Force photo by Airman 1st Class Tala Hunt        | Public domain (U.S. government work, PD-USGov-Military-Air Force)                                                                                                                 | [File:3rd Air Expeditionary Wing F-22 Raptors taxi on Tinian during exercise Resolute Force Pacific 2025.jpg](https://commons.wikimedia.org/wiki/File:3rd_Air_Expeditionary_Wing_F-22_Raptors_taxi_on_Tinian_during_exercise_Resolute_Force_Pacific_2025.jpg)                                                                                                                                                                                                                                                                     | 7017 x 4683   | 2400 x 1602, 123 KB                                                | 2026-10-01 |
@@ -74,7 +74,7 @@ its registry card and its profile.
 | `public/images/rockets/starship-booster-catch.webp`          | The Super Heavy booster being caught by the launch tower on Starship's fifth flight test, October 2024.                                               | gallery                 | Steve Jurvetson                                           | [CC BY 2.0](https://creativecommons.org/licenses/by/2.0/); FlickreviewR passed, [Flickr page](https://www.flickr.com/photos/jurvetson/54064036815/)                               | [File:Starship Booster Landing on Mechzilla (54064036815).jpg](<https://commons.wikimedia.org/wiki/File:Starship_Booster_Landing_on_Mechzilla_(54064036815).jpg>)                                                                                                                                                                                                                                                                                                                                                                 | 2974 x 3335   | 2140 x 2400, 99 KB                                                 | 2026-10-01 |
 | `public/images/rockets/starship-booster-underside.webp`      | NASA visitors under a Super Heavy booster at SpaceX, December 2021. The engine mounts and wiring are visible.                                         | gallery                 | NASA                                                      | Public domain (U.S. government work, PD-USGov-NASA)                                                                                                                               | [File:NASA Marshall visit to Super Heavy booster.jpg](https://commons.wikimedia.org/wiki/File:NASA_Marshall_visit_to_Super_Heavy_booster.jpg)                                                                                                                                                                                                                                                                                                                                                                                     | 2560 x 3840   | 1600 x 2400, 538 KB                                                | 2026-10-01 |
 
-CC BY 2.0 and CC BY-SA 2.0 require attribution: credit the author, name the licence with a link,
+CC BY 2.0 and CC BY-SA 2.0 require attribution: credit the author, name the license with a link,
 link the source, and state that the image was changed ("Resized and converted to WebP"). CC0 files
 need no attribution; they are credited anyway.
 
@@ -86,7 +86,7 @@ Credits (`/credits`) lists only files in a slot a page renders (`PHOTO_SLOTS_IN_
 
 ### Files replaced on 2026-10-01
 
-A changed photograph always gets a new file name. The image optimiser and any CDN cache a rendition
+A changed photograph always gets a new file name. The image optimizer and any CDN cache a rendition
 by URL, so a new file at an old URL can be served as the old photograph under the new caption.
 
 | New file                                               | Replaces (pre-v4 file)                                   | Change                                                                                                                       |
@@ -116,7 +116,7 @@ names (see "Files removed on 2026-10-01").
 
 ### Files removed on 2026-09-27
 
-These earlier files had no verifiable licence or no recorded processing, and were deleted:
+These earlier files had no verifiable license or no recorded processing, and were deleted:
 
 | Removed file                                    | Recorded source                                          | Reason                                                                      |
 | ----------------------------------------------- | -------------------------------------------------------- | --------------------------------------------------------------------------- |
@@ -124,12 +124,12 @@ These earlier files had no verifiable licence or no recorded processing, and wer
 | `public/images/aircraft/f-15-eagle.png`         | Wikimedia Commons, USAF                                  | Processing unknown (PNG from a JPEG source); re-derived from the original   |
 | `public/images/aircraft/f-22-raptor.png`        | Wikimedia Commons crop, USAF                             | Processing unknown; re-derived from the uncropped original                  |
 | `public/images/aircraft/f-35-lightning-ii.jpg`  | Wikimedia Commons thumbnail, USAF                        | Processing unknown; re-derived from the Commons file                        |
-| `public/images/aircraft/sr-71-blackbird.png`    | blackbirdsims.com flight-simulator product image         | Not a photograph, no licence                                                |
-| `public/images/rockets/falcon-9.png`            | nextspaceflight storage bucket (aggregator)              | No licence                                                                  |
-| `public/images/rockets/falcon-heavy.png`        | cdn.mos.cms.futurecdn.net (news-site CDN)                | No licence                                                                  |
+| `public/images/aircraft/sr-71-blackbird.png`    | blackbirdsims.com flight-simulator product image         | Not a photograph, no license                                                |
+| `public/images/rockets/falcon-9.png`            | nextspaceflight storage bucket (aggregator)              | No license                                                                  |
+| `public/images/rockets/falcon-heavy.png`        | cdn.mos.cms.futurecdn.net (news-site CDN)                | No license                                                                  |
 | `public/images/rockets/saturn-v.png`            | Wikimedia Commons thumbnail, NASA                        | Processing unknown; re-derived from the original                            |
 | `public/images/rockets/space-launch-system.png` | Wikimedia Commons crop, NASA                             | Processing unknown; re-derived from the uncropped original                  |
-| `public/images/rockets/starship.png`            | Wikimedia Commons, Steve Jurvetson, CC BY 2.0            | Licence not reviewed on Commons; replaced with a FlickreviewR-verified file |
+| `public/images/rockets/starship.png`            | Wikimedia Commons, Steve Jurvetson, CC BY 2.0            | License not reviewed on Commons; replaced with a FlickreviewR-verified file |
 
 ## Vehicle drawings
 
@@ -137,10 +137,10 @@ The outlines in `public/drawings/` (and the same paths in
 `src/features/vehicles/data/gallery-drawings.ts`) were traced from the drawings below: the view was
 cropped, turned to a filled silhouette, traced as one closed path and simplified, then scaled so the
 bounding box matches the recorded length and wingspan (aircraft, top view) or height (launch
-vehicles, side view) in the vehicle data. Units are metres. Labels, dimension lines, logos, flags and
+vehicles, side view) in the vehicle data. Units are meters. Labels, dimension lines, logos, flags and
 interior detail were removed. The B-2 trace from the 887 px raster wobbled along its straight
 edges, so it was redrawn from its 12 corners (Ramer-Douglas-Peucker at 0.15 m, then each corner
-averaged with its mirror image about the centreline). Each file sizes from its `viewBox` (no
+averaged with its mirror image about the centerline). Each file sizes from its `viewBox` (no
 `width` or `height`) and is stroked in `#e8e4dc`, so it shows on the dark ground when opened on its
 own; pages draw the same `d` inline and set their own stroke.
 
@@ -150,7 +150,7 @@ Wikimedia Commons; cropped, outline traced, logos and labels removed". The F-35A
 from the U.S. government original (`F-35A_Top.jpg`, jsf.mil), not from the derived three-view
 `Lockheed Martin F-35A Lightning II 3-view drawing.png`, whose PD-self tag is weak.
 
-| File                                      | Outline                                            | Credit                                                                                                 | Licence                                                                                                         | Source file page                                                                                                                                          | Changes                                                                                                                                                                                                    | Verified   |
+| File                                      | Outline                                            | Credit                                                                                                 | License                                                                                                         | Source file page                                                                                                                                          | Changes                                                                                                                                                                                                    | Verified   |
 | ----------------------------------------- | -------------------------------------------------- | ------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------- |
 | `public/drawings/b-2-spirit.svg`          | b-2-spirit (top view), 52.426 m x 21.031 m         | U.S. Army (Field Manual 44-80), via Wikimedia Commons                                                  | [Public domain (U.S. government work)](https://commons.wikimedia.org/wiki/Template:PD-USGov-Military-Army)      | [File:Northrop B-2 3-view line drawing.png](https://commons.wikimedia.org/wiki/File:Northrop_B-2_3-view_line_drawing.png)                                 | Outline traced from the top view, straight edges redrawn as single lines and made symmetric; labels, dimension lines and other views removed; scaled to the recorded length and wingspan                   | 2026-10-01 |
 | `public/drawings/f-15-eagle.svg`          | f-15-eagle (top view), 13.045 m x 19.446 m         | U.S. Army (Field Manual 44-80); vector version by Malyszkz, via Wikimedia Commons                      | [Public domain (U.S. government work)](https://commons.wikimedia.org/wiki/Template:PD-USGov-Military-Army)      | [File:McDonnell Douglas F-15 Eagle 3-view.svg](https://commons.wikimedia.org/wiki/File:McDonnell_Douglas_F-15_Eagle_3-view.svg)                           | Outline traced from the top view; other views removed; scaled to the recorded length and wingspan                                                                                                          | 2026-10-01 |
@@ -165,7 +165,7 @@ from the U.S. government original (`F-35A_Top.jpg`, jsf.mil), not from the deriv
 
 ## Other images in `public/`
 
-| File                                                   | Source                                                        | Licence                                 | Status                                                                                                          | Verified   |
+| File                                                   | Source                                                        | License                                 | Status                                                                                                          | Verified   |
 | ------------------------------------------------------ | ------------------------------------------------------------- | --------------------------------------- | --------------------------------------------------------------------------------------------------------------- | ---------- |
 | `public/brand/orbix-app-logo.png`                      | Supplied by the owner                                         | Owner's own work; origin not documented | Created by the owner with the help of AI image generation tools (confirmed 2026-09-28). Kept by owner decision. | 2026-09-27 |
 | `public/brand/orbix-app-mark.png`                      | Supplied by the owner                                         | Owner's own work; origin not documented | Created with AI assistance; kept (owner, 2026-09-28)                                                            | 2026-09-27 |
@@ -191,9 +191,9 @@ from the U.S. government original (`F-35A_Top.jpg`, jsf.mil), not from the deriv
 
 1. Use a U.S. federal government work (NASA, USAF, U.S. Navy, DoD via DVIDS), or a Wikimedia Commons
    file whose page states Public Domain, CC0, CC BY or CC BY-SA. UK Crown copyright images need the
-   exact Open Government Licence attribution. No NC or ND licences, press kits, news sites,
+   exact Open Government Licence attribution. No NC or ND licenses, press kits, news sites,
    aggregators, flight-simulator renders or AI-generated images.
-2. Record author, licence, licence URL, source file page and modifications in the visual record and
+2. Record author, license, license URL, source file page and modifications in the visual record and
    in this table.
 3. Export from the full-resolution original with resize only, as WebP, never enlarged: at least
    twice the largest CSS size the slot displays (DPR 2), at most 2880 px on the long edge, and about

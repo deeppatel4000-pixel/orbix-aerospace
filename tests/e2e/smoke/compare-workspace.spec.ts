@@ -135,7 +135,7 @@ test.describe("Compare workspace", () => {
   test("fewer than two vehicles renders no matrix and no vehicle columns", async ({
     page,
   }) => {
-    // The `vehicles.length >= 2` gate is existing behaviour; the columns
+    // The `vehicles.length >= 2` gate is existing behavior; the columns
     // must respect it rather than rendering a lone vehicle.
     await page.goto(
       `${ROUTES.compare}?category=aircraft&vehicles=f-22-raptor`,
@@ -217,7 +217,7 @@ test.describe("Compare workspace at mobile width", () => {
       .toBeGreaterThan(0);
     const measured = await measure();
 
-    // The contained horizontal scroller is existing, working behaviour: the
+    // The contained horizontal scroller is existing, working behavior: the
     // matrix scrolls, the page does not.
     expect(measured.bodyOverflow).toBe(0);
     expect(measured.regionScrolls).toBe(true);

@@ -222,7 +222,7 @@ export function ComparisonTable({ result }: ComparisonTableProps) {
       )}
     >
       {/* Stretched so the sticky cell covers the band on a phone (page
-          ground, the colour behind every cell); its text is centred like
+          ground, the color behind every cell); its text is centered like
           the names beside it, so they share one optical line. */}
       <span className="orbix-label sticky left-0 z-10 flex items-center self-stretch bg-background py-3 pr-2.5 md:static">
         {/* Too wide for the 6.25rem phone column. */}

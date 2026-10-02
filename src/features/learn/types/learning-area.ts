@@ -1,7 +1,7 @@
 /**
  * A deep link into an Engineering Lab module, reachable at
  * `/engineering-lab#<anchorId>`. `label` matches the module's heading on
- * `/engineering-lab` so a reader recognises the destination. The heading
+ * `/engineering-lab` so a reader recognizes the destination. The heading
  * comes from the lab's `MODULES` map in engineering-dashboard.tsx, and
  * learning-areas.test.ts fails if the two drift apart.
  */

@@ -20,7 +20,7 @@ const toc: readonly ReadingTocItem[] = [
   { id: "why-this-way", title: "Why I built it this way" },
   { id: "learned", title: "What I learned" },
   { id: "checks", title: "How the engineering is checked" },
-  { id: "structure", title: "How it is organised" },
+  { id: "structure", title: "How it is organized" },
   { id: "facts", title: "Project facts" },
 ];
 
@@ -32,7 +32,7 @@ const toc: readonly ReadingTocItem[] = [
  * Every statement here must stay checkable against the repository: the first
  * commit date, the co-author lines in the git history, the stack in
  * package.json, the folder layers in the figure and the commands in
- * `.github/workflows`. "How it is organised" (`#structure`) is where the
+ * `.github/workflows`. "How it is organized" (`#structure`) is where the
  * removed `/showcase` page redirects.
  */
 export function BuildLogPage() {
@@ -57,8 +57,8 @@ export function BuildLogPage() {
           I plan to study aerospace engineering. I wanted one place where I
           could look at real aircraft and launch vehicles and work through the
           engineering behind them: lift and drag, the rocket equation, orbital
-          transfers, shock waves and atmospheric entry. ORBIX is that place, and
-          it is free for anyone to use.
+          transfers, shock waves and entry heating. ORBIX is that place, and it
+          is free for anyone to use.
         </p>
       </LegalSection>
 
@@ -84,7 +84,7 @@ export function BuildLogPage() {
           used AI coding assistants to build the software itself: Codex by
           OpenAI for the first version, then Claude Code by Anthropic. Working
           from my instructions, they wrote the code, the automated tests and the
-          page layouts. Claude Code also helped check the licences of the
+          page layouts. Claude Code also helped check the licenses of the
           photographs and draft the legal pages, which I reviewed and approved.
         </p>
         <p>
@@ -119,7 +119,7 @@ export function BuildLogPage() {
         </p>
         <p>
           I also learned what it is like to run simulations: change one input,
-          run it again, and see how a reentry trajectory or an orbital transfer
+          run it again, and see how an orbital transfer or a shock wave
           responds.
         </p>
         <p>
@@ -153,7 +153,7 @@ export function BuildLogPage() {
         </ButtonLink>
       </LegalSection>
 
-      <LegalSection id="structure" title="How it is organised">
+      <LegalSection id="structure" title="How it is organized">
         <p>
           The code is split into four layers. Vehicle records, mission presets
           and material data come first. Each calculator is a small function for

@@ -18,7 +18,7 @@ import {
  * the audit reported. Nothing asserted any of it, so it was invisible to CI.
  *
  * These tests pin the contract that replaced it (design v3, spec 6 and
- * 11: an open catalogue, no card chrome, no feature card): one media ratio
+ * 11: an open catalog, no card chrome, no feature card): one media ratio
  * per registry, a 16:10 thumbnail on every aircraft row and a 3:4 portrait
  * plate on every launch vehicle (rockets are tall; they are shown whole);
  * aircraft as ruled rows down the page, launch vehicles as one open row of
@@ -78,7 +78,7 @@ const CARD = ".orbix-vehicle-card";
 test.describe("Vehicle discovery", () => {
   test.skip(
     () => test.info().project.name !== "desktop",
-    "Card geometry is asserted once; responsive behaviour is covered by the overflow guards.",
+    "Card geometry is asserted once; responsive behavior is covered by the overflow guards.",
   );
 
   test("every aircraft appears on the registry", async ({ page }) => {
@@ -117,7 +117,7 @@ test.describe("Vehicle discovery", () => {
     expect(new Set(ratios).size, `ratios were ${ratios.join(", ")}`).toBe(1);
     expect(ratios[0]).toBeCloseTo(16 / 10, 2);
 
-    // A catalogue list: one entry per row, every row the same width, each
+    // A catalog list: one entry per row, every row the same width, each
     // below the one before. No feature row, no two-column span.
     const widths = new Set(geometry.map((card) => Math.round(card.width)));
     expect(widths.size, `row widths were ${[...widths].join(", ")}`).toBe(1);
@@ -206,7 +206,7 @@ test.describe("Vehicle discovery", () => {
   }) => {
     // A shared schema is deliberately NOT imposed: an aircraft's ceiling and
     // a rocket's thrust are not interchangeable rows. Spec 6: two key
-    // figures on every catalogue entry, the same two across a registry.
+    // figures on every catalog entry, the same two across a registry.
     const labelsPerCard = (page: Page) =>
       page
         .locator(CARD)

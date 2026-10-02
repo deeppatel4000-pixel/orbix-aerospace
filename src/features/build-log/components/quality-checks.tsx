@@ -28,7 +28,7 @@ const validateChecks: readonly QualityCheck[] = [
   },
   {
     check:
-      "Design rules: no file may add raw colours, gradients, shadows or other banned styles beyond its recorded baseline",
+      "Design rules: no file may add raw colors, gradients, shadows or other banned styles beyond its recorded baseline",
     command: "npm run check:design",
     tool: "Node script",
   },

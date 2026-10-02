@@ -369,7 +369,7 @@ export function AtmosphereCalculator() {
             <ul className="mt-4 list-disc space-y-2 pl-5 text-sm leading-6 text-muted">
               <li>
                 This model covers the constant-lapse-rate troposphere from sea
-                level through 11,000 metres.
+                level through 11,000 meters.
               </li>
               <li>
                 It assumes dry, ideal air in hydrostatic equilibrium and does

@@ -20,7 +20,7 @@ import { expect, ROUTES, test } from "../fixtures/orbix";
  *   SAME_SPEED      All three publish Mach, so the same speed row IS encoded.
  *                   Eligibility follows the vehicles actually selected.
  *
- *   ROCKETS         Height and liftoff mass are metres and kilograms
+ *   ROCKETS         Height and liftoff mass are meters and kilograms
  *                   throughout, but thrust mixes kN and MN.
  */
 

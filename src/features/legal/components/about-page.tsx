@@ -15,7 +15,7 @@ import { getSitePhoto } from "@/features/vehicles/data/gallery";
  * aircraft shows. Below 40rem it bleeds across the 16px page gutters, like
  * the profile and Learn plates; to 80rem it takes the full container
  * width; from 80rem it starts at the text column and bleeds to the right
- * viewport edge (the wrapper clips the scrollbar's width). The catalogue
+ * viewport edge (the wrapper clips the scrollbar's width). The catalog
  * caption sits on the ground below, in the text column (spec 6).
  */
 function AboutPlate() {

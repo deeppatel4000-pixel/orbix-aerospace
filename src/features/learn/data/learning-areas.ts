@@ -427,7 +427,7 @@ const allLearningAreas: readonly LearningArea[] = [
             unit: "m³/s²",
           },
           {
-            meaning: "Orbit radius, from the centre of the central body",
+            meaning: "Orbit radius, from the center of the central body",
             symbol: "r",
             unit: "m",
           },
@@ -474,7 +474,7 @@ const allLearningAreas: readonly LearningArea[] = [
       {
         description: "How ORBIX itself is structured and checked.",
         href: "/build-log#structure",
-        label: "How ORBIX is organised",
+        label: "How ORBIX is organized",
       },
     ],
     furtherReading: [
@@ -496,7 +496,7 @@ const allLearningAreas: readonly LearningArea[] = [
         text: "An engineering report states its inputs, assumptions, method, results with units, and limits, so a reader can repeat the work.",
       },
       {
-        text: "A briefing summarises a report for a decision: what was analysed, what was found, and what remains uncertain.",
+        text: "A briefing summarizes a report for a decision: what was analyzed, what was found, and what remains uncertain.",
       },
     ],
     labAnchors: [

@@ -107,14 +107,14 @@ export function TermsPage() {
       <LegalSection id="intellectual-property" title="Intellectual property">
         <p>
           The ORBIX source code is released under the MIT License. The code and
-          the licence text are published at{" "}
+          the license text are published at{" "}
           <a href={siteLegal.sourceCodeUrl}>the ORBIX repository on GitHub</a>.
         </p>
         <p>
           Vehicle photographs are not covered by the MIT License. Each remains
           under its own terms, set by its author or agency, as listed on the{" "}
           <Link href="/credits">image credits page</Link>. Fonts, icons and
-          software libraries are also used under their own licences, listed on
+          software libraries are also used under their own licenses, listed on
           the same page.
         </p>
         <p>
@@ -151,7 +151,7 @@ export function TermsPage() {
 
       <LegalSection id="external-links" title="External links">
         <p>
-          ORBIX links to other websites, such as image source pages and licence
+          ORBIX links to other websites, such as image source pages and license
           texts. Those sites are run by others. ORBIX does not control them and
           is not responsible for their content, availability or privacy
           practices.

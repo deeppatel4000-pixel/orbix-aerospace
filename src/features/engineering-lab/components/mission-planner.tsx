@@ -146,7 +146,7 @@ export function planCustom(values: CustomValues): {
  * V2 Mission Planner (v4 plan, section 5) with the V3 ledger under it. Pick
  * a preset or set your own altitudes; every step is listed in order, the
  * selected one is drawn on the Transfer Explorer's canvas, and steps the
- * models do not cover are listed as not modelled.
+ * models do not cover are listed as not modeled.
  */
 export function MissionPlanner() {
   const ids = { choice: useId(), steps: useId() };

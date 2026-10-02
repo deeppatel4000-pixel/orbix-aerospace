@@ -78,7 +78,7 @@ export function thrustText(thrust: Measurement<MeasurementUnit>) {
 /**
  * The classification line, "Two-stage launch vehicle, partially reusable",
  * with the visual record's `reuseLabel` in place of the reuse clause where
- * one is set, so a design still in development is not labelled fully
+ * one is set, so a design still in development is not labeled fully
  * reusable as a fact.
  */
 export function rocketClassification(rocket: Rocket) {

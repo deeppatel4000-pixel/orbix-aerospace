@@ -12,7 +12,7 @@ import {
  * replaced the eight mission modules, the replay and the dashboard.
  *
  * The contracts: every step is listed in flight order; steps the models do
- * not cover are listed as not modelled and carry no number; Mars is preset
+ * not cover are listed as not modeled and carry no number; Mars is preset
  * allowances, never presented as computed; the reader's own altitudes run
  * through the same analyses, with errors named per field; and nothing
  * claims a mission is feasible.
@@ -56,7 +56,7 @@ test.describe("Mission planner", () => {
     await expect(missions(tool).getByRole("radio").first()).toBeChecked();
     const steps = flightPlan(tool).getByRole("listitem");
     await expect(steps.first()).toContainText("Launch");
-    await expect(steps.first()).toContainText("Not modelled.");
+    await expect(steps.first()).toContainText("Not modeled.");
     const labels = (await steps.allTextContents()).map((text) => text.trim());
     const order = ["Launch", "Burn 1", "Coast", "Burn 2"].map((label) =>
       labels.findIndex((text) => text.startsWith(label)),
@@ -70,12 +70,12 @@ test.describe("Mission planner", () => {
     expectNoUnexpectedConsoleErrors(consoleMessages);
   });
 
-  test("a step that is not modelled carries no delta-v", async ({ page }) => {
+  test("a step that is not modeled carries no delta-v", async ({ page }) => {
     const tool = await openPlanner(page);
 
     const launch = flightPlan(tool)
       .getByRole("listitem")
-      .filter({ hasText: "Not modelled." })
+      .filter({ hasText: "Not modeled." })
       .first();
     await expect(launch).toBeVisible();
     await expect(launch).not.toContainText("m/s");

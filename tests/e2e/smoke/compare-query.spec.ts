@@ -16,7 +16,7 @@ import {
  * regression in `parseComparisonQuery` or the repository lookup would have
  * shipped silently.
  *
- * Every expectation below mirrors behaviour that already exists in
+ * Every expectation below mirrors behavior that already exists in
  * `src/features/compare/utils/parse-comparison-query.ts` and
  * `src/features/compare/data/comparison-repository.ts`:
  *
@@ -28,7 +28,7 @@ import {
  *   - Ids that do not match a known vehicle are silently filtered out by
  *     `selectById`, rather than erroring.
  *
- * No new product behaviour is asserted here.
+ * No new product behavior is asserted here.
  */
 
 const COMPARE = ROUTES.compare;
@@ -171,7 +171,7 @@ test.describe("Compare query parameters", () => {
     ).toBe(4);
   });
 
-  test("duplicate and whitespace-padded ids are normalised", async ({
+  test("duplicate and whitespace-padded ids are normalized", async ({
     page,
   }) => {
     await page.goto(
@@ -188,7 +188,7 @@ test.describe("Compare query parameters", () => {
     ).toHaveCount(1);
   });
 
-  test("an unrecognised category falls back to aircraft", async ({
+  test("an unrecognized category falls back to aircraft", async ({
     consoleMessages,
     page,
   }) => {

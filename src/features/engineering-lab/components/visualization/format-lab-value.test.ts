@@ -21,13 +21,13 @@ describe("formatLabValue", () => {
 });
 
 describe("altitude readouts", () => {
-  it("reports altitudes of 1 km or more in kilometres", () => {
+  it("reports altitudes of 1 km or more in kilometers", () => {
     expect(altitudeReadout(408_000)).toEqual({ unit: "km", value: 408 });
     expect(formatLabAltitude(200_000)).toBe("200 km");
     expect(formatLabAltitude(35_786_000)).toBe("35,786 km");
   });
 
-  it("keeps metres below 1 km and passes undefined through", () => {
+  it("keeps meters below 1 km and passes undefined through", () => {
     expect(formatLabAltitude(850)).toBe("850 m");
     expect(altitudeReadout(undefined)).toEqual({
       unit: "m",

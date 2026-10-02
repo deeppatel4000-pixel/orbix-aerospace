@@ -1,7 +1,7 @@
 import { DiagramPlate } from "@/components/ui/diagram-plate";
 
 /**
- * The layer figure of the build log's "How it is organised" section, moved
+ * The layer figure of the build log's "How it is organized" section, moved
  * from the removed `/showcase` page (v4 plan section 3). The drawing is
  * unchanged; the per-layer description list stayed behind, because the
  * section's short paragraph names the layers instead (build log budget,
@@ -81,7 +81,7 @@ function layerMid(index: number): number {
  * so the text stays legible at a phone width. The list below carries the
  * full paths.
  * React is set apart by the dashed presentation boundary above it, not by
- * colour. Every arrow is a real import edge, pointing from the imported layer to the
+ * color. Every arrow is a real import edge, pointing from the imported layer to the
  * importing one: Calculators into Analyses, Data into Analyses (left rail),
  * and every upper layer into React (right rail). Calculators import no other
  * layer.
@@ -150,7 +150,7 @@ function ArchitectureDiagram() {
             />
             {/* 12 units draw at about 17px at 24rem; below 40rem 14 units
                 keep about 14px at a 320px viewport, and the name is
-                centred in the block without the folder line. */}
+                centered in the block without the folder line. */}
             <text
               className="text-[12px] max-sm:hidden"
               dominantBaseline="central"

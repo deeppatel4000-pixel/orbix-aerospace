@@ -116,7 +116,7 @@ const creditColumns: readonly DataTableColumn<ImageCredit>[] = [
       <span className="flex min-w-20 flex-col gap-2 sm:min-w-32 md:min-w-0 lg:flex-row lg:items-start lg:gap-3">
         <span className="lg:order-last">{item.vehicleName}</span>
         {/* One fixed 112x70 box for every thumbnail (64x40 below 40rem,
-            so the pinned column leaves room for Credit, Licence and
+            so the pinned column leaves room for Credit, License and
             Source), filled with object-fit: cover at each photograph's
             card crop, so aircraft and launch vehicle rows share one
             thumbnail column and one left edge for the names.
@@ -156,14 +156,14 @@ const creditColumns: readonly DataTableColumn<ImageCredit>[] = [
         ) : (
           <a className="orbix-link" href={item.licenseUrl}>
             {item.license}
-            <span className="sr-only"> (licence text)</span>
+            <span className="sr-only"> (license text)</span>
           </a>
         )}
       </span>
     ),
-    // On a phone licence and source are set under the credit.
+    // On a phone license and source are set under the credit.
     foldInto: "credit",
-    header: "Licence",
+    header: "License",
     key: "licence",
   },
   {
@@ -221,12 +221,12 @@ const drawingColumns: readonly DataTableColumn<
       <span className="relative block min-w-32 md:min-w-0">
         <a className="orbix-link" href={item.licenseUrl}>
           {item.license}
-          <span className="sr-only"> (licence text)</span>
+          <span className="sr-only"> (license text)</span>
         </a>
       </span>
     ),
     foldInto: "credit",
-    header: "Licence",
+    header: "License",
     key: "licence",
   },
   {
@@ -251,9 +251,9 @@ const drawingColumns: readonly DataTableColumn<
 ];
 
 /**
- * Shared column widths from 48rem (Vehicle 30%, Credit 26%, Licence 21%,
+ * Shared column widths from 48rem (Vehicle 30%, Credit 26%, License 21%,
  * Source 23%), so the aircraft and launch vehicle tables line up when
- * stacked, like the pages of one catalogue.
+ * stacked, like the pages of one catalog.
  */
 const creditTableClass = [
   "mt-4",
@@ -276,7 +276,7 @@ const softwareColumns: readonly DataTableColumn<SoftwareItem>[] = [
         <span className="sr-only"> for {item.name}</span>
       </a>
     ),
-    header: "Licence",
+    header: "License",
     key: "licence",
   },
 ];
@@ -306,22 +306,22 @@ export function CreditsPage() {
     <LegalPage
       lead={
         DRAWINGS_IN_USE
-          ? "Who made the photographs, drawings, fonts, icons and software that ORBIX uses, and the licence each one is used under."
-          : "Who made the photographs, fonts, icons and software that ORBIX uses, and the licence each one is used under."
+          ? "Who made the photographs, drawings, fonts, icons and software that ORBIX uses, and the license each one is used under."
+          : "Who made the photographs, fonts, icons and software that ORBIX uses, and the license each one is used under."
       }
-      title="Image credits and licences"
+      title="Image credits and licenses"
       toc={toc}
     >
       <LegalSection id="photographs" title="Vehicle photographs">
         <p>
           Each vehicle photograph belongs to its author or agency and stays
-          under its own licence. The MIT License that covers the ORBIX code does
+          under its own license. The MIT License that covers the ORBIX code does
           not apply to these images.
         </p>
         {hasGaps ? (
           <p>
             Where a field reads &ldquo;{NOT_RECORDED}&rdquo;, the credit or
-            licence for that image has not yet been verified against the
+            license for that image has not yet been verified against the
             original file. If you know the correct credit, or you hold rights in
             an image and want it credited differently or removed, email{" "}
             <ContactEmailLink />.

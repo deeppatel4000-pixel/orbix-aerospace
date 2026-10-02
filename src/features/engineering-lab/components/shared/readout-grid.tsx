@@ -12,7 +12,7 @@ export type ReadoutGridProps = ComponentPropsWithoutRef<"dl"> & {
   /**
    * Names a group of figures inside a larger result. Rendered as a plain
    * sentence-case sans head above the list (under a 1px rule, no fill),
-   * and the group becomes a `<section>` labelled by it.
+   * and the group becomes a `<section>` labeled by it.
    */
   title?: ReactNode;
 };

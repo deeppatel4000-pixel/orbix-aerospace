@@ -28,7 +28,7 @@ describe("analyzeShockCondition", () => {
     expect(result.downstream.temperatureKelvin).toBeCloseTo(486.253125, 8);
   });
 
-  it("uses the standard atmosphere for a 10,000 metre Mach 3 shock", () => {
+  it("uses the standard atmosphere for a 10,000 meter Mach 3 shock", () => {
     const result = analyzeShockCondition({
       altitudeMeters: 10_000,
       machNumber: 3,

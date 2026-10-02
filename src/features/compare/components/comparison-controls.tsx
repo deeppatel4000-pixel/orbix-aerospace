@@ -253,7 +253,7 @@ export function ComparisonControls({
           {isAircraft ? "Aircraft" : "Launch vehicles"}
         </legend>
 
-        {/* Below 40rem each vehicle is a ruled catalogue row: checkbox,
+        {/* Below 40rem each vehicle is a ruled catalog row: checkbox,
             outline, name and maker. From 40rem the rows become open tiles,
             three across and five from 64rem: the outline, then the name
             with the checkbox at its right end, the maker and the column

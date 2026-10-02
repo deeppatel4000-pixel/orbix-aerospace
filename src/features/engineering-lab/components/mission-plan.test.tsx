@@ -39,13 +39,13 @@ describe("mission plan", () => {
     );
   });
 
-  it("lists launch and entry as not modelled, with no number", () => {
+  it("lists launch and entry as not modeled, with no number", () => {
     const iss = PRESET_PLANS.find((plan) => plan.id === "iss-style-resupply")!;
     const unmodelled = iss.steps.filter((step) => step.kind === "not-modelled");
     expect(unmodelled.map((step) => step.id)).toEqual(["launch", "entry"]);
     for (const step of unmodelled) {
       expect(step.deltaVMetresPerSecond).toBeUndefined();
-      expect(step.text.toLowerCase()).toContain("not modelled");
+      expect(step.text.toLowerCase()).toContain("not modeled");
     }
   });
 

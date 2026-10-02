@@ -17,7 +17,7 @@ const FIGURE_SEPARATOR = /(?<=\d)([.,])(?=\d)/;
  * B612 Mono draws `.` and `,` at the far left of their 0.65em cell, so
  * "3.25" reads as "3. 25" and "50,000" as "50, 000". This wraps each
  * separator between digits in `.orbix-num-sep`, which nudges the mark to
- * the centre of its cell. The text content (copy, search, screen readers)
+ * the center of its cell. The text content (copy, search, screen readers)
  * is unchanged.
  *
  * Strings and numbers are formatted. Arrays, fragments and plain HTML

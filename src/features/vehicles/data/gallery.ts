@@ -28,26 +28,26 @@ export interface VehiclePhoto {
   /** Plain description of what the photograph shows. */
   readonly alt: string;
   /**
-   * Catalogue caption body, one sentence, without the figure number or the
-   * credit (spec v3 section 6: "Fig. 3  <caption> <credit>, <licence>.
+   * Catalog caption body, one sentence, without the figure number or the
+   * credit (spec v3 section 6: "Fig. 3  <caption> <credit>, <license>.
    * Source.").
    */
   readonly caption: string;
-  /** Photographer or agency, as the licence asks to be credited. */
+  /** Photographer or agency, as the license asks to be credited. */
   readonly credit: string;
   /** Intrinsic height of the file in pixels. */
   readonly height: number;
   /** Stable id: the file name without extension. */
   readonly id: string;
-  /** Licence name, for example "Public domain (U.S. government work)" or "CC BY 2.0". */
+  /** License name, for example "Public domain (U.S. government work)" or "CC BY 2.0". */
   readonly license: string;
-  /** Page that states the licence terms. */
+  /** Page that states the license terms. */
   readonly licenseUrl: string;
   /** What was changed from the original file. */
   readonly modifications: string;
   /**
    * `object-position` that keeps the vehicle in frame when the plate crops
-   * the photograph; the subject's centre, measured on the file.
+   * the photograph; the subject's center, measured on the file.
    */
   readonly objectPosition: string;
   /** Human-readable file page for the original, not the raw image URL. */
@@ -308,7 +308,7 @@ const additionalPhotos = {
     width: 2400,
   }),
   "f-15-eagle-takeoff": photo({
-    alt: "F-15C Eagle climbing away after take-off against a grey sky, afterburners lit",
+    alt: "F-15C Eagle climbing away after take-off against a gray sky, afterburners lit",
     caption:
       "F-15C Eagle of the 67th Fighter Squadron taking off from Kadena Air Base, Japan, September 2020.",
     credit: "U.S. Air Force photo by Staff Sgt. Peter Reft",

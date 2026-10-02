@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { B612_Mono, IBM_Plex_Sans } from "next/font/google";
 
 import { siteConfig } from "@/config/site";
+import { siteLegal } from "@/config/site-legal";
 
 import "./globals.css";
 
@@ -44,7 +45,21 @@ const b612Mono = B612_Mono({
   weight: ["400", "700"],
 });
 
-const productionUrl = "https://orbix-aerospace.vercel.app";
+const productionUrl = siteConfig.url;
+
+const structuredData = {
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  alternateName: ["Orbix", "ORBIX aerospace"],
+  author: {
+    "@type": "Person",
+    name: siteLegal.operatorName,
+  },
+  description: siteConfig.description,
+  inLanguage: "en-US",
+  name: siteConfig.wordmark,
+  url: siteConfig.url,
+};
 
 export const metadata: Metadata = {
   alternates: {
@@ -100,7 +115,15 @@ export default function RootLayout({
       {/* Browser extensions such as Grammarly add attributes to <body> before
           React hydrates. suppressHydrationWarning covers only this element's
           own attributes, so real mismatches deeper in the tree still warn. */}
-      <body suppressHydrationWarning>{children}</body>
+      <body suppressHydrationWarning>
+        {children}
+        <script
+          // Structured data so search engines know the site's name and
+          // author. Static JSON built from config, no user input.
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
+          type="application/ld+json"
+        />
+      </body>
     </html>
   );
 }

@@ -15,9 +15,9 @@
  */
 
 export interface StretchMapOptions {
-  /** Radius of the central body, metres. */
+  /** Radius of the central body, meters. */
   readonly planetRadiusMetres: number;
-  /** Highest altitude in view, metres; it maps to `drawnMaxRadius`. */
+  /** Highest altitude in view, meters; it maps to `drawnMaxRadius`. */
   readonly maxAltitudeMetres: number;
   /**
    * Radius of the planet in drawing units while heights are stretched. In
@@ -34,25 +34,25 @@ export interface StretchMap {
   readonly drawnPlanetRadius: number;
   readonly drawnMaxRadius: number;
   readonly maxAltitudeMetres: number;
-  /** k: drawing units per metre of altitude. */
+  /** k: drawing units per meter of altitude. */
   readonly altitudeUnitsPerMetre: number;
-  /** Drawing units per metre for the planet itself. */
+  /** Drawing units per meter for the planet itself. */
   readonly planetUnitsPerMetre: number;
   /**
-   * How many times larger a metre of altitude is drawn than a metre of the
+   * How many times larger a meter of altitude is drawn than a meter of the
    * planet's radius: 1 when the drawing is to scale, above 1 when heights
    * are stretched. Never below 1.
    */
   readonly stretchFactor: number;
   /** True when the whole drawing is to one scale (stretchFactor 1). */
   readonly toScale: boolean;
-  /** Altitude (metres) to drawn radius. */
+  /** Altitude (meters) to drawn radius. */
   altitudeToDrawn(altitudeMetres: number): number;
-  /** Drawn radius back to altitude (metres). */
+  /** Drawn radius back to altitude (meters). */
   drawnToAltitude(drawnRadius: number): number;
-  /** Distance from the planet's centre (metres) to drawn radius. */
+  /** Distance from the planet's center (meters) to drawn radius. */
   radiusToDrawn(radiusMetres: number): number;
-  /** Drawn radius back to distance from the centre (metres). */
+  /** Drawn radius back to distance from the center (meters). */
   drawnToRadius(drawnRadius: number): number;
 }
 

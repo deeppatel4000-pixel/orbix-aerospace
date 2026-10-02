@@ -18,7 +18,7 @@ export interface VehicleSpec {
   readonly unit?: string;
   /**
    * The figure in the other unit system or the source's qualifier. Kept
-   * for callers; a catalogue entry shows only the value and unit.
+   * for callers; a catalog entry shows only the value and unit.
    */
   readonly secondary?: ReactNode;
 }
@@ -30,12 +30,12 @@ export interface VehicleSpec {
 export type VehicleRecordCardVariant = "compact" | "default";
 
 /**
- * The entry's arrangement (spec 6: open catalogue, no card chrome).
+ * The entry's arrangement (spec 6: open catalog, no card chrome).
  *
  * - `stacked`: an open grid entry, the photograph as a hard-edged plate
  *   and the caption block under it on the ground; below 40rem a row with
  *   a portrait thumbnail, for the one-column phone registry.
- * - `row`: a catalogue row: thumbnail, name and one-line summary, two key
+ * - `row`: a catalog row: thumbnail, name and one-line summary, two key
  *   figures right-aligned and an arrow. The list around it draws the rule
  *   between rows.
  */
@@ -256,7 +256,7 @@ export function VehicleRecordCard({
         className={cn(
           "orbix-vehicle-card relative gap-5",
           // Below 40rem the registry is one column: the entry sets as a
-          // catalogue row, portrait thumbnail beside the text.
+          // catalog row, portrait thumbnail beside the text.
           "max-sm:grid max-sm:grid-cols-[4.5rem_minmax(0,1fr)] max-sm:items-start max-sm:gap-x-5 max-sm:py-5",
         )}
         data-layout={layout}

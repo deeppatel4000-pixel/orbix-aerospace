@@ -21,7 +21,7 @@ const MAXIMUM_RENDERED_POINTS = 96;
 
 /** The chart's viewBox width, user units. */
 const CHART_WIDTH = 660;
-/** Each vertical axis is split into this many labelled steps. */
+/** Each vertical axis is split into this many labeled steps. */
 const GRID_STEPS = 4;
 
 /** The smallest 1, 2, 2.5 or 5 times a power of ten at or above `raw`. */
@@ -466,7 +466,7 @@ export function ReentryProfileChart({
         </g>
 
         {/* Callout text: words in Plex Sans (muted), figures in B612 Mono
-         * (ink), with a ground-coloured outline so the text stays legible
+         * (ink), with a ground-colored outline so the text stays legible
          * where it crosses a curve or gridline. */}
         <g
           paintOrder="stroke"

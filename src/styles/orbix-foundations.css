@@ -91,7 +91,7 @@ a {
    * TYPE ROLES (spec 5)
    *
    * Display cut: Plex Sans at 84% width, weight 620 to 650, tracking
-   * -0.035em to -0.045em, line-height 0.95 to 1. Sentence case, one colour.
+   * -0.035em to -0.045em, line-height 0.95 to 1. Sentence case, one color.
    * ------------------------------------------------------------------ */
 
   .font-display {
@@ -142,7 +142,7 @@ a {
     line-height: 1.35;
   }
 
-  /* A 2px division-colour rule, 48px wide, above a section heading
+  /* A 2px division-color rule, 48px wide, above a section heading
      (spec 6). Put the class on the heading. */
   .orbix-heading-rule::before {
     background: var(--orbix-accent);

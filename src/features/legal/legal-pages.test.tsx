@@ -114,7 +114,7 @@ describe("formatLegalDate", () => {
     expect(formatLegalDate("2026-01-01")).toBe("1 January 2026");
   });
 
-  it("returns unrecognised input unchanged", () => {
+  it("returns unrecognized input unchanged", () => {
     expect(formatLegalDate("soon")).toBe("soon");
   });
 });

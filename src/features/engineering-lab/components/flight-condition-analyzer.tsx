@@ -449,7 +449,7 @@ export function FlightConditionAnalyzer() {
             <ul className="mt-4 list-disc space-y-2 pl-5 text-sm leading-6 text-muted">
               <li>
                 The atmosphere model is limited to the standard troposphere from
-                0 through 11,000 metres.
+                0 through 11,000 meters.
               </li>
               <li>
                 Lift and drag coefficients must describe the same flight

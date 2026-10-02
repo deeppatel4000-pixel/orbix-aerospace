@@ -522,7 +522,7 @@ export const verificationGroups: readonly VerificationGroup[] = [
         location:
           "Problem 4.19, Hohmann transfer from a 200 km parking orbit to geosynchronous altitude",
         notes: [
-          "The source subtracts speeds it has already rounded to whole metres per second (3,075 − 1,597 m/s for the second burn), then adds the rounded burns. ORBIX keeps full precision, so its second burn and total differ from the printed figures by about 1 m/s.",
+          "The source subtracts speeds it has already rounded to whole meters per second (3,075 − 1,597 m/s for the second burn), then adds the rounded burns. ORBIX keeps full precision, so its second burn and total differ from the printed figures by about 1 m/s.",
         ],
         rows: [
           {

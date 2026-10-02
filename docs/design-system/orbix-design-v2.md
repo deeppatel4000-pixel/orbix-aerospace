@@ -7,17 +7,17 @@ file ownership still apply unless changed here).
 ## 1. Intent
 
 ORBIX v1 (commit c0ee291) had a strong mood: a blue-black instrument-panel ground, full-bleed
-photographs behind tall condensed headlines, a different accent colour per section, and a faint
+photographs behind tall condensed headlines, a different accent color per section, and a faint
 blueprint grid. It also had AI-generated backdrops, violet glows, gradient buttons, pills, fake
 telemetry and "cinematic" copy. The first redesign removed those and, with them, the mood.
 
 v2 restores the mood with only honest materials: real public-domain photography, real data set as
 instrument readouts, real technical linework, and strong typography. It must read like a
-well-made flight manual or museum catalogue built by an engineer, never like a SaaS template.
+well-made flight manual or museum catalog built by an engineer, never like a SaaS template.
 
 Reference research (read before designing, do not copy):
 `C:\Users\Deep\AppData\Local\Temp\claude\C--Users-Deep-dev-orbix\0aef5163-b2c7-4e1b-945a-29343ae8c21d\scratchpad\research-v2\`
-(`before.md` audit of v1 with file references, `tells.md` catalogue of vibe-coded tells,
+(`before.md` audit of v1 with file references, `tells.md` catalog of vibe-coded tells,
 `taste.md` digest of the taste skills, `refs.md` aerospace reference sites). Screenshots of v1:
 `.playwright-mcp/before/*.png`; the bland v1.5: `.playwright-mcp/current/*.png`.
 
@@ -37,7 +37,7 @@ Reference research (read before designing, do not copy):
 - No cursor effects, magnetic buttons, custom cursors, scroll hijacking, parallax, infinite
   decorative animation or over-the-top scroll reveals.
 - WCAG 2.2 AA: text contrast >= 4.5:1, UI boundaries >= 3:1, visible focus, keyboard operable,
-  label-in-name, reduced motion honoured.
+  label-in-name, reduced motion honored.
 
 ## 3. Anti-template rules (from research)
 
@@ -45,7 +45,7 @@ Avoid these vibe-coded signatures even though they are not owner rules:
 
 - Fonts: Inter, Geist, Space Grotesk, Space Mono, DM Sans, Sora, Outfit, Manrope, Plus Jakarta Sans,
   Instrument Serif, Fraunces. The italic-serif accent word trick.
-- Gradient text, glassmorphism panels, glow shadows, blurred colour orbs, aurora backgrounds.
+- Gradient text, glassmorphism panels, glow shadows, blurred color orbs, aurora backgrounds.
 - Centered hero with a pill badge above the H1 and two buttons below.
 - Three equal feature cards with an icon in a tinted rounded square above each title.
 - Logo clouds, stat banners about the site itself, testimonial carousels, FAQ accordions.
@@ -74,7 +74,7 @@ formula against page / surface / raised.
 | `--accent-lab`      | `#78bdff` | engineering lab, learn, verification    | 10.16                             | 9.74       | 9.06      |
 | `--on-accent`       | `#03060c` | text on accent fills                    | 11.65 on space, 10.09 on aircraft |            |           |
 
-Status colours only where they encode state: success `#72e9b5`, warning `#f2bc68`,
+Status colors only where they encode state: success `#72e9b5`, warning `#f2bc68`,
 danger `#ff7d83` (all >= 7:1 on page).
 
 Division accents: each route sets `data-division="space|aircraft|lab"` on its main wrapper; the
@@ -173,7 +173,7 @@ Weights: 400, 500, 600, 650 (display only).
   `min-height: min(88svh, 60rem)`, image `saturate(0.85) contrast(1.05)`, overlay
   `linear-gradient(90deg, rgb(3 6 12 / 0.96) 0%, rgb(3 6 12 / 0.86) 38%, rgb(3 6 12 / 0.35) 70%,
 rgb(3 6 12 / 0.6) 100%)` plus a bottom fade to `--bg-page`. Credit line bottom-right in B612 Mono
-  11px `--text-muted` with the licence and source link. On mobile the photo sits above the text
+  11px `--text-muted` with the license and source link. On mobile the photo sits above the text
   (not behind) at 4:3.
   **Amendment (orchestrator approved, F-fix):** from 48rem to 80rem the content column is capped
   at `min(46rem, 58vw)` and the horizontal overlay eases with no knee: `--bg-page` at 96 percent
@@ -198,10 +198,10 @@ rgb(3 6 12 / 0.6) 100%)` plus a bottom fade to `--bg-page`. Credit line bottom-r
 - **Tables:** hairline rows, B612 Mono tabular numbers right-aligned, sticky first column on mobile
   scroll, caption above in sans 500.
   Documented exception: the compare spec sheet keeps its vehicle columns left-aligned, because
-  it is read across each row, its cells mix text and labelled figures, and its magnitude bars grow
+  it is read across each row, its cells mix text and labeled figures, and its magnitude bars grow
   from the left edge.
 - **Forms:** label above (sans 500 14px), input 44px, 4px radius, `--bg-raised`, 1px
-  `--border-control`, unit suffix in B612 Mono, inline error below in danger colour with icon.
+  `--border-control`, unit suffix in B612 Mono, inline error below in danger color with icon.
 - **Header:** opaque `--bg-page` at 92 percent with no blur, 64px, logo left at its natural aspect,
   text links right, active link has 2px accent rule, 1px accent hairline under the bar at 45
   percent opacity. Mobile: full-height sheet menu, links 24px display cut, no stagger gimmicks.
@@ -248,7 +248,7 @@ rgb(3 6 12 / 0.6) 100%)` plus a bottom fade to `--bg-page`. Credit line bottom-r
   numbered tool index (B612 Mono numbers) grouped by discipline; each tool shows its equation block
   prominently above the form.
 - **Learn:** six pathways as numbered chapters with a huge faint numeral, a "Why it matters" pull
-  quote with a top rule (not a coloured left stripe), equation blocks, and a link to the matching
+  quote with a top rule (not a colored left stripe), equation blocks, and a link to the matching
   lab tool.
 - **Showcase, Verification, Build log, About, legal pages:** editorial single column (68ch) with a
   wider figure track for diagrams and tables; diagrams shown large with registration marks.

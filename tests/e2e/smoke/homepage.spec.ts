@@ -52,7 +52,7 @@ function sectionHrefs(page: Page, titleId: string) {
 test.describe("Homepage", () => {
   test.skip(
     () => test.info().project.name !== "desktop",
-    "Structure is viewport-independent; overflow guards cover responsive behaviour.",
+    "Structure is viewport-independent; overflow guards cover responsive behavior.",
   );
 
   test("has exactly one h1", async ({ page }) => {

@@ -440,8 +440,8 @@ export function ScenarioLibrary() {
                 aria-labelledby={titleId}
                 className={
                   // Open ruled rows, no box (spec 3.2). The loaded scenario
-                  // is marked by the "Loaded" tag and a division-colour
-                  // rule; loading one changes only colour and moves nothing.
+                  // is marked by the "Loaded" tag and a division-color
+                  // rule; loading one changes only color and moves nothing.
                   cn(
                     "border-t pt-4 pb-2",
                     loaded ? "border-accent" : "border-border-subtle",

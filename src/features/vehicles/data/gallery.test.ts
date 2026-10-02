@@ -53,7 +53,7 @@ describe("photo slot map", () => {
 
   it("gives every replaced photograph a new file name, so no image cache can pair a new caption with an old file", () => {
     // Files re-exported or replaced in v4 that kept their pre-v4 names would
-    // be served from the optimiser and CDN caches as the old renditions.
+    // be served from the optimizer and CDN caches as the old renditions.
     const preV4Names = [
       "/images/aircraft/f-15-eagle.webp",
       "/images/aircraft/f-22-raptor.webp",
@@ -121,7 +121,7 @@ describe("vehicle drawings", () => {
   });
 
   it.each(vehicles.map((vehicle) => [vehicle.id, vehicle]))(
-    "%s is normalised to its recorded dimensions",
+    "%s is normalized to its recorded dimensions",
     (id, vehicle) => {
       const drawing = getVehicleDrawing(id)!;
       const xs: number[] = [];
@@ -155,7 +155,7 @@ describe("vehicle drawings", () => {
 
       const svg = readFileSync(join(PUBLIC, drawing.src), "utf8");
       expect(svg).toContain(drawing.d);
-      // A standalone file must size from its viewBox (metre units are not
+      // A standalone file must size from its viewBox (meter units are not
       // valid SVG lengths) and stay visible on the dark ground.
       expect(svg).not.toMatch(/<svg[^>]*\s(width|height)=/);
       expect(svg).not.toContain("currentColor");

@@ -50,7 +50,7 @@ const ROUTES_UNDER_TEST: ReadonlyArray<readonly [string, string]> = [
 ];
 
 test.describe("Security headers", () => {
-  // Header behaviour is server-side and identical across viewports, so
+  // Header behavior is server-side and identical across viewports, so
   // running this in one project is sufficient and keeps the suite fast.
   test.skip(
     () => test.info().project.name !== "desktop",

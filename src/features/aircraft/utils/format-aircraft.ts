@@ -36,7 +36,7 @@ const engineTypeLabels: Record<AircraftEngineType, string> = {
 };
 
 const variantStatusLabels: Record<AircraftVariantStatus, string> = {
-  cancelled: "Cancelled",
+  cancelled: "Canceled",
   concept: "Concept",
   "in-service": "In service",
   prototype: "Prototype",

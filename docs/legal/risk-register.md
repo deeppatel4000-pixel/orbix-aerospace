@@ -13,7 +13,7 @@ watched), **Owner action** (needs a decision or fact only the operator can suppl
 | #   | Risk                                   | Status       | Summary                                                                                                                                                                                                                   |
 | --- | -------------------------------------- | ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 1   | Third-party and AI-generated images    | Mitigated    | Images are being replaced with verified public-domain or openly licensed files, each recorded in `docs/assets/image-provenance.md` and credited on `/credits`. AI-generated environment plates are being removed.         |
-| 2   | Trademarks of named organisations      | Mitigated    | Vehicle, manufacturer, and agency names are used only to identify subjects. `NOTICE.md`, the README, and `/credits` state non-affiliation and no endorsement.                                                             |
+| 2   | Trademarks of named organizations      | Mitigated    | Vehicle, manufacturer, and agency names are used only to identify subjects. `NOTICE.md`, the README, and `/credits` state non-affiliation and no endorsement.                                                             |
 | 3   | Personal contact email published       | Owner action | `deep.patel4000@gmail.com` is published as a temporary contact. Replace it with a dedicated ORBIX address in `src/config/site-legal.ts`, `README.md`, and `NOTICE.md`.                                                    |
 | 4   | ORBIX logo provenance                  | Accepted     | The owner confirmed on 28 September 2026 that the logo was partly AI-generated and chose to keep it. `/credits` discloses this.                                                                                           |
 | 5   | "ORBIX" name conflicts                 | Accepted     | Other uses of "Orbix" exist (see below). The owner judged on 28 September 2026 that none is the same kind of use as a free educational site. Revisit before any commercial use.                                           |
@@ -21,14 +21,14 @@ watched), **Owner action** (needs a decision or fact only the operator can suppl
 | 7   | Accessibility (ADA)                    | Mitigated    | Exposure is low for a free, non-commercial educational site, but WCAG 2.2 AA is the target and the `/accessibility` page gives a contact route for problems.                                                              |
 | 8   | Export control (ITAR / EAR)            | Mitigated    | The site uses only public-domain, published information and simplified textbook models. Keep it that way: no controlled technical data, no non-public specifications.                                                     |
 | 9   | Liability for use of calculations      | Mitigated    | Educational-use notices in the README, the app, and `/terms` state that results are simplified and must not be used for operational, safety, or certification decisions. The MIT License disclaims warranty for the code. |
-| 10  | Contributions without clear rights     | Mitigated    | `CONTRIBUTING.md` states that contributions are MIT-licensed, that contributors must own what they submit, and that images need a verified free licence and no AI generation.                                             |
+| 10  | Contributions without clear rights     | Mitigated    | `CONTRIBUTING.md` states that contributions are MIT-licensed, that contributors must own what they submit, and that images need a verified free license and no AI generation.                                             |
 
 ## Notes by item
 
 ### 1. Images
 
 - Every raster image must have an entry in `docs/assets/image-provenance.md` with author or agency,
-  licence, source page, and modifications, and must appear on `/credits`.
+  license, source page, and modifications, and must appear on `/credits`.
 - NASA imagery is generally not copyrighted, but NASA's guidelines forbid use that implies
   endorsement. U.S. military imagery is usually public domain as a work of the U.S. Government, but
   individual files must still be checked.
@@ -72,7 +72,7 @@ found these existing uses of the name:
   engagement and workforce management (USPTO serial 99562742, per uspto.report).
 - **Orbix** by Radiall, a product line of RF connectivity components for the space market.
 - Other historic or unrelated "Orbix" filings, including Orbix Healthcare Corporation and a
-  cancelled "ORBIX REV360" registration.
+  canceled "ORBIX REV360" registration.
 - **Orbex** (Orbital Express Launch Ltd.), a UK launch company with a similar-sounding name.
 
 Owner decision, 28 September 2026: accepted for non-commercial educational use.
@@ -99,12 +99,12 @@ Status stays Open until the owner decides.
 
 - The Americans with Disabilities Act has been applied to websites of businesses open to the
   public. ORBIX is not a business and charges nothing, so exposure is low.
-- The redesign targets WCAG 2.2 AA: contrast, visible focus, keyboard operation, labelled inputs,
+- The redesign targets WCAG 2.2 AA: contrast, visible focus, keyboard operation, labeled inputs,
   and reduced-motion support. The `/accessibility` page (added by the redesign) states the target and gives a contact route for problems.
 
 ### 8. Export control
 
-- ITAR (22 CFR 120 to 130) and the EAR (15 CFR 730 to 774) control technical data for defence and
+- ITAR (22 CFR 120 to 130) and the EAR (15 CFR 730 to 774) control technical data for defense and
   dual-use articles. Information that is already published and generally available to the public
   is excluded from both.
 - ORBIX uses only published specifications from public sources and simplified textbook equations.

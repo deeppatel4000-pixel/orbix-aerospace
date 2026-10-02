@@ -12,7 +12,7 @@ interface ScaleFigureProps {
 
 /**
  * A scale drawing on the page ground (spec 6, 8): no frame, no plate, the
- * catalogue caption under it. Each drawing is laid out again for a narrow
+ * catalog caption under it. Each drawing is laid out again for a narrow
  * screen at the same kind of scale, so nothing scrolls sideways and the
  * figures never set below 11px.
  */

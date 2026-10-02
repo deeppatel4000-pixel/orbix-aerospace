@@ -26,19 +26,19 @@ This spec tells every later task what ORBIX must look like, sound like, and whic
 
 Measured on branch `redesign/anti-vibe-legal` at commit `c0ee291`, `src/**` excluding tests:
 
-| Pattern                                            | Uses | Files |
-| -------------------------------------------------- | ---: | ----: |
-| `rounded-xl` / `rounded-2xl` / `rounded-3xl`       |  246 |    71 |
-| `rounded-full` (many on buttons and chips)         |  118 |    64 |
-| Ad-hoc tiny type `text-[0.5x-0.6xrem]`             |  292 |    89 |
-| Ultra-wide tracking `tracking-[0.1xem]`            |  220 |    84 |
-| Grid overlays `orbix-grid` / `technical-grid`      |   36 |    31 |
-| Gradient backgrounds in markup                     |   30 |    19 |
-| `animate-pulse` / `bounce` / `spin`                |   20 |    15 |
-| `backdrop-blur` (frosted glass)                    |   20 |    15 |
-| `plasma` / violet references                       |   16 |     8 |
-| Arbitrary coloured glow shadows `shadow-[0_0_...]` |  40+ |   30+ |
-| Em dash used as empty calculator value             |  12+ |    12 |
+| Pattern                                           | Uses | Files |
+| ------------------------------------------------- | ---: | ----: |
+| `rounded-xl` / `rounded-2xl` / `rounded-3xl`      |  246 |    71 |
+| `rounded-full` (many on buttons and chips)        |  118 |    64 |
+| Ad-hoc tiny type `text-[0.5x-0.6xrem]`            |  292 |    89 |
+| Ultra-wide tracking `tracking-[0.1xem]`           |  220 |    84 |
+| Grid overlays `orbix-grid` / `technical-grid`     |   36 |    31 |
+| Gradient backgrounds in markup                    |   30 |    19 |
+| `animate-pulse` / `bounce` / `spin`               |   20 |    15 |
+| `backdrop-blur` (frosted glass)                   |   20 |    15 |
+| `plasma` / violet references                      |   16 |     8 |
+| Arbitrary colored glow shadows `shadow-[0_0_...]` |  40+ |   30+ |
+| Em dash used as empty calculator value            |  12+ |    12 |
 
 Other signals: a cyan-to-violet gradient primary button with a sheen pseudo-element and hover lift; HUD clip-path corners (`.orbix-frame`); a starfield, radial "atmosphere" blobs and a fixed grid behind every page; a scripted mission "startup sequence"; mono uppercase letter-spaced labels on nearly everything; five division accents; "premium" and "advanced" in copy; hero imagery of unclear provenance.
 
@@ -62,7 +62,7 @@ What to avoid, by name: glassmorphism, neon glow, bento grids of identical cards
 
 ---
 
-## 4. Colour
+## 4. Color
 
 ### 4.1 Tokens
 
@@ -105,7 +105,7 @@ The raw palette section of `src/styles/orbix-tokens.css` is replaced by exactly 
   --orbix-status-danger: #ec8479;
   --orbix-status-info: var(--orbix-text-secondary);
 
-  /* Data visualisation */
+  /* Data visualization */
   --orbix-data-1: #6fb3dc; /* series 1 = accent */
   --orbix-data-2: #dcab4e; /* series 2 */
   --orbix-data-3: #6cc08e; /* series 3 */
@@ -118,7 +118,7 @@ The raw palette section of `src/styles/orbix-tokens.css` is replaced by exactly 
 }
 ```
 
-`--orbix-data-1..4` may only be used for chart marks and legends. Where two series must be told apart, also vary line dash or marker shape; colour is never the only carrier.
+`--orbix-data-1..4` may only be used for chart marks and legends. Where two series must be told apart, also vary line dash or marker shape; color is never the only carrier.
 
 ### 4.2 Measured contrast (WCAG 2.x relative luminance)
 
@@ -146,9 +146,9 @@ Rules that follow from the table:
 
 - Any border that is the only thing showing where a control is (inputs, selects, checkboxes, secondary buttons, the outline of an unselected tab) must be `--orbix-border-control`. `--orbix-border*` below that are for dividers between content, which WCAG does not require to meet 3:1.
 - `--orbix-text-disabled` never carries information a user needs. Disabled buttons also get `cursor: not-allowed` and keep their label.
-- New colours may only be added by the foundation task, with a measured ratio added to this table.
+- New colors may only be added by the foundation task, with a measured ratio added to this table.
 
-### 4.3 Deleted colour tokens
+### 4.3 Deleted color tokens
 
 Deleted outright: `--plasma-violet`, `--color-plasma`, `--orbital-black`, `--spacecraft-graphite`, `--cosmic-navy`, `--nebula-blue`, `--orbital-cyan`, `--atmospheric-blue`, `--telemetry-green`, `--telemetry-white`, the tactical and laboratory raw palettes, `--orbix-bg-recessed` (`#010308`, near black), `--orbix-surface-translucent`, `--surface-glass`, `--shadow-accent`, `--ring-accent`, `--glass-blur`, `--orbix-data-grid` (cyan rgba).
 
@@ -252,7 +252,7 @@ Deleted: `--radius-md` (10px), `--radius-lg` (16px), `--radius-full`, `--radius-
 
 - Default: none. Panels are flat.
 - `--elevation-overlay: 0 8px 24px color-mix(in srgb, var(--orbix-shadow-color) 60%, transparent)` for dialogs, popovers, dropdown menus, tooltips, and the mobile nav sheet. Nothing else.
-- No coloured shadows, no glows (`shadow-[0_0_...]`), no `drop-shadow` filters, no `backdrop-filter`. Overlays use a solid `color-mix(in srgb, var(--orbix-bg-page) 80%, transparent)` scrim.
+- No colored shadows, no glows (`shadow-[0_0_...]`), no `drop-shadow` filters, no `backdrop-filter`. Overlays use a solid `color-mix(in srgb, var(--orbix-bg-page) 80%, transparent)` scrim.
 
 ---
 
@@ -357,9 +357,9 @@ One pattern for every input in the product (lab calculators, compare selectors, 
 - **Unit suffix** sits in a joined box to the right: same height, bg `--orbix-surface-raised`, border `--orbix-border-control`, text `--orbix-text-muted` mono.
 - **Hover**: border `--orbix-text-muted`.
 - **Focus-visible**: `outline: 2px solid var(--orbix-focus); outline-offset: 1px;` border stays. No glow.
-- **Invalid** (`aria-invalid="true"`): border `--orbix-status-danger`; error text below in `--orbix-status-danger`, `--text-label`, with a `CircleAlert` icon so colour is not the only signal. Error text states what to enter, not just that it is wrong.
+- **Invalid** (`aria-invalid="true"`): border `--orbix-status-danger`; error text below in `--orbix-status-danger`, `--text-label`, with a `CircleAlert` icon so color is not the only signal. Error text states what to enter, not just that it is wrong.
 - **Disabled**: bg `--orbix-bg-page`, border `--orbix-border`, text `--orbix-text-disabled`, `cursor: not-allowed`.
-- **Placeholder** only for example format ("e.g. 400"), colour `--orbix-text-muted`.
+- **Placeholder** only for example format ("e.g. 400"), color `--orbix-text-muted`.
 - **Help text** `--text-label` 400, `--orbix-text-muted`, linked via `aria-describedby`.
 - **Selects** use native `<select>`, with a lucide `ChevronDown` 16px positioned over the right edge and `appearance: none`.
 - **Checkbox / radio**: native inputs with `accent-color: var(--orbix-accent)`, 1rem, label to the right, whole row clickable, 24px minimum target.
@@ -376,7 +376,7 @@ One pattern for every input in the product (lab calculators, compare selectors, 
 - **Panel** (`OrbixSurface`): collapse all seven variants (`hero`, `mission`, `engineering`, `telemetry`, `vehicle`, `gallery`, `report`) to one flat panel. The `variant` prop is accepted and ignored until phase C, then removed. `interactive` panels change border to `--orbix-border-strong` on hover, no lift, no glow.
 - **Card link** (`.orbix-vehicle-card`): flat panel, image top at 16:9 with `--radius-3` top corners only, title `.orbix-h3`, one line of classification in `--orbix-text-muted`, a 3-row `<dl>` of key values. Whole card is one `<a>`; focus ring on the card. Hover: border `--orbix-border-strong`, title underline. No "Explore" pseudo-button inside.
 - **Tag** (`.orbix-tag`): `--radius-1`, 1px `--orbix-border-strong`, `--text-label`, sentence case, padding `0.125rem 0.5rem`, no fill. Tags are not interactive; if clickable, it is a filter button using `.orbix-button--secondary` with `aria-pressed`.
-- **Status** (`StatusBadge`, `.orbix-status`): `--radius-1`, text plus a 0.5rem circle dot (`--radius-circle`, allowed) in the status colour, no glow, no uppercase. Only for states the data actually supplies ("Retired", "In service", "Input out of range").
+- **Status** (`StatusBadge`, `.orbix-status`): `--radius-1`, text plus a 0.5rem circle dot (`--radius-circle`, allowed) in the status color, no glow, no uppercase. Only for states the data actually supplies ("Retired", "In service", "Input out of range").
 - **Tabs** (`.orbix-tabs`): underline tabs. Selected: text `--orbix-text-primary`, 2px bottom border `--orbix-accent`. Unselected: `--orbix-text-secondary`, transparent bottom border. Roving tabindex with arrow keys where they are real tabs; otherwise use links with `aria-current`.
 - **Tables** (`.orbix-table`): `border-collapse: collapse`, header row bg `--orbix-surface-raised` with `.orbix-caps` text, cell padding `0.625rem 0.75rem`, row rule `--orbix-border-subtle`, numbers right-aligned mono, units in a separate `--orbix-text-muted` span or column. `<caption>` present (may be visually hidden). First column `<th scope="row">`. Wrapper `.orbix-table-wrap` has `overflow-x: auto`, `tabindex="0"`, `role="region"`, and an `aria-label`.
 - **Progress** (`.orbix-progress`): 0.5rem tall, `--radius-1`, track `--orbix-border`, fill solid `--orbix-accent`. No gradient, no glow.
@@ -389,7 +389,7 @@ One pattern for every input in the product (lab calculators, compare selectors, 
 - **Site header**: solid `--orbix-bg-page`, bottom border `--orbix-border`, height 3.5rem, wordmark left at 1.25rem tall, nav links `--text-body-sm` 500 `--orbix-text-secondary`; current page `--orbix-text-primary` with a 2px `--orbix-accent` underline at the header's bottom edge. No blur, no accent glow line.
 - **Mobile nav**: disclosure button "Menu" / "Close menu" with `aria-expanded`, opening a full-width sheet below the header; focus moves to the first link; Escape closes and returns focus.
 - **Footer**: two rows. Row one: wordmark, one-sentence plain description, then link groups "Platform" (existing nav items) and "About" (About, Image credits, Privacy, Terms, Accessibility; see 14). Row two: `(c) 2026 ORBIX. Educational use only. Not for operational or certification use.` written with the `©` sign.
-- **Skip link**: unchanged behaviour; restyle to a primary button when focused.
+- **Skip link**: unchanged behavior; restyle to a primary button when focused.
 
 ---
 
@@ -408,7 +408,7 @@ One pattern for every input in the product (lab calculators, compare selectors, 
 
 ### 12.1 What is allowed
 
-1. **Real photographs** with verified licence: US federal government works (NASA, USAF, US Navy, DoD via DVIDS) which are public domain in the US; Wikimedia Commons files whose file page states Public Domain, CC0, CC BY, or CC BY-SA; UK MOD / Crown copyright under the Open Government Licence v3.0 (credit required). Company press images (SpaceX, Boeing, Lockheed Martin, Northrop Grumman) only when the specific file is released under CC0 or a CC licence that allows reuse, confirmed on the file's own page, not assumed.
+1. **Real photographs** with verified license: US federal government works (NASA, USAF, US Navy, DoD via DVIDS) which are public domain in the US; Wikimedia Commons files whose file page states Public Domain, CC0, CC BY, or CC BY-SA; UK MOD / Crown copyright under the Open Government Licence v3.0 (credit required). Company press images (SpaceX, Boeing, Lockheed Martin, Northrop Grumman) only when the specific file is released under CC0 or a CC license that allows reuse, confirmed on the file's own page, not assumed.
 2. **SVG diagrams** drawn in-repo from real numbers (orbits, trajectories, shock geometry, vehicle silhouettes to scale). Inline React SVG using the data tokens.
 3. **Authentic screenshots** of ORBIX itself (showcase only), captured from a real build.
 4. **The ORBIX logo and wordmark** in `public/brand/`, as supplied by the owner (see 12.5).
@@ -416,14 +416,14 @@ One pattern for every input in the product (lab calculators, compare selectors, 
 ### 12.2 What is forbidden
 
 - AI-generated or AI-edited images (including AI upscaling, outpainting, background replacement, "enhancement").
-- Images whose source is a news site CDN, a flight-sim product page, an aggregator, or anything without a stated licence.
+- Images whose source is a news site CDN, a flight-sim product page, an aggregator, or anything without a stated license.
 - Stock-style "concept" renders presented as missions.
 - Images as page backgrounds behind text. Text never sits on a photo.
-- Decorative raster textures (starfields, grids, noise, carbon fibre).
+- Decorative raster textures (starfields, grids, noise, carbon fiber).
 
 ### 12.3 Credit and markup
 
-Every raster image renders inside a `<figure>` with a `<figcaption>` giving: subject, author or agency, licence, and a link to the source file page. Example: `F-22 Raptor over Alaska. U.S. Air Force photo by Staff Sgt. Name. Public domain. Source: Wikimedia Commons.` The source link text is "Source", "View original file", or the site name, never a bare URL. Where a caption would clutter a registry card, the card omits it and the profile page plus `/credits` carry it.
+Every raster image renders inside a `<figure>` with a `<figcaption>` giving: subject, author or agency, license, and a link to the source file page. Example: `F-22 Raptor over Alaska. U.S. Air Force photo by Staff Sgt. Name. Public domain. Source: Wikimedia Commons.` The source link text is "Source", "View original file", or the site name, never a bare URL. Where a caption would clutter a registry card, the card omits it and the profile page plus `/credits` carry it.
 
 Each visual record in `aircraft-visuals.ts` and `rocket-visuals.ts` gains required fields:
 
@@ -446,12 +446,12 @@ The owner has stated that some current images are AI-generated and some came fro
 | `public/images/environments/*.webp` (4 files: engineering-lab, launch-complex, orbital-command, tactical-aircraft)                                           | none recorded                                       | Treat as AI-generated. Remove all usages, then delete files. No replacement backgrounds.                                                                                                                               |
 | `public/images/missions/*.webp` (5 files: iss-style-resupply, leo-satellite-deployment, lunar-transfer-concept, mars-transfer-concept, reentry-demonstrator) | none recorded; "concept" subjects                   | Treat as AI-generated. Remove all usages, then delete. Replace with SVG mission diagrams from the mission data, or with nothing.                                                                                       |
 | `public/images/aircraft/sr-71-blackbird.png`                                                                                                                 | `blackbirdsims.com` flight-simulator product render | Not a photograph, not licensed. Replace with a NASA Armstrong (Dryden) SR-71 photo from the NASA image library or Wikimedia Commons (public domain).                                                                   |
-| `public/images/rockets/falcon-9.png`                                                                                                                         | `storage.googleapis.com/nextspaceflight/...`        | Aggregator, no licence. Replace with a Wikimedia Commons Falcon 9 photo whose file page states CC0 or public domain.                                                                                                   |
-| `public/images/rockets/falcon-heavy.png`                                                                                                                     | `cdn.mos.cms.futurecdn.net` (news-site CDN)         | No licence. Replace as for Falcon 9.                                                                                                                                                                                   |
-| `public/images/aircraft/b-2-spirit.png`                                                                                                                      | Wikimedia Commons, RAF/USAF photo                   | Verify licence on the file page (likely OGL v3.0, "Crown copyright", credit required). Re-derive from the original, crop and resize only.                                                                              |
+| `public/images/rockets/falcon-9.png`                                                                                                                         | `storage.googleapis.com/nextspaceflight/...`        | Aggregator, no license. Replace with a Wikimedia Commons Falcon 9 photo whose file page states CC0 or public domain.                                                                                                   |
+| `public/images/rockets/falcon-heavy.png`                                                                                                                     | `cdn.mos.cms.futurecdn.net` (news-site CDN)         | No license. Replace as for Falcon 9.                                                                                                                                                                                   |
+| `public/images/aircraft/b-2-spirit.png`                                                                                                                      | Wikimedia Commons, RAF/USAF photo                   | Verify license on the file page (likely OGL v3.0, "Crown copyright", credit required). Re-derive from the original, crop and resize only.                                                                              |
 | `f-15-eagle.png`, `f-22-raptor.png`, `f-35-lightning-ii.jpg`                                                                                                 | Wikimedia Commons, likely USAF                      | Verify public-domain status on each file page; re-derive from original; record credit.                                                                                                                                 |
 | `saturn-v.png` (Apollo 11, NASA GPN-2000-000630), `space-launch-system.png` (Artemis II, NASA)                                                               | Wikimedia Commons, NASA                             | Public domain as NASA works; record credit "NASA"; re-derive from original.                                                                                                                                            |
-| `starship.png`                                                                                                                                               | Wikimedia Commons, IFT-5                            | Verify licence on the file page (SpaceX releases vary). Replace if not CC0 or PD.                                                                                                                                      |
+| `starship.png`                                                                                                                                               | Wikimedia Commons, IFT-5                            | Verify license on the file page (SpaceX releases vary). Replace if not CC0 or PD.                                                                                                                                      |
 | Local files are `.png` while sources are `.jpg`                                                                                                              | Processing unknown                                  | Every re-derived image is exported as WebP or JPEG from the original with crop and resize only. Record this in `modifications`.                                                                                        |
 | `public/brand/orbix-brand-suite.png` (used as Open Graph image)                                                                                              | brand board                                         | Stop using it as the OG image. Use a real screenshot of the home page at 1200x630 or a plain typographic OG image generated by `next/og` from the wordmark and tagline (no new dependency; `next/og` ships with Next). |
 
@@ -512,13 +512,13 @@ Suggested replacements (foundation task owns `site.ts` and `manifest.ts`):
 
 ## 14. Page templates by route
 
-All pages share: `SiteHeader`, `<main id="main-content">` without the `orbix-page-transition` class, `SiteFooter`. One `<h1>` per page. A **page intro** block: optional breadcrumb, optional eyebrow (`.orbix-label`, sentence case, muted, not accent, not mono), `<h1 class="orbix-h1">`, one `.orbix-lead` paragraph (max 60ch), optional action row. The intro is left-aligned, never centred, and sits on the plain page ground with `padding-block: 3rem 2rem` and a bottom border `--orbix-border`. No background image, grid, or glow behind it.
+All pages share: `SiteHeader`, `<main id="main-content">` without the `orbix-page-transition` class, `SiteFooter`. One `<h1>` per page. A **page intro** block: optional breadcrumb, optional eyebrow (`.orbix-label`, sentence case, muted, not accent, not mono), `<h1 class="orbix-h1">`, one `.orbix-lead` paragraph (max 60ch), optional action row. The intro is left-aligned, never centered, and sits on the plain page ground with `padding-block: 3rem 2rem` and a bottom border `--orbix-border`. No background image, grid, or glow behind it.
 
 ### `/` Home (`src/app/(site)/page.tsx`, `src/features/home/**`)
 
 1. Intro: eyebrow none; `<h1>` is the wordmark image (keep current accessible pattern) sized at most 15rem wide; lead sentence (see 13.3); actions: primary "Browse the aircraft registry", secondary "Open the Engineering Lab".
 2. Right column from 1024px (5 of 12 columns): one credited real photograph in a `<figure>` (Apollo 11 Saturn V, NASA, public domain, is a safe choice). No overlay, `--radius-3`.
-3. "What is here": a plain list of the five sections (Aircraft, Rockets, Compare, Engineering Lab, Learn), each an `<h3>` link and one sentence. Two columns from 768px. No cards, no icons in coloured wells.
+3. "What is here": a plain list of the five sections (Aircraft, Rockets, Compare, Engineering Lab, Learn), each an `<h3>` link and one sentence. Two columns from 768px. No cards, no icons in colored wells.
 4. "Featured records": three vehicle card links (existing `VehicleRecordCard`).
 5. "How values are sourced": one short paragraph and a link to `/about#sources`.
 
@@ -541,7 +541,7 @@ Intro (h1 "Aircraft" / "Launch vehicles", lead one sentence). Filter row: search
 
 ### `/compare`
 
-Uses the `wide` container. Intro (h1 "Compare vehicles"). Controls: vehicle type as two radio buttons in a fieldset ("Aircraft", "Launch vehicles"), then two to three labelled `<select>` elements ("First vehicle", "Second vehicle", "Third vehicle (optional)"), then primary button "Compare" only if selection does not update live. Identity strip: a table header row with each vehicle's name, classification and small credited thumbnail. Comparison table: sticky first column, rows grouped by category with a full-width `<th scope="rowgroup">` category row, units column or unit spans, magnitude bars (`.orbix-magnitude`) as flat 4px bars with `--radius-1`, per-row education as a native `<details>` with summary text "What this measures". Empty state per section 10.
+Uses the `wide` container. Intro (h1 "Compare vehicles"). Controls: vehicle type as two radio buttons in a fieldset ("Aircraft", "Launch vehicles"), then two to three labeled `<select>` elements ("First vehicle", "Second vehicle", "Third vehicle (optional)"), then primary button "Compare" only if selection does not update live. Identity strip: a table header row with each vehicle's name, classification and small credited thumbnail. Comparison table: sticky first column, rows grouped by category with a full-width `<th scope="rowgroup">` category row, units column or unit spans, magnitude bars (`.orbix-magnitude`) as flat 4px bars with `--radius-1`, per-row education as a native `<details>` with summary text "What this measures". Empty state per section 10.
 
 ### `/engineering-lab`
 
@@ -549,13 +549,13 @@ Uses the `wide` container. Intro (h1 "Engineering Lab", lead one sentence, plus 
 
 - From 1024px, two columns: tool index 16rem (grouped by discipline under `.orbix-caps` headings, each tool a link with `aria-current` on the active one, active item gets the 2px accent left border and `--orbix-accent-subtle` fill), workspace in the rest.
 - Workspace per module: h2 module name, one-sentence purpose, equation block, "Inputs" fieldset (section 9, two columns from 768px), "Results" section: a `<dl>` where the primary result uses `.orbix-data-lg` and secondary results use `.orbix-data`, each with unit and short description; empty state `Not calculated`. Then "Assumptions and limits" as a bulleted list. Then "Related" links.
-- Below 1024px the tool index becomes a labelled `<select>` ("Choose a tool") plus the list in a `<details>`.
-- Mission control, replay, 3D scene, ground track: keep the functionality; restyle to flat panels; remove glows, pulses, bouncing markers, blur, and the startup sequence animation (show its checklist content statically or remove it; see 15.4). Visualisation colours come from `--orbix-data-*`.
+- Below 1024px the tool index becomes a labeled `<select>` ("Choose a tool") plus the list in a `<details>`.
+- Mission control, replay, 3D scene, ground track: keep the functionality; restyle to flat panels; remove glows, pulses, bouncing markers, blur, and the startup sequence animation (show its checklist content statically or remove it; see 15.4). Visualization colors come from `--orbix-data-*`.
 - Calculator physics files are frozen (section 17).
 
 ### `/learn`
 
-Reading layout. Intro (h1 "Learn"). From 1024px: 3-column "Contents" sidebar (sticky), 9-column content with prose measure. Each pathway: `<h2>`, summary paragraph, "Key ideas" list, "Try it in the lab" links to the relevant module anchors, "Further reading" with real sources. No per-pathway colour accents (the `accent` field in `learning-areas.ts` and its type union are removed or collapsed to a single value). No icon wells.
+Reading layout. Intro (h1 "Learn"). From 1024px: 3-column "Contents" sidebar (sticky), 9-column content with prose measure. Each pathway: `<h2>`, summary paragraph, "Key ideas" list, "Try it in the lab" links to the relevant module anchors, "Further reading" with real sources. No per-pathway color accents (the `accent` field in `learning-areas.ts` and its type union are removed or collapsed to a single value). No icon wells.
 
 ### `/showcase`
 
@@ -580,9 +580,9 @@ Reading template: intro (h1, "Last updated 27 September 2026" as `.orbix-label`)
 Required content, for the legal task to write (owner to review; this is not legal advice):
 
 - **About**: what ORBIX is (an educational project built by a student); that it is run from Massachusetts, United States; contact email `deep.patel4000@gmail.com` (the repository's Git commit email; to be replaced by a dedicated ORBIX address later, so it lives in one config constant, `src/config/site-legal.ts`, `contactEmail`); a "How values are sourced" section (`id="sources"`); educational-use boundary.
-- **Credits** (`/credits`): table of every image with thumbnail, subject, credit, licence (linked), source page (linked), modifications; fonts (IBM Plex, SIL Open Font License 1.1); icons (lucide, ISC licence); the non-affiliation and no-endorsement statement for NASA, the US Air Force, SpaceX, Lockheed Martin, Boeing, Northrop Grumman and other manufacturers; trademark statement ("Vehicle and company names are trademarks of their respective owners and are used only to identify the vehicles described."); the AI imagery statement: "ORBIX does not use AI-generated images." (true only after section 12.4 is complete; if the logo is AI-generated per 12.5, say so here).
+- **Credits** (`/credits`): table of every image with thumbnail, subject, credit, license (linked), source page (linked), modifications; fonts (IBM Plex, SIL Open Font License 1.1); icons (lucide, ISC license); the non-affiliation and no-endorsement statement for NASA, the US Air Force, SpaceX, Lockheed Martin, Boeing, Northrop Grumman and other manufacturers; trademark statement ("Vehicle and company names are trademarks of their respective owners and are used only to identify the vehicles described."); the AI imagery statement: "ORBIX does not use AI-generated images." (true only after section 12.4 is complete; if the logo is AI-generated per 12.5, say so here).
 - **Privacy**: what is actually collected. Verify before writing: there are no accounts, forms that submit, analytics packages, or cookies in `package.json` and `src/` today; the host (Vercel) processes request logs such as IP address. Say exactly that, plus the contact email. Do not claim compliance with laws not assessed.
-- **Terms**: educational use only; no warranty; calculations are simplified and must not be used for operational, safety, or certification decisions; content licences as stated on Credits; governing law is the Commonwealth of Massachusetts, United States.
+- **Terms**: educational use only; no warranty; calculations are simplified and must not be used for operational, safety, or certification decisions; content licenses as stated on Credits; governing law is the Commonwealth of Massachusetts, United States.
 - **Accessibility**: target WCAG 2.2 AA, known limitations (list real ones found in testing, for example the 3D scene), how to report a problem (contact email).
 
 ---
@@ -607,7 +607,7 @@ Deletion means: remove the usage from markup, then remove the definition when no
 | `.orbix-brand-glow` (violet)                                                                                                                  | `src/styles/orbix-foundations.css`                                   | Delete.                                                  |
 | `.orbix-brand-rule` (cyan to violet gradient)                                                                                                 | `src/styles/orbix-foundations.css`                                   | Delete.                                                  |
 | `.orbix-frame` (HUD clip-path corners, accent corner ticks)                                                                                   | `src/styles/orbix-foundations.css`                                   | Delete.                                                  |
-| `.orbix-carbon` (carbon fibre texture)                                                                                                        | `src/styles/orbix-foundations.css`                                   | Delete.                                                  |
+| `.orbix-carbon` (carbon fiber texture)                                                                                                        | `src/styles/orbix-foundations.css`                                   | Delete.                                                  |
 | `.orbix-environment-label`, `.orbix-kicker`, `.orbix-technical-label`, `.orbix-display-xl`, `.orbix-display-lg`                               | `src/styles/orbix-foundations.css`                                   | Replace per section 5.                                   |
 | `@keyframes orbix-scan` (scan line)                                                                                                           | `src/styles/orbix-motion.css`                                        | Delete.                                                  |
 | `@keyframes orbix-signal-pulse`, `.orbix-signal-pulse` (infinite)                                                                             | `src/styles/orbix-motion.css`                                        | Delete.                                                  |
@@ -653,7 +653,7 @@ Each page task searches its own directories for: `orbix-grid`, `technical-grid`,
 
 ### 15.4 Theatrical components to remove or reduce (engineering lab task decides the exact cut)
 
-- `presentation/mission-startup-sequence.tsx`, `startup-check-list.tsx`, `startup-progress.tsx`: a scripted boot sequence that implies live systems. Remove the animation and the "startup" framing; if the checklist summarises real computed checks, render it statically as "Checks performed".
+- `presentation/mission-startup-sequence.tsx`, `startup-check-list.tsx`, `startup-progress.tsx`: a scripted boot sequence that implies live systems. Remove the animation and the "startup" framing; if the checklist summarizes real computed checks, render it statically as "Checks performed".
 - `presentation/demo-mode.tsx`, `showcase-stage.tsx`, `mission-showcase.tsx`, `briefing-header.tsx`: remove star-field shadows, blobs and pulses; keep content.
 - `visualization/mission-control-status-bar.tsx`: must not display pulsing "live" indicators; state labels only describe replay state ("Paused", "Playing").
 
@@ -707,7 +707,7 @@ Cross-boundary handoffs, fixed here so no two tasks touch one file:
    - `rg -n -i "\b(elevate|seamless|unleash|next-gen|cutting-edge|revolutionary|empower|world-class|premium|state-of-the-art)\b" <paths>`
    - emoji: `rg -n "[\x{1F300}-\x{1FAFF}\x{2600}-\x{27BF}]" <paths>`
 3. Keyboard pass on every owned route: Tab order follows reading order, every control reachable and operable, focus ring visible on every stop, no trap, Escape closes overlays.
-4. Contrast: any new colour pairing added must be measured and added to section 4.2.
+4. Contrast: any new color pairing added must be measured and added to section 4.2.
 5. Reduced motion: with `prefers-reduced-motion: reduce` emulated, nothing moves except user-started replay steps.
 6. 320px and 1440px widths: no horizontal page scroll; tables scroll inside their wrapper.
 7. `npm run test:e2e` where the environment allows; failures caused by intended changes are reported to T9 with the spec name.

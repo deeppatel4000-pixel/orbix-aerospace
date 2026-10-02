@@ -10,16 +10,16 @@ the TypeScript, TSX, CSS, configuration files, tests, and documentation written 
 ## Photographs and other images
 
 Third-party photographs and images remain the property of their owners. ORBIX uses them under the
-licences recorded for each file in
+licenses recorded for each file in
 [`docs/assets/image-provenance.md`](docs/assets/image-provenance.md) and listed on the site's
-`/credits` page. Those licences, not the MIT License, govern any reuse. If you reuse an image,
-follow its own licence and credit line.
+`/credits` page. Those licenses, not the MIT License, govern any reuse. If you reuse an image,
+follow its own license and credit line.
 
 ## Fonts, icons, and libraries
 
-Fonts, icon sets, and software libraries used by ORBIX remain under their own licences. For
+Fonts, icon sets, and software libraries used by ORBIX remain under their own licenses. For
 example, the IBM Plex typefaces are licensed under the SIL Open Font License 1.1, and the Lucide
-icons under the ISC License. Each npm dependency carries its own licence in its package.
+icons under the ISC License. Each npm dependency carries its own license in its package.
 
 ## ORBIX name and logo
 
@@ -30,12 +30,12 @@ connected with, ORBIX or its operator. A fork should use a different name and lo
 ## Trademarks and non-affiliation
 
 Aircraft, rocket, spacecraft, manufacturer, and agency names used in ORBIX are trademarks or names
-of their respective owners. They are used only to identify the vehicles and organisations
+of their respective owners. They are used only to identify the vehicles and organizations
 described.
 
 ORBIX is an independent educational project. It is not affiliated with, sponsored by, or endorsed
 by NASA, the U.S. Department of Defense or any branch of the U.S. armed forces, SpaceX, Lockheed
-Martin, Boeing, Northrop Grumman, or any other organisation named in the application or this
+Martin, Boeing, Northrop Grumman, or any other organization named in the application or this
 repository.
 
 ## Contact

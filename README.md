@@ -27,7 +27,7 @@ vehicles (5 military aircraft and 5 launch vehicles), with credited photographs.
   motion it moves in three steps instead. A table gives the same numbers as text.
 - **Mission planner:** pick one of four preset missions or enter your own altitudes. It lists each
   step in flight order with its delta-v, marks the steps it does not model, and compares the presets
-  on one delta-v axis. The Mars preset uses allowances and is labelled as not computed.
+  on one delta-v axis. The Mars preset uses allowances and is labeled as not computed.
 - **Verification:** Engineering Lab results next to values from four published sources, including
   the U.S. Standard Atmosphere, 1976 and the compressible flow tables of NACA Report 1135, with a
   rounding check on each row.
@@ -51,9 +51,9 @@ vehicles (5 military aircraft and 5 launch vehicles), with credited photographs.
 | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | ![Launch vehicle registry: the heading, lead and two actions beside the NASA photograph of the Apollo 11 Saturn V on the crawler-transporter at Launch Complex 39A, with the pictured vehicle's height, liftoff thrust and payload to low Earth orbit under the actions](docs/assets/screenshots/rockets.jpg) | ![Learn page: key ideas 1.1 and 1.2 with the lift and drag equations, each numbered at the right margin and followed by its list of variables and units](docs/assets/screenshots/learn-equations.jpg) | ![Heights to one scale at phone width: Falcon 9, Falcon Heavy, Space Launch System, Saturn V and Starship drawn as horizontal dimension lines from a common base line, with a 50 m scale bar and the figure caption](docs/assets/screenshots/rockets-heights-mobile.jpg) |
 
-| Mission planner                                                                                                                                                                                                                                                                                | Verification against published values                                                                                                                                                            |
-| ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| ![Engineering Lab mission planner: the tool index on the left, the five mission choices with LEO satellite deployment selected, the flight plan starting with an unmodelled launch, and the transfer drawn from 200 km to 550 km](docs/assets/screenshots/engineering-lab-mission-planner.jpg) | ![Verification table for orbital speed from the vis-viva equation, comparing three ORBIX results with published worked examples, each within rounding](docs/assets/screenshots/verification.jpg) |
+| Mission planner                                                                                                                                                                                                                                                                               | Verification against published values                                                                                                                                                            |
+| --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| ![Engineering Lab mission planner: the tool index on the left, the five mission choices with LEO satellite deployment selected, the flight plan starting with an unmodeled launch, and the transfer drawn from 200 km to 550 km](docs/assets/screenshots/engineering-lab-mission-planner.jpg) | ![Verification table for orbital speed from the vis-viva equation, comparing three ORBIX results with published worked examples, each within rounding](docs/assets/screenshots/verification.jpg) |
 
 Capture details are in [`docs/assets/screenshots/README.md`](docs/assets/screenshots/README.md).
 
@@ -82,7 +82,7 @@ the [build log](https://orbix-aerospace.vercel.app/build-log).
 - ESLint and Prettier
 - GitHub Actions, hosted on Vercel
 
-Diagrams and visualisations use SVG, CSS and React state. There is no 3D or charting library.
+Diagrams and visualizations use SVG, CSS and React state. There is no 3D or charting library.
 
 ### Architecture
 
@@ -136,7 +136,7 @@ npm run validate       # all of the above, the design check and a production bui
 ```
 
 GitHub Actions runs `npm run validate` on pull requests and on pushes to `main`. A separate
-Playwright suite (`npm run test:e2e`) covers behaviour that needs a real browser; see
+Playwright suite (`npm run test:e2e`) covers behavior that needs a real browser; see
 [`docs/testing/browser-testing.md`](docs/testing/browser-testing.md).
 
 ## Educational use
@@ -161,11 +161,11 @@ and image rules.
 - The source code is available under the [MIT License](LICENSE).
 - [NOTICE.md](NOTICE.md) explains what the MIT License does not cover: third-party images, fonts
   and libraries, the ORBIX name and logo, and third-party trademarks.
-- Images are credited to their authors and used under the licences recorded in
+- Images are credited to their authors and used under the licenses recorded in
   [`docs/assets/image-provenance.md`](docs/assets/image-provenance.md) and on the site's `/credits`
   page.
 - ORBIX is not affiliated with or endorsed by NASA, the U.S. Department of Defense, or any
-  manufacturer or organisation named in it.
+  manufacturer or organization named in it.
 
 ## Contact
 

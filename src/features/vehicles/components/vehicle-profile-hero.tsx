@@ -19,7 +19,7 @@ export interface VehiclePageCrumb {
 /** The photograph and its crop per layout. */
 export interface VehicleHeroVisual extends VisualRecord {
   /**
-   * What the photograph shows, for the catalogue caption. Omitted, the
+   * What the photograph shows, for the catalog caption. Omitted, the
    * alt text is printed.
    */
   readonly caption?: string;
@@ -54,7 +54,7 @@ interface VehicleProfileHeroProps {
 /**
  * The profile hero (spec 7, 11): breadcrumb, classification, name, lead,
  * the key figures as an open definition list and one action, all on the
- * page ground; the photograph as a hard-edged plate with its catalogue
+ * page ground; the photograph as a hard-edged plate with its catalog
  * caption under it. Nothing is set on the photograph.
  */
 export function VehicleProfileHero({

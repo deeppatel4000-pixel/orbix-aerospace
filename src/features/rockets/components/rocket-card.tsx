@@ -17,7 +17,7 @@ interface RocketCardProps {
   className?: string;
   /**
    * `stacked` (default): the registry's open grid, a full 3:4 portrait
-   * plate with the caption block under it. `row`: a catalogue row, as in
+   * plate with the caption block under it. `row`: a catalog row, as in
    * the related list at the end of a profile.
    */
   layout?: "row" | "stacked";

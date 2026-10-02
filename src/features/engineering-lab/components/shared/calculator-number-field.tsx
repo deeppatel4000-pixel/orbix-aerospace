@@ -12,7 +12,7 @@ import { labUnit } from "./lab-figure";
  * text after the input (spec 9, never a bordered cell) and is also announced
  * through `aria-describedby`, together with the help text and, when present,
  * the error message. The invalid state marks the border and prints a message with an
- * icon, so colour is never the only signal.
+ * icon, so color is never the only signal.
  *
  * In the lab every unit sits in a column of one width (`.lab-field__unit`).
  * A dimensionless field has no unit at all, and its input stops where the

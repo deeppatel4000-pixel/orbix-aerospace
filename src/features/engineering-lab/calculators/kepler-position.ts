@@ -8,7 +8,7 @@ export const KEPLER_EQUATION_TOLERANCE_RADIANS = 1e-12;
 const KEPLER_MAXIMUM_ITERATIONS = 50;
 
 export interface KeplerPositionInputs {
-  /** Semi-major axis of the elliptical (or circular) orbit, metres. */
+  /** Semi-major axis of the elliptical (or circular) orbit, meters. */
   readonly semiMajorAxisMetres: number;
   /** Orbital eccentricity, 0 <= e < 1. */
   readonly eccentricity: number;
@@ -32,7 +32,7 @@ export interface KeplerPositionResult {
   readonly eccentricAnomalyRadians: number;
   /** True anomaly after the elapsed time, radians in [0, 2π). */
   readonly trueAnomalyRadians: number;
-  /** Distance from the central body's centre, r = a(1 - e cos E), metres. */
+  /** Distance from the central body's center, r = a(1 - e cos E), meters. */
   readonly orbitalRadiusMetres: number;
   /** Newton iterations used to solve Kepler's equation. */
   readonly iterations: number;

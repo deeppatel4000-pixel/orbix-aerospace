@@ -251,7 +251,7 @@ describe("verification data", () => {
     }
   });
 
-  it("summarises the counts the page states", () => {
+  it("summarizes the counts the page states", () => {
     expect(summarizeVerification(verificationGroups)).toEqual({
       outsideRounding: expectedOutsideRounding.length,
       total: allRows.length,
@@ -325,7 +325,7 @@ describe("verification page markup", () => {
   });
 
   it("shows each ORBIX value exactly as formatted from the calculator", () => {
-    // Figures are split into spans to centre the separators; compare text.
+    // Figures are split into spans to center the separators; compare text.
     const text = markup.replace(/<[^>]+>/g, "");
     for (const row of allRows) {
       expect(text).toContain(

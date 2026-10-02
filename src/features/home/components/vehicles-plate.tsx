@@ -14,7 +14,7 @@ const COMPARE_IDS = ["sr-71-blackbird", "f-22-raptor", "b-2-spirit"] as const;
 /**
  * The vehicles section (v4 plan section 4.4): one photo plate, used nowhere
  * else on the site (the `home-vehicles` slot of the photo slot map), with
- * its catalogue caption on the ground, one sentence, and links to both
+ * its catalog caption on the ground, one sentence, and links to both
  * registries and a preloaded comparison. The vehicle counts and names come
  * from the registries.
  *

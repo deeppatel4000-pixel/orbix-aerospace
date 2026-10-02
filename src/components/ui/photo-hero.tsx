@@ -12,11 +12,11 @@ import { cn } from "@/lib/cn";
 export interface VisualRecord {
   /** Plain description of what the photograph shows. */
   readonly alt: string;
-  /** Photographer or agency, as the licence asks to be credited. */
+  /** Photographer or agency, as the license asks to be credited. */
   readonly credit: string;
-  /** Licence name, for example "Public domain (U.S. government work)". */
+  /** License name, for example "Public domain (U.S. government work)". */
   readonly license: string;
-  /** Page stating the licence terms. The licence name links here if given. */
+  /** Page stating the license terms. The license name links here if given. */
   readonly licenseUrl?: string;
   /** CSS `object-position` for the crop, for example `"50% 35%"`. */
   readonly objectPosition?: string;
@@ -35,8 +35,8 @@ export type PhotoHeroProps = Omit<
    */
   aside?: ReactNode;
   /**
-   * Catalogue caption: what the photograph shows, as a short phrase ("SR-71B
-   * over the Sierra Nevada"). The credit, licence and source link always
+   * Catalog caption: what the photograph shows, as a short phrase ("SR-71B
+   * over the Sierra Nevada"). The credit, license and source link always
    * follow it. Omitted, the photograph's `alt` text is printed instead, so
    * the plate always names its subject. Pass a shorter phrase when the alt
    * text is long.
@@ -83,10 +83,10 @@ const DEFAULT_SIZES: Record<"band" | "split", string> = {
 /**
  * Photographic hero (spec 7): the H1, lead and actions on solid ground,
  * and the photograph as a hard-edged plate beside the text (from 64rem) or
- * below it (a full-bleed band), with a catalogue caption under the plate on
+ * below it (a full-bleed band), with a catalog caption under the plate on
  * the ground. No scrim, no mask, no overlay, no text on the photograph.
  *
- * The caption always carries the credit, the licence (linked when a licence
+ * The caption always carries the credit, the license (linked when a license
  * page is known) and a link to the source file page, after the optional
  * figure number and description:
  * "Fig. 1  SR-71B over the Sierra Nevada. Photo: NASA. Public domain.
@@ -174,7 +174,7 @@ export function PhotoHero({
 }
 
 /**
- * The credit or licence as recorded, keeping "U.S." as the rest of the
+ * The credit or license as recorded, keeping "U.S." as the rest of the
  * site writes it.
  */
 function plainCredit(text: string) {
@@ -205,9 +205,9 @@ export function creditLine(credit: string) {
 }
 
 /**
- * Short visible licence name plus the full wording for the link's title
+ * Short visible license name plus the full wording for the link's title
  * and accessible name. "Public domain (U.S. government work)" shows as
- * "Public domain"; other licences (for example "CC BY-SA 4.0") show whole.
+ * "Public domain"; other licenses (for example "CC BY-SA 4.0") show whole.
  */
 export function licenceLabel(license: string) {
   const full = plainCredit(license);

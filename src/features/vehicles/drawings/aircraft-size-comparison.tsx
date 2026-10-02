@@ -9,37 +9,37 @@ import { DrawingSourceNote } from "./drawing-credits";
 import { ScaleFigure } from "./scale-figure";
 import { formatMetres, formatRecorded, obliqueTicks, toMetres } from "./units";
 
-/** Space around each plan's drawing, in metres. */
+/** Space around each plan's drawing, in meters. */
 const PLAN_PAD_M = 1;
 /**
- * From each plan to its dimension lines, in metres: the span line runs
+ * From each plan to its dimension lines, in meters: the span line runs
  * this far above the nose, the length line this far right of the right
  * wingtip.
  */
 const DIM_OFFSET_M = 2.5;
 /** The gap between the outline and an extension line, and the overshoot. */
 const EXT_GAP_M = 0.6;
-/** Half-length of a dimension line's oblique end tick, in metres. */
+/** Half-length of a dimension line's oblique end tick, in meters. */
 const TICK_M = 0.8;
 /**
- * Where the nose sits, in metres from the top of every plan's drawing:
+ * Where the nose sits, in meters from the top of every plan's drawing:
  * the same for every plan, so the noses along a row are level.
  */
 export const NOSE_Y_M = PLAN_PAD_M + DIM_OFFSET_M;
 
-/** The scale bar's length, tick step and labelled step, in metres. */
+/** The scale bar's length, tick step and labeled step, in meters. */
 export const SCALE_BAR_M = 20;
 const SCALE_TICK_M = 5;
 const SCALE_LABEL_M = 10;
 
 /**
- * The shared scale, as CSS lengths per metre at each width. Every plan and
+ * The shared scale, as CSS lengths per meter at each width. Every plan and
  * the scale bar are sized from `--plan-u`, so all of them use one scale at
  * any width. The plans wrap in rows, smallest wingspan first: on a phone
- * two to a row at 4.5px per metre (3.75px below 22.5rem, so two fit the
+ * two to a row at 4.5px per meter (3.75px below 22.5rem, so two fit the
  * 288px column at 320px), with the B-2 alone on the last row; from 40rem
  * at 5px; from 64rem the four fighters share the first row at 8px per
- * metre (9px from 80rem), with the B-2 on its own row under them.
+ * meter (9px from 80rem), with the B-2 on its own row under them.
  */
 const SCALE_CLASSES =
   "[--plan-u:3.75px] min-[22.5rem]:[--plan-u:4.5px] sm:[--plan-u:5px] lg:[--plan-u:8px] xl:[--plan-u:9px]" as const;
@@ -53,7 +53,7 @@ export interface PlanAircraft {
   readonly name: string;
   readonly lengthM: number;
   readonly wingspanM: number;
-  /** "107.4 ft" as recorded, and "32.7 m" (empty when recorded in metres). */
+  /** "107.4 ft" as recorded, and "32.7 m" (empty when recorded in meters). */
   readonly lengthLabel: readonly [string, string];
   readonly wingspanLabel: readonly [string, string];
   /** The traced top-view outline, scaled to the recorded dimensions. */
@@ -79,7 +79,7 @@ function isMeasured(lengthM: number, wingspanM: number) {
 
 /**
  * The aircraft that can be drawn, built from `dimensions.length` and
- * `dimensions.wingspan` in each record, converted to metres, and the
+ * `dimensions.wingspan` in each record, converted to meters, and the
  * vehicle's traced top-view outline, smallest wingspan first. A record
  * missing either dimension or an outline is left out.
  */
@@ -111,7 +111,7 @@ export function aircraftPlans(
  * The transform that places a traced outline on its plan: nose at
  * `NOSE_Y_M`, left wingtip at x = 0, stretched so its box is exactly the
  * recorded wingspan by the recorded length (the traced box already matches
- * them to within a millimetre).
+ * them to within a millimeter).
  */
 export function outlineTransform(
   item: Pick<PlanAircraft, "drawing" | "lengthM" | "wingspanM">,
@@ -126,7 +126,7 @@ function round6(value: number) {
 }
 
 /**
- * One plan's drawing box in metres: the plan, its two dimension lines and
+ * One plan's drawing box in meters: the plan, its two dimension lines and
  * padding. The plan's left wingtip is at x = 0, so the box starts at `x`
  * (negative).
  */
@@ -159,14 +159,14 @@ const object = {
  * One aircraft seen from above, nose up: its traced outline as a closed
  * 1.5px line, scaled to the recorded length and wingspan. A 0.75px span
  * dimension line runs above the plan and a length dimension line to its
- * right, each with extension lines and oblique end ticks, labelled in
+ * right, each with extension lines and oblique end ticks, labeled in
  * B612 Mono. The labels are HTML, so they set at one size whatever the
  * plan's scale.
  */
 function Plan({ item }: { item: PlanAircraft }) {
   const box = planViewBox(item);
   // The span's ends (the wingtips, at the outline's widest point) and the
-  // length's ends (nose and tail on the centreline) for the dimension and
+  // length's ends (nose and tail on the centerline) for the dimension and
   // extension lines.
   const tipY = NOSE_Y_M + item.lengthM * widestStation(item.drawing);
   const left = [0, tipY] as const;
@@ -283,7 +283,7 @@ function widestStation(drawing: VehicleDrawing) {
   return drawing.heightM > 0 ? bestY / drawing.heightM : 0;
 }
 
-/** A recorded figure in ink, with its metre conversion muted under it. */
+/** A recorded figure in ink, with its meter conversion muted under it. */
 function FigureLines({ label }: { label: readonly [string, string] }) {
   return (
     <>
@@ -304,7 +304,7 @@ function spokenFigures(label: readonly [string, string]) {
   return label[1] ? `${label[0]} (${label[1]})` : label[0];
 }
 
-/** The metre scale bar, at the shared scale. */
+/** The meter scale bar, at the shared scale. */
 function ScaleBar() {
   const ticks = Array.from(
     { length: SCALE_BAR_M / SCALE_TICK_M + 1 },
@@ -370,7 +370,7 @@ interface AircraftSizeComparisonProps {
  * The aircraft to one scale (spec 8), as small multiples: each traced
  * top-view outline, nose up, scaled to the recorded length and wingspan,
  * with its two dimension lines, at one shared scale, with the name under
- * each plan and one metre scale bar above them. Linework in the muted ink, figures
+ * each plan and one meter scale bar above them. Linework in the muted ink, figures
  * in B612 Mono, no fills. An aircraft missing a dimension or an outline
  * is left out and named in the caption, and every outline's source is
  * credited there.

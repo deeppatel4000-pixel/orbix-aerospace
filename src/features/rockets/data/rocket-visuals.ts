@@ -38,7 +38,7 @@ export interface RocketVisual {
    * development").
    */
   readonly reuseLabel?: string;
-  /** Photographer or agency, as the licence asks to be credited. */
+  /** Photographer or agency, as the license asks to be credited. */
   readonly credit: string;
   /** Intrinsic height of the file in pixels. */
   readonly height: number;
@@ -49,9 +49,9 @@ export interface RocketVisual {
    * so the whole vehicle, nose to pad, stays in frame.
    */
   readonly heroPhoneObjectPosition: string;
-  /** Licence name, for example "Public domain (U.S. government work)" or "CC BY 2.0". */
+  /** License name, for example "Public domain (U.S. government work)" or "CC BY 2.0". */
   readonly license: string;
-  /** Page that states the licence terms. */
+  /** Page that states the license terms. */
   readonly licenseUrl: string;
   /** What was changed from the original file. */
   readonly modifications: string;
@@ -158,7 +158,7 @@ const rocketVisuals = {
   },
   starship: {
     alt: "Starship on its Super Heavy booster rising above a large exhaust cloud during its fifth flight test",
-    // Centred on the vehicle (57% across) and zoomed towards it, so the
+    // Centered on the vehicle (57% across) and zoomed towards it, so the
     // stack fills the card instead of the pale sky and haze beside it.
     cardObjectPosition: "57% 50%",
     cardScale: 1.3,

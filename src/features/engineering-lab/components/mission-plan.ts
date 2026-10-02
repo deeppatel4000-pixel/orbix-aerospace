@@ -23,7 +23,7 @@ import {
  * model, which runs the same Hohmann analysis. Every number in a plan is
  * shown with one decimals value, so the shown steps add up to the shown
  * total. Steps the
- * models do not cover are listed as "not modelled" and carry no number.
+ * models do not cover are listed as "not modeled" and carry no number.
  * Nothing here judges whether a mission is feasible.
  */
 
@@ -156,8 +156,8 @@ export function buildMissionPlan(source: MissionPlanSource): MissionPlan {
     label: "Launch",
     text:
       launchAltitude === undefined
-        ? "Not modelled."
-        : `To a ${km(launchAltitude)} circular orbit. Not modelled.`,
+        ? "Not modeled."
+        : `To a ${km(launchAltitude)} circular orbit. Not modeled.`,
   });
 
   for (const allowance of source.budget.maneuvers ?? []) {
@@ -235,7 +235,7 @@ export function buildMissionPlan(source: MissionPlanSource): MissionPlan {
       id: "moon-arrival",
       kind: "not-modelled",
       label: "Arrival at the Moon",
-      text: "Not modelled. The preset uses the Moon's mean distance from Earth's centre as an altitude, and the Moon's gravity is ignored.",
+      text: "Not modeled. The preset uses the Moon's mean distance from Earth's center as an altitude, and the Moon's gravity is ignored.",
     });
   }
 
@@ -245,7 +245,7 @@ export function buildMissionPlan(source: MissionPlanSource): MissionPlan {
       id: "entry",
       kind: "not-modelled",
       label: "Entry and landing",
-      text: `Not modelled here. The entry tools cover only the lowest ${ENTRY_LIMIT_KM}${NBSP}km of the atmosphere, so they are set aside for now.`,
+      text: `Not modeled here. The entry tools cover only the lowest ${ENTRY_LIMIT_KM}${NBSP}km of the atmosphere, so they are set aside for now.`,
     });
   }
 
@@ -281,7 +281,7 @@ const PRESET_DISPLAY_NAMES: Readonly<Record<string, string>> = {
   "mars-transfer-concept": "Mars transfer concept",
 };
 
-/** The presets that carry a delta-v budget, in catalogue order. */
+/** The presets that carry a delta-v budget, in catalog order. */
 export function plannablePresets(
   presets: readonly MissionPreset[] = MISSION_PRESETS,
 ): MissionPlanSource[] {

@@ -8,7 +8,7 @@ interface RelatedAircraftProps {
   aircraft: readonly Aircraft[];
 }
 
-/** Related vehicles (spec 11): up to three catalogue rows, then the registry. */
+/** Related vehicles (spec 11): up to three catalog rows, then the registry. */
 export function RelatedAircraft({ aircraft }: RelatedAircraftProps) {
   if (aircraft.length === 0) return null;
 

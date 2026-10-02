@@ -14,7 +14,7 @@ export interface AircraftVisual {
    * Shown whole, never truncated; the visuals test enforces the limit.
    */
   readonly cardSummary: string;
-  /** Photographer or agency, as the licence asks to be credited. */
+  /** Photographer or agency, as the license asks to be credited. */
   readonly credit: string;
   /** Intrinsic height of the file in pixels. */
   readonly height: number;
@@ -25,9 +25,9 @@ export interface AircraftVisual {
    * bottom.
    */
   readonly heroObjectPosition: string;
-  /** Licence name, for example "Public domain (U.S. government work)" or "CC BY 2.0". */
+  /** License name, for example "Public domain (U.S. government work)" or "CC BY 2.0". */
   readonly license: string;
-  /** Page that states the licence terms. */
+  /** Page that states the license terms. */
   readonly licenseUrl: string;
   /** What was changed from the original file. */
   readonly modifications: string;
@@ -92,7 +92,7 @@ const aircraftVisuals = {
     // both wingtips in frame wherever the hero is cropped at the sides
     // (1024x768 and 1152x864: x from 41 to 71 percent works). From 48rem to
     // 64rem (portrait tablet) the photograph is a banner above the text, so
-    // it is centred. On the 4:3 phone plate 50% trims both tips evenly.
+    // it is centered. On the 4:3 phone plate 50% trims both tips evenly.
     registryHeroObjectPosition: {
       base: "50% 40%",
       lg: "58% 40%",
@@ -146,7 +146,7 @@ const aircraftVisuals = {
   "f-35-lightning-ii": {
     alt: "F-35A Lightning II in flight above the ridges and dry washes of the Mojave Desert",
     // The airframe spans about 18 to 82 percent of the width and 33 to 55
-    // percent of the height, so every crop centres just above the middle.
+    // percent of the height, so every crop centers just above the middle.
     cardObjectPosition: "50% 44%",
     cardSummary: "Single-engine fighter family",
     credit: "U.S. Air Force photo",

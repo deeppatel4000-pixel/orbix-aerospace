@@ -1,10 +1,10 @@
 #!/usr/bin/env node
 /**
- * Migration-safe design checks: raw colours, and the design v3 kill list.
+ * Migration-safe design checks: raw colors, and the design v3 kill list.
  *
  * Two ratchets share one baseline file:
  *
- * 1. RAW COLOURS (below): literal colours outside the token file.
+ * 1. RAW COLORS (below): literal colors outside the token file.
  * 2. KILL LIST (`docs/design-system/orbix-design-v3.md` sections 3 and 12):
  *    gradients, mask fades, shadows, radius utilities above 2px, `gap-px`
  *    compartments and `uppercase`. The shared foundation (`src/styles/`,
@@ -15,7 +15,7 @@
  * ## What problem this solves
  *
  * ORBIX has a canonical token system in `src/styles/orbix-tokens.css`, but the
- * audit found ~218 distinct hard-coded colour values across 74 component
+ * audit found ~218 distinct hard-coded color values across 74 component
  * files. Failing the build on all of them would either block this phase or
  * force a 74-file rewrite into it.
  *
@@ -58,15 +58,15 @@ const scanRoot = join(repoRoot, "src");
 const scanExtensions = [".ts", ".tsx"];
 
 /**
- * Files permitted to declare literal colours, with the reason.
+ * Files permitted to declare literal colors, with the reason.
  *
- * Keep this list short. A path belongs here only if it is a colour *source*,
- * not a colour *consumer*.
+ * Keep this list short. A path belongs here only if it is a color *source*,
+ * not a color *consumer*.
  */
 const allowlist = new Map([
   [
     "src/styles/orbix-tokens.css",
-    "the canonical token source; literal colours are its whole purpose",
+    "the canonical token source; literal colors are its whole purpose",
   ],
   [
     "src/app/opengraph-image.tsx",
@@ -75,13 +75,13 @@ const allowlist = new Map([
 ]);
 
 /**
- * Colour literals in component code.
+ * Color literals in component code.
  *
  * - `#abc`, `#aabbcc`, `#aabbccdd`
  * - `rgb(...)` / `rgba(...)` / `hsl(...)` / `hsla(...)` with numeric arguments
  *
  * Deliberately NOT matched: `color-mix(...)` and `var(--token)` compositions,
- * which are the correct way to derive a colour from a token.
+ * which are the correct way to derive a color from a token.
  */
 const patterns = [/#[0-9a-fA-F]{3,8}\b/g, /\b(?:rgba?|hsla?)\(\s*[\d.]/g];
 
@@ -199,7 +199,7 @@ for (const filePath of listKillFiles(scanRoot)) {
 }
 
 /* ------------------------------------------------------------------ *
- * RAW COLOURS
+ * RAW COLORS
  * ------------------------------------------------------------------ */
 
 const current = new Map();
@@ -233,7 +233,7 @@ if (process.argv.includes("--update")) {
   );
   const sum = (object) => Object.values(object).reduce((a, n) => a + n, 0);
   console.log(
-    `Baseline updated: raw colours ${Object.keys(rawColors).length} files, ${sum(rawColors)} violations; ` +
+    `Baseline updated: raw colors ${Object.keys(rawColors).length} files, ${sum(rawColors)} violations; ` +
       `kill list ${Object.keys(killList).length} files, ${sum(killList)} hits.`,
   );
   process.exit(0);
@@ -270,7 +270,7 @@ for (const [file, { count, samples }] of currentKill) {
 }
 
 if (failures.length > 0) {
-  console.error("\nRaw colour values are not allowed in new component code.\n");
+  console.error("\nRaw color values are not allowed in new component code.\n");
   console.error(
     "Use a semantic token from src/styles/orbix-tokens.css instead, for\n" +
       "example `text-muted`, `border-rule`, or `var(--orbix-accent)`.\n",
@@ -306,7 +306,7 @@ if (failures.length > 0 || killFailures.length > 0) {
 const total = (map) =>
   [...map.values()].reduce((sum, { count }) => sum + count, 0);
 console.log(
-  `Raw colour check passed: ${total(current)} known violations across ${current.size} files. ` +
+  `Raw color check passed: ${total(current)} known violations across ${current.size} files. ` +
     `Kill list check passed: ${total(currentKill)} known hits across ${currentKill.size} feature files ` +
     `(target 0). Nothing new.`,
 );

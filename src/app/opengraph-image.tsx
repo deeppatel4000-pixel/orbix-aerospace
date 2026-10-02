@@ -13,8 +13,8 @@ import { socialImageAlt, socialImageSize } from "@/lib/social-image";
  * Site-wide social preview image, built like a v3 hero (spec 6, 7): the
  * wordmark and tagline on the near-black ground at the left, a hard-edged
  * public-domain photograph as a plate bleeding to the right edge, and a
- * one-line catalogue caption under the plate on the ground. The only
- * colour is a 2px by 48px space-division rule above the wordmark. No
+ * one-line catalog caption under the plate on the ground. The only
+ * color is a 2px by 48px space-division rule above the wordmark. No
  * gradients, no boxes, no text on the photograph.
  *
  * Values mirror `src/styles/orbix-tokens.css`, because ImageResponse cannot
@@ -44,7 +44,7 @@ const PLATE_HEIGHT = 540;
 /**
  * The plate as a JPEG data URL. ImageResponse cannot decode WebP, so the
  * site's WebP file is converted with sharp (installed with Next.js for its
- * image optimiser). If sharp is unavailable the card is set without the
+ * image optimizer). If sharp is unavailable the card is set without the
  * plate rather than failing.
  */
 async function plateDataUrl(): Promise<string | null> {

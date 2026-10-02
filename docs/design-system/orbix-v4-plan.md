@@ -28,7 +28,7 @@ college.
 - Header nav (5): Engineering Lab, Verification, Aircraft, Rockets, How I built it.
 - Footer: Compare, Learn, About, Image credits, legal pages.
 - `/showcase` is removed as a page: its architecture figure and quality checks move into the build
-  log ("How it is organised"); `/showcase` and `/showcase-capture/*` redirect (permanent) to
+  log ("How it is organized"); `/showcase` and `/showcase-capture/*` redirect (permanent) to
   `/build-log#structure` and the lab mission planner respectively. Mission presets live in the lab.
 - Compare opens preloaded (SR-71, F-22, B-2) instead of empty.
 
@@ -48,7 +48,7 @@ college.
 ## 5. Interactive visuals (plain SVG and React, no new dependencies)
 
 Shared module `src/features/orbits/`: stretched-altitude mapping (Earth at a fixed drawn radius,
-altitude mapped linearly outward, labelled "altitude not to scale; Earth to scale"), conic path
+altitude mapped linearly outward, labeled "altitude not to scale; Earth to scale"), conic path
 sampling, a scrubber hook with reduced-motion guard, and a `TransferCanvas`. Physics stays in
 calculators: add `calculators/kepler-position.ts` (Kepler's equation by Newton iteration) with unit
 tests and one verification case from a published worked example.
@@ -62,10 +62,10 @@ tests and one verification case from a published worked example.
   (circular, coplanar, impulsive).
 - **V2 Mission Planner** (replaces the eight mission-* modules, replay, dashboard, ground track):
   pick a preset or a goal; the planner computes every step with existing analyses, draws each
-  step on the shared canvas, lists steps as an ordered list, shows unmodelled steps as plain grey
-  rows ("Launch: not modelled"). Never claims feasibility.
+  step on the shared canvas, lists steps as an ordered list, shows unmodeled steps as plain gray
+  rows ("Launch: not modeled"). Never claims feasibility.
 - **V3 Delta-v ledger**: one horizontal bar per mission on one shared m/s axis, segments in flight
-  order, labelled, with a text table; Mars rows marked "preset allowances, not computed".
+  order, labeled, with a text table; Mars rows marked "preset allowances, not computed".
 - Remove the decorative ground track (not computed), the replay slideshow and duplicate mission
   viewers.
 
@@ -89,13 +89,13 @@ Follow `images.md` slot map exactly: no photo file appears in more than one slot
 thumbnails excepted). Every hero and plate uses an original at least 1.0x its largest displayed
 device size at 1440 DPR 2 (re-export from the full-resolution original; replace sources whose
 original is too small, for example the B-2 and F-35). Each profile gets a short gallery of 2 to 3
-additional views. Every new image: licence verified on its source page, credit, licence, source
-link, recorded in `docs/assets/image-provenance.md` and shown on `/credits`. No NC or ND licences.
+additional views. Every new image: license verified on its source page, credit, license, source
+link, recorded in `docs/assets/image-provenance.md` and shown on `/credits`. No NC or ND licenses.
 
 Drawings: the aircraft scale figure and the rocket height figure use real outlines traced (as SVG)
 from public-domain USAF/NASA three-views and side views, or CC BY-SA 4.0 drawings with exact
 attribution and "cropped, labels removed" noted (derived figures released under CC BY-SA 4.0 and
-credited). Each outline is normalised to the recorded length, span or height. Compare uses the
+credited). Each outline is normalized to the recorded length, span or height. Compare uses the
 drawings instead of photo thumbnails.
 
 ## 8. Copy

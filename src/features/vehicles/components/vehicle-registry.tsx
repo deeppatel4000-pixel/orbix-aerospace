@@ -20,7 +20,7 @@ interface VehicleRegistryProps {
   description: string;
   entries: readonly VehicleRegistryEntry[];
   /**
-   * `rows` (default): a ruled catalogue list, one rule between rows. Render
+   * `rows` (default): a ruled catalog list, one rule between rows. Render
    * each card with the `row` layout. `grid`: an open grid of photo plates
    * with the caption under each, no rules, for portrait photographs, three
    * across from 40rem and five from 80rem. Below 40rem it is one ruled
@@ -45,7 +45,7 @@ function normalise(value: string) {
 
 /**
  * The registry (spec 6, 11): a heading row with the search field and a live
- * result count, then the entries as an open catalogue, either ruled rows or
+ * result count, then the entries as an open catalog, either ruled rows or
  * an open grid of plates, with no card chrome. Every entry is rendered on
  * the server, so the full list is present without JavaScript; the search
  * only hides entries that do not match.

@@ -176,7 +176,7 @@ export function LaboratoryShell({
          * discipline expanded. On a short window the index scrolls inside
          * its own column with a visible thin scrollbar as the overflow cue
          * (spec 3.1: no fade), and the current row is kept in view. The
-         * narrow bar's ground is the page colour, so scrolled content does
+         * narrow bar's ground is the page color, so scrolled content does
          * not show through it; it is not a fill. */}
         <div
           data-tool-rail=""

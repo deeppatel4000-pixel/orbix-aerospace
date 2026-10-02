@@ -56,9 +56,9 @@ export interface TransferExplorerProps {
    * the drawing, the total, the slider and a link to the lab.
    */
   readonly variant?: "compact" | "full";
-  /** Starting circular orbit altitude, metres. Default 200 km. */
+  /** Starting circular orbit altitude, meters. Default 200 km. */
   readonly initialAltitudeMetres?: number;
-  /** Target altitude the explorer opens on, metres. Default GEO. */
+  /** Target altitude the explorer opens on, meters. Default GEO. */
   readonly defaultTargetAltitudeMetres?: number;
   /** Compact only: where "Open in the Engineering Lab" goes. */
   readonly labHref?: string;
@@ -119,7 +119,7 @@ function valueText(selection: TargetSelection): string {
 }
 
 /**
- * Slider position for a pointer `drawnRadius` from Earth's centre, read on
+ * Slider position for a pointer `drawnRadius` from Earth's center, read on
  * the map frozen when the drag began, so the ring stays under the pointer.
  * Past the outer ring the drag continues on the slider's log scale.
  */
@@ -220,7 +220,7 @@ export function TransferExplorer({
   // Announce the new total once the user stops moving the target.
   const [announcement, setAnnouncement] = useState("");
   const announceText = model
-    ? `Total ${formatSpeed(model.totalDeltaVMetresPerSecond, totalDecimals(model))} metres per second, transfer time ${formatDuration(model.transferTimeSeconds)}.`
+    ? `Total ${formatSpeed(model.totalDeltaVMetresPerSecond, totalDecimals(model))} meters per second, transfer time ${formatDuration(model.transferTimeSeconds)}.`
     : "Target is the starting orbit. No transfer.";
   // Nothing is announced for the state the explorer opens on.
   const [openingText] = useState(announceText);
@@ -240,7 +240,7 @@ export function TransferExplorer({
     ? "Drawn to scale."
     : `Earth is to scale; heights above it are drawn ${formatStretchFactor(map.stretchFactor)} times taller.`;
   const description = model
-    ? `Earth with a circular orbit at ${startKm} km and a circular orbit at ${targetKm} km, joined by half an ellipse travelled counter-clockwise. Burn 1 is on the right at ${startKm} km and burn 2 on the left at ${targetKm} km. ${scaleSentence}`
+    ? `Earth with a circular orbit at ${startKm} km and a circular orbit at ${targetKm} km, joined by half an ellipse traveled counter-clockwise. Burn 1 is on the right at ${startKm} km and burn 2 on the left at ${targetKm} km. ${scaleSentence}`
     : `Earth with one circular orbit at ${startKm} km. The target is the same orbit, so there is no transfer.`;
 
   // In the full layout the drawing stays in view beside the longer

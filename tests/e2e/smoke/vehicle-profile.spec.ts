@@ -66,7 +66,7 @@ const PROFILES = [
 test.describe("Vehicle profile structure", () => {
   test.skip(
     () => test.info().project.name !== "desktop",
-    "Profile structure is viewport-independent; responsive behaviour is covered by the overflow guards.",
+    "Profile structure is viewport-independent; responsive behavior is covered by the overflow guards.",
   );
 
   for (const { path, sections } of PROFILES) {
@@ -146,7 +146,7 @@ test.describe("Vehicle profile structure", () => {
       await page.goto(path, { waitUntil: "domcontentloaded" });
 
       // Every profile's hero photograph carries alt text and a visible
-      // credit, licence and source link.
+      // credit, license and source link.
       const hero = page.locator("#main-content .orbix-photo-hero__figure");
       await expect(hero).toHaveCount(1);
       const heroAlt = (await hero.locator("img").getAttribute("alt")) ?? "";

@@ -11,7 +11,7 @@ import { expect, ROUTES, test } from "../fixtures/orbix";
  * regression in that config would have been invisible: pages would still
  * render, images would still appear, and every existing assertion would pass.
  *
- * ## Behaviour is derived, not assumed
+ * ## Behavior is derived, not assumed
  *
  * Every expectation below was measured against the real deployment before
  * being written, using the application's own optimizer endpoint:
@@ -67,7 +67,7 @@ async function optimizerUrlFromPage(
 }
 
 test.describe("next/image quality configuration", () => {
-  // Response behaviour is server-side and identical across viewports.
+  // Response behavior is server-side and identical across viewports.
   test.skip(
     () => test.info().project.name !== "desktop",
     "Image optimizer responses do not vary by viewport.",
@@ -147,7 +147,7 @@ test.describe("next/image quality configuration", () => {
         await optimizerUrlFromPage(page, quality),
       );
 
-      // Measured behaviour: Next 16 treats `images.qualities` as an allowlist
+      // Measured behavior: Next 16 treats `images.qualities` as an allowlist
       // and rejects anything outside it. It does NOT clamp to the nearest
       // configured value, and it does NOT silently succeed.
       expect(

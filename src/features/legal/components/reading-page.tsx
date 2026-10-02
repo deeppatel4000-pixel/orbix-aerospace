@@ -109,14 +109,14 @@ interface ReadingPageProps {
   /**
    * The page's art-directed photograph (spec 7), set under the intro rule
    * and above the sections, outside the prose so its caption keeps the
-   * muted catalogue style.
+   * muted catalog style.
    */
   readonly plate?: ReactNode;
-  /** The H1, one colour (spec 3.8). */
+  /** The H1, one color (spec 3.8). */
   readonly title: string;
   /**
    * v2 split title, kept so older callers compile: appended to `title` in
-   * the same colour. New callers pass the whole H1 as `title`.
+   * the same color. New callers pass the whole H1 as `title`.
    */
   readonly titleAccent?: string;
   /** Sections listed in the "On this page" list. Omit on short pages. */
@@ -127,7 +127,7 @@ interface ReadingPageProps {
  * Editorial reading layout (spec 11) for About, the legal pages, the build
  * log and verification.
  *
- * Intro: a display H1 in one colour, then the lead, closed by one hairline
+ * Intro: a display H1 in one color, then the lead, closed by one hairline
  * rule inside the container. An optional plate follows the rule. No kicker: the H1 names the page and the footer groups the pages.
  *
  * Body: from 80rem a 12-column grid with a sticky "On this page" list in

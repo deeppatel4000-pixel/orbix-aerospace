@@ -26,7 +26,7 @@ describe("calculateEscapeVelocity", () => {
     );
   });
 
-  it("calculates escape velocity at a 400 kilometre LEO radius", () => {
+  it("calculates escape velocity at a 400 kilometer LEO radius", () => {
     const result = calculateEscapeVelocity({
       orbitalRadiusMetres: EARTH_MEAN_RADIUS_METRES + 400_000,
     });

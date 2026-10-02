@@ -4,7 +4,7 @@ import {
 } from "@/features/vehicles/data/gallery-drawings";
 import { cn } from "@/lib/cn";
 
-/** A drawing area in metres. */
+/** A drawing area in meters. */
 export interface OutlineBox {
   readonly heightM: number;
   readonly widthM: number;
@@ -34,7 +34,7 @@ export function drawingsFor(ids: readonly string[]) {
 
 interface VehicleOutlineProps {
   /**
-   * The area the outline sits in, in metres. Pass a shared box so several
+   * The area the outline sits in, in meters. Pass a shared box so several
    * outlines read at one scale; omitted, the outline fills its own box.
    */
   box?: OutlineBox;
@@ -43,8 +43,8 @@ interface VehicleOutlineProps {
 }
 
 /**
- * One traced outline (spec 8): a 1.5px line in the current colour, no
- * fill, centred across the box. A launch vehicle (side view) stands on the
+ * One traced outline (spec 8): a 1.5px line in the current color, no
+ * fill, centered across the box. A launch vehicle (side view) stands on the
  * bottom edge; an aircraft (top view, nose up) hangs from the top edge, so
  * noses line up. Decorative: the text beside it names the vehicle.
  */

@@ -227,7 +227,7 @@ describe("target scale", () => {
     expect(roundTargetAltitude(160_000)).toBe(160_000);
   });
 
-  it("puts the Moon stop at the Moon's mean distance from Earth's centre", () => {
+  it("puts the Moon stop at the Moon's mean distance from Earth's center", () => {
     const moon = TARGET_STOPS.find((stop) => stop.id === "moon")!;
     expect(moon.altitudeMetres + EARTH_MEAN_RADIUS_METRES).toBe(
       MOON_MEAN_DISTANCE_METRES,
@@ -473,10 +473,10 @@ describe("TransferCanvas and TransferExplorer markup", () => {
     );
     const text = markup.replace(/<[^>]+>/g, "").replace(/&#x27;/g, "'");
     expect(markup.replace(/&#x27;/g, "'")).toContain(
-      "aria-valuetext=\"378,029 km, orbit radius equal to the Moon's mean distance, 384,400 km from Earth's centre\"",
+      "aria-valuetext=\"378,029 km, orbit radius equal to the Moon's mean distance, 384,400 km from Earth's center\"",
     );
     expect(text).toContain(
-      "384,400 km from Earth's centre (NASA Moon Fact Sheet); Moon's gravity ignored.",
+      "384,400 km from Earth's center (NASA Moon Fact Sheet); Moon's gravity ignored.",
     );
   });
 });

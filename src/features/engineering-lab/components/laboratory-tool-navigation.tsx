@@ -91,7 +91,7 @@ function ToolRows({
                 dense
                   ? "min-h-[1.625rem] py-[0.1875rem] text-[0.84375rem] leading-5"
                   : "min-h-8 py-1.5 text-sm leading-5",
-                // Active by colour and weight only (spec 11): no stripe, no
+                // Active by color and weight only (spec 11): no stripe, no
                 // fill. Hover underlines, like any text link.
                 isActive
                   ? "font-semibold text-accent"
@@ -241,11 +241,11 @@ function DesktopIndex({
 /**
  * The Engineering Lab tool index (spec 11): a plain list, every tool with
  * its tool ID in B612 Mono, grouped by discipline. The active tool is
- * marked by colour and weight alone.
+ * marked by color and weight alone.
  *
  * From 1024px it is a vertical list of plain in-page links with
  * `aria-current` on the active one, held below the header by the shell.
- * Below 1024px it is only a labelled `<select>` in a slim bar under the
+ * Below 1024px it is only a labeled `<select>` in a slim bar under the
  * header; the full list lives in `LaboratoryToolDirectory`, in the page
  * flow above the tool. Every path ends in the URL hash, which
  * `LaboratoryShell` resolves.

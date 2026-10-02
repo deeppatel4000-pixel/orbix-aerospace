@@ -18,7 +18,7 @@ interface CreditGroup {
 
 /**
  * Underlined like a caption link wherever the credit is set, so a link is
- * never told apart by colour alone (WCAG 1.4.1).
+ * never told apart by color alone (WCAG 1.4.1).
  */
 const LINK =
   "underline decoration-1 underline-offset-[3px] hover:text-ink" as const;
@@ -29,12 +29,12 @@ function joinNames(names: readonly string[]) {
   return `${names.slice(0, -1).join(", ")} and ${names.at(-1)}`;
 }
 
-/** The credit without the licence name, which is printed as its own link. */
+/** The credit without the license name, which is printed as its own link. */
 function author(drawing: VehicleDrawing) {
   return drawing.credit.replace(`, ${drawing.license}`, "");
 }
 
-/** Short licence name: "public domain" or "CC BY-SA 4.0". */
+/** Short license name: "public domain" or "CC BY-SA 4.0". */
 function licenceName(drawing: VehicleDrawing) {
   return drawing.license.startsWith("Public domain")
     ? "public domain"
@@ -63,7 +63,7 @@ export function drawingCreditGroups(
  * The credit line for traced outlines, one sentence per source drawing:
  * "F-22 Raptor: U.S. Air Force, via Wikimedia Commons, public domain.
  * Source." A CC BY-SA source adds what was changed and that the outline is
- * shared under the same licence, as the licence asks.
+ * shared under the same license, as the license asks.
  */
 export function DrawingCredits({
   vehicles,
@@ -82,7 +82,7 @@ export function DrawingCredits({
             {index > 0 ? " " : null}
             {label}: {author(drawing)},{" "}
             <a
-              aria-label={`${drawing.license}, licence of the ${label} drawing`}
+              aria-label={`${drawing.license}, license of the ${label} drawing`}
               className={LINK}
               href={drawing.licenseUrl}
               rel="noopener noreferrer license"
@@ -109,14 +109,14 @@ export function DrawingCredits({
   );
 }
 
-/** The licence every U.S. government drawing in the set carries. */
+/** The license every U.S. government drawing in the set carries. */
 const US_GOVERNMENT_PD = "Public domain (U.S. government work)";
 
 /**
  * A scale figure's source line, kept short (v4 plan section 7): the
  * public-domain U.S. government drawings in one phrase, named only when
  * other sources are in the set too; every CC BY-SA drawing credited in
- * full, with what was changed, as its licence asks; then a link to every
+ * full, with what was changed, as its license asks; then a link to every
  * source on the credits page.
  */
 export function DrawingSourceNote({

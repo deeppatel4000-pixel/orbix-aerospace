@@ -614,7 +614,7 @@ export function validateAtmosphereInputs(
     altitudeError =
       "Altitude must not exceed " +
       STANDARD_ATMOSPHERE_MAX_ALTITUDE_METRES.toLocaleString("en-US") +
-      " metres for this model.";
+      " meters for this model.";
   }
 
   return { altitudeMetres: altitudeError };

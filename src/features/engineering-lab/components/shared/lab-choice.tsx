@@ -36,10 +36,10 @@ interface LabSegmentedProps<T extends string> {
 /**
  * A short either-or choice as a square segmented control: one 1px outline
  * at the 2px control radius (spec 3.3) and hairline dividers. The chosen
- * segment is shown by ink colour, weight and a 2px accent underline, never
+ * segment is shown by ink color, weight and a 2px accent underline, never
  * a fill (spec 3.9), so the Calculate button stays the one solid accent
  * element in the tool. Native radios keep the group semantics and
- * arrow-key behaviour.
+ * arrow-key behavior.
  *
  * There is no shared segmented primitive in `src/components/ui` yet; this
  * repeats the /compare markup for the lab.

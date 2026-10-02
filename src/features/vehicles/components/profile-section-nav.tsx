@@ -35,7 +35,7 @@ const SCROLL_KEYS = new Set([
  * it never covers them; below 64rem it wraps once above them. The section
  * being read (the last one whose top has passed a reading line 40% down
  * the viewport, or the one just jumped to) gets `aria-current="location"`,
- * shown by colour and weight only. Without JavaScript the links still work
+ * shown by color and weight only. Without JavaScript the links still work
  * and simply show no current item.
  */
 export function ProfileSectionNav({ items }: ProfileSectionNavProps) {

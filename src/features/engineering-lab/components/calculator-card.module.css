@@ -6,7 +6,7 @@
  * H2. Inside it nothing is boxed: the equation is set on the ground with
  * its number at the right margin, the results are open definition lists
  * with the headline value large, and tables are open. Only form controls
- * carry a border. Every colour comes from a semantic token.
+ * carry a border. Every color comes from a semantic token.
  *
  * The rules after the shell style the lab's own shared pieces: the tool
  * split, the field unit, the results, `ReadoutGrid`, `LabFigure`,
@@ -179,7 +179,7 @@
 }
 
 /* A form group's legend (`LAB_GROUP_LEGEND`): a sentence-case sans label
- * (spec 5), 14px 600 in the ink colour, so it reads as the head of the
+ * (spec 5), 14px 600 in the ink color, so it reads as the head of the
  * fields under it. Every group except the form's first opens 32px down
  * with a 1px rule and 16px under it (a group nested in a wrapper, such as
  * a vehicle, counts as a later group), so a group break is never mistaken
@@ -277,7 +277,7 @@
 
 /* A stacked fraction whose numerator may break (`EqFrac` with `wrap`):
  * below a 22rem tool the numerator breaks at its <wbr> (after a "·"),
- * and each row stays centred, so the relation never scrolls sideways. */
+ * and each row stays centered, so the relation never scrolls sideways. */
 @container tool (max-width: 22rem) {
   .workspace :global(.lab-eq-frac--wrap) {
     max-width: calc(100% - 2ch);
@@ -401,7 +401,7 @@
 }
 
 /* ==================================================================== *
- * RESULTS (spec 6 and 11): open, on the page ground. A 2px lab-colour
+ * RESULTS (spec 6 and 11): open, on the page ground. A 2px lab-color
  * rule, 48px wide, sits above the h3 title; the figures follow as
  * definition lists. No panel, no fill, no outline, no inset.
  * ==================================================================== */
@@ -681,7 +681,7 @@
   text-transform: none;
 }
 
-/* A unit in a table head keeps its case: "mm", never "MM" (megametres). */
+/* A unit in a table head keeps its case: "mm", never "MM" (megameters). */
 .workspace :global(.orbix-table-unit) {
   letter-spacing: 0;
   text-transform: none;

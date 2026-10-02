@@ -4,7 +4,7 @@ import type {
 } from "@/features/vehicles/types";
 
 /**
- * Metres per recorded distance unit. Exact by definition: the
+ * Meters per recorded distance unit. Exact by definition: the
  * international foot (0.3048 m), the statute mile (1,609.344 m) and the
  * nautical mile (1,852 m).
  */
@@ -16,12 +16,12 @@ export const METRES_PER_UNIT: Readonly<Record<DistanceUnit, number>> = {
   nmi: 1852,
 };
 
-/** A recorded distance in metres. */
+/** A recorded distance in meters. */
 export function toMetres(measurement: DistanceMeasurement) {
   return measurement.value * METRES_PER_UNIT[measurement.unit];
 }
 
-/** "52.4": metres to one decimal place, for a dimension label. */
+/** "52.4": meters to one decimal place, for a dimension label. */
 export function formatMetres(metres: number) {
   return new Intl.NumberFormat("en-US", {
     maximumFractionDigits: 1,

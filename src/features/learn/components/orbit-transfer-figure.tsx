@@ -37,7 +37,7 @@ export function OrbitTransferFigure() {
   return (
     <TransferCanvas
       className="max-w-[28rem]"
-      description={`Earth with a circular orbit at ${start} km and a circular orbit at ${end} km, joined by half an ellipse travelled counter-clockwise. Burn 1 is on the right at ${start} km and burn 2 on the left at ${end} km. ${scale}`}
+      description={`Earth with a circular orbit at ${start} km and a circular orbit at ${end} km, joined by half an ellipse traveled counter-clockwise. Burn 1 is on the right at ${start} km and burn 2 on the left at ${end} km. ${scale}`}
       initialAltitudeMetres={START_ALTITUDE_METRES}
       map={map}
       model={model}

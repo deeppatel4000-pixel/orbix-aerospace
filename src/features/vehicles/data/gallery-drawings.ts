@@ -9,15 +9,15 @@
  *
  * - Aircraft (`view: "top"`): plan view, nose up. x runs across the span,
  *   y from the nose (0) to the tail. Width = recorded wingspan, height =
- *   recorded length, both in metres.
+ *   recorded length, both in meters.
  * - Launch vehicles (`view: "side"`): side view, nose up. Height = recorded
- *   height in metres; width follows the drawing at the same scale (fins,
+ *   height in meters; width follows the drawing at the same scale (fins,
  *   boosters and flaps included).
  *
- * `d` is an SVG path in metres with its origin at the top left of the
+ * `d` is an SVG path in meters with its origin at the top left of the
  * bounding box, so a figure can place it with
  * `<path d={drawing.d} transform="translate(x y)" />` inside a viewBox in
- * metres and stroke it with `vector-effect="non-scaling-stroke"` (spec v3
+ * meters and stroke it with `vector-effect="non-scaling-stroke"` (spec v3
  * section 8: 1.5px strokes, no fills). The same outline is published as a
  * standalone file at `src`.
  *
@@ -28,11 +28,11 @@
 export type DrawingView = "side" | "top";
 
 export interface VehicleDrawing {
-  /** Author line, as the licence asks to be credited. */
+  /** Author line, as the license asks to be credited. */
   readonly credit: string;
-  /** Closed SVG path in metres, origin at the top left of the bounding box. */
+  /** Closed SVG path in meters, origin at the top left of the bounding box. */
   readonly d: string;
-  /** Bounding-box height in metres: recorded length (aircraft) or height (rockets). */
+  /** Bounding-box height in meters: recorded length (aircraft) or height (rockets). */
   readonly heightM: number;
   readonly license: string;
   readonly licenseUrl: string;
@@ -46,7 +46,7 @@ export interface VehicleDrawing {
   readonly src: string;
   readonly vehicleId: string;
   readonly view: DrawingView;
-  /** Bounding-box width in metres: recorded wingspan (aircraft) or drawn width (rockets). */
+  /** Bounding-box width in meters: recorded wingspan (aircraft) or drawn width (rockets). */
   readonly widthM: number;
 }
 

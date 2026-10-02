@@ -3,11 +3,11 @@
    * BUTTONS (spec 9)
    *
    * Rectangular, 2px radius, 44px minimum height, sans 500 at 15px.
-   * Primary: solid division colour with page-ground text, one per view.
+   * Primary: solid division color with page-ground text, one per view.
    * Secondary: 1px `--rule-strong` outline. Tertiary: an underlined text
    * link with an arrow. Ghost: a quiet toolbar control. Link: an inline
    * text link with no minimum height. Hover changes the fill, border or
-   * underline colour; nothing lifts, scales or moves.
+   * underline color; nothing lifts, scales or moves.
    * ==================================================================== */
 
   .orbix-button {
@@ -64,13 +64,13 @@
     border-color: var(--orbix-text-primary);
   }
 
-  /* Toggle state: the outline turns to the division colour. */
+  /* Toggle state: the outline turns to the division color. */
   .orbix-button--secondary[aria-pressed="true"] {
     border-color: var(--orbix-accent);
     color: var(--orbix-text-primary);
   }
 
-  /* Quiet control for toolbars: no outline, colour change on hover. */
+  /* Quiet control for toolbars: no outline, color change on hover. */
   .orbix-button--ghost {
     background: transparent;
     color: var(--orbix-text-muted);
@@ -166,7 +166,7 @@
     padding-inline: 0;
   }
 
-  /* Inline text link (spec 9): 1px underline at 3px, colour shift on
+  /* Inline text link (spec 9): 1px underline at 3px, color shift on
    * hover. */
   .orbix-link {
     color: var(--orbix-accent);
@@ -362,7 +362,7 @@
     font-size: var(--text-body-sm);
   }
 
-  /* An error summary may carry one top rule in the danger colour
+  /* An error summary may carry one top rule in the danger color
    * (spec 3.2). */
   .orbix-error-summary {
     border-top: 2px solid var(--orbix-status-danger);
@@ -372,7 +372,7 @@
   /* ==================================================================== *
    * FIGURES (spec 5). B612 Mono sets `.` and `,` at the left of the cell;
    * `formatFigure` / `<Readout>` wrap separators between digits in
-   * `.orbix-num-sep`, which moves the mark to the centre of its cell
+   * `.orbix-num-sep`, which moves the mark to the center of its cell
    * without changing the advance, so tabular columns stay aligned.
    * ==================================================================== */
 
@@ -395,7 +395,7 @@
   }
 
   /* ==================================================================== *
-   * FIGURE AND CATALOGUE CAPTION (spec 6)
+   * FIGURE AND CATALOG CAPTION (spec 6)
    *
    * `<figure class="orbix-figure">` with a hard-edged image and a caption
    * below on the ground: "Fig. 3  SR-71B over the Sierra Nevada. NASA,
@@ -451,7 +451,7 @@
    *
    * - Below 64rem, and at every width with `data-layout="band"`: the text
    *   in the content column, then the photograph as a full-bleed band, then
-   *   the catalogue caption on the ground.
+   *   the catalog caption on the ground.
    * - From 64rem with `data-layout="split"` (default): the text column on
    *   the left, aligned to the page content edge; the plate on the right,
    *   about half the viewport wide and bleeding to its right edge, with
@@ -1211,7 +1211,7 @@
 
   /* ==================================================================== *
    * SITE HEADER (spec 9): solid ground, wordmark left, text links right,
-   * the active link underlined in the division colour, one 1px rule under
+   * the active link underlined in the division color, one 1px rule under
    * the bar.
    * ==================================================================== */
 
@@ -1363,7 +1363,7 @@
     outline-offset: -2px;
   }
 
-  /* Current page: underlined in the division colour, as on desktop. */
+  /* Current page: underlined in the division color, as on desktop. */
   .orbix-mobile-nav-link[aria-current="page"] {
     color: var(--orbix-text-primary);
     text-decoration-color: var(--orbix-accent);

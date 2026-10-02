@@ -10,7 +10,7 @@ import { expect, ROUTES, test } from "../fixtures/orbix";
  *
  *   node_modules/next/dist/shared/lib/image-config.js -> formats: ['image/webp']
  *
- * ## Observed behaviour (measured against a local production build AND the
+ * ## Observed behavior (measured against a local production build AND the
  * live deployment; identical in both)
  *
  *   Accept: image/avif,image/webp,...  -> 200 image/webp   (NOT avif)
@@ -118,7 +118,7 @@ test.describe("next/image format negotiation", () => {
 
     expect(response.status()).toBe(200);
 
-    // The real behaviour: AVIF is advertised first by the browser but is not
+    // The real behavior: AVIF is advertised first by the browser but is not
     // in the configured formats, so WebP is selected.
     expect(response.headers()["content-type"]).toBe("image/webp");
   });

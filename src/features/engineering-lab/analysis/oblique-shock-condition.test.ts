@@ -31,7 +31,7 @@ describe("analyzeObliqueShockCondition", () => {
     );
   });
 
-  it("uses the standard atmosphere for a 10,000 metre Mach 3 flow", () => {
+  it("uses the standard atmosphere for a 10,000 meter Mach 3 flow", () => {
     const result = analyzeObliqueShockCondition({
       altitudeMeters: 10_000,
       deflectionAngleDegrees: 15,
