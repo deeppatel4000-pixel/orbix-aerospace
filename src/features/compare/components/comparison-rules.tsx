@@ -9,7 +9,8 @@ import { cn } from "@/lib/cn";
 const comparisonRules = [
   {
     term: "Published units",
-    detail: "As the sources give them, never converted.",
+    detail:
+      "As the sources give them, not converted. Feet and inches are written as decimal feet.",
   },
   {
     term: "No scoring",

@@ -5,7 +5,7 @@ import {
   type MissionPreset,
   STANDARD_ATMOSPHERE_MAX_ALTITUDE_METRES,
 } from "@/features/engineering-lab/types";
-import { MOON_MEAN_DISTANCE_METRES } from "@/features/orbits/target-scale";
+import { MOON_ORBIT_ALTITUDE_METRES } from "@/features/orbits/target-scale";
 import {
   burnDecimals,
   computeTransferModel,
@@ -229,13 +229,13 @@ export function buildMissionPlan(source: MissionPlanSource): MissionPlan {
     });
   }
 
-  if (hohmannInputs?.finalAltitudeMetres === MOON_MEAN_DISTANCE_METRES) {
+  if (hohmannInputs?.finalAltitudeMetres === MOON_ORBIT_ALTITUDE_METRES) {
     steps.push({
       decimals: 0,
       id: "moon-arrival",
       kind: "not-modelled",
       label: "Arrival at the Moon",
-      text: "Not modeled. The preset uses the Moon's mean distance from Earth's center as an altitude, and the Moon's gravity is ignored.",
+      text: "Not modeled. The target orbit's radius is the Moon's mean distance, 384,400 km from Earth's center, and the Moon's gravity is ignored.",
     });
   }
 

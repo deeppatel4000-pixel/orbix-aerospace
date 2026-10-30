@@ -141,14 +141,17 @@ const presetDefinitions = [
     id: "lunar-transfer-concept",
     missionProfileInputs: {
       deltaVBudget: {
+        // Target orbit radius 384,400 km, the mean Earth-Moon distance
+        // (NASA Moon Fact Sheet), less Earth's 6,371 km mean radius. Same
+        // geometry as the Transfer Explorer's Moon stop.
         hohmannTransfer: {
-          finalAltitudeMetres: 384_400_000,
+          finalAltitudeMetres: 384_400_000 - 6_371_000,
           initialAltitudeMetres: 200_000,
         },
         missionName: "Lunar Transfer Concept Budget",
         orbitalPlaneChange: {
           inclinationChangeDegrees: 5,
-          orbitalAltitudeMetres: 384_400_000,
+          orbitalAltitudeMetres: 384_400_000 - 6_371_000,
         },
       },
       missionName: "Lunar Transfer Concept",

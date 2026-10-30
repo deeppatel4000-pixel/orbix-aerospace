@@ -207,10 +207,19 @@ export function TransferCanvas({
     innerRadius > innerHalfWidth
       ? innerRadius - Math.sqrt(innerRadius ** 2 - innerHalfWidth ** 2)
       : innerRadius;
+  // Under the ring, a small inner orbit puts its label level with the burn
+  // label beside that ring's marker. When the two would overlap across,
+  // the inner label drops below the burn label.
+  const innerBelowBurnY = burnLabelY + 1.75 * fontSize;
+  const innerLabelMeetsBurn =
+    model !== null && innerHalfWidth + 4 > innerRadius + 8;
   const innerLabelY =
     outerRadius - innerRadius >= 3.2 * fontSize ||
     innerRadius - earthRadius < 2 * fontSize + innerSag
-      ? CENTRE.y + innerRadius + 1.3 * fontSize
+      ? Math.max(
+          CENTRE.y + innerRadius + 1.3 * fontSize,
+          innerLabelMeetsBurn ? innerBelowBurnY : -Infinity,
+        )
       : CENTRE.y + innerRadius - innerSag - 0.5 * fontSize;
   const draggable = Boolean(onTargetDrag);
 

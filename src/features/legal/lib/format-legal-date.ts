@@ -14,7 +14,7 @@ const MONTHS = [
 ] as const;
 
 /**
- * Formats an ISO calendar date (YYYY-MM-DD) as "27 September 2026". Parsed by
+ * Formats an ISO calendar date (YYYY-MM-DD) as "September 27, 2026". Parsed by
  * hand so the result never shifts a day with the server or viewer time zone.
  */
 export function formatLegalDate(isoDate: string): string {
@@ -25,5 +25,5 @@ export function formatLegalDate(isoDate: string): string {
   const monthName = MONTHS[Number(month) - 1];
   if (monthName === undefined) return isoDate;
 
-  return `${Number(day)} ${monthName} ${year}`;
+  return `${monthName} ${Number(day)}, ${year}`;
 }

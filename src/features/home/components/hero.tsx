@@ -64,8 +64,6 @@ export function Hero() {
             the lead. */}
         <div className="min-w-0 lg:col-start-1 lg:row-start-2 lg:mt-5">
           <p className="max-w-[58ch] text-[0.9375rem] leading-6 text-pretty text-text-secondary">
-            The idea, the research and the decisions are mine; AI coding
-            assistants wrote the code under my direction.{" "}
             <Link
               className="text-foreground underline decoration-[var(--orbix-border-control)] decoration-1 underline-offset-[3px] hover:decoration-current"
               href="/build-log"

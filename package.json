@@ -1,7 +1,7 @@
 {
   "name": "orbix",
   "version": "0.1.0",
-  "description": "ORBIX: an educational web app for exploring U.S. aircraft and rockets, orbital mechanics, reentry and thermal-protection concepts, and mission reports.",
+  "description": "ORBIX: an educational website about U.S. aircraft and launch vehicles, with records compiled from published figures and calculators for orbital mechanics, compressible flow and stagnation-point heating.",
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",

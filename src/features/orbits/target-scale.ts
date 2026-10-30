@@ -19,6 +19,10 @@ export const SNAP_TOLERANCE_STEPS = 12;
  */
 export const MOON_MEAN_DISTANCE_METRES = 384_400_000;
 
+/** Altitude of a circular orbit whose radius is the mean Earth-Moon distance. */
+export const MOON_ORBIT_ALTITUDE_METRES =
+  MOON_MEAN_DISTANCE_METRES - EARTH_MEAN_RADIUS_METRES;
+
 export interface TargetStop {
   readonly id: "geo" | "iss" | "moon";
   /** Button text. */
@@ -46,7 +50,7 @@ export const TARGET_STOPS: readonly TargetStop[] = [
   },
   {
     // The orbit's radius is the Moon's mean distance from Earth's center.
-    altitudeMetres: MOON_MEAN_DISTANCE_METRES - EARTH_MEAN_RADIUS_METRES,
+    altitudeMetres: MOON_ORBIT_ALTITUDE_METRES,
     description:
       "orbit radius equal to the Moon's mean distance, 384,400 km from Earth's center",
     id: "moon",

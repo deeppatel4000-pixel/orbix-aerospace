@@ -128,7 +128,12 @@ function formatOrbitCapability(rocket: Rocket): ComparisonCellValue {
 
   return availableValue(
     rocket.performance.supportedOrbits.map(formatOrbitType).join(" · "),
-    { note: "Published mission regimes" },
+    {
+      note:
+        rocket.performance.supportedOrbitsStatus === "planned"
+          ? "Planned mission regimes"
+          : "Published mission regimes",
+    },
   );
 }
 

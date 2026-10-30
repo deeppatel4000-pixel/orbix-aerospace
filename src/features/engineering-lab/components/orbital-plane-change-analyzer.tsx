@@ -261,7 +261,7 @@ export function OrbitalPlaneChangeAnalyzer() {
                 <CalculatorNumberField
                   error={errors.inclinationChangeDegrees}
                   field="inclinationChangeDegrees"
-                  hint="Change in orbital plane angle."
+                  hint="Change in orbital plane angle, 0 to 180."
                   idPrefix="orbital-plane-change"
                   label="Inclination change"
                   onChange={updateValue}

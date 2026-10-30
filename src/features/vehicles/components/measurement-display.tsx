@@ -205,7 +205,7 @@ function QualifierLine({ children }: { children: string }) {
  * from.
  */
 export const CONVERSION_NOTE =
-  "Published figures are shown as recorded. The figure under each one, in the other unit system, is converted by ORBIX and rounded to four significant figures.";
+  "Published figures are shown as recorded. The figure under each one, in the other unit system, is converted by ORBIX and rounded to four significant figures or one decimal place, whichever is coarser.";
 
 /** The meaning of the plus sign added by `measurementParts`. */
 export const MINIMUM_NOTE =

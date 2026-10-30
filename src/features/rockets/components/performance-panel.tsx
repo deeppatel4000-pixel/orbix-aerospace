@@ -42,15 +42,15 @@ function formatList(items: readonly string[]) {
  * record gives no payload figure for named in the table's note.
  */
 export function PerformancePanel({ name, performance }: PerformancePanelProps) {
-  const { payloadCapabilities, supportedOrbits } = performance;
+  const { payloadCapabilities, supportedOrbits, supportedOrbitsStatus } =
+    performance;
+  const kind = supportedOrbitsStatus === "planned" ? "planned" : "supported";
   const withPayload = new Set(payloadCapabilities.map((row) => row.orbit));
   const otherOrbits = supportedOrbits
     .filter((orbit) => !withPayload.has(orbit))
     .map((orbit) => orbitName(orbit));
   const destinations =
-    otherOrbits.length === 1
-      ? "a supported destination"
-      : "supported destinations";
+    otherOrbits.length === 1 ? `a ${kind} destination` : `${kind} destinations`;
   // Set in the table-note style, under the table when there is one, like
   // the basis note it follows.
   const otherNote =

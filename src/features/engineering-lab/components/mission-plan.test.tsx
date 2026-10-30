@@ -74,9 +74,14 @@ describe("mission plan", () => {
           sum + Number(step.deltaVMetresPerSecond!.toFixed(decimals)),
         0,
       );
+      // The listed total is the sum of the listed steps, which can differ
+      // from the exact total by at most half a unit per rounded step.
       expect(shown.toFixed(decimals)).toBe(
-        plan.totalDeltaVMetresPerSecond.toFixed(decimals),
+        shownTotalDeltaV(plan).toFixed(decimals),
       );
+      expect(
+        Math.abs(shownTotalDeltaV(plan) - plan.totalDeltaVMetresPerSecond),
+      ).toBeLessThanOrEqual((costs.length * 0.5) / 10 ** decimals + 1e-9);
     }
   });
 
@@ -172,6 +177,16 @@ describe("mission planner", () => {
       targetKm: "1000",
     });
     expect(good.plan?.steps.map((step) => step.id)).toContain("burn-2");
+
+    const overTurn = planCustom({
+      inclinationDegrees: "360",
+      startKm: "200",
+      targetKm: "1000",
+    });
+    expect(overTurn.plan).toBeNull();
+    expect(overTurn.errors.inclinationDegrees).toBe(
+      "Plane change must be 180° or less.",
+    );
   });
 });
 

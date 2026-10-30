@@ -119,8 +119,10 @@ test.describe("Homepage", () => {
     const hero = sectionOf(page, "home-title");
     await expect(hero).toContainText("Deep Patel");
     await expect(hero).toContainText("high school senior");
-    // Authorship framing (v4 plan section 2): never "I coded".
-    await expect(hero).toContainText("AI coding assistants wrote the code");
+    // How it was built is told on the build log, linked from the hero.
+    await expect(
+      hero.getByRole("link", { name: "How I built it" }),
+    ).toHaveAttribute("href", "/build-log");
     await expect(hero.locator("img")).toHaveCount(0);
   });
 

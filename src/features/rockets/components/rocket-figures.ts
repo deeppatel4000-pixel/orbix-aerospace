@@ -103,14 +103,18 @@ const newtons: Partial<Record<MeasurementUnit, number>> = {
  * compared at a glance whatever unit the source published. The profile,
  * the hero spec panel and the tables keep the published unit
  * (`thrustText`); the registry note says the card figure is converted.
- * A published minimum keeps its plus sign.
+ * A published minimum keeps its plus sign and is rounded down, so the
+ * card never claims more than the source: "more than 1.7 million lbf" is
+ * 7.56 MN and shows as "7.5+ MN", not "7.6+ MN".
  */
 export function cardThrustText(thrust: Measurement<MeasurementUnit>) {
   const factor = newtons[thrust.unit];
   if (factor === undefined) return thrustText(thrust);
+  const isMinimum = thrust.qualifier === "minimum";
+  const exact = (thrust.value * factor) / 1e6;
   const meganewtons = new Intl.NumberFormat("en-US", {
     maximumFractionDigits: 1,
     minimumFractionDigits: 1,
-  }).format((thrust.value * factor) / 1e6);
-  return `${meganewtons}${thrust.qualifier === "minimum" ? "+" : ""} MN`;
+  }).format(isMinimum ? Math.floor(exact * 10) / 10 : exact);
+  return `${meganewtons}${isMinimum ? "+" : ""} MN`;
 }

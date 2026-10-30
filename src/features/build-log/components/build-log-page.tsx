@@ -16,7 +16,7 @@ import { summarizeVerification } from "@/features/verification/lib/display";
 const toc: readonly ReadingTocItem[] = [
   { id: "why", title: "Why I made ORBIX" },
   { id: "my-role", title: "My role" },
-  { id: "ai", title: "How I used AI" },
+  { id: "ai", title: "How I built it" },
   { id: "why-this-way", title: "Why I built it this way" },
   { id: "learned", title: "What I learned" },
   { id: "checks", title: "How the engineering is checked" },
@@ -44,9 +44,9 @@ export function BuildLogPage() {
     <ReadingPage
       lead={
         <p>
-          ORBIX is a personal project by {siteLegal.operatorName}. The idea, the
-          research and the decisions are mine; I used AI coding assistants to
-          write the software.
+          ORBIX is a personal project by {siteLegal.operatorName}. I planned it
+          and researched the engineering behind it, and I used AI coding
+          assistants as my build tools.
         </p>
       }
       title="How I built ORBIX"
@@ -64,28 +64,20 @@ export function BuildLogPage() {
 
       <LegalSection id="my-role" title="My role">
         <p>
-          ORBIX was my idea from the start. I decided what it should contain:
-          which aircraft and launch vehicles to include, which calculators and
-          mission scenarios to build, and how the pieces connect. I researched
-          the vehicle specifications and the engineering behind every tool, and
-          I gave precise instructions with the exact information each part
-          needed.
-        </p>
-        <p>
-          I also set the standards the site had to meet, including the design
-          rules, accessibility, and the legal requirements for a public website,
-          and I reviewed the results against them.
+          ORBIX was my idea, and I planned all of it: which aircraft and launch
+          vehicles to cover, which calculators to build, how the pages fit
+          together, and how the site should look. I researched the engineering
+          behind the tools and directed every version, sending work back until
+          it met the standard I set.
         </p>
       </LegalSection>
 
-      <LegalSection id="ai" title="How I used AI">
+      <LegalSection id="ai" title="How I built it">
         <p>
-          I am an aspiring aerospace engineer, not a software engineer, so I
-          used AI coding assistants to build the software itself: Codex by
-          OpenAI for the first version, then Claude Code by Anthropic. Working
-          from my instructions, they wrote the code, the automated tests and the
-          page layouts. Claude Code also helped check the licenses of the
-          photographs and draft the legal pages, which I reviewed and approved.
+          I used AI coding assistants (Codex by OpenAI, then Claude Code by
+          Anthropic) as my build tools. They wrote the code from my
+          instructions, and they helped draft text and gather vehicle data,
+          sources and image licenses, which I reviewed.
         </p>
         <p>
           The project history is public on{" "}

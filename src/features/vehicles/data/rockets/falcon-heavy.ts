@@ -44,9 +44,9 @@ export const falconHeavy = {
   name: "Falcon Heavy",
   performance: {
     liftoffThrust: {
-      qualifier: "nominal",
-      unit: "kN",
-      value: 22819,
+      qualifier: "minimum",
+      unit: "lbf",
+      value: 5000000,
     },
     payloadCapabilities: [
       {

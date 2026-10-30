@@ -51,6 +51,8 @@ export const f15Eagle = {
       unit: "mi",
       value: 3450,
     },
+    rangeBasis:
+      "Ferry range with conformal fuel tanks and three external fuel tanks",
     serviceCeiling: {
       qualifier: "nominal",
       unit: "ft",
@@ -87,6 +89,7 @@ export const f15Eagle = {
     },
     {
       designation: "F-15C",
+      firstFlight: "1979-02-26",
       id: "f-15c",
       name: "F-15C Eagle",
       notes:
@@ -95,6 +98,7 @@ export const f15Eagle = {
     },
     {
       designation: "F-15E",
+      firstFlight: "1986-12-11",
       id: "f-15e",
       name: "F-15E Strike Eagle",
       notes: "Two-seat dual-role strike variant.",

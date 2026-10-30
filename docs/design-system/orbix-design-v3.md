@@ -1,23 +1,13 @@
 # ORBIX design v3: "Standards manual"
 
-Status: binding for the v3 pass. Supersedes the visual parts of `orbix-design-v2.md` (sections 4 to
-9); v2's hard rules, accessibility rules, imagery licensing and content rules still apply.
+Status: the current ORBIX design specification. Content, accessibility and image-licensing rules are
+in the README, CONTRIBUTING.md and docs/assets/image-provenance.md.
 
 ## 1. Why v3
 
 Owner review of v2: the likeness to the original ORBIX is right, but the site still reads
 AI-generated. Two named problems: the **blocky look** (bordered cards, panels, compartment grids,
 framed tables everywhere) and the **gradients** (photo scrims, fades, masks, glows).
-
-Research behind this spec (read the parts relevant to your task):
-`C:\Users\Deep\AppData\Local\Temp\claude\C--Users-Deep-dev-orbix\0aef5163-b2c7-4e1b-945a-29343ae8c21d\scratchpad\research-v3\`
-
-- `tells.md`: AI and vibe-coded signatures, especially card sprawl, gap-px compartments, cards in
-  cards, framed tables, side stripes, fades and scrims, mono-caps labels, numbered 01/02 sections,
-  two-tone headlines, eyebrow rules, identical section rhythm.
-- `quality.md`: what makes a site read as crafted.
-- `art.md`: aerospace art direction; concept 1 "Standards manual" is the base.
-- `audit.md`: per-page, per-file list of v2 tells to remove and what to keep.
 
 Direction in one line: a NASA-standards-manual and museum-catalog sensibility on a dark ground.
 Photographs are shown as hard-edged plates with catalog captions, text sits on solid ground,
@@ -170,7 +160,7 @@ pretty`; headings `text-wrap: balance`.
 Color and underline transitions only, 150 to 200ms. No entrance animation, no hover scale, no
 scroll effects. `prefers-reduced-motion` removes all transitions.
 
-## 11. Page notes (from `audit.md`)
+## 11. Page notes
 
 - Home: H1 plus one-line lead and two actions on solid ground; a full-bleed hard-edged photo band
   with a catalog caption; aircraft and launch vehicles as two photo bands or two open catalog
@@ -201,4 +191,4 @@ scroll effects. `prefers-reduced-motion` removes all transitions.
 - WCAG 2.2 AA (contrast measured), keyboard, reduced motion, no horizontal overflow at
   320/360/768/1440, `npm run validate` and `npm run test:e2e` pass.
 - It still reads as ORBIX (dark, photographic, condensed display type, aerospace) and does not read
-  as a template: judged against `tells.md`.
+  as a template.

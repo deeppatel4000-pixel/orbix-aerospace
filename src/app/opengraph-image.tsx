@@ -38,6 +38,15 @@ const colors = {
 const plate = getSitePhoto("og");
 const plateCaption = `${plate.caption} ${creditLine(plate.credit)}, ${licenceLabel(plate.license).short.toLowerCase()}.`;
 
+/*
+ * ImageResponse draws plain img elements only, so next/image cannot be used.
+ * @next/next/no-img-element already skips opengraph-image files on Linux,
+ * where CI runs, but its path check misses Windows paths, so a disable
+ * comment is reported as unused on one system and needed on the other.
+ * Naming the element through a constant keeps lint clean on both.
+ */
+const PlateImg = "img";
+
 const PLATE_WIDTH = 600;
 const PLATE_HEIGHT = 540;
 
@@ -139,8 +148,7 @@ export async function renderSocialImage() {
             width: PLATE_WIDTH,
           }}
         >
-          {/* eslint-disable-next-line @next/next/no-img-element -- ImageResponse renders plain img elements only */}
-          <img
+          <PlateImg
             alt=""
             height={PLATE_HEIGHT}
             src={photo}

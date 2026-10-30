@@ -90,7 +90,7 @@ const aircraftRowEducation: Readonly<Record<string, RowEducationEntry>> = {
   speed: {
     categoryId: "performance",
     explanation:
-      "At maximum speed the engines' thrust just balances drag, at a given altitude and Mach number.",
+      "In the simplest model, maximum speed is where the engines' thrust just balances drag at a given altitude. A structural, heating or engine temperature limit can cap it first.",
     labLinks: [
       { anchor: "drag-equation", label: "Drag equation" },
       {
@@ -102,13 +102,13 @@ const aircraftRowEducation: Readonly<Record<string, RowEducationEntry>> = {
   range: {
     categoryId: "performance",
     explanation:
-      "Range results from usable fuel mass, propulsive efficiency, and aerodynamic lift-to-drag ratio carried across the mission profile.",
+      "Range follows from usable fuel, engine efficiency and lift-to-drag ratio over the mission. The published figures use different bases: the F-15 and F-22 figures are ferry ranges with external fuel tanks, the F-35 figure is on internal fuel, the B-2 figure is unrefueled, and the SR-71 source gives no basis. Each cell names the basis its source gives. Read them as different measures, not one scale.",
     labLinks: [{ anchor: "lift-equation", label: "Lift equation" }],
   },
   ceiling: {
     categoryId: "performance",
     explanation:
-      "Service ceiling is limited by how thin the atmosphere becomes with altitude, reducing the air density available to generate lift.",
+      "Service ceiling is the altitude where the best climb rate drops to 100 feet per minute. Thinner air cuts both lift and engine thrust as altitude rises, until the aircraft has almost no excess power left to climb.",
     labLinks: [
       { anchor: "standard-atmosphere", label: "Standard atmosphere" },
       { anchor: "lift-equation", label: "Lift equation" },
@@ -123,7 +123,7 @@ const aircraftRowEducation: Readonly<Record<string, RowEducationEntry>> = {
   dimensions: {
     categoryId: "geometry",
     explanation:
-      "Length and wingspan define the reference wing area and aspect ratio that govern lift generation and aerodynamic efficiency.",
+      "Wingspan and wing area set the aspect ratio, span squared divided by area. A higher aspect ratio lowers induced drag. Length is the size of the fuselage and does not enter the aspect ratio.",
     labLinks: [{ anchor: "lift-equation", label: "Lift equation" }],
   },
   weight: {
@@ -152,7 +152,7 @@ const rocketRowEducation: Readonly<Record<string, RowEducationEntry>> = {
   mass: {
     categoryId: "mass-structures",
     explanation:
-      "Liftoff mass combines structure, propellant, and payload. It is the mass term that installed thrust must exceed for the vehicle to lift off and accelerate.",
+      "Liftoff mass combines structure, propellant and payload. Its weight, liftoff mass times standard gravity, is what liftoff thrust must exceed for the vehicle to lift off and accelerate.",
     labLinks: [
       { anchor: "thrust-to-weight", label: "Thrust-to-weight ratio" },
       { anchor: "rocket-equation", label: "Tsiolkovsky rocket equation" },

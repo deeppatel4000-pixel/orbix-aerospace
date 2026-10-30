@@ -17,7 +17,7 @@ import { expect, ROUTES, test } from "../fixtures/orbix";
  * shape and defaults of the async `headers()` config API across major
  * versions, so this is the first thing that should be re-checked when the
  * pending Next 16 upgrade is attempted — see the dependency-audit section of
- * docs/CLAUDE_HANDOFF.md.
+ * the git history.
  *
  * These assertions intentionally mirror `next.config.ts` exactly. If a
  * deliberate policy change is made there, update it here in the same commit

@@ -158,16 +158,16 @@ test.describe("Compare magnitude encoding", () => {
     expect(widths[2]).toBeGreaterThan(widths[0] ?? 0);
   });
 
-  test("rocket height and mass are encoded while mixed-unit thrust is not", async ({
+  test("rocket height, mass and thrust are all encoded in one unit each", async ({
     page,
   }) => {
     await page.goto(ROCKETS, { waitUntil: "domcontentloaded" });
 
     await expect(row(page, "height").locator(FILL)).toHaveCount(3);
     await expect(row(page, "mass").locator(FILL)).toHaveCount(3);
-    // Falcon 9 and Falcon Heavy publish kN; Saturn V publishes MN.
+    // All three sources publish liftoff thrust in lbf, so the row shares a unit.
     await expect(row(page, "thrust")).toHaveCount(1);
-    await expect(row(page, "thrust").locator(FILL)).toHaveCount(0);
+    await expect(row(page, "thrust").locator(FILL)).toHaveCount(3);
   });
 
   test("the largest rocket value has the longest track", async ({ page }) => {

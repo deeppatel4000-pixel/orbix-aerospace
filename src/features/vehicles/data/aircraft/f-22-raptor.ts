@@ -51,6 +51,7 @@ export const f22Raptor = {
       unit: "mi",
       value: 1850,
     },
+    rangeBasis: "Ferry range with two external wing fuel tanks",
     serviceCeiling: {
       qualifier: "minimum",
       unit: "ft",
@@ -67,8 +68,8 @@ export const f22Raptor = {
         thrust: {
           afterburner: {
             qualifier: "approximate",
-            unit: "kN",
-            value: 156,
+            unit: "lbf",
+            value: 35000,
           },
         },
         type: "low-bypass-turbofan",

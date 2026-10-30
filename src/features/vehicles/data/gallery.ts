@@ -80,7 +80,7 @@ export type VehiclePhotoSlot = "card" | "featured" | "profile";
 export type SitePhotoSlot =
   /** Home vehicles section: the one photo plate (v4 plan section 4; the home hero has no photo). */
   | "home-vehicles"
-  /** Learn, aerodynamics pathway figure (vapour over the wing). */
+  /** Learn, aerodynamics pathway figure (vapor over the wing). */
   | "learn-aerodynamics"
   /** Learn, propulsion pathway figure (five F-1 engines). */
   | "learn-propulsion"
@@ -160,9 +160,9 @@ const additionalPhotos = {
     width: 2880,
   }),
   "f-22-raptor-vapor": photo({
-    alt: "F-22 Raptor banking left with a sheet of condensed vapour streaming off its upper surface",
+    alt: "F-22 Raptor banking left with a sheet of condensed vapor streaming off its upper surface",
     caption:
-      "F-22 Raptor banking during a display at the Avalon airshow, Australia, March 2017. Condensed vapour marks the low-pressure air over the wing.",
+      "F-22 Raptor banking during a display at the Avalon airshow, Australia, March 2017. Condensed vapor marks the low-pressure air over the wing.",
     credit: "U.S. Air Force photo by Master Sgt. John Gordinier",
     group: "aircraft",
     height: 1922,
@@ -170,7 +170,7 @@ const additionalPhotos = {
     ...PD_AIR_FORCE,
     objectPosition: "72% 55%",
     sourceUrl: `${FILE}A_U.S._Air_Force_F-22_Raptor_banks_left_causing_vapor_contrails_(32517126414).jpg`,
-    title: "Vapour over the wing, Avalon",
+    title: "Vapor over the wing, Avalon",
     vehicleId: "f-22-raptor",
     view: "flight",
     width: 2880,
@@ -208,7 +208,7 @@ const additionalPhotos = {
     width: 2400,
   }),
   "f-22-raptor-hangar": photo({
-    alt: "Crew chief signalling an F-22 Raptor as it rolls out of a hangar",
+    alt: "Crew chief signaling an F-22 Raptor as it rolls out of a hangar",
     caption:
       "A crew chief releases an F-22 Raptor from its hangar at Holloman Air Force Base, New Mexico, September 2011.",
     credit: "U.S. Air Force photo by DeAndre Curtiss",
@@ -260,7 +260,7 @@ const additionalPhotos = {
   "f-35-lightning-ii-hover": photo({
     alt: "F-35B seen from below while hovering, with its lift fan doors and landing gear open",
     caption:
-      "F-35B, the short take-off and vertical landing variant, hovering before a vertical landing at Marine Corps Air Station Iwakuni, Japan, February 2017.",
+      "F-35B, the short takeoff and vertical landing variant, hovering before a vertical landing at Marine Corps Air Station Iwakuni, Japan, February 2017.",
     credit: "U.S. Marine Corps photo by Lance Cpl. Joseph Abrego",
     group: "aircraft",
     height: 1600,
@@ -308,7 +308,7 @@ const additionalPhotos = {
     width: 2400,
   }),
   "f-15-eagle-takeoff": photo({
-    alt: "F-15C Eagle climbing away after take-off against a gray sky, afterburners lit",
+    alt: "F-15C Eagle climbing away after takeoff against a gray sky, afterburners lit",
     caption:
       "F-15C Eagle of the 67th Fighter Squadron taking off from Kadena Air Base, Japan, September 2020.",
     credit: "U.S. Air Force photo by Staff Sgt. Peter Reft",
@@ -359,7 +359,7 @@ const additionalPhotos = {
     width: 2880,
   }),
   "b-2-spirit-takeoff": photo({
-    alt: "B-2 Spirit just after take-off with its landing gear still down, under an overcast sky",
+    alt: "B-2 Spirit just after takeoff with its landing gear still down, under an overcast sky",
     caption:
       "B-2 Spirit taking off from Whiteman Air Force Base, Missouri, April 2025.",
     credit: "U.S. Air Force photo by Senior Airman Joshua Hastings",
@@ -375,7 +375,7 @@ const additionalPhotos = {
     width: 2880,
   }),
   "b-2-spirit-refuel": photo({
-    alt: "B-2 Spirit seen from the tanker's boom window, with the refuelling boom connected above the cockpit",
+    alt: "B-2 Spirit seen from the tanker's boom window, with the refueling boom connected above the cockpit",
     caption:
       "B-2 Spirit receiving fuel from a tanker over the Indian Ocean, April 2025.",
     credit: "U.S. Air Force photo by Tech. Sgt. Anthony Hetlage",
@@ -385,15 +385,15 @@ const additionalPhotos = {
     ...PD_AIR_FORCE,
     objectPosition: "50% 55%",
     sourceUrl: `${FILE}B-2_Spirit_stealth_bombers_refuel_during_combat_mission_(9255554).jpg`,
-    title: "Refuelling over the Indian Ocean",
+    title: "Refueling over the Indian Ocean",
     vehicleId: "b-2-spirit",
     view: "flight",
     width: 2400,
   }),
   "b-2-spirit-iceland": photo({
-    alt: "B-2 Spirit parked on a wet ramp beside a fuel truck during refuelling",
+    alt: "B-2 Spirit parked on a wet ramp beside a fuel truck during refueling",
     caption:
-      "Hot-pit refuelling of a B-2 Spirit at Keflavik Air Base, Iceland, August 2019.",
+      "Hot-pit refueling of a B-2 Spirit at Keflavik Air Base, Iceland, August 2019.",
     credit: "U.S. Air Force photo by Senior Airman Thomas Barley",
     group: "aircraft",
     height: 1441,
@@ -401,7 +401,7 @@ const additionalPhotos = {
     ...PD_AIR_FORCE,
     objectPosition: "40% 45%",
     sourceUrl: `${FILE}The_B-2_Spirit_Stealth_Bomber_lands_in_Iceland_for_the_first_time_ever_to_perform_hot-pit_refueling_(5708631).jpg`,
-    title: "Hot-pit refuelling, Keflavik",
+    title: "Hot-pit refueling, Keflavik",
     vehicleId: "b-2-spirit",
     view: "ground",
     width: 2400,
@@ -419,7 +419,7 @@ const additionalPhotos = {
     ...PD_NASA,
     objectPosition: "55% 50%",
     sourceUrl: `${FILE}SR-71_Takeoff_with_Afterburner_Showing_Shock_Diamonds_in_Exhaust.jpg`,
-    title: "Shock diamonds on take-off",
+    title: "Shock diamonds on takeoff",
     vehicleId: "sr-71-blackbird",
     view: "launch",
     width: 2880,
@@ -440,9 +440,9 @@ const additionalPhotos = {
     width: 2400,
   }),
   "sr-71-blackbird-refuel": photo({
-    alt: "SR-71 flying below and behind a KC-135Q tanker, moving toward its refuelling boom",
+    alt: "SR-71 flying below and behind a KC-135Q tanker, moving toward its refueling boom",
     caption:
-      "SR-71 (61-7974) moving toward a KC-135Q Stratotanker for in-flight refuelling, 1983.",
+      "SR-71 (61-7974) moving toward a KC-135Q Stratotanker for in-flight refueling, 1983.",
     credit: "U.S. Air Force photo by Ken Hackman",
     group: "aircraft",
     height: 1580,
@@ -781,7 +781,7 @@ const identityCaptions: Record<
   },
   "saturn-v": {
     caption:
-      "The Apollo 11 Saturn V lifting off from Launch Complex 39A, 16 July 1969.",
+      "The Apollo 11 Saturn V lifting off from Launch Complex 39A, July 16, 1969.",
     title: "Apollo 11 launch",
     view: "launch",
   },
@@ -793,7 +793,7 @@ const identityCaptions: Record<
   },
   starship: {
     caption: "Starship lifting off on its fifth flight test, October 2024.",
-    title: "Fifth flight test lift-off",
+    title: "Fifth flight test liftoff",
     view: "launch",
   },
 };

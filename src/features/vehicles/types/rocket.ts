@@ -80,6 +80,11 @@ export interface RocketPerformance {
   readonly liftoffThrust: ForceMeasurement;
   readonly payloadCapabilities: readonly PayloadCapability[];
   readonly supportedOrbits: readonly OrbitType[];
+  /**
+   * "planned" for a vehicle still in development, whose destinations are
+   * goals rather than flown or certified capability (Starship).
+   */
+  readonly supportedOrbitsStatus?: "planned";
 }
 
 export interface Rocket extends BaseVehicle<"launch-vehicle"> {

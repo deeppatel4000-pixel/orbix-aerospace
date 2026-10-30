@@ -57,7 +57,7 @@ export function AboutPage() {
   return (
     <LegalPage
       plate={<AboutPlate />}
-      lead={`ORBIX is an educational website about aircraft, launch vehicles and the engineering behind them. It is a personal project created by ${siteLegal.operatorName}, a high school senior who plans to study aerospace engineering. The idea, the research and every decision are his. AI coding assistants (Codex, then Claude Code) wrote the code under his direction.`}
+      lead={`ORBIX is an educational website about aircraft, launch vehicles and the engineering behind them. It is a personal project created by ${siteLegal.operatorName}, a high school senior who plans to study aerospace engineering. He planned it and researched the engineering behind it; the build log describes how it was built.`}
       title="About ORBIX"
     >
       <LegalSection id="sources" title="Sources and corrections">

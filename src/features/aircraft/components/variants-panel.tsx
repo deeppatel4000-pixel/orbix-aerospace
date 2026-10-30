@@ -25,7 +25,7 @@ function variantSubName(variant: AircraftVariant, vehicleName: string) {
   return variant.name;
 }
 
-/** Dated variants by first flight, then those with no published date. */
+/** Dated variants by first flight, then those the record has no date for. */
 function byFirstFlight(variants: readonly AircraftVariant[]) {
   return [...variants].sort((a, b) => {
     if (a.firstFlight && b.firstFlight) {
@@ -44,7 +44,7 @@ function byFirstFlight(variants: readonly AircraftVariant[]) {
 export function VariantsPanel({ name, variants }: VariantsPanelProps) {
   return (
     <VehicleProfileSection
-      description="Each variant in the record in order of first flight, with its status and the date where one is published."
+      description="Each variant in the record in order of first flight, with its status. Variants with no first-flight date in the record come last."
       id="variants"
       title="History and variants"
     >
@@ -95,7 +95,7 @@ export function VariantsPanel({ name, variants }: VariantsPanelProps) {
                   {formatFirstFlight(variant.firstFlight)}
                 </time>
               ) : (
-                <span className="text-muted">Not published</span>
+                <span className="text-muted">Not recorded</span>
               ),
             foldCell: (variant) =>
               variant.firstFlight ? (
@@ -109,7 +109,7 @@ export function VariantsPanel({ name, variants }: VariantsPanelProps) {
                   </time>
                 </>
               ) : (
-                "First flight not published"
+                "First flight not recorded"
               ),
             foldInto: "designation",
             header: "First flight",

@@ -56,6 +56,21 @@ function createRow(
  * units (speed can be Mach or mph, range can be miles or nautical miles) are
  * filtered out downstream by unit equality, not here.
  */
+/**
+ * A range cell, with the published basis (ferry tanks, internal fuel)
+ * added to the qualifier note, because ranges on different bases are not
+ * one scale.
+ */
+function rangeValue(
+  range: Measurement<MeasurementUnit>,
+  basis: string | undefined,
+): ComparisonCellValue {
+  const cell = measurementValue(range);
+  if (!basis || cell.status === "unavailable") return cell;
+  const lowered = basis.charAt(0).toLowerCase() + basis.slice(1);
+  return { ...cell, note: cell.note ? `${cell.note}, ${lowered}` : basis };
+}
+
 function measurementValue<TUnit extends MeasurementUnit>(
   measurement: Measurement<TUnit>,
 ): ComparisonCellValue {
@@ -135,7 +150,7 @@ export function adaptAircraftComparison(
         "Published maximum speed; source units are preserved.",
       ),
       createRow(aircraft, "range", "Range", (item) =>
-        measurementValue(item.performance.range),
+        rangeValue(item.performance.range, item.performance.rangeBasis),
       ),
       createRow(aircraft, "ceiling", "Ceiling", (item) =>
         measurementValue(item.performance.serviceCeiling),

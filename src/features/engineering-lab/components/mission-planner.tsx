@@ -15,6 +15,8 @@ import {
   formatSpeed,
 } from "@/features/orbits/transfer-model";
 
+import { MAX_INCLINATION_CHANGE_DEGREES } from "@/features/engineering-lab/utils";
+
 import { DeltaVLedger } from "./delta-v-ledger";
 import {
   buildMissionPlan,
@@ -57,13 +59,19 @@ const FIELD_LABELS: Readonly<Record<CustomField, string>> = {
   targetKm: "Target altitude",
 };
 
-/** The same rule the analyses apply: a finite number, not negative. */
+/** The same rule the analyses apply: a finite number, not negative, and a plane change of at most 180°. */
 function fieldError(field: CustomField, value: number): string | undefined {
   const label = FIELD_LABELS[field];
   if (!Number.isFinite(value)) {
     return `Enter a number for ${label.toLowerCase()}.`;
   }
   if (value < 0) return `${label} must not be negative.`;
+  if (
+    field === "inclinationDegrees" &&
+    value > MAX_INCLINATION_CHANGE_DEGREES
+  ) {
+    return `${label} must be ${MAX_INCLINATION_CHANGE_DEGREES}° or less.`;
+  }
   return undefined;
 }
 
@@ -252,7 +260,7 @@ export function MissionPlanner() {
                   <CalculatorNumberField
                     error={customResult.errors.inclinationDegrees}
                     field="inclinationDegrees"
-                    hint="Plane change at the target altitude. 0 for none."
+                    hint="Plane change at the target altitude, 0 to 180. 0 for none."
                     idPrefix="mission-planner"
                     label="Plane change"
                     onChange={updateCustom}

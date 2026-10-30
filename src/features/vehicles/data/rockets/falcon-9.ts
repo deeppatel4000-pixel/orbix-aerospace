@@ -44,9 +44,9 @@ export const falcon9 = {
   name: "Falcon 9",
   performance: {
     liftoffThrust: {
-      qualifier: "maximum",
-      unit: "kN",
-      value: 7686,
+      qualifier: "minimum",
+      unit: "lbf",
+      value: 1700000,
     },
     payloadCapabilities: [
       {
@@ -83,7 +83,7 @@ export const falcon9 = {
             seaLevel: {
               qualifier: "maximum",
               unit: "kN",
-              value: 854,
+              value: 845,
             },
           },
         },

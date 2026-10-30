@@ -35,6 +35,7 @@ export {
   hasStagnationHeatingValidationErrors,
   hasThrustToWeightValidationErrors,
   hasVisVivaValidationErrors,
+  MAX_INCLINATION_CHANGE_DEGREES,
   validateAtmosphereInputs,
   validateBallisticCoefficientInputs,
   validateDragEquationInputs,

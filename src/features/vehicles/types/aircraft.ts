@@ -64,6 +64,12 @@ export interface AircraftPropulsion {
 export interface AircraftPerformance {
   readonly maxSpeed: SpeedMeasurement;
   readonly range: DistanceMeasurement;
+  /**
+   * What the published range assumes, in the source's terms ("Ferry range
+   * with two external wing fuel tanks", "On internal fuel"). Left out when
+   * the source states no basis. Ranges on different bases are not one scale.
+   */
+  readonly rangeBasis?: string;
   readonly serviceCeiling: DistanceMeasurement;
 }
 

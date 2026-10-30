@@ -68,6 +68,21 @@ function positiveNumberError(value: number, label: string): string | undefined {
   return undefined;
 }
 
+/**
+ * Largest plane change accepted. A turn of more than 180° reaches the same
+ * plane as a smaller turn the other way.
+ */
+export const MAX_INCLINATION_CHANGE_DEGREES = 180;
+
+function inclinationChangeError(value: number): string | undefined {
+  const error = nonNegativeNumberError(value, "Inclination change");
+  if (error) return error;
+  if (value > MAX_INCLINATION_CHANGE_DEGREES) {
+    return `Inclination change must be ${MAX_INCLINATION_CHANGE_DEGREES}° or less.`;
+  }
+  return undefined;
+}
+
 function nonNegativeNumberError(
   value: number,
   label: string,
@@ -402,9 +417,8 @@ export function validateOrbitalPlaneChangeInputs(
   inputs: OrbitalPlaneChangeInputs,
 ): OrbitalPlaneChangeValidationErrors {
   return {
-    inclinationChangeDegrees: nonNegativeNumberError(
+    inclinationChangeDegrees: inclinationChangeError(
       inputs.inclinationChangeDegrees,
-      "Inclination change",
     ),
     orbitalVelocityMetresPerSecond: positiveNumberError(
       inputs.orbitalVelocityMetresPerSecond,

@@ -337,6 +337,22 @@ function outsidePhrase({
   return `Of the other ${total}, ${reads}, and the other ${other}${noted}.`;
 }
 
+/**
+ * The largest gap between ORBIX and a published value on the page, as a
+ * percentage, rounded up to two decimals so "no more than" stays true.
+ */
+function largestDifferencePercent(): string {
+  const largest = Math.max(
+    ...verificationGroups.flatMap((group) =>
+      group.cases.flatMap((item) =>
+        item.rows.map((row) => Math.abs(toDisplayRow(row).differencePercent)),
+      ),
+    ),
+  );
+
+  return (Math.ceil(largest * 100) / 100).toFixed(2);
+}
+
 const toc: readonly ReadingTocItem[] = [
   { id: "method", title: "How the comparison works" },
   ...verificationGroups.map((group) => ({
@@ -374,7 +390,8 @@ export function VerificationPage() {
         <div className="flex flex-col gap-3">
           <p>
             {summary.withinRounding} of {summary.total} compared values pass the
-            rounding check. {outsidePhrase(outside)}
+            rounding check. {outsidePhrase(outside)} No value is more than{" "}
+            {largestDifferencePercent()} percent from its published figure.
           </p>
           <p>
             The published values come from {sourceNames.length} sources:{" "}

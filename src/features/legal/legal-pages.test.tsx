@@ -110,8 +110,8 @@ describe("image credits", () => {
 
 describe("formatLegalDate", () => {
   it("formats ISO dates without a time zone shift", () => {
-    expect(formatLegalDate("2026-09-27")).toBe("27 September 2026");
-    expect(formatLegalDate("2026-01-01")).toBe("1 January 2026");
+    expect(formatLegalDate("2026-09-27")).toBe("September 27, 2026");
+    expect(formatLegalDate("2026-01-01")).toBe("January 1, 2026");
   });
 
   it("returns unrecognized input unchanged", () => {

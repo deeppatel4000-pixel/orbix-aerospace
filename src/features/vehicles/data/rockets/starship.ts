@@ -7,12 +7,12 @@ export const starship = {
     name: "United States",
   },
   description:
-    "A fully reusable two-stage launch system in active development, with 33 Raptor engines on the Super Heavy booster and six on the Starship upper stage, burning liquid methane and liquid oxygen.",
+    "A fully reusable two-stage launch system in active development, with 33 Raptor engines on the Super Heavy booster and six on the Starship upper stage, burning liquid methane and liquid oxygen. Figures are for the current design on SpaceX's Starship page (October 2026). SpaceX gives no total liftoff mass, so the mass shown is the two stages' published propellant capacity, a lower bound.",
   dimensions: {
     height: {
       qualifier: "nominal",
       unit: "m",
-      value: 124.4,
+      value: 124,
     },
   },
   engineeringAnalysis: [
@@ -36,17 +36,17 @@ export const starship = {
   manufacturer: "SpaceX",
   mass: {
     liftoff: {
-      qualifier: "nominal",
-      unit: "kg",
-      value: 5533000,
+      qualifier: "minimum",
+      unit: "t",
+      value: 5250,
     },
   },
   name: "Starship",
   performance: {
     liftoffThrust: {
       qualifier: "approximate",
-      unit: "MN",
-      value: 74.4,
+      unit: "lbf",
+      value: 18100000,
     },
     payloadCapabilities: [
       {
@@ -59,7 +59,8 @@ export const starship = {
         orbit: "LEO",
       },
     ],
-    supportedOrbits: ["LEO", "GTO", "TLI", "escape"],
+    supportedOrbits: ["LEO", "TLI", "escape"],
+    supportedOrbitsStatus: "planned",
   },
   stages: [
     {
@@ -73,8 +74,8 @@ export const starship = {
           thrust: {
             seaLevel: {
               qualifier: "approximate",
-              unit: "MN",
-              value: 2.26,
+              unit: "lbf",
+              value: 551000,
             },
           },
         },
@@ -99,8 +100,8 @@ export const starship = {
           thrust: {
             seaLevel: {
               qualifier: "approximate",
-              unit: "MN",
-              value: 2.26,
+              unit: "lbf",
+              value: 551000,
             },
           },
         },
@@ -113,8 +114,8 @@ export const starship = {
           thrust: {
             vacuum: {
               qualifier: "approximate",
-              unit: "MN",
-              value: 2.58,
+              unit: "lbf",
+              value: 606000,
             },
           },
         },

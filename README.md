@@ -11,9 +11,11 @@ The Engineering Lab has 13 calculators, from the rocket equation and the lift eq
 waves and orbital transfers, plus a mission planner. Each calculator shows its equation, units and
 assumptions. The Transfer Explorer on the home page draws a Hohmann transfer and updates its
 delta-v as you move the target orbit. A verification page runs the lab's own functions on published
-worked examples and tables: 26 of the 36 compared values fall within the published rounding, and
-the page gives a reason for each of the other 10. ORBIX also has sourced records of 10 U.S.
-vehicles (5 military aircraft and 5 launch vehicles), with credited photographs.
+worked examples and tables: 26 of the 36 compared values fall within the published rounding. The
+other 10 are all within 0.5 percent of the published figure, and the page has a note on each.
+ORBIX also has records of 10 U.S. vehicles (5 military aircraft and 5 launch vehicles), with
+credited photographs. The figures come from published public sources, but the data files do not
+yet cite a source for each value.
 
 ![ORBIX home page on a desktop browser: the heading "Aerospace engineering, explained with real vehicles.", a lead naming Deep Patel, two buttons, and the Transfer Explorer drawing a transfer from 200 km to 35,786 km with a total delta-v of 3,935 m/s and a target altitude slider](docs/assets/screenshots/home.jpg)
 
@@ -65,14 +67,15 @@ ORBIX result beside the published value. It shows the percentage difference and 
 within the rounding of the printed figure. Rows that fall outside are left as they are, with a note
 explaining the reason where it is known. Every calculator module also has its own unit tests.
 
-## My role and use of AI
+## My role and how it was built
 
-ORBIX was my idea. I chose what it should contain, researched the vehicle specifications and the
-engineering behind every tool, and made the design and content decisions. I am an aspiring
-aerospace engineer, not a software engineer, so I used AI coding assistants to write the software
-under my direction: Codex by OpenAI for the first version, then Claude Code by Anthropic. Commits
-made with Claude Code are marked as co-authored by it in the git history. The full account is on
-the [build log](https://orbix-aerospace.vercel.app/build-log).
+ORBIX was my idea, and I planned all of it: which aircraft and launch vehicles to cover, which
+calculators to build, how the pages fit together, and how the site should look. I researched the
+engineering behind the tools and directed every version, sending work back until it met the standard
+I set. I used AI coding assistants (Codex by OpenAI, then Claude Code by Anthropic) as my build
+tools. They wrote the code from my instructions, and they helped draft text and gather vehicle data,
+sources and image licenses, which I reviewed. Commits made with Claude Code are marked as
+co-authored by it. The full account is on the [build log](https://orbix-aerospace.vercel.app/build-log).
 
 ## Tech stack
 

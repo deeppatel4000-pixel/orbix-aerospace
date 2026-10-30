@@ -102,7 +102,7 @@ export const spaceLaunchSystem = {
         {
           cycle: "staged-combustion",
           id: "sls-block-1-rs-25",
-          manufacturer: "Aerojet Rocketdyne",
+          manufacturer: "L3Harris (Aerojet Rocketdyne)",
           name: "RS-25",
           quantity: 4,
           thrust: {
@@ -112,9 +112,9 @@ export const spaceLaunchSystem = {
               value: 1850,
             },
             vacuum: {
-              qualifier: "minimum",
-              unit: "kN",
-              value: 2277,
+              qualifier: "maximum",
+              unit: "lbf",
+              value: 512000,
             },
           },
         },
@@ -133,14 +133,14 @@ export const spaceLaunchSystem = {
         {
           cycle: "expander",
           id: "sls-block-1-rl10b-2",
-          manufacturer: "Aerojet Rocketdyne",
+          manufacturer: "L3Harris (Aerojet Rocketdyne)",
           name: "RL10B-2",
           quantity: 1,
           thrust: {
             vacuum: {
               qualifier: "approximate",
-              unit: "kN",
-              value: 110,
+              unit: "lbf",
+              value: 24750,
             },
           },
         },

@@ -16,9 +16,9 @@ import {
 /**
  * The sample case and row (v4 plan section 4.2): Hohmann, LEO to GEO, first
  * burn. The second burn and the total of this case fall outside the
- * published rounding for a reason that takes a paragraph to explain (the
- * source rounds speeds before subtracting); the Verification page prints
- * that note beside them, and the count above includes them.
+ * published rounding because the source rounds speeds before subtracting;
+ * the note under the table says so in one sentence, the Verification page
+ * gives the full note, and the count above includes them.
  */
 const SAMPLE_CASE_ID = "hohmann-leo-geo";
 const SAMPLE_ROW_ID = "hohmann-leo-geo-first-burn";
@@ -44,6 +44,43 @@ const radiusNote = `The worked example measures altitude from a ${km(
   EARTH_MEAN_RADIUS_METRES,
   0,
 )} km mean radius, so its figures for the same orbits differ slightly.`;
+
+/**
+ * The largest gap between ORBIX and a published value, as a percentage,
+ * rounded up to two decimals so "no more than" stays true.
+ */
+function largestDifferencePercent(): string {
+  const largest = Math.max(
+    ...verificationGroups.flatMap((group) =>
+      group.cases.flatMap((item) =>
+        item.rows.map((row) => Math.abs(toDisplayRow(row).differencePercent)),
+      ),
+    ),
+  );
+
+  return (Math.ceil(largest * 100) / 100).toFixed(2);
+}
+
+/**
+ * The sample row passes, but the rest of its worked example does not, so
+ * the home page says so instead of showing only the row that passes.
+ */
+function siblingNote(item: VerificationCase): string {
+  const outside = item.rows.filter(
+    (row) => row.id !== SAMPLE_ROW_ID && !toDisplayRow(row).withinRounding,
+  );
+  if (outside.length === 0) return "";
+  const names = outside.map((row) => row.quantity.toLowerCase());
+  const listed =
+    names.length === 1
+      ? `the ${names[0]}`
+      : `the ${names.slice(0, -1).join(", the ")} and the ${names.at(-1)}`;
+  const gap = Math.max(
+    ...outside.map((row) => Math.abs(row.orbix - row.reference.value)),
+  );
+
+  return `In the same worked example, ${listed} ${outside.length === 1 ? "falls" : "fall"} outside rounding by about ${Math.round(gap)} ${outside[0]?.unit ?? ""}, because the source rounds speeds before it subtracts them.`;
+}
 
 function findSample():
   | { readonly item: VerificationCase; readonly row: VerificationRow }
@@ -103,7 +140,13 @@ export function ProofLine() {
             <span className="orbix-data text-foreground">
               {summary.outsideRounding}
             </span>{" "}
-            are listed with a reason for each.
+            are listed with a note on each. No value is more than{" "}
+            {/* Body font here: B612 Mono gives the decimal point a full
+                cell, which reads as "0. 47" inside a sentence. */}
+            <span className="text-foreground tabular-nums">
+              {largestDifferencePercent()}
+            </span>{" "}
+            percent from the published figure.
           </p>
           <ButtonLink
             arrow="right"
@@ -178,7 +221,7 @@ export function ProofLine() {
               />
             </div>
             <p className="mt-4 max-w-[60ch] text-sm text-pretty text-muted">
-              {radiusNote}
+              {[siblingNote(sample.item), radiusNote].filter(Boolean).join(" ")}
             </p>
           </div>
         ) : null}

@@ -435,7 +435,7 @@ const allLearningAreas: readonly LearningArea[] = [
         text: "The larger the orbit, the slower a spacecraft in it moves.",
       },
       {
-        text: "A Hohmann transfer moves between two circular, coplanar orbits with two burns: one to enter an elliptical transfer orbit, and one to circularise at the far end. For most pairs of orbits it is the two-burn transfer with the lowest delta-v.",
+        text: "A Hohmann transfer moves between two circular, coplanar orbits with two burns: one to enter an elliptical transfer orbit, and one to circularize at the far end. For most pairs of orbits it is the two-burn transfer with the lowest delta-v.",
       },
       {
         equation: "Δv = 2v · sin(Δi / 2)",

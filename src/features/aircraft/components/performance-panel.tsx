@@ -17,6 +17,11 @@ export function PerformancePanel({ name, performance }: PerformancePanelProps) {
     >
       <MeasurementTable
         caption={`${name} performance`}
+        note={
+          performance.rangeBasis
+            ? `Range basis: ${performance.rangeBasis.charAt(0).toLowerCase()}${performance.rangeBasis.slice(1)}.`
+            : "The source gives no basis for the range, such as fuel load or tanks."
+        }
         rows={[
           { label: "Maximum speed", measurement: performance.maxSpeed },
           { label: "Range", measurement: performance.range },

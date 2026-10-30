@@ -51,6 +51,7 @@ export const f35LightningII = {
       unit: "mi",
       value: 1350,
     },
+    rangeBasis: "On internal fuel",
     serviceCeiling: {
       qualifier: "minimum",
       unit: "ft",

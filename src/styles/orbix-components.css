@@ -730,6 +730,19 @@
     line-height: 1.05;
   }
 
+  /* On a phone a two-column strip leaves about 155 px per item, too narrow
+     for a long primary figure such as "18,100,000 lbf" at full size. The
+     figure scales with its item's width so it never runs past the page. */
+  @media (max-width: 39.99rem) {
+    .orbix-spec__item[data-primary="true"] {
+      container-type: inline-size;
+    }
+
+    .orbix-spec__item[data-primary="true"] .orbix-spec__value {
+      font-size: clamp(1.125rem, 12.5cqi, var(--text-readout-lg));
+    }
+  }
+
   /* A name or word among the figures ("Saturn V", "Retired") is set in
      Plex Sans: mono is for figures and units only (spec 5). */
   .orbix-spec__item dd[data-kind="text"],

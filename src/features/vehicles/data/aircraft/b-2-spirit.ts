@@ -51,6 +51,7 @@ export const b2Spirit = {
       unit: "nmi",
       value: 6000,
     },
+    rangeBasis: "Unrefueled range",
     serviceCeiling: {
       qualifier: "nominal",
       unit: "ft",

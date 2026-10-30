@@ -151,6 +151,8 @@ describe("variant first-flight dates", () => {
 
   /** Only dates verified against an authoritative primary source. */
   it.each([
+    ["f-15c", "1979-02-26"],
+    ["f-15e", "1986-12-11"],
     ["f-15ex", "2021-02-02"],
     ["f-35b", "2008-06-11"],
     ["f-35c", "2010-06-07"],
@@ -161,16 +163,41 @@ describe("variant first-flight dates", () => {
   /**
    * Deliberately absent.
    *
-   * These four could not be confirmed to the same standard, so the profile
+   * These two could not be confirmed to the same standard, so the profile
    * shows its honest "Not recorded" fallback. An unsourced date appearing here
    * would be a fabrication wearing the same clothes as a fix, which is exactly
    * what this case exists to catch.
    */
-  it.each(["f-15c", "f-15e", "sr-71b", "sr-71c"])(
+  it.each(["sr-71b", "sr-71c"])(
     "leaves %s first flight unrecorded rather than guessing",
     (id) => {
       expect(variantById.has(id), `${id} should exist`).toBe(true);
       expect(variantById.get(id)?.firstFlight).toBeUndefined();
     },
   );
+});
+
+describe("published-figure honesty", () => {
+  it("rounds a published minimum down on the card, never up", async () => {
+    const { cardThrustText } =
+      await import("@/features/rockets/components/rocket-figures");
+    // SpaceX: "more than 1.7 million pounds", which is 7.562 MN.
+    expect(
+      cardThrustText({ qualifier: "minimum", unit: "lbf", value: 1_700_000 }),
+    ).toBe("7.5+ MN");
+  });
+
+  it("states the range basis wherever the source gives one", () => {
+    const basis = new Map(
+      listAircraft().map((item) => [item.id, item.performance.rangeBasis]),
+    );
+    expect(basis.get("f-35-lightning-ii")).toBe("On internal fuel");
+    expect(basis.get("b-2-spirit")).toBe("Unrefueled range");
+    expect(basis.get("sr-71-blackbird")).toBeUndefined();
+  });
+
+  it("marks Starship destinations as planned", () => {
+    const starship = listRockets().find((rocket) => rocket.id === "starship");
+    expect(starship?.performance.supportedOrbitsStatus).toBe("planned");
+  });
 });

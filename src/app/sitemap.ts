@@ -6,8 +6,7 @@ import { listRocketIds } from "@/features/rockets";
 
 /**
  * Every public page, so search engines can find all of them. Removed routes
- * (/showcase) redirect and are left out. Priority favors the pages an
- * admissions reader should land on first.
+ * (/showcase) redirect and are left out. Priority favors the main pages.
  */
 const STATIC_ROUTES: readonly { path: string; priority: number }[] = [
   { path: "/", priority: 1 },

@@ -45,8 +45,8 @@ export const saturnV = {
   performance: {
     liftoffThrust: {
       qualifier: "approximate",
-      unit: "MN",
-      value: 34.5,
+      unit: "lbf",
+      value: 7500000,
     },
     payloadCapabilities: [
       {
@@ -82,8 +82,8 @@ export const saturnV = {
           thrust: {
             seaLevel: {
               qualifier: "approximate",
-              unit: "MN",
-              value: 6.77,
+              unit: "lbf",
+              value: 1500000,
             },
           },
         },

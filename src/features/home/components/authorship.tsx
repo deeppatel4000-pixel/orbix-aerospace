@@ -7,7 +7,7 @@ import { siteLegal } from "@/config/site-legal";
  * voice, each one stated on the build log ("My role", "How I used AI",
  * "Project facts"), then links to the build log and the public history.
  * The framing is fixed: the idea, research and decisions are Deep's, and
- * AI coding assistants wrote the code under his direction.
+ * The build log tells how it was built.
  */
 export function Authorship() {
   return (
@@ -23,8 +23,7 @@ export function Authorship() {
           <p className="mt-5 text-pretty text-text-secondary">
             I started ORBIX in August 2026 and decided what it covers. I
             researched the engineering behind each tool and set the design,
-            accessibility and legal requirements the site had to meet. Codex and
-            then Claude Code wrote the code from my instructions; the full
+            accessibility and legal requirements the site had to meet. The full
             history is public on GitHub.
           </p>
           <div className="mt-6 flex flex-wrap items-center gap-x-8 gap-y-2">

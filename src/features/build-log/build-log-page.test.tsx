@@ -21,10 +21,11 @@ describe("build log page", () => {
   it("renders the key sentences", () => {
     for (const sentence of [
       "I plan to study aerospace engineering.",
-      "ORBIX was my idea from the start.",
-      "I researched the vehicle specifications and the engineering behind every tool",
-      "I am an aspiring aerospace engineer, not a software engineer",
+      "ORBIX was my idea, and I planned all of it",
+      "I researched the engineering behind the tools",
+      "as my build tools",
       "Claude Code by Anthropic",
+      "which I reviewed",
       "AI is changing how software is written",
     ]) {
       expect(text).toContain(sentence);

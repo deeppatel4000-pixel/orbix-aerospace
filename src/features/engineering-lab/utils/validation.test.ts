@@ -15,6 +15,7 @@ import {
   validateFlightConditionInputs,
   validateLiftEquationInputs,
   validateMachNumberInputs,
+  validateOrbitalPlaneChangeInputs,
   validateRocketEquationInputs,
   validateThrustToWeightInputs,
 } from "./validation";
@@ -252,5 +253,21 @@ describe("Mach number validation", () => {
     });
 
     expect(hasMachNumberValidationErrors(errors)).toBe(false);
+  });
+});
+
+describe("orbital plane change validation", () => {
+  it("accepts 0 to 180 degrees and rejects larger turns", () => {
+    const at = (inclinationChangeDegrees: number) =>
+      validateOrbitalPlaneChangeInputs({
+        inclinationChangeDegrees,
+        orbitalVelocityMetresPerSecond: 7_670,
+      }).inclinationChangeDegrees;
+
+    expect(at(0)).toBeUndefined();
+    expect(at(180)).toBeUndefined();
+    expect(at(270)).toBe("Inclination change must be 180° or less.");
+    expect(at(360)).toBe("Inclination change must be 180° or less.");
+    expect(at(-1)).toMatch(/must not be negative/);
   });
 });
